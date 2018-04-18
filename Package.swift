@@ -24,8 +24,5 @@ let package = Package(
         .target(
             name: "CXXParser",
             dependencies: ["Machines"]),
-        .testTarget(
-            name: "MachinesTests",
-            dependencies: ["Machines"])
     ]
 )

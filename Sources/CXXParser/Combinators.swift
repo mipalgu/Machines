@@ -19,13 +19,13 @@ func between<T, U, V>(start: Parser<T>, end: Parser<U>, p: Parser<V>)
 
 // The 'failure' combinator returns an empty Parser.
 func failure<T>() -> Parser<T> {
-  let p = Parser<T> { _ in [] }
-  return p
+  return Parser<T> { _ in [] }
 }
 
 // The 'unit' combinator constructrs a Parser<T> from a T.
 func unit<T>(t: T) -> Parser<T> {
-  let p = Parser<T> { s in [(t, s)] }
+  return Parser<T> { s in [(t, s)] }
+  
 }
 
 
