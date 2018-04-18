@@ -56,10 +56,25 @@
  *
  */
 
+/**
+ *  A single state action.
+ *
+ *  An action is a specific section of code attached to a state which executes
+ *  under certain conditions.  The classical LLFSM model contains OnEntry,
+ *  OnExit and Internal actions.
+ */
 public struct Action {
 
+    /**
+     *  The name of the action.
+     *
+     *  This name must be unique between other actions within the same `Model`.
+     */
     public let name: String
 
+    /**
+     *  The actual implementation of the action.
+     */
     public let implementation: String
 
 }
