@@ -21,8 +21,11 @@ let package = Package(
         .target(
             name: "Machines",
             dependencies: []),
+        .target(
+            name: "CXXParser",
+            dependencies: ["Machines"]),
         .testTarget(
             name: "MachinesTests",
-            dependencies: ["Machines"]),
+            dependencies: ["Machines"])
     ]
 )
