@@ -1,3 +1,5 @@
+infix operator <|>: AdditionPrecedence
+
 
 // The Parser datatype 
 struct Parser<T> {
@@ -22,11 +24,36 @@ func failure<T>() -> Parser<T> {
   return Parser<T> { _ in [] }
 }
 
-// The 'unit' combinator constructrs a Parser<T> from a T.
-func unit<T>(t: T) -> Parser<T> {
-  return Parser<T> { s in [(t, s)] }
-  
+// The '<|>' operator tries to first parse p, if p fails, it tries to parse q.
+func <|> <T>(p: Parser<T>, q: Parser<T>) -> Parser<T> {
+  return Parser<T> {s in
+    let r = p.parse(s)
+    return r.isEmpty ? q.parse(s) : r
+  }
 }
+
+// The 'some' function applies the Parser p one or more times in succession.
+// On failure it terminates.
+func some<T>(p: Parser<T>) -> Parser<[T]> {
+  var xs = []
+  func f(s: String) -> [(T, String)] {
+    let r = p.parse(s)
+    if let (a, s') = r.first {
+      f(s')
+    }
+  }
+}
+
+// The 'pure' combinator constructs a Parser<T> from a T.
+func pure<T>(t: T) -> Parser<T> {
+  return Parser<T> { s in [(t, s)] }
+}
+
+
+
+// func bind<T, U>(p: Parser<T>, f: T -> Parser<U>) -> Parser<U> {
+//   need concatMap to go farther.
+// }
 
 
 
