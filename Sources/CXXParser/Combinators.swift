@@ -1,11 +1,4 @@
-infix operator <|>: AdditionPrecedence // Alternative
-infix operator >>=: LogicalDisjunctionPrecedence // Bind
-infix operator <^>: AdditionPrecedence // Fmap
-infix operator <*>: AdditionPrecedence // Apply
-infix operator *> : AdditionPrecedence // Right Apply
-infix operator <* : AdditionPrecedence // Left Apply
-
-
+import Functional
 
 /**
  * The Parser structure.
