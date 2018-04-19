@@ -10,10 +10,25 @@ struct Parser<T> {
   let parse: (String) -> (T, String)?
 }
 
+/**
+ * The identity function.
+ *
+ * - parameter t: Some T.
+ * - returns: The same T.
+ */
 func id<T>(_ t: T) -> T {
   return t
 }
 
+/**
+ * The const function.
+ *
+ * Const takes an input and returns a function expecting an input, that returns
+ * this input.
+ *
+ * - paramter t: Some T.
+ * - returns: A function U -> T where T is t.
+ */
 func const<T, U>(_ t: T) -> (U) -> T {
   return { _ in t }
 }
