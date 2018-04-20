@@ -6,12 +6,20 @@ import Functional
  * A Parser is just a wrapper around a parse function: `String -> (T, String)?`
  */
 struct Parser<T> {
-  
   let parse: (String) -> (T, String)?
 }
 
+enum Error {
+  case message(String)
+}
+
+enum Either<T, U> {
+  case left(T)
+  case right(U)
+}
+
 /**
- * The identity function.
+ * The `id`entity function.
  *
  * - parameter t: Some T.
  * - returns: The same T.
@@ -21,16 +29,53 @@ func id<T>(_ t: T) -> T {
 }
 
 /**
- * The const function.
+ *  The `const` function.
  *
- * Const takes an input and returns a function expecting an input, that returns
- * this input.
+ *  `const` takes an input and returns a function expecting an input, that 
+ *  returns this input.
  *
- * - paramter t: Some T.
- * - returns: A function U -> T where T is t.
+ *  - paramter t: Some T.
+ *  - returns: A function U -> T where T is t.
  */
 func const<T, U>(_ t: T) -> (U) -> T {
   return { _ in t }
+}
+
+/**
+ *  The `cons` function.
+ *
+ *  `cons` is a functional method for prepending an item to the front of a
+ *  collection: `a -> t a -> t a`.
+ *
+ * - parameter x: some (T : RangeReplaceableCollection).Iterator.Element.
+ * - returns: A function (T) -> T
+ *            
+ */
+func cons<T : RangeReplaceableCollection>(_ x: T.Iterator.Element) -> (T) 
+  -> T {
+  return {xs in
+    var xs = xs
+    xs.insert(x, at: xs.startIndex)
+    return xs
+  }
+}
+
+/**
+ *  The `uncons` function
+ * 
+ *  `uncons` takes a collection and returns a tuple with the (head, tail).
+ *
+ *  - parameter xs: some Collection T.
+ *  - returns: an optional (T.Iterator.Element, T.SubSequence)
+ *
+ */
+func uncons<T: Collection>(_ xs: T) -> (T.Iterator.Element, T.SubSequence)? {
+  if let head = xs.first {
+    return (head, xs.suffix(from: xs.index(after: xs.startIndex)))
+  } 
+  else {
+    return nil
+  }
 }
 
 // The 'pure' combinator lifts a T up into a Parser<T>.
@@ -86,6 +131,22 @@ func <* <T, U>(_ p: Parser<T>, _ q: Parser<U>) -> Parser<T> {
 
 func *> <T, U>(_ p: Parser<T>, _ q: Parser<U>) -> Parser<U> {
   return const(id) <^> p <*> q
+}
+
+func between<T, U, V>(_ start: Parser<T>, _ end: Parser<U>, _ p: Parser<V>)
+  -> Parser<V> {
+  return (start *> p <* end)
+}
+
+func run<T>(_ p: Parser<T>, _ s: String) -> Either<Error,T> {
+  if let (result, s) = p.parse(s) {
+    let r : Either<Error, T> = .right(result)
+    let l : Either<Error, T> = .left(Error.message(s))
+    return s.isEmpty ? r : l
+  }
+  else {
+    return Either.left(Error.message("Some unknown error occured!"))
+  }
 }
 
 
