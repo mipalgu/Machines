@@ -1,0 +1,4 @@
+{
+    "actions": ["onEntry"],
+    "stateType": "SleepingState"
+}

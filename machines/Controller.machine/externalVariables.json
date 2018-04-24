@@ -1,0 +1,9 @@
+{
+    "externalVariables": {
+        "wbcount": {
+            "wbName": "privateWhiteboard",
+            "type": "kCount_v",
+            "class": "wb_count"
+        }
+    }
+}
