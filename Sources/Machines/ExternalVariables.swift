@@ -70,6 +70,22 @@ public struct ExternalVariables {
 
     public let shouldNotifySubscribers: Bool
 
+    public init(
+        label: String,
+        wbName: String?,
+        messageType: String,
+        messageClass: String,
+        atomic: Bool,
+        shouldNotifySubscribers: Bool
+    ) {
+        self.label = label
+        self.wbName = wbName
+        self.messageType = messageType
+        self.messageClass = messageClass
+        self.atomic = atomic
+        self.shouldNotifySubscribers = shouldNotifySubscribers
+    }
+
 }
 
 extension ExternalVariables: Equatable {}

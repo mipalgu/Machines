@@ -88,6 +88,38 @@ public struct Machine {
 
     public let submachines: [Machine]
 
+    public init(
+        name: String,
+        filePath: URL,
+        externalVariables: [ExternalVariables],
+        swiftIncludeSearchPaths: [String],
+        includeSearchPaths: [String],
+        libSearchPaths: [String],
+        imports: String,
+        includes: String?,
+        vars: [Variable],
+        model: Model?,
+        initialState: State,
+        suspendState: State?,
+        states: [State],
+        submachines: [Machine]
+    ) {
+        self.name = name
+        self.filePath = filePath
+        self.externalVariables = externalVariables
+        self.swiftIncludeSearchPaths = swiftIncludeSearchPaths
+        self.includeSearchPaths = includeSearchPaths
+        self.libSearchPaths = libSearchPaths
+        self.imports = imports
+        self.includes = includes
+        self.vars = vars
+        self.model = model
+        self.initialState = initialState
+        self.suspendState = suspendState
+        self.states = states
+        self.submachines = submachines
+    }
+
 }
 
 extension Machine: Hashable {

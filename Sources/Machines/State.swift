@@ -70,6 +70,22 @@ public struct State {
 
     public let submachines: [Machine]
 
+    public init(
+        name: String,
+        imports: String,
+        vars: [Variable],
+        actions: [Action],
+        transitions: [Transition],
+        submachines: [Machine]
+    ) {
+        self.name = name
+        self.imports = imports
+        self.vars = vars
+        self.actions = actions
+        self.transitions = transitions
+        self.submachines = submachines
+    }
+
 }
 
 extension State: Equatable {}

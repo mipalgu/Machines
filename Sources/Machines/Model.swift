@@ -64,6 +64,12 @@ public struct Model {
 
     public let ringlet: Ringlet
 
+    public init(actions: [String], stateType: String, ringlet: Ringlet) {
+        self.actions = actions
+        self.stateType = stateType
+        self.ringlet = ringlet
+    }
+
 }
 
 extension Model: Equatable {}

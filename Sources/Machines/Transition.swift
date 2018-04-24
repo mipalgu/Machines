@@ -62,6 +62,11 @@
 
     public let condition: String?
 
+    public init(target: String, condition: String?) {
+        self.target = target
+        self.condition = condition
+    }
+
  }
 
  extension Transition: Equatable {}

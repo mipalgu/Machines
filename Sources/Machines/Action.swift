@@ -77,6 +77,11 @@ public struct Action {
      */
     public let implementation: String
 
+    public init(name: String, implementation: String) {
+        self.name = name
+        self.implementation = implementation
+    }
+
 }
 
 extension Action: Equatable {}

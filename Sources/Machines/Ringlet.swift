@@ -64,6 +64,12 @@ public struct Ringlet {
 
     public let execute: String
 
+    public init(imports: String, vars: [Variable], execute: String) {
+        self.imports = imports
+        self.vars = vars
+        self.execute = execute
+    }
+
 }
 
 extension Ringlet: Equatable {}
