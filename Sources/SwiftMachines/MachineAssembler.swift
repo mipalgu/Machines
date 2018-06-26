@@ -201,23 +201,27 @@ public final class MachineAssembler: Assembler, ErrorContainer {
 
     private func makePackage(forMachine machine: Machine, inDirectory path: URL, withDependencies dependencies: [(URL)]) -> URL? {
         let packagePath = path.appendingPathComponent("Package.swift", isDirectory: false)
-        var str = "import PackageDescription\n"
-        str += "let packages = Package(\n"
-        str += "    name: \"\(machine.name)Machine\",\n"
-        str += "    dependencies: [\n"
-        str += "        .Package(url: \"ssh://git.mipal.net/git/CGUSimpleWhiteboard\", majorVersion: 1)"
-        str += dependencies.reduce("") {
-            $0 + ",\n        .Package(url: \"\($1.path)\", majorVersion: 0)"
-        } + "\n"
-        str += "    ]\n"
-        str += ")\n\n"
-        str += "products.append(\n"
-        str += "    Product(\n"
-        str += "        name: \"\(machine.name)Machine\",\n"
-        str += "        type: .Library(.Dynamic),\n"
-        str += "        modules: [\"\(machine.name)Machine\"]\n"
-        str += "    )\n"
-        str += ")\n"
+        var str = """
+            // swift-tools-version:4.0
+            import PackageDescription
+
+            let package = Package(
+                name: "\(machine.name)Machine",
+                products: [
+                    .library(
+                        name: "\(machine.name)Machine",
+                        type: .dynamic,
+                        targets: ["\(machine.name)Machine"]
+                    )
+                ],
+                dependencies: [
+                    .package(url: "ssh://git.mipal.net/git/CGUSimpleWhiteboard", .branch("master"))
+                ],
+                targets: [
+                    .target(name: "\(machine.name)Machine", dependencies: [])
+                ]
+            )
+            """
         guard true == self.helpers.createFile(atPath: packagePath, withContents: str) else {
             self.errors.append("Unable to create Package.swift at \(packagePath.path)")
             return nil
@@ -368,7 +372,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             s += "        suspendedState: nil,\n"
             s += "        suspendState: \(suspendState),\n"
             s += "        exitState: Empty\(machine.model!.stateType)(\"_Exit\")\n"
-            s += "    )"
+            s += "    ).asAnyScheduleableFiniteStateMachine"
             fsm = s
         }
         str += "    // Create FSM.\n"
