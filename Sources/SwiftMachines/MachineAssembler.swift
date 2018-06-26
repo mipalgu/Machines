@@ -133,7 +133,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         guard
             let packageDir = self.packageInitializer.initialize(withName: "\(machine.name)Machine", inDirectory: buildDir),
             let package = self.makePackage(forMachine: machine, inDirectory: packageDir, withDependencies: dependencies),
-            let srcDir = self.helpers.overwriteSubDirectory("Sources", inDirectory: packageDir),
+            let sourcesDir = self.helpers.overwriteSubDirectory("Sources", inDirectory: packageDir),
+            let srcDir = self.helpers.overwriteSubDirectory(machine.name + "Machine", inDirectory: sourcesDir),
             let externals = self.makeExternalExtensions(forMachine: machine, inDirectory: srcDir),
             let factoryPath = self.makeFactory(forMachine: machine, inDirectory: srcDir),
             let fsmVarsPath = self.makeFsmVars(forMachine: machine, inDirectory: srcDir),
@@ -372,7 +373,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             s += "        suspendedState: nil,\n"
             s += "        suspendState: \(suspendState),\n"
             s += "        exitState: Empty\(machine.model!.stateType)(\"_Exit\")\n"
-            s += "    ).asAnyScheduleableFiniteStateMachine"
+            s += "    ).asScheduleableFiniteStateMachine"
             fsm = s
         }
         str += "    // Create FSM.\n"
