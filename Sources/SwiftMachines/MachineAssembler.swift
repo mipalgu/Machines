@@ -202,6 +202,9 @@ public final class MachineAssembler: Assembler, ErrorContainer {
 
     private func makePackage(forMachine machine: Machine, inDirectory path: URL, withDependencies dependencies: [(URL)]) -> URL? {
         let packagePath = path.appendingPathComponent("Package.swift", isDirectory: false)
+        let dependencies = dependencies.map {
+            ".package(url: \"\($0.absoluteString)\", .branch(\"master\"))"
+        }.reduce(".package(url: \"ssh://git.mipal.net/git/CGUSimpleWhiteboard\", .branch(\"master\"))") { $0 + ",\n        " + $1 }
         var str = """
             // swift-tools-version:4.0
             import PackageDescription
@@ -216,7 +219,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                     )
                 ],
                 dependencies: [
-                    .package(url: "ssh://git.mipal.net/git/CGUSimpleWhiteboard", .branch("master"))
+                    \(dependencies)
                 ],
                 targets: [
                     .target(name: "\(machine.name)Machine", dependencies: [])
