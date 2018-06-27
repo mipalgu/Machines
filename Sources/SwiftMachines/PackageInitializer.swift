@@ -76,11 +76,13 @@ public final class PackageInitializer {
         }
         let bin = "/usr/bin/env"
         let args = ["swift", "package", "init", "--type", type.rawValue]
+        let package = path.appendingPathComponent("Package.swift", isDirectory: false)
         guard
             let cwd = self.helpers.cwd,
             true == self.helpers.changeCWD(toPath: path),
             true == self.invoker.run(bin, withArguments: args),
-            true == self.helpers.changeCWD(toPath: cwd)
+            true == self.helpers.changeCWD(toPath: cwd),
+            let _ = try? String(contentsOf: package, encoding: .utf8).replacingOccurrences(of: ",\n)", with: "\n)").write(to: package, atomically: true, encoding: .utf8)
         else {
             return nil
         }
