@@ -205,6 +205,15 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         let dependencies = dependencies.map {
             ".package(url: \"\($0.absoluteString)\", .branch(\"master\"))"
         }.reduce(".package(url: \"ssh://git.mipal.net/git/CGUSimpleWhiteboard\", .branch(\"master\"))") { $0 + ",\n        " + $1 }
+        let dependencyList: String
+        if let first = machine.submachines.first {
+            let list = machine.submachines.dropFirst().reduce("\"" + first.name + "Machine\"") {
+                $0 + ", \"" + $1.name + "Machine\""
+            }
+            dependencyList = "[" + list + "]"
+        } else {
+            dependencyList = "[]"
+        }
         var str = """
             // swift-tools-version:4.0
             import PackageDescription
@@ -222,7 +231,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                     \(dependencies)
                 ],
                 targets: [
-                    .target(name: "\(machine.name)Machine", dependencies: [])
+                    .target(name: "\(machine.name)Machine", dependencies: \(dependencyList))
                 ]
             )
 
