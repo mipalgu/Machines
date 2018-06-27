@@ -225,6 +225,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                     .target(name: "\(machine.name)Machine", dependencies: [])
                 ]
             )
+
             """
         guard true == self.helpers.createFile(atPath: packagePath, withContents: str) else {
             self.errors.append("Unable to create Package.swift at \(packagePath.path)")

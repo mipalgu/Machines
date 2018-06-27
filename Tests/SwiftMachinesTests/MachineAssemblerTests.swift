@@ -140,6 +140,8 @@ public class MachineAssemblerTests: MachinesTestCase {
             let replacedS1 = s1.replacingOccurrences(of: "%machines_tests%/", with: self.machineTestsDir.absoluteString).replacingOccurrences(of: "file://", with: "")
             let replacedS2 = s2.replacingOccurrences(of: "%machines_tests%/", with: self.machineTestsDir.absoluteString).replacingOccurrences(of: "file://", with: "")
             if (replacedS1 != replacedS2) {
+                print(replacedS1)
+                print(replacedS2)
                 XCTFail("\(p1) != \(p2)")
             }
         }
