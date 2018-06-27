@@ -131,8 +131,8 @@ public class MachineAssemblerTests: MachinesTestCase {
                 continue
             }
             guard
-                let s1 = String(data: c1, encoding: .utf8),
-                let s2 = String(data: c2, encoding: .utf8)
+                let s1 = String(data: c1, encoding: .utf8).map({ $0.trimmingCharacters(in: .whitespaces) }),
+                let s2 = String(data: c2, encoding: .utf8).map({ $0.trimmingCharacters(in: .whitespaces) })
             else {
                 XCTFail("Unable to encode files")
                 continue

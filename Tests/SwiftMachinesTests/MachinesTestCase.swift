@@ -69,15 +69,15 @@ public class MachinesTestCase: XCTestCase {
 
     public let pingPongFiles: [URL] = [
         URL(fileURLWithPath: "machines/PingPong/.build/PingPongMachine/Package.swift"),
-        URL(fileURLWithPath: "machines/PingPong/.build/PingPongMachine/Sources/CallbackSleepingState.swift"),
-        URL(fileURLWithPath: "machines/PingPong/.build/PingPongMachine/Sources/EmptySleepingState.swift"),
-        URL(fileURLWithPath: "machines/PingPong/.build/PingPongMachine/Sources/factory.swift"),
-        URL(fileURLWithPath: "machines/PingPong/.build/PingPongMachine/Sources/main.swift"),
-        URL(fileURLWithPath: "machines/PingPong/.build/PingPongMachine/Sources/PingPongRinglet.swift"),
-        URL(fileURLWithPath: "machines/PingPong/.build/PingPongMachine/Sources/PingPongVars.swift"),
-        URL(fileURLWithPath: "machines/PingPong/.build/PingPongMachine/Sources/PingState.swift"),
-        URL(fileURLWithPath: "machines/PingPong/.build/PingPongMachine/Sources/PongState.swift"),
-        URL(fileURLWithPath: "machines/PingPong/.build/PingPongMachine/Sources/SleepingState.swift")
+        URL(fileURLWithPath: "machines/PingPong/.build/PingPongMachine/Sources/PingPongMachine/CallbackSleepingState.swift"),
+        URL(fileURLWithPath: "machines/PingPong/.build/PingPongMachine/Sources/PingPongMachine/EmptySleepingState.swift"),
+        URL(fileURLWithPath: "machines/PingPong/.build/PingPongMachine/Sources/PingPongMachine/factory.swift"),
+        URL(fileURLWithPath: "machines/PingPong/.build/PingPongMachine/Sources/PingPongMachine/main.swift"),
+        URL(fileURLWithPath: "machines/PingPong/.build/PingPongMachine/Sources/PingPongMachine/PingPongRinglet.swift"),
+        URL(fileURLWithPath: "machines/PingPong/.build/PingPongMachine/Sources/PingPongMachine/PingPongVars.swift"),
+        URL(fileURLWithPath: "machines/PingPong/.build/PingPongMachine/Sources/PingPongMachine/PingState.swift"),
+        URL(fileURLWithPath: "machines/PingPong/.build/PingPongMachine/Sources/PingPongMachine/PongState.swift"),
+        URL(fileURLWithPath: "machines/PingPong/.build/PingPongMachine/Sources/PingPongMachine/SleepingState.swift")
     ]
 
     public let pingPongMachine = Machine(
@@ -160,12 +160,12 @@ public class MachinesTestCase: XCTestCase {
         URL(fileURLWithPath: "machines/Controller/.build/ControllerMachineBridging/Controller-Bridging-Header.h"),
         URL(fileURLWithPath: "machines/Controller/.build/ControllerMachineBridging/module.modulemap"),
         URL(fileURLWithPath: "machines/Controller/.build/ControllerMachine/Package.swift"),
-        URL(fileURLWithPath: "machines/Controller/.build/ControllerMachine/Sources/ControllerState.swift"),
-        URL(fileURLWithPath: "machines/Controller/.build/ControllerMachine/Sources/ControllerVars.swift"),
-        URL(fileURLWithPath: "machines/Controller/.build/ControllerMachine/Sources/ExitState.swift"),
-        URL(fileURLWithPath: "machines/Controller/.build/ControllerMachine/Sources/wb_count.swift"),
-        URL(fileURLWithPath: "machines/Controller/.build/ControllerMachine/Sources/factory.swift"),
-        URL(fileURLWithPath: "machines/Controller/.build/ControllerMachine/Sources/main.swift")
+        URL(fileURLWithPath: "machines/Controller/.build/ControllerMachine/Sources/ControllerMachine/ControllerState.swift"),
+        URL(fileURLWithPath: "machines/Controller/.build/ControllerMachine/Sources/ControllerMachine/ControllerVars.swift"),
+        URL(fileURLWithPath: "machines/Controller/.build/ControllerMachine/Sources/ControllerMachine/ExitState.swift"),
+        URL(fileURLWithPath: "machines/Controller/.build/ControllerMachine/Sources/ControllerMachine/wb_count.swift"),
+        URL(fileURLWithPath: "machines/Controller/.build/ControllerMachine/Sources/ControllerMachine/factory.swift"),
+        URL(fileURLWithPath: "machines/Controller/.build/ControllerMachine/Sources/ControllerMachine/main.swift")
     ]
 
     public var controllerMachine: Machine {
