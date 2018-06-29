@@ -10,6 +10,8 @@ let package = Package(
         .library(
             name: "Machines",
             targets: ["Machines"]),
+        .library(name: "SwiftMachines",
+            targets: ["SwiftMachines"])
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
