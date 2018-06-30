@@ -101,11 +101,12 @@ public final class MachineGenerator {
                 }
             ),
             let stateFiles = self.makeStates(forMachine: machine),
-            let stateList = self.makeStateList(forMachine: machine)
+            let stateList = self.makeStateList(forMachine: machine),
+            let externalVariables = self.makeExternalVariables(forMachine: machine)
         else {
             return nil
         }
-        var files = [swiftIncludePath, includePath, libPath, imports, vars, stateList]
+        var files = [swiftIncludePath, includePath, libPath, imports, vars, stateList, externalVariables]
         files.append(contentsOf: stateFiles)
         if let includes = machine.includes {
             guard let bridgingHeader = self.helpers.createFile(
@@ -135,11 +136,12 @@ public final class MachineGenerator {
                     "Ringlet_Execute.swift",
                     inDirectory: machine.filePath,
                     withContents: model.ringlet.execute
-                )
+                ),
+                let modelFile = self.makeModelFile(forMachine: machine)
             else {
                 return nil
             }
-            files.append(contentsOf: [ringletImports, ringletVars, ringletExecute])
+            files.append(contentsOf: [ringletImports, ringletVars, ringletExecute, modelFile])
         }
         return (machineDir, files)
     }
@@ -224,6 +226,48 @@ public final class MachineGenerator {
             str = ""
         }
         guard true == self.helpers.createFile(atPath: path, withContents: str) else {
+            return nil
+        }
+        return path
+    }
+
+    func makeExternalVariables(forMachine machine: Machine) -> URL? {
+        let path = machine.filePath.appendingPathComponent("externalVaraibles.json", isDirectory: false)
+        var dict: [String: [String: Any]] = [:]
+        machine.externalVariables.forEach {
+            dict[$0.label] = [
+                "wbName": $0.wbName,
+                "atomic": $0.atomic,
+                "shouldNotifySubscribers": $0.shouldNotifySubscribers,
+                "type": $0.messageType,
+                "class": $0.messageClass
+            ]
+        }
+        let data = ["externalVariables": dict]
+        guard
+            let json = try? JSONSerialization.data(withJSONObject: data),
+            let str = String(data: json, encoding: .utf8),
+            true == self.helpers.createFile(atPath: path, withContents: str)
+        else {
+            return nil
+        }
+        return path
+    }
+
+    func makeModelFile(forMachine machine: Machine) -> URL? {
+        guard let model = machine.model else {
+            return nil
+        }
+        let path = machine.filePath.appendingPathComponent("model.json", isDirectory: false)
+        let dict: [String: Any] = [
+            "actions": model.actions,
+            "stateType": model.stateType
+        ]
+        guard
+            let json = try? JSONSerialization.data(withJSONObject: dict),
+            let str = String(data: json, encoding: .utf8),
+            true == self.helpers.createFile(atPath: path, withContents: str)
+        else {
             return nil
         }
         return path
