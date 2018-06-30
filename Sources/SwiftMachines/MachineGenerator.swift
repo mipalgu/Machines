@@ -245,7 +245,7 @@ public final class MachineGenerator {
         }
         let data = ["externalVariables": dict]
         guard
-            let json = try? JSONSerialization.data(withJSONObject: data, options: .prettyPrinted),
+            let json = try? JSONSerialization.data(withJSONObject: data, options: [.prettyPrinted, .sortedKeys]),
             let str = String(data: json, encoding: .utf8),
             true == self.helpers.createFile(atPath: path, withContents: str)
         else {
@@ -264,7 +264,7 @@ public final class MachineGenerator {
             "stateType": model.stateType
         ]
         guard
-            let json = try? JSONSerialization.data(withJSONObject: dict, options: .prettyPrinted),
+            let json = try? JSONSerialization.data(withJSONObject: dict, options: [.prettyPrinted, .sortedKeys]),
             let str = String(data: json, encoding: .utf8),
             true == self.helpers.createFile(atPath: path, withContents: str)
         else {
