@@ -70,7 +70,7 @@ public final class MachineGenerator {
         self.varHelpers = varHelpers
     }
 
-    func generate(_ machine: Machine) -> (URL, [URL])? {
+    public func generate(_ machine: Machine) -> (URL, [URL])? {
         guard
             let machineDir = self.helpers.overwriteDirectory(machine.filePath),
             let swiftIncludePath = self.helpers.createFile(
