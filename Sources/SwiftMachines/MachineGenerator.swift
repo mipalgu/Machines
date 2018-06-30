@@ -232,7 +232,7 @@ public final class MachineGenerator {
     }
 
     func makeExternalVariables(forMachine machine: Machine) -> URL? {
-        let path = machine.filePath.appendingPathComponent("externalVaraibles.json", isDirectory: false)
+        let path = machine.filePath.appendingPathComponent("externalVariables.json", isDirectory: false)
         var dict: [String: [String: Any]] = [:]
         machine.externalVariables.forEach {
             dict[$0.label] = [
