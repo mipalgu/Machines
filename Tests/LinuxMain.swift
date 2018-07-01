@@ -1,7 +1,9 @@
 import XCTest
 
-import MachinesTests
+import SwiftMachinesTests
 
-var tests = [XCTestCaseEntry]()
-tests += MachinesTests.allTests()
-XCTMain(tests)
+XCTMain([
+    testCase(MachineAssemblerTests.allTests),
+    testCase(MachineCompilerTests.allTests),
+    testCase(MachineParserTests.allTests)]
+)
