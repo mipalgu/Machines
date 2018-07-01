@@ -103,11 +103,12 @@ public final class MachineGenerator {
             ),
             let stateFiles = self.makeStates(forMachine: machine),
             let stateList = self.makeStateList(forMachine: machine),
-            let externalVariables = self.makeExternalVariables(forMachine: machine)
+            let externalVariables = self.makeExternalVariables(forMachine: machine),
+            let submachines = self.makeSubmachinesFile(forMachine: machine)
         else {
             return nil
         }
-        var files = [swiftIncludePath, includePath, libPath, imports, vars, stateList, externalVariables]
+        var files = [swiftIncludePath, includePath, libPath, imports, vars, stateList, externalVariables, submachines]
         files.append(contentsOf: stateFiles)
         if let includes = machine.includes {
             guard let bridgingHeader = self.helpers.createFile(
@@ -263,6 +264,27 @@ public final class MachineGenerator {
         let dict: [String: Any] = [
             "actions": model.actions,
             "stateType": model.stateType
+        ]
+        guard
+            let json = try? JSONSerialization.data(withJSONObject: dict, options: [.prettyPrinted, .sortedKeys]),
+            let str = String(data: json, encoding: .utf8),
+            true == self.helpers.createFile(atPath: path, withContents: str)
+        else {
+            return nil
+        }
+        return path
+    }
+
+    func makeSubmachinesFile(forMachine machine: Machine) -> URL? {
+        let path = machine.filePath.appendingPathComponent("submachines.json", isDirectory: false)
+        let submachinesJson: [[String: Any]] = Array(machine.states.lazy.filter { false == $0.submachines.isEmpty }.map {
+            [
+                "state": $0.name,
+                "machines": $0.submachines.map { $0.name }
+            ]
+        })
+        let dict: [String: Any] = [
+            "controllers": submachinesJson
         ]
         guard
             let json = try? JSONSerialization.data(withJSONObject: dict, options: [.prettyPrinted, .sortedKeys]),
