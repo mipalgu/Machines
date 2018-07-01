@@ -94,6 +94,12 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         self.varParser = varParser
     }
 
+    public func packagePath(forMachine machine: Machine) -> String {
+        return machine.filePath.appendingPathComponent(".build", isDirectory: true)
+            .appendingPathComponent(machine.name + "Machine", isDirectory: true)
+            .path
+    }
+
     public func assemble(_ machine: Machine) -> (URL, [URL])? {
         return self.assemble(machine, isSubMachine: false)
     }

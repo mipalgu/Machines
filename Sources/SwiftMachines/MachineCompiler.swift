@@ -71,6 +71,24 @@ public class MachineCompiler<A: Assembler> {
         self.invoker = invoker
     }
 
+    public func outputPath(forMachine machine: Machine) -> String {
+        #if os(OSX)
+        let ext = "dylib"
+        #else
+        let ext = "so"
+        #endif
+        return URL(fileURLWithPath: self.assembler.packagePath(forMachine: machine), isDirectory: true)
+            .appendingPathComponent(".build", isDirectory: true)
+            .appendingPathComponent("release", isDirectory: true)
+            .appendingPathComponent("lib\(machine.name)Machine.\(ext)", isDirectory: false)
+            .path
+    }
+
+    public func shouldCompile(_ machine: Machine) -> Bool {
+        let fm = FileManager.default
+        return false == fm.fileExists(atPath: self.outputPath(forMachine: machine))
+    }
+
     public func compile(
         _ machine: Machine,
         withCompilerFlags compilerFlags: [String] = [],

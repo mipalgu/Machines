@@ -72,4 +72,8 @@ public class MockedAssembler: Assembler {
         return self._assemble(machine)
     }
 
+    public func packagePath(forMachine _: Machine) -> String {
+        return ""
+    }
+
 }

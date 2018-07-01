@@ -63,4 +63,6 @@ public protocol Assembler {
 
     func assemble(_: Machine) -> (URL, [URL])?
 
+    func packagePath(forMachine: Machine) -> String
+
 }
