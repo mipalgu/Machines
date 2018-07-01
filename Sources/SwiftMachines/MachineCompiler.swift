@@ -72,15 +72,10 @@ public class MachineCompiler<A: Assembler> {
     }
 
     public func outputPath(forMachine machine: Machine) -> String {
-        #if os(OSX)
-        let ext = "dylib"
-        #else
-        let ext = "so"
-        #endif
         return URL(fileURLWithPath: self.assembler.packagePath(forMachine: machine), isDirectory: true)
             .appendingPathComponent(".build", isDirectory: true)
             .appendingPathComponent("release", isDirectory: true)
-            .appendingPathComponent("lib\(machine.name)Machine.\(ext)", isDirectory: false)
+            .appendingPathComponent(machine.name + "Machine", isDirectory: false)
             .path
     }
 
@@ -133,13 +128,8 @@ public class MachineCompiler<A: Assembler> {
             return nil
         }
         let _ = fm.changeCurrentDirectoryPath(cwd)
-        #if os(OSX)
-        let ext = "dylib"
-        #else
-        let ext = "so"
-        #endif
         let compileDir = buildPath.appendingPathComponent(".build", isDirectory: true).appendingPathComponent("release", isDirectory: true)
-        let outputPath = compileDir.appendingPathComponent("lib\(machine.name)Machine.\(ext)", isDirectory: false)
+        let outputPath = compileDir.appendingPathComponent(machine.name + "Machine", isDirectory: false)
         return (compileDir, outputPath)
     }
 
