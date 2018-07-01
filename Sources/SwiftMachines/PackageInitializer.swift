@@ -56,6 +56,7 @@
  *
  */
 
+import IO
 import Foundation
 
 public final class PackageInitializer {

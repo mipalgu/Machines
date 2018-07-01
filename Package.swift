@@ -28,7 +28,7 @@ let package = Package(
             dependencies: ["swift_helpers"]),
         .target(
             name: "SwiftMachines",
-            dependencies: ["swift_helpers", "Machines"]),
+            dependencies: ["swift_helpers", "Machines", "IO"]),
         .target(
             name: "CXXParser",
             dependencies: ["Machines", "swift_helpers", "Functional"]),
