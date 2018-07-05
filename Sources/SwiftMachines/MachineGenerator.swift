@@ -247,7 +247,7 @@ public final class MachineGenerator {
         }
         let data = ["externalVariables": dict]
         guard
-            let json = try? JSONSerialization.data(withJSONObject: data, options: [.prettyPrinted, .sortedKeys]),
+            let json = self.encode(json: data),
             let str = String(data: json, encoding: .utf8),
             true == self.helpers.createFile(atPath: path, withContents: str)
         else {
@@ -266,7 +266,7 @@ public final class MachineGenerator {
             "stateType": model.stateType
         ]
         guard
-            let json = try? JSONSerialization.data(withJSONObject: dict, options: [.prettyPrinted, .sortedKeys]),
+            let json = self.encode(json: dict),
             let str = String(data: json, encoding: .utf8),
             true == self.helpers.createFile(atPath: path, withContents: str)
         else {
@@ -287,13 +287,21 @@ public final class MachineGenerator {
             "controllers": submachinesJson
         ]
         guard
-            let json = try? JSONSerialization.data(withJSONObject: dict, options: [.prettyPrinted, .sortedKeys]),
+            let json = self.encode(json: dict),
             let str = String(data: json, encoding: .utf8),
             true == self.helpers.createFile(atPath: path, withContents: str)
         else {
             return nil
         }
         return path
+    }
+
+    fileprivate func encode(json: [String: Any]) -> Data? {
+        if #available(macOS 10.13, *) {
+            return try? JSONSerialization.data(withJSONObject: json, options: [.prettyPrinted, .sortedKeys])
+        } else {
+            return try? JSONSerialization.data(withJSONObject: json, options: [.prettyPrinted])
+        }
     }
 
 }

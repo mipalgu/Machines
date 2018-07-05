@@ -25,7 +25,7 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages which this package depends on.
         .target(
             name: "Machines",
-            dependencies: ["swift_helpers"]),
+            dependencies: ["swift_helpers", "IO"]),
         .target(
             name: "SwiftMachines",
             dependencies: ["swift_helpers", "Machines", "IO"]),
