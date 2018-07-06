@@ -292,7 +292,27 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "import \(m.name)Machine\n"
         }
         str += "\n"
-        str += "public func make_\(machine.name)() -> [AnyScheduleableFiniteStateMachine] {\n"
+        str += makeFactoryFunction(forMachine: machine)
+        str += "\n\n"
+        str += makeSubmachineFactoryFunction(forMachine: machine)
+        guard true == self.helpers.createFile(atPath: factoryPath, withContents: str) else {
+            self.errors.append("Unable to create \(factoryPath.path)")
+            return nil
+        }
+        return factoryPath
+    }
+
+    private func makeFactoryFunction(forMachine machine: Machine) -> String {
+        return """
+            public func make_\(machine.name)() -> [AnyScheduleableFiniteStateMachine] {
+                let (fsm, submachines) = make_submachine_\(machine.name)()
+                return [fsm.asScheduleableFiniteStateMachine] + submachines
+            }
+        """
+    }
+
+    private func makeSubmachineFactoryFunction(forMachine machine: Machine) -> String {
+        var str = "public func make_submachine_\(machine.name)() -> (AnyControllableFiniteStateMachine, [AnyScheduleableFiniteStateMachine]) {\n"
         /*for v in machine.externalVariables {
             str += "    let wbds\n"
         }*/
@@ -315,8 +335,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "    // Submachines.\n"
             str += "    var submachines: [AnyScheduleableFiniteStateMachine] = []\n"
             for m in machine.submachines {
-                str += "    let \(m.name)FSMs = make_\(m.name)()\n"
-                str += "    let \(m.name)Machine = \(m.name)FSMs.first!\n"
+                str += "    let (\(m.name)Machine, \(m.name)FSMs) = make_submachine_\(m.name)()\n"
+                str += "    submachines.append(\(m.name)Machine.asScheduleableFiniteStateMachine)\n"
                 str += "    submachines.append(contentsOf: \(m.name)FSMs)\n"
             }
         }
@@ -393,23 +413,17 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             s += "        suspendedState: nil,\n"
             s += "        suspendState: \(suspendState),\n"
             s += "        exitState: Empty\(machine.model!.stateType)(\"_Exit\")\n"
-            s += "    ).asScheduleableFiniteStateMachine"
+            s += "    )"
             fsm = s
         }
         str += "    // Create FSM.\n"
         if (false == machine.submachines.isEmpty) {
-            str += "    let fsm = \(fsm)\n"
-            str += "    submachines.insert(fsm, at: 0)\n"
-            str += "    return submachines\n"
+            str += "    return (\(fsm), submachines)"
         } else {
-            str += "    return [\(fsm)]\n"
+            str += "    return (\(fsm), [])\n"
         }
         str += "}\n\n"
-        guard true == self.helpers.createFile(atPath: factoryPath, withContents: str) else {
-            self.errors.append("Unable to create \(factoryPath.path)")
-            return nil
-        }
-        return factoryPath
+        return str
     }
 
     private func makeMain(forMachine machine: Machine, inDirectory path: URL) -> URL? {
@@ -534,7 +548,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         str += "    private let _fsmVars: SimpleVariablesContainer<\(machine.name)Vars>\n\n"
         for submachine in state.submachines {
-            str += "    public private(set) var \(submachine.name)Machine: AnyScheduleableFiniteStateMachine\n"
+            str += "    public private(set) var \(submachine.name)Machine: AnyControllableFiniteStateMachine\n"
         }
         if (false == state.submachines.isEmpty) {
             str += "\n"
@@ -579,7 +593,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         str += "        fsmVars: SimpleVariablesContainer<\(machine.name)Vars>,\n"
         for submachine in state.submachines {
-            str += "        \(submachine.name)Machine: AnyScheduleableFiniteStateMachine,\n"
+            str += "        \(submachine.name)Machine: AnyControllableFiniteStateMachine,\n"
         }
         str = str.trimmingCharacters(in: CharacterSet(charactersIn: ",\n"))
         str += "\n    ) {\n"
