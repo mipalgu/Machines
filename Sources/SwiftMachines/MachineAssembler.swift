@@ -322,10 +322,11 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         for external in machine.externalVariables {
             str += "    let \(external.label) = SnapshotCollectionController<GenericWhiteboard<\(external.messageClass)>>(\n"
+            str += "        \"\(external.wbName.map { $0 + "." } ?? "")\(external.messageType)\",\n"
             str += "        collection: GenericWhiteboard<\(external.messageClass)>(\n"
             str += "            msgType: \(external.messageType),\n"
             if let wbName = external.wbName {
-                str += "            wb: Whiteboard(wbd: gsw_new_whiteboard(\"\(wbName)\")),\n"
+                str += "            wbd: Whiteboard(wbd: gsw_new_whiteboard(\"\(wbName)\")),\n"
             }
             str += "            atomic: \(external.atomic),\n"
             str += "            shouldNotifySubscribers: \(external.shouldNotifySubscribers)\n"
