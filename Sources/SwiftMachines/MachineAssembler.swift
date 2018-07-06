@@ -211,17 +211,18 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         let packagePath = path.appendingPathComponent("Package.swift", isDirectory: false)
         let dependencies = dependencies.map {
             ".package(url: \"\($0.absoluteString)\", .branch(\"master\"))"
-        }.reduce(".package(url: \"ssh://git.mipal.net/git/CGUSimpleWhiteboard\", .branch(\"master\"))") { $0 + ",\n        " + $1 }
+        }.reduce(".package(url: \"ssh://git.mipal.net/git/CGUSimpleWhiteboard\", .branch(\"master\")),\n        .package(url: \"ssh://git.mipal.net/git/swift_wb\", .branch(\"swift-4.2\"))") { $0 + ",\n        " + $1 }
         let dependencyList: String
+        let defaults = "\"GUSimpleWhiteboard\""
         if let first = machine.submachines.first {
             let list = machine.submachines.dropFirst().reduce("\"" + first.name + "Machine\"") {
                 $0 + ", \"" + $1.name + "Machine\""
             }
-            dependencyList = "[" + list + "]"
+            dependencyList = "[" + defaults + ", " + list + "]"
         } else {
-            dependencyList = "[]"
+            dependencyList = "[" + defaults + "]"
         }
-        var str = """
+        let str = """
             // swift-tools-version:4.0
             import PackageDescription
 
