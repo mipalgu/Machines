@@ -297,11 +297,15 @@ public final class MachineGenerator {
     }
 
     fileprivate func encode(json: [String: Any]) -> Data? {
-        if #available(macOS 10.13, *) {
+        #if os(macOS)
+            if #available(macOS 10.13, *) {
+                return try? JSONSerialization.data(withJSONObject: json, options: [.prettyPrinted, .sortedKeys])
+            } else {
+                return try? JSONSerialization.data(withJSONObject: json, options: [.prettyPrinted])
+            }
+        #else
             return try? JSONSerialization.data(withJSONObject: json, options: [.prettyPrinted, .sortedKeys])
-        } else {
-            return try? JSONSerialization.data(withJSONObject: json, options: [.prettyPrinted])
-        }
+        #endif
     }
 
 }
