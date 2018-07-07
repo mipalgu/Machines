@@ -309,7 +309,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                 let (fsm, submachines) = make_submachine_\(machine.name)()
                 return [fsm.asScheduleableFiniteStateMachine] + submachines
             }
-        """
+            """
     }
 
     private func makeSubmachineFactoryFunction(forMachine machine: Machine) -> String {
