@@ -11,7 +11,7 @@ public func make_Controller() -> [AnyScheduleableFiniteStateMachine] {
 public func make_submachine_Controller() -> (AnyControllableFiniteStateMachine, [AnyScheduleableFiniteStateMachine]) {
     // External Variables.
     let wbcount = SnapshotCollectionController<GenericWhiteboard<wb_count>>(
-        name: "privateWhiteboard.kCount_v",
+        "privateWhiteboard.kCount_v",
         collection: GenericWhiteboard<wb_count>(
             msgType: kCount_v,
             wbd: Whiteboard(wbd: gsw_new_whiteboard("privateWhiteboard")),
