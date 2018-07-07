@@ -338,6 +338,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "    var submachines: [AnyScheduleableFiniteStateMachine] = []\n"
             for m in machine.submachines {
                 str += "    let (\(m.name)Machine, \(m.name)FSMs) = make_submachine_\(m.name)()\n"
+                str += "    submachines.append(\(m.name)Machine.asScheduleableFiniteStateMachine)\n"
                 str += "    submachines.append(contentsOf: \(m.name)FSMs)\n"
             }
         }

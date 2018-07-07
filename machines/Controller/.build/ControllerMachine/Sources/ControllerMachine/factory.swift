@@ -22,6 +22,7 @@ public func make_submachine_Controller() -> (AnyControllableFiniteStateMachine, 
     // Submachines.
     var submachines: [AnyScheduleableFiniteStateMachine] = []
     let (PingPongMachine, PingPongFSMs) = make_submachine_PingPong()
+    submachines.append(PingPongMachine.asScheduleableFiniteStateMachine)
     submachines.append(contentsOf: PingPongFSMs)
     // FSM Variables.
     let fsmVars = SimpleVariablesContainer(vars: ControllerVars())
