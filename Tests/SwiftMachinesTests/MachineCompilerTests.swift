@@ -101,7 +101,7 @@ public class MachineCompilerTests: MachinesTestCase {
         XCTAssertNotNil(
             self.compiler.compile(
                 super.pingPongMachine,
-                withCompilerFlags: self.args
+                andSwiftCompilerFlags: self.args
             )
         )
     }
@@ -110,7 +110,7 @@ public class MachineCompilerTests: MachinesTestCase {
         XCTAssertNotNil(
             self.compiler.compile(
                 super.controllerMachine,
-                withCompilerFlags: self.args
+                andSwiftCompilerFlags: self.args
             )
         )
     }

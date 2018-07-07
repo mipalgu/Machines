@@ -86,14 +86,16 @@ public class MachineCompiler<A: Assembler> {
 
     public func compile(
         _ machine: Machine,
-        withCompilerFlags compilerFlags: [String] = [],
-        andLinkerFlags linkerFlags: [String] = []
+        withCCompilerFlags cCompilerFlags: [String] = [],
+        andLinkerFlags linkerFlags: [String] = [],
+        andSwiftCompilerFlags swiftCompilerFlags: [String] = []
     ) -> String? {
         guard
             let (_, outputPath) = self.compileMachine(
                     machine,
-                    withCompilerFlags: compilerFlags,
-                    andLinkerFlags: linkerFlags
+                    withCCompilerFlags: cCompilerFlags,
+                    andLinkerFlags: linkerFlags,
+                    andSwiftCompilerFlags: swiftCompilerFlags
                 )
         else {
             return nil
@@ -103,8 +105,9 @@ public class MachineCompiler<A: Assembler> {
 
     private func compileMachine(
         _ machine: Machine,
-        withCompilerFlags compilerFlags: [String],
-        andLinkerFlags linkerFlags: [String]
+        withCCompilerFlags cCompilerFlags: [String],
+        andLinkerFlags linkerFlags: [String],
+        andSwiftCompilerFlags swiftCompilerFlags: [String]
     ) -> (URL, URL)? {
         print("Compile: \(machine.name)")
         guard let (buildPath, _) = self.assembler.assemble(machine) else {
@@ -119,8 +122,9 @@ public class MachineCompiler<A: Assembler> {
         print("Compiling at path: \(buildPath.path)")
         let args = self.makeCompilerFlags(
             forMachine: machine,
-            withPassedInCompilerFlags: compilerFlags,
-            andPassedInLinkerFlags: linkerFlags
+            withCCompilerFlags: cCompilerFlags,
+            andLinkerFlags: linkerFlags,
+            andSwiftCompilerFlags: swiftCompilerFlags
         )
         print(args.reduce("env") { "\($0) \($1)" })
         guard true == self.invoker.run("/usr/bin/env", withArguments: args) else {
@@ -135,21 +139,22 @@ public class MachineCompiler<A: Assembler> {
 
     private func makeCompilerFlags(
         forMachine machine: Machine,
-        withPassedInCompilerFlags passedInCompilerFlags: [String],
-        andPassedInLinkerFlags passedInLinkerFlags: [String]
+        withCCompilerFlags cCompilerFlags: [String],
+        andLinkerFlags linkerFlags: [String],
+        andSwiftCompilerFlags swiftCompilerFlags: [String]
     ) -> [String] {
         let swiftIncludeSearchPaths = machine.swiftIncludeSearchPaths.map { "-I\(self.expand($0, withMachine: machine))" }
         let includeSearchPaths = machine.includeSearchPaths.map { "-I\(self.expand($0, withMachine: machine))" }
         let libSearchPaths = machine.libSearchPaths.map { "-L\(self.expand($0, withMachine: machine))" }
         let mandatoryFlags = ["swift", "build", "-c", "release", "-Xlinker", "-lFSM"]
         var args: [String] = []
-        args.reserveCapacity(mandatoryFlags.count + swiftIncludeSearchPaths.count * 2 + includeSearchPaths.count * 2 + libSearchPaths.count * 2 + passedInCompilerFlags.count * 2 + passedInLinkerFlags.count * 2)
         args.append(contentsOf: mandatoryFlags)
         args.append(contentsOf: swiftIncludeSearchPaths.flatMap { ["-Xswiftc", $0] })
         args.append(contentsOf: includeSearchPaths.flatMap { ["-Xcc", $0] })
         args.append(contentsOf: libSearchPaths.flatMap { ["-Xlinker", $0] })
-        args.append(contentsOf: passedInCompilerFlags.flatMap { ["-Xswiftc", $0] })
-        args.append(contentsOf: passedInLinkerFlags.flatMap { ["-Xlinker", $0] })
+        args.append(contentsOf: cCompilerFlags.flatMap { ["-Xcc", $0] })
+        args.append(contentsOf: linkerFlags.flatMap { ["-Xlinker", $0] })
+        args.append(contentsOf: swiftCompilerFlags.flatMap { ["-Xswiftc", $0] })
         return args
     }
 
