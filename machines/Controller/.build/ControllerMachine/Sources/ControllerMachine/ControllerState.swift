@@ -9,7 +9,7 @@ public class ControllerState: MiPalState {
     public let _wbcount: SnapshotCollectionController<GenericWhiteboard<wb_count>>
     private let _fsmVars: SimpleVariablesContainer<ControllerVars>
 
-    public private(set) var PingPongMachine: AnyScheduleableFiniteStateMachine
+    public private(set) var PingPongMachine: AnyControllableFiniteStateMachine
 
     var count: UInt8 = 0
 
@@ -34,7 +34,7 @@ public class ControllerState: MiPalState {
         transitions: [Transition<ControllerState, MiPalState>] = [],
         wbcount: SnapshotCollectionController<GenericWhiteboard<wb_count>>,
         fsmVars: SimpleVariablesContainer<ControllerVars>,
-        PingPongMachine: AnyScheduleableFiniteStateMachine
+        PingPongMachine: AnyControllableFiniteStateMachine
     ) {
         self._wbcount = wbcount
         self._fsmVars = fsmVars

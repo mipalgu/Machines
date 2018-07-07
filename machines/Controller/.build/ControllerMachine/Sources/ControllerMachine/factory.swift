@@ -4,19 +4,24 @@ import GUSimpleWhiteboard
 import PingPongMachine
 
 public func make_Controller() -> [AnyScheduleableFiniteStateMachine] {
+    let (fsm, submachines) = make_submachine_Controller()
+    return [fsm.asScheduleableFiniteStateMachine] + submachines
+}
+
+public func make_submachine_Controller() -> (AnyControllableFiniteStateMachine, [AnyScheduleableFiniteStateMachine]) {
     // External Variables.
     let wbcount = SnapshotCollectionController<GenericWhiteboard<wb_count>>(
+        name: "privateWhiteboard.kCount_v",
         collection: GenericWhiteboard<wb_count>(
             msgType: kCount_v,
-            wb: Whiteboard(wbd: gsw_new_whiteboard("privateWhiteboard")),
+            wbd: Whiteboard(wbd: gsw_new_whiteboard("privateWhiteboard")),
             atomic: true,
             shouldNotifySubscribers: true
         )
     )
     // Submachines.
     var submachines: [AnyScheduleableFiniteStateMachine] = []
-    let PingPongFSMs = make_PingPong()
-    let PingPongMachine = PingPongFSMs.first!
+    let (PingPongMachine, PingPongFSMs) = make_submachine_PingPong()
     submachines.append(contentsOf: PingPongFSMs)
     // FSM Variables.
     let fsmVars = SimpleVariablesContainer(vars: ControllerVars())
@@ -38,14 +43,12 @@ public func make_Controller() -> [AnyScheduleableFiniteStateMachine] {
         return state.count >= 100
     })
     // Create FSM.
-    let fsm = FSM(
+    return (FSM(
         "Controller",
         initialState: Controller,
         externalVariables: [AnySnapshotController(wbcount)],
         fsmVars: fsmVars,
         suspendState: EmptyMiPalState("_Suspend")
-    )
-    submachines.insert(fsm, at: 0)
-    return submachines
+    ), submachines)
 }
 
