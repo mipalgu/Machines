@@ -338,7 +338,6 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "    var submachines: [AnyScheduleableFiniteStateMachine] = []\n"
             for m in machine.submachines {
                 str += "    let (\(m.name)Machine, \(m.name)FSMs) = make_submachine_\(m.name)()\n"
-                str += "    submachines.append(\(m.name)Machine.asScheduleableFiniteStateMachine)\n"
                 str += "    submachines.append(contentsOf: \(m.name)FSMs)\n"
             }
         }
@@ -420,7 +419,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         str += "    // Create FSM.\n"
         if (false == machine.submachines.isEmpty) {
-            str += "    return (\(fsm), submachines)"
+            str += "    return (\(fsm), submachines)\n"
         } else {
             str += "    return (\(fsm), [])\n"
         }
