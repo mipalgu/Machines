@@ -1,6 +1,11 @@
 import FSM
 
 public func make_PingPong() -> [AnyScheduleableFiniteStateMachine] {
+    let (fsm, submachines) = make_submachine_PingPong()
+    return [fsm.asScheduleableFiniteStateMachine] + submachines
+}
+
+public func make_submachine_PingPong() -> (AnyControllableFiniteStateMachine, [AnyScheduleableFiniteStateMachine]) {
     // FSM Variables.
     let fsmVars = SimpleVariablesContainer(vars: PingPongVars())
     // States.
@@ -17,7 +22,7 @@ public func make_PingPong() -> [AnyScheduleableFiniteStateMachine] {
     Pong.addTransition(Transition(Ping) { _ in true })
     let ringlet = PingPongRinglet()
     // Create FSM.
-    return [MachineFSM(
+    return (MachineFSM(
         "PingPong",
         initialState: Ping,
         externalVariables: [],
@@ -27,6 +32,6 @@ public func make_PingPong() -> [AnyScheduleableFiniteStateMachine] {
         suspendedState: nil,
         suspendState: EmptySleepingState("_Suspend"),
         exitState: EmptySleepingState("_Exit")
-    ).asScheduleableFiniteStateMachine]
+    ), [])
 }
 
