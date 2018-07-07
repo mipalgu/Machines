@@ -11,9 +11,10 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(url: "ssh://git.mipal.net/git/CGUSimpleWhiteboard", .branch("master"))
+        .package(url: "ssh://git.mipal.net/git/CGUSimpleWhiteboard", .branch("swift-4.2")),
+        .package(url: "ssh://git.mipal.net/git/swift_wb", .branch("swift-4.2"))
     ],
     targets: [
-        .target(name: "PingPongMachine", dependencies: [])
+        .target(name: "PingPongMachine", dependencies: ["GUSimpleWhiteboard"])
     ]
 )
