@@ -1,0 +1,5 @@
+module ControllerMachineBridging [system] [swift_infer_import_as_member] {
+    header "Controller-Bridging-Header.h"
+
+    export *
+}
