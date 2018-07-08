@@ -305,15 +305,14 @@ public final class MachineAssembler: Assembler, ErrorContainer {
 
     private func makeFactoryFunction(forMachine machine: Machine) -> String {
         return """
-            public func make_\(machine.name)() -> [AnyScheduleableFiniteStateMachine] {
-                let (fsm, submachines) = make_submachine_\(machine.name)()
-                return [fsm.asScheduleableFiniteStateMachine] + submachines
+            public func make_\(machine.name)() -> AnyScheduleableFiniteStateMachine {
+                return make_submachine_\(machine.name)().asScheduleableFiniteStateMachine
             }
             """
     }
 
     private func makeSubmachineFactoryFunction(forMachine machine: Machine) -> String {
-        var str = "public func make_submachine_\(machine.name)() -> (AnyControllableFiniteStateMachine, [AnyScheduleableFiniteStateMachine]) {\n"
+        var str = "public func make_submachine_\(machine.name)() -> AnyControllableFiniteStateMachine {\n"
         /*for v in machine.externalVariables {
             str += "    let wbds\n"
         }*/
@@ -335,11 +334,10 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         if (false == machine.submachines.isEmpty) {
             str += "    // Submachines.\n"
-            str += "    var submachines: [AnyScheduleableFiniteStateMachine] = []\n"
+            str += "    var submachines: [AnyControllableFiniteStateMachine] = []\n"
             for m in machine.submachines {
-                str += "    let (\(m.name)Machine, \(m.name)FSMs) = make_submachine_\(m.name)()\n"
-                str += "    submachines.append(\(m.name)Machine.asScheduleableFiniteStateMachine)\n"
-                str += "    submachines.append(contentsOf: \(m.name)FSMs)\n"
+                str += "    let \(m.name)Machine = make_submachine_\(m.name)()\n"
+                str += "    submachines.append(\(m.name)Machine)\n"
             }
         }
         str += "    // FSM Variables.\n"
@@ -394,13 +392,20 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         let fsm: String
         if (nil == machine.model) {
             let suspendState = nil == machine.suspendState ? "EmptyMiPalState(\"_Suspend\")" : machine.suspendState!.name
-            var s = "FSM(\n"
+            var s = "MachineFSM(\n"
             s += "        \"\(machine.name)\",\n"
             s += "        initialState: \(machine.initialState.name),\n"
             s += "        externalVariables: \(externalsArray),\n"
             s += "        fsmVars: fsmVars,\n"
-            s += "        suspendState: \(suspendState)\n"
-            s += "    )"
+            s += "        ringlet: MiPalRinglet(),\n"
+            s += "        initialPreviousState: EmptyMiPalState(\"_Previous\"),\n"
+            s += "        suspendedState: nil,\n"
+            s += "        suspendState: \(suspendState),\n"
+            s += "        exitState: EmptyMiPalState(\"_Exit\")"
+            if (false == machine.submachines.isEmpty) {
+                s += ",\n        submachines: submachines"
+            }
+            s += "\n    )"
             fsm = s
         } else {
             str += "    let ringlet = \(machine.name)Ringlet()\n"
@@ -414,16 +419,15 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             s += "        initialPreviousState: Empty\(machine.model!.stateType)(\"_Previous\"),\n"
             s += "        suspendedState: nil,\n"
             s += "        suspendState: \(suspendState),\n"
-            s += "        exitState: Empty\(machine.model!.stateType)(\"_Exit\")\n"
-            s += "    )"
+            s += "        exitState: Empty\(machine.model!.stateType)(\"_Exit\")"
+            if (false == machine.submachines.isEmpty) {
+                s += ",\n        submachines: submachines"
+            }
+            s += "\n    )"
             fsm = s
         }
         str += "    // Create FSM.\n"
-        if (false == machine.submachines.isEmpty) {
-            str += "    return (\(fsm), submachines)\n"
-        } else {
-            str += "    return (\(fsm), [])\n"
-        }
+        str += "    return \(fsm)\n"
         str += "}\n\n"
         return str
     }

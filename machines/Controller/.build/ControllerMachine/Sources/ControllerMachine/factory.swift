@@ -3,12 +3,11 @@ import CGUSimpleWhiteboard
 import GUSimpleWhiteboard
 import PingPongMachine
 
-public func make_Controller() -> [AnyScheduleableFiniteStateMachine] {
-    let (fsm, submachines) = make_submachine_Controller()
-    return [fsm.asScheduleableFiniteStateMachine] + submachines
+public func make_Controller() -> AnyScheduleableFiniteStateMachine {
+    return make_submachine_Controller().asScheduleableFiniteStateMachine
 }
 
-public func make_submachine_Controller() -> (AnyControllableFiniteStateMachine, [AnyScheduleableFiniteStateMachine]) {
+public func make_submachine_Controller() -> AnyControllableFiniteStateMachine {
     // External Variables.
     let wbcount = SnapshotCollectionController<GenericWhiteboard<wb_count>>(
         "privateWhiteboard.kCount_v",
@@ -20,10 +19,9 @@ public func make_submachine_Controller() -> (AnyControllableFiniteStateMachine, 
         )
     )
     // Submachines.
-    var submachines: [AnyScheduleableFiniteStateMachine] = []
-    let (PingPongMachine, PingPongFSMs) = make_submachine_PingPong()
-    submachines.append(PingPongMachine.asScheduleableFiniteStateMachine)
-    submachines.append(contentsOf: PingPongFSMs)
+    var submachines: [AnyControllableFiniteStateMachine] = []
+    let PingPongMachine = make_submachine_PingPong()
+    submachines.append(PingPongMachine)
     // FSM Variables.
     let fsmVars = SimpleVariablesContainer(vars: ControllerVars())
     // States.
@@ -44,12 +42,17 @@ public func make_submachine_Controller() -> (AnyControllableFiniteStateMachine, 
         return state.count >= 100
     })
     // Create FSM.
-    return (FSM(
+    return MachineFSM(
         "Controller",
         initialState: Controller,
         externalVariables: [AnySnapshotController(wbcount)],
         fsmVars: fsmVars,
-        suspendState: EmptyMiPalState("_Suspend")
-    ), submachines)
+        ringlet: MiPalRinglet(),
+        initialPreviousState: EmptyMiPalState("_Previous"),
+        suspendedState: nil,
+        suspendState: EmptyMiPalState("_Suspend"),
+        exitState: EmptyMiPalState("_Exit"),
+        submachines: submachines
+    )
 }
 
