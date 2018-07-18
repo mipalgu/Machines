@@ -59,7 +59,7 @@
 import Machines
 import Foundation
 
-@available(macOS 11, *)
+@available(macOS 10.11, *)
 public class MachineCompiler<A: Assembler> {
 
     private let assembler: A
