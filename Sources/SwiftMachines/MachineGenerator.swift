@@ -145,6 +145,12 @@ public final class MachineGenerator {
             }
             files.append(contentsOf: [ringletImports, ringletVars, ringletExecute, modelFile])
         }
+        if nil != machine.parameters {
+            guard let parametersFile = self.makeParametersFile(forMachine: machine) else {
+                return nil
+            }
+            files.append(parametersFile)
+        }
         return (machineDir, files)
     }
 
@@ -294,6 +300,22 @@ public final class MachineGenerator {
             return nil
         }
         return path
+    }
+
+    func makeParametersFile(forMachine machine: Machine) -> URL? {
+        guard
+            let parameters = machine.parameters,
+            let parametersPath = self.helpers.createFile(
+                machine.name + "_Parameters.swift",
+                inDirectory: machine.filePath,
+                withContents: parameters.reduce("", {
+                    $0 + "\n" + self.varHelpers.makeDeclarationAndAssignment(forVariable: $1)
+                })
+            )
+        else {
+            return nil
+        }
+        return parametersPath
     }
 
     fileprivate func encode(json: [String: Any]) -> Data? {
