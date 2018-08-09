@@ -115,6 +115,7 @@ public class MachinesTestCase: XCTestCase {
                 execute: "// Call onEntry if we have just transitioned into this state.\nif (state != previousState) {\n    state.onEntry()\n}\npreviousState = state\n// Can we transition to another state?\nif let target = checkTransitions(forState: state) {\n    // Yes - Return the next state to execute.\n    return target\n}\nreturn state"
             )
         ),
+        parameters: nil,
         initialState: State(
             name: "Ping",
             imports: "",
@@ -198,6 +199,7 @@ public class MachinesTestCase: XCTestCase {
             includes: "#include <gu_util.h>",
             vars: [],
             model: nil,
+            parameters: nil,
             initialState: State(
                 name: "Controller",
                 imports: "",

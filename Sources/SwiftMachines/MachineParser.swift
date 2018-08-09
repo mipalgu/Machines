@@ -106,6 +106,7 @@ public final class MachineParser: ErrorContainer {
             let libSearchPaths = self.parseLibSearchPathsFromMachine(atPath: machineDir),
             let imports = self.parseMachineImportsFromMachine(atPath: machineDir, withName: name),
             let vars = self.parseMachineVarsFromMachine(atPath: machineDir, withName: name),
+            let parameters = self.parseMachineParametersFromMachine(atPath: machineDir, withName: name),
             let submachines = self.parseSubMachinesFromMachine(atPath: machineDir),
             let states = self.parseStatesFromMachine(atPath: machineDir, withActions: actions, andSubMachines: submachines),
             let initialState = states.first,
@@ -127,6 +128,7 @@ public final class MachineParser: ErrorContainer {
             includes: includes,
             vars: vars,
             model: model,
+            parameters: parameters,
             initialState: initialState,
             suspendState: suspendState,
             states: states,
@@ -245,6 +247,19 @@ public final class MachineParser: ErrorContainer {
             return nil
         }
         return vars 
+    }
+
+
+    private func parseMachineParametersFromMachine(atPath path: URL, withName name: String) -> [Variable]?? {
+        let parametersPath = path.appendingPathComponent("\(name)_Parameters.swift")
+        guard let str = self.read(parametersPath) else {
+            return .some(.none)
+        }
+        guard let vars = self.varParser.parse(fromString: str) else {
+            self.errors.append("Unable to parse \(parametersPath.path)")
+            return .none
+        }
+        return .some(.some(vars))
     }
 
     private func parseModelFromMachine(atPath path: URL) -> Model?? {

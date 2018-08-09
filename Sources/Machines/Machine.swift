@@ -80,6 +80,8 @@ public struct Machine {
 
     public let model: Model?
 
+    public let parameters: [Variable]?
+
     public let initialState: State
 
     public let suspendState: State?
@@ -99,6 +101,7 @@ public struct Machine {
         includes: String?,
         vars: [Variable],
         model: Model?,
+        parameters: [Variable]?,
         initialState: State,
         suspendState: State?,
         states: [State],
@@ -114,6 +117,7 @@ public struct Machine {
         self.includes = includes
         self.vars = vars
         self.model = model
+        self.parameters = parameters
         self.initialState = initialState
         self.suspendState = suspendState
         self.states = states
@@ -142,6 +146,7 @@ public func ==(lhs: Machine, rhs: Machine) -> Bool {
         lhs.imports == rhs.imports &&
         lhs.vars == rhs.vars &&
         lhs.model == rhs.model &&
+        lhs.parameters == rhs.parameters &&
         lhs.initialState == rhs.initialState &&
         lhs.suspendState == rhs.suspendState &&
         lhs.states == rhs.states &&
