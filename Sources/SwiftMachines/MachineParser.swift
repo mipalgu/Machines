@@ -107,6 +107,7 @@ public final class MachineParser: ErrorContainer {
             let imports = self.parseMachineImportsFromMachine(atPath: machineDir, withName: name),
             let vars = self.parseMachineVarsFromMachine(atPath: machineDir, withName: name),
             let parameters = self.parseMachineParametersFromMachine(atPath: machineDir, withName: name),
+            let returnType = self.parseMachineReturnTypeFromMachine(atPath: machineDir, withName: name),
             let submachines = self.parseSubMachinesFromMachine(atPath: machineDir),
             let states = self.parseStatesFromMachine(atPath: machineDir, withActions: actions, andSubMachines: submachines),
             let initialState = states.first,
@@ -129,6 +130,7 @@ public final class MachineParser: ErrorContainer {
             vars: vars,
             model: model,
             parameters: parameters,
+            returnType: returnType,
             initialState: initialState,
             suspendState: suspendState,
             states: states,
@@ -249,7 +251,6 @@ public final class MachineParser: ErrorContainer {
         return vars 
     }
 
-
     private func parseMachineParametersFromMachine(atPath path: URL, withName name: String) -> [Variable]?? {
         let parametersPath = path.appendingPathComponent("\(name)_Parameters.swift")
         guard let str = self.read(parametersPath) else {
@@ -260,6 +261,14 @@ public final class MachineParser: ErrorContainer {
             return .none
         }
         return .some(.some(vars))
+    }
+
+    private func parseMachineReturnTypeFromMachine(atPath path: URL, withName name: String) -> String?? {
+        let returnTypePath = path.appendingPathComponent("\(name)_ReturnType.swift")
+        guard let str = self.read(returnTypePath) else {
+            return .some(.none)
+        }
+        return .some(.some(str))
     }
 
     private func parseModelFromMachine(atPath path: URL) -> Model?? {
