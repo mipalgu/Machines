@@ -59,6 +59,7 @@
 import IO
 import Machines
 import Foundation
+import swift_helpers
 
 public final class MachineAssembler: Assembler, ErrorContainer {
 
@@ -280,6 +281,42 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             return nil
         }
         return file
+    }
+
+    private func makeInvoker(forMachine machine: Machine, inDirectory path: URL) -> URL? {
+        guard let parameters = machine.parameters else {
+            self.errors.append("Cannot create an invoker for a machine which has no parameters")
+            return nil
+        }
+        let invokerPath = path.appendingPathComponent("Invoker.swift", isDirectory: false)
+        let parameterList = parameters.lazy.map {
+            let str =  $0.label + ": " + $0.type
+            guard let initialValue = $0.initialValue else {
+                return str
+            }
+            return str + " = " + initialValue
+        }.combine("") { $0 + ", " + $1 }
+        let invokeList = parameters.lazy.map { $0.label + ": " + $0.label }.combine("") { $0 + ", " + $1 }
+        let str = """
+            import FSM
+            import CGUSimpleWhiteboard
+            import GUSimpleWhiteboard    
+
+            public final class \(machine.name.capitalized)Invoker {
+
+                public func invoke(\(parameterList)) -> Promise<AnyScheduleableFiniteStateMachine> {
+                    let fsm = make_\(machine.name)(\(invokeList))
+                    return schedule(fsm)
+                }
+
+
+            }
+        """
+        guard true == self.helpers.createFile(atPath: invokerPath, withContents: str) else {
+            self.errors.append("Unable to create \(invokerPath.path)")
+            return nil
+        }
+        return invokerPath
     }
 
     private func makeFactory(forMachine machine: Machine, inDirectory path: URL) -> URL? {
