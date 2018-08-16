@@ -297,16 +297,33 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             return str + " = " + initialValue
         }.combine("") { $0 + ", " + $1 }
         let invokeList = parameters.lazy.map { $0.label + ": " + $0.label }.combine("") { $0 + ", " + $1 }
+        let returnType = machine.returnType ?? "Void"
         let str = """
             import FSM
             import CGUSimpleWhiteboard
-            import GUSimpleWhiteboard    
+            import GUSimpleWhiteboard
 
-            public final class \(machine.name.capitalized)Invoker {
+            public final class \(machine.name.capitalized)Invoker: Invoker {
 
-                public func invoke(\(parameterList)) -> Promise<AnyScheduleableFiniteStateMachine> {
-                    let fsm = make_\(machine.name)(\(invokeList))
-                    return schedule(fsm)
+                public typealias ReturnType: \(returnType)
+
+                public weak var delegate: InvokerDelegate?
+
+                fileprivate let fsm: AnyScheduleableFiniteStateMachine
+
+                public init(_ fsm: AnyScheduleableFiniteStateMachine) {
+                    self.fsm = fsm
+                }
+
+                public func invoke(\(parameterList)) -> Promise<\(returnType)> {
+                    guard let delegate = self.delegate else {
+                        fatalError("\(machine.name.capitalized)Invoker delegate not set.")
+                    }
+                    let clone = fsm.clone()
+                    clone.restart()
+                    let parameters = \(machine.name.capitalized)Parameters(\(invokeList))
+                    clone.parameters = parameters
+                    return delegate.invoker(self, invoke: clone)
                 }
 
 
