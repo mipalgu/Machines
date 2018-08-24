@@ -338,7 +338,11 @@ public final class MachineAssembler: Assembler, ErrorContainer {
 
     private func makeFactory(forMachine machine: Machine, inDirectory path: URL) -> URL? {
         let factoryPath = path.appendingPathComponent("factory.swift", isDirectory: false)
-        var str = "import FSM\n"
+        var str = """
+            import FSM
+            import swiftfsm
+            
+            """
         if (false == machine.externalVariables.isEmpty) {
             str += "import CGUSimpleWhiteboard\n"
             str += "import GUSimpleWhiteboard\n"
@@ -359,14 +363,15 @@ public final class MachineAssembler: Assembler, ErrorContainer {
 
     private func makeFactoryFunction(forMachine machine: Machine) -> String {
         return """
-            public func make_\(machine.name)() -> AnyScheduleableFiniteStateMachine {
-                return make_submachine_\(machine.name)().asScheduleableFiniteStateMachine
+            public func make_\(machine.name)() -> (AnyScheduleableFiniteStateMachine, [Dependency]) {
+                let (fsm, dependencies) = make_submachine_\(machine.name)()
+                return (fsm.asScheduleableFiniteStateMachine, dependencies)
             }
             """
     }
 
     private func makeSubmachineFactoryFunction(forMachine machine: Machine) -> String {
-        var str = "public func make_submachine_\(machine.name)() -> AnyControllableFiniteStateMachine {\n"
+        var str = "public func make_submachine_\(machine.name)() -> (AnyControllableFiniteStateMachine, [Dependency]) {\n"
         /*for v in machine.externalVariables {
             str += "    let wbds\n"
         }*/
@@ -388,10 +393,10 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         if (false == machine.submachines.isEmpty) {
             str += "    // Submachines.\n"
-            str += "    var submachines: [AnyControllableFiniteStateMachine] = []\n"
+            str += "    var submachines: [(AnyScheduleableFiniteStateMachine, [Dependency])] = []\n"
             for m in machine.submachines {
-                str += "    let \(m.name)Machine = make_submachine_\(m.name)()\n"
-                str += "    submachines.append(\(m.name)Machine)\n"
+                str += "    let (\(m.name)Machine, \(m.name)MachineDependencies) = make_submachine_\(m.name)()\n"
+                str += "    submachines.append((\(m.name)Machine.asScheduleableFiniteStateMachine, \(m.name)MachineDependencies))\n"
             }
         }
         str += "    // FSM Variables.\n"
@@ -455,11 +460,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             s += "        initialPreviousState: EmptyMiPalState(\"_Previous\"),\n"
             s += "        suspendedState: nil,\n"
             s += "        suspendState: \(suspendState),\n"
-            s += "        exitState: EmptyMiPalState(\"_Exit\")"
-            if (false == machine.submachines.isEmpty) {
-                s += ",\n        submachines: submachines"
-            }
-            s += "\n    )"
+            s += "        exitState: EmptyMiPalState(\"_Exit\")\n"
+            s += "    )"
             fsm = s
         } else {
             str += "    let ringlet = \(machine.name)Ringlet()\n"
@@ -473,15 +475,12 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             s += "        initialPreviousState: Empty\(machine.model!.stateType)(\"_Previous\"),\n"
             s += "        suspendedState: nil,\n"
             s += "        suspendState: \(suspendState),\n"
-            s += "        exitState: Empty\(machine.model!.stateType)(\"_Exit\")"
-            if (false == machine.submachines.isEmpty) {
-                s += ",\n        submachines: submachines"
-            }
-            s += "\n    )"
+            s += "        exitState: Empty\(machine.model!.stateType)(\"_Exit\")\n"
+            s += "    )"
             fsm = s
         }
         str += "    // Create FSM.\n"
-        str += "    return \(fsm)\n"
+        str += "    return (\(fsm), \(machine.submachines.isEmpty ? "[]" : "submachines.map { Dependency.submachine($0, $1) }"))\n"
         str += "}\n\n"
         return str
     }
