@@ -116,6 +116,7 @@ public class MachinesTestCase: XCTestCase {
             )
         ),
         parameters: nil,
+        returnType: nil,
         initialState: State(
             name: "Ping",
             imports: "",
@@ -200,6 +201,7 @@ public class MachinesTestCase: XCTestCase {
             vars: [],
             model: nil,
             parameters: nil,
+            returnType: nil,
             initialState: State(
                 name: "Controller",
                 imports: "",

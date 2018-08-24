@@ -82,6 +82,8 @@ public struct Machine {
 
     public let parameters: [Variable]?
 
+    public let returnType: String?
+
     public let initialState: State
 
     public let suspendState: State?
@@ -102,6 +104,7 @@ public struct Machine {
         vars: [Variable],
         model: Model?,
         parameters: [Variable]?,
+        returnType: String?,
         initialState: State,
         suspendState: State?,
         states: [State],
@@ -118,6 +121,7 @@ public struct Machine {
         self.vars = vars
         self.model = model
         self.parameters = parameters
+        self.returnType = returnType
         self.initialState = initialState
         self.suspendState = suspendState
         self.states = states
@@ -147,6 +151,7 @@ public func ==(lhs: Machine, rhs: Machine) -> Bool {
         lhs.vars == rhs.vars &&
         lhs.model == rhs.model &&
         lhs.parameters == rhs.parameters &&
+        lhs.returnType == rhs.returnType &&
         lhs.initialState == rhs.initialState &&
         lhs.suspendState == rhs.suspendState &&
         lhs.states == rhs.states &&

@@ -59,6 +59,7 @@
 import IO
 import Machines
 import Foundation
+import swift_helpers
 
 public final class MachineAssembler: Assembler, ErrorContainer {
 
@@ -282,9 +283,66 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         return file
     }
 
+    private func makeInvoker(forMachine machine: Machine, inDirectory path: URL) -> URL? {
+        guard let parameters = machine.parameters else {
+            self.errors.append("Cannot create an invoker for a machine which has no parameters")
+            return nil
+        }
+        let invokerPath = path.appendingPathComponent("Invoker.swift", isDirectory: false)
+        let parameterList = parameters.lazy.map {
+            let str =  $0.label + ": " + $0.type
+            guard let initialValue = $0.initialValue else {
+                return str
+            }
+            return str + " = " + initialValue
+        }.combine("") { $0 + ", " + $1 }
+        let invokeList = parameters.lazy.map { $0.label + ": " + $0.label }.combine("") { $0 + ", " + $1 }
+        let returnType = machine.returnType ?? "Void"
+        let str = """
+            import FSM
+            import CGUSimpleWhiteboard
+            import GUSimpleWhiteboard
+
+            public final class \(machine.name.capitalized)Invoker: Invoker {
+
+                public typealias ReturnType: \(returnType)
+
+                public weak var delegate: InvokerDelegate?
+
+                fileprivate let fsm: AnyScheduleableFiniteStateMachine
+
+                public init(_ fsm: AnyScheduleableFiniteStateMachine) {
+                    self.fsm = fsm
+                }
+
+                public func invoke(\(parameterList)) -> Promise<\(returnType)> {
+                    guard let delegate = self.delegate else {
+                        fatalError("\(machine.name.capitalized)Invoker delegate not set.")
+                    }
+                    let clone = fsm.clone()
+                    clone.restart()
+                    let parameters = \(machine.name.capitalized)Parameters(\(invokeList))
+                    clone.parameters = parameters
+                    return delegate.invoker(self, invoke: clone)
+                }
+
+
+            }
+        """
+        guard true == self.helpers.createFile(atPath: invokerPath, withContents: str) else {
+            self.errors.append("Unable to create \(invokerPath.path)")
+            return nil
+        }
+        return invokerPath
+    }
+
     private func makeFactory(forMachine machine: Machine, inDirectory path: URL) -> URL? {
         let factoryPath = path.appendingPathComponent("factory.swift", isDirectory: false)
-        var str = "import FSM\n"
+        var str = """
+            import FSM
+            import swiftfsm
+            
+            """
         if (false == machine.externalVariables.isEmpty) {
             str += "import CGUSimpleWhiteboard\n"
             str += "import GUSimpleWhiteboard\n"
@@ -305,14 +363,15 @@ public final class MachineAssembler: Assembler, ErrorContainer {
 
     private func makeFactoryFunction(forMachine machine: Machine) -> String {
         return """
-            public func make_\(machine.name)() -> AnyScheduleableFiniteStateMachine {
-                return make_submachine_\(machine.name)().asScheduleableFiniteStateMachine
+            public func make_\(machine.name)() -> (AnyScheduleableFiniteStateMachine, [Dependency]) {
+                let (fsm, dependencies) = make_submachine_\(machine.name)()
+                return (fsm.asScheduleableFiniteStateMachine, dependencies)
             }
             """
     }
 
     private func makeSubmachineFactoryFunction(forMachine machine: Machine) -> String {
-        var str = "public func make_submachine_\(machine.name)() -> AnyControllableFiniteStateMachine {\n"
+        var str = "public func make_submachine_\(machine.name)() -> (AnyControllableFiniteStateMachine, [Dependency]) {\n"
         /*for v in machine.externalVariables {
             str += "    let wbds\n"
         }*/
@@ -334,10 +393,10 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         if (false == machine.submachines.isEmpty) {
             str += "    // Submachines.\n"
-            str += "    var submachines: [AnyControllableFiniteStateMachine] = []\n"
+            str += "    var submachines: [(AnyScheduleableFiniteStateMachine, [Dependency])] = []\n"
             for m in machine.submachines {
-                str += "    let \(m.name)Machine = make_submachine_\(m.name)()\n"
-                str += "    submachines.append(\(m.name)Machine)\n"
+                str += "    let (\(m.name)Machine, \(m.name)MachineDependencies) = make_submachine_\(m.name)()\n"
+                str += "    submachines.append((\(m.name)Machine.asScheduleableFiniteStateMachine, \(m.name)MachineDependencies))\n"
             }
         }
         str += "    // FSM Variables.\n"
@@ -389,52 +448,44 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             let first = externals.removeFirst()
             externalsArray = externals.reduce("[AnySnapshotController(\(first.label))") { $0 + ", AnySnapshotController(\($1.label))" } + "]"
         }
-        let fsm: String
+        let suspendState: String
+        let ringlet: String
+        let initialPreviousState: String
+        let exitState: String
         if (nil == machine.model) {
-            let suspendState = nil == machine.suspendState ? "EmptyMiPalState(\"_Suspend\")" : machine.suspendState!.name
-            var s = "MachineFSM(\n"
-            s += "        \"\(machine.name)\",\n"
-            s += "        initialState: \(machine.initialState.name),\n"
-            s += "        externalVariables: \(externalsArray),\n"
-            s += "        fsmVars: fsmVars,\n"
-            s += "        ringlet: MiPalRinglet(),\n"
-            s += "        initialPreviousState: EmptyMiPalState(\"_Previous\"),\n"
-            s += "        suspendedState: nil,\n"
-            s += "        suspendState: \(suspendState),\n"
-            s += "        exitState: EmptyMiPalState(\"_Exit\")"
-            if (false == machine.submachines.isEmpty) {
-                s += ",\n        submachines: submachines"
-            }
-            s += "\n    )"
-            fsm = s
+            suspendState = nil == machine.suspendState ? "EmptyMiPalState(\"_Suspend\")" : machine.suspendState!.name
+            ringlet = "MiPalRinglet()"
+            initialPreviousState = "EmptyMiPalState(\"_Previous\")"
+            exitState = "EmptyMiPalState(\"_Exit\")"
         } else {
             str += "    let ringlet = \(machine.name)Ringlet()\n"
-            let suspendState = nil == machine.suspendState ? "Empty\(machine.model!.stateType)(\"_Suspend\")" : machine.suspendState!.name
-            var s = "MachineFSM(\n"
-            s += "        \"\(machine.name)\",\n"
-            s += "        initialState: \(machine.initialState.name),\n"
-            s += "        externalVariables: \(externalsArray),\n"
-            s += "        fsmVars: fsmVars,\n"
-            s += "        ringlet: ringlet,\n"
-            s += "        initialPreviousState: Empty\(machine.model!.stateType)(\"_Previous\"),\n"
-            s += "        suspendedState: nil,\n"
-            s += "        suspendState: \(suspendState),\n"
-            s += "        exitState: Empty\(machine.model!.stateType)(\"_Exit\")"
-            if (false == machine.submachines.isEmpty) {
-                s += ",\n        submachines: submachines"
-            }
-            s += "\n    )"
-            fsm = s
+            suspendState = nil == machine.suspendState ? "Empty\(machine.model!.stateType)(\"_Suspend\")" : machine.suspendState!.name
+            ringlet = "ringlet"
+            initialPreviousState = "Empty\(machine.model!.stateType)(\"_Previous\")"
+            exitState = "Empty\(machine.model!.stateType)(\"_Exit\")"
         }
+        let fsm = """
+            MachineFSM(
+                    \"\(machine.name)\",
+                    initialState: \(machine.initialState.name),
+                    externalVariables: \(externalsArray),
+                    fsmVars: fsmVars,
+                    ringlet: \(ringlet),
+                    initialPreviousState: \(initialPreviousState),
+                    suspendedState: nil,
+                    suspendState: \(suspendState),
+                    exitState: \(exitState)
+                )
+            """
         str += "    // Create FSM.\n"
-        str += "    return \(fsm)\n"
+        str += "    return (\(fsm), \(machine.submachines.isEmpty ? "[]" : "submachines.map { Dependency.submachine($0, $1) }"))\n"
         str += "}\n\n"
         return str
     }
 
     private func makeMain(forMachine machine: Machine, inDirectory path: URL) -> URL? {
         let mainPath = path.appendingPathComponent("main.swift", isDirectory: false)
-        var str = "import FSM\n\n"
+        var str = "import swiftfsm\n\n"
         str += "addFactory(make_\(machine.name))\n"
         guard true == self.helpers.createFile(atPath: mainPath, withContents: str) else {
             self.errors.append("Unable to create \(mainPath.path)")
@@ -446,6 +497,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
     private func makeFsmVars(forMachine machine: Machine, inDirectory path: URL) -> URL? {
         let machinePath = path.appendingPathComponent("\(machine.name)Vars.swift", isDirectory: false)
         var str = "import FSM\n"
+        str += "import swiftfsm\n"
+        str += "import ModelChecking\n"
         str += "import KripkeStructure\n"
         str += "\(machine.imports)"
         if (false == machine.imports.isEmpty) {
@@ -480,6 +533,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
     private func makeRinglet(forRinglet ringlet: Ringlet, withMachineName machine: String, andStateType stateType: String, inDirectory path: URL) -> URL? {
         let ringletPath = path.appendingPathComponent("\(machine)Ringlet.swift")
         var str = "import FSM\n"
+        str += "import swiftfsm\n"
+        str += "import ModelChecking\n"
         str += "import KripkeStructure\n"
         str += ringlet.imports
         str += "\npublic final class \(machine)Ringlet: Ringlet, Cloneable, Updateable {\n\n"
@@ -532,7 +587,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
 
     private func makeState(_ state: State, forMachine machine: Machine, inDirectory path: URL) -> URL? {
         let statePath = path.appendingPathComponent("\(state.name)State.swift", isDirectory: false)
-        var str = "import FSM\n"
+        var str = "import FSM\nimport swiftfsm\nimport ExternalVariables\n"
         if let _ = machine.includes {
             str += "import \(machine.name)MachineBridging\n"
         }
@@ -648,6 +703,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
     private func makeStateType(fromModel model: Model, inDirectory path: URL) -> URL? {
         let stateTypePath = path.appendingPathComponent("\(model.stateType).swift", isDirectory: false)
         var str = "import FSM\n"
+        str += "import swiftfsm\n"
+        str += "import ModelChecking\n"
         str += "import KripkeStructure\n\n"
         str += "public class \(model.stateType):\n"
         str += "    StateType,\n"
@@ -683,7 +740,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
 
     public func makeEmptyStateType(fromModel model: Model, inDirectory path: URL) -> URL? {
         let emptyStateTypePath = path.appendingPathComponent("Empty\(model.stateType).swift", isDirectory: false)
-        var str = "import FSM\n\n"
+        var str = "import FSM\nimport swiftfsm\n\n"
         str += "public final class Empty\(model.stateType): \(model.stateType) {\n\n"
         for action in model.actions {
             str += "    public override final func \(action)() {}\n\n"
@@ -701,7 +758,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
 
     public func makeCallbackStateType(fromModel model: Model, inDirectory path: URL) -> URL? {
         let callbackStateTypePath = path.appendingPathComponent("Callback\(model.stateType).swift", isDirectory: false)
-        var str = "import FSM\n\n"
+        var str = "import FSM\nimport swiftfsm\n\n"
         str += "public final class Callback\(model.stateType): \(model.stateType) {\n\n"
         for action in model.actions {
             str += "    private let _\(action): () -> Void\n\n"
