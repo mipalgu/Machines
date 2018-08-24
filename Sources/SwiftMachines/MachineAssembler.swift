@@ -485,7 +485,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
 
     private func makeMain(forMachine machine: Machine, inDirectory path: URL) -> URL? {
         let mainPath = path.appendingPathComponent("main.swift", isDirectory: false)
-        var str = "import FSM\n\n"
+        var str = "import swiftfsm\n\n"
         str += "addFactory(make_\(machine.name))\n"
         guard true == self.helpers.createFile(atPath: mainPath, withContents: str) else {
             self.errors.append("Unable to create \(mainPath.path)")
@@ -497,6 +497,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
     private func makeFsmVars(forMachine machine: Machine, inDirectory path: URL) -> URL? {
         let machinePath = path.appendingPathComponent("\(machine.name)Vars.swift", isDirectory: false)
         var str = "import FSM\n"
+        str += "import swiftfsm\n"
+        str += "import ModelChecking\n"
         str += "import KripkeStructure\n"
         str += "\(machine.imports)"
         if (false == machine.imports.isEmpty) {
@@ -531,6 +533,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
     private func makeRinglet(forRinglet ringlet: Ringlet, withMachineName machine: String, andStateType stateType: String, inDirectory path: URL) -> URL? {
         let ringletPath = path.appendingPathComponent("\(machine)Ringlet.swift")
         var str = "import FSM\n"
+        str += "import swiftfsm\n"
+        str += "import ModelChecking\n"
         str += "import KripkeStructure\n"
         str += ringlet.imports
         str += "\npublic final class \(machine)Ringlet: Ringlet, Cloneable, Updateable {\n\n"
@@ -583,7 +587,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
 
     private func makeState(_ state: State, forMachine machine: Machine, inDirectory path: URL) -> URL? {
         let statePath = path.appendingPathComponent("\(state.name)State.swift", isDirectory: false)
-        var str = "import FSM\n"
+        var str = "import FSM\nimport swiftfsm\nimport ExternalVariables\n"
         if let _ = machine.includes {
             str += "import \(machine.name)MachineBridging\n"
         }
@@ -699,6 +703,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
     private func makeStateType(fromModel model: Model, inDirectory path: URL) -> URL? {
         let stateTypePath = path.appendingPathComponent("\(model.stateType).swift", isDirectory: false)
         var str = "import FSM\n"
+        str += "import swiftfsm\n"
+        str += "import ModelChecking\n"
         str += "import KripkeStructure\n\n"
         str += "public class \(model.stateType):\n"
         str += "    StateType,\n"
@@ -734,7 +740,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
 
     public func makeEmptyStateType(fromModel model: Model, inDirectory path: URL) -> URL? {
         let emptyStateTypePath = path.appendingPathComponent("Empty\(model.stateType).swift", isDirectory: false)
-        var str = "import FSM\n\n"
+        var str = "import FSM\nimport swiftfsm\n\n"
         str += "public final class Empty\(model.stateType): \(model.stateType) {\n\n"
         for action in model.actions {
             str += "    public override final func \(action)() {}\n\n"
@@ -752,7 +758,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
 
     public func makeCallbackStateType(fromModel model: Model, inDirectory path: URL) -> URL? {
         let callbackStateTypePath = path.appendingPathComponent("Callback\(model.stateType).swift", isDirectory: false)
-        var str = "import FSM\n\n"
+        var str = "import FSM\nimport swiftfsm\n\n"
         str += "public final class Callback\(model.stateType): \(model.stateType) {\n\n"
         for action in model.actions {
             str += "    private let _\(action): () -> Void\n\n"
