@@ -448,37 +448,35 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             let first = externals.removeFirst()
             externalsArray = externals.reduce("[AnySnapshotController(\(first.label))") { $0 + ", AnySnapshotController(\($1.label))" } + "]"
         }
-        let fsm: String
+        let suspendState: String
+        let ringlet: String
+        let initialPreviousState: String
+        let exitState: String
         if (nil == machine.model) {
-            let suspendState = nil == machine.suspendState ? "EmptyMiPalState(\"_Suspend\")" : machine.suspendState!.name
-            var s = "MachineFSM(\n"
-            s += "        \"\(machine.name)\",\n"
-            s += "        initialState: \(machine.initialState.name),\n"
-            s += "        externalVariables: \(externalsArray),\n"
-            s += "        fsmVars: fsmVars,\n"
-            s += "        ringlet: MiPalRinglet(),\n"
-            s += "        initialPreviousState: EmptyMiPalState(\"_Previous\"),\n"
-            s += "        suspendedState: nil,\n"
-            s += "        suspendState: \(suspendState),\n"
-            s += "        exitState: EmptyMiPalState(\"_Exit\")\n"
-            s += "    )"
-            fsm = s
+            suspendState = nil == machine.suspendState ? "EmptyMiPalState(\"_Suspend\")" : machine.suspendState!.name
+            ringlet = "MiPalRinglet()"
+            initialPreviousState = "EmptyMiPalState(\"_Previous\")"
+            exitState = "EmptyMiPalState(\"_Exit\")"
         } else {
             str += "    let ringlet = \(machine.name)Ringlet()\n"
-            let suspendState = nil == machine.suspendState ? "Empty\(machine.model!.stateType)(\"_Suspend\")" : machine.suspendState!.name
-            var s = "MachineFSM(\n"
-            s += "        \"\(machine.name)\",\n"
-            s += "        initialState: \(machine.initialState.name),\n"
-            s += "        externalVariables: \(externalsArray),\n"
-            s += "        fsmVars: fsmVars,\n"
-            s += "        ringlet: ringlet,\n"
-            s += "        initialPreviousState: Empty\(machine.model!.stateType)(\"_Previous\"),\n"
-            s += "        suspendedState: nil,\n"
-            s += "        suspendState: \(suspendState),\n"
-            s += "        exitState: Empty\(machine.model!.stateType)(\"_Exit\")\n"
-            s += "    )"
-            fsm = s
+            suspendState = nil == machine.suspendState ? "Empty\(machine.model!.stateType)(\"_Suspend\")" : machine.suspendState!.name
+            ringlet = "ringlet"
+            initialPreviousState = "Empty\(machine.model!.stateType)(\"_Previous\")"
+            exitState = "Empty\(machine.model!.stateType)(\"_Exit\")"
         }
+        let fsm = """
+            MachineFSM(
+                    \"\(machine.name)\",
+                    initialState: \(machine.initialState.name),
+                    externalVariables: \(externalsArray),
+                    fsmVars: fsmVars,
+                    ringlet: \(ringlet),
+                    initialPreviousState: \(initialPreviousState),
+                    suspendedState: nil,
+                    suspendState: \(suspendState),
+                    exitState: \(exitState)
+                )
+            """
         str += "    // Create FSM.\n"
         str += "    return (\(fsm), \(machine.submachines.isEmpty ? "[]" : "submachines.map { Dependency.submachine($0, $1) }"))\n"
         str += "}\n\n"
