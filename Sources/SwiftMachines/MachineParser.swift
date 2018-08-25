@@ -108,8 +108,8 @@ public final class MachineParser: ErrorContainer {
             let vars = self.parseMachineVarsFromMachine(atPath: machineDir, withName: name),
             let parameters = self.parseMachineParametersFromMachine(atPath: machineDir, withName: name),
             let returnType = self.parseMachineReturnTypeFromMachine(atPath: machineDir, withName: name),
-            let submachines = self.parseSubMachinesFromMachine(atPath: machineDir),
-            let states = self.parseStatesFromMachine(atPath: machineDir, withActions: actions, andSubMachines: submachines),
+            let (parameterisedMachines, submachines) = self.parseDependencies(atPath: machineDir),
+            let states = self.parseStatesFromMachine(atPath: machineDir, withActions: actions),
             let initialState = states.first,
             let includes = self.parseMachineBridgingHeaderFromMachine(atPath: machineDir, withName: name)
         else {
@@ -117,7 +117,6 @@ public final class MachineParser: ErrorContainer {
             return nil
         }
         let suspendState = states.lazy.filter { "Suspend" == $0.name }.first
-        let allSubmachines: [Machine] = submachines.flatMap { $0.1 }
         let machine = Machine(
             name: name,
             filePath: machineDir,
@@ -134,7 +133,7 @@ public final class MachineParser: ErrorContainer {
             initialState: initialState,
             suspendState: suspendState,
             states: states,
-            submachines: Array<Machine>(Set<Machine>(allSubmachines))
+            submachines: submachines
         )
         self.cache[machineDir] = machine
         self.processing.remove(machineDir)
@@ -317,53 +316,41 @@ public final class MachineParser: ErrorContainer {
         ))
     }
 
-    private func parseSubMachinesFromMachine(atPath path: URL) -> [String: [Machine]]? {
-        let submachinesPath = path.appendingPathComponent("submachines.json", isDirectory: false)
+    private func parseDependencies(atPath path: URL) -> ([Machine], [Machine])? {
+        let dependenciesPath = path.appendingPathComponent("dependencies.json", isDirectory: false)
         guard
-            let data = try? Data(contentsOf: submachinesPath)
+            let data = try? Data(contentsOf: dependenciesPath)
         else {
-            return [:]
+            return ([], [])
         }
         guard
             let temp = try? JSONSerialization.jsonObject(with: data),
             let json = temp as? [String: Any],
-            let arr: [[String: Any]] = json["controllers"] as? [[String: Any]]
+            let parameterised = json["parameterised"] as? [String],
+            let submachines = json["submachines"] as? [String]
         else {
-            self.errors.append("Unable to read \(submachinesPath.path)")
-            return nil
-        } 
-        let submachinesDir = path.appendingPathComponent("submachines/", isDirectory: true)
-        var controllers: [String: [Machine]] = [:]
-        for obj in arr {
-            guard
-                let state = obj["state"] as? String,
-                let machineNames = obj["machines"] as? [String]
-            else {
-                self.errors.append("Unable to fetch controllers")
-                return nil
-            }
-            let machines: [Machine] = machineNames.flatMap {
-                let machinePath = submachinesDir.appendingPathComponent("\($0).machine", isDirectory: true)
-                guard
-                    let machine = self.parseMachine(atPath: machinePath.path)
-                else {
-                    self.errors.append("Unable to load submachine at: \(machinePath.path)")
-                    return nil
-                }
-                return machine
-            }
-            if (machines.count != machineNames.count) {
-                return nil
-            }
-            controllers[state] = machines
-        }
-        if (controllers.count != arr.count) {
+            self.errors.append("Unable to read \(dependenciesPath.path)")
             return nil
         }
-        return controllers
+        let dependenciesDir = path.appendingPathComponent("dependencies/", isDirectory: true)
+        func loadDependency(machineName: String) -> Machine? {
+            let machinePath = dependenciesDir.appendingPathComponent("\(machineName).machine", isDirectory: true)
+            guard let machine = self.parseMachine(atPath: machinePath.path) else {
+                self.errors.append("Unable to load machine at: \(machinePath.path)")
+                return nil
+            }
+            return machine
+        }
+        guard
+            let parameterisedMachines = parameterised.failMap(loadDependency),
+            let submachinesMachines = submachines.failMap(loadDependency)
+        else {
+            return nil
+        }
+        return (parameterisedMachines, submachinesMachines)
     }
 
-    private func parseStatesFromMachine(atPath path: URL, withActions actions: [String], andSubMachines submachines: [String: [Machine]]) -> [State]? {
+    private func parseStatesFromMachine(atPath path: URL, withActions actions: [String]) -> [State]? {
         let statesPath = path.appendingPathComponent("States", isDirectory: false)
         guard
             let statesContents = self.read(statesPath)
@@ -381,7 +368,7 @@ public final class MachineParser: ErrorContainer {
             return nil
         }
         let states = statesLines.flatMap {
-            self.parseStateFromMachine(atPath: path, withName: $0, andActions: actions, andSubMachines: submachines[$0] ?? [])
+            self.parseStateFromMachine(atPath: path, withName: $0, andActions: actions)
         }
         if (states.count != statesLines.count) {
             return nil
@@ -389,7 +376,7 @@ public final class MachineParser: ErrorContainer {
         return Array(states)
     }
 
-    private func parseStateFromMachine(atPath path: URL, withName name: String, andActions actionNames: [String], andSubMachines submachines: [Machine]) -> State? {
+    private func parseStateFromMachine(atPath path: URL, withName name: String, andActions actionNames: [String]) -> State? {
         let base = "State_\(name)"
         let importsPath = path.appendingPathComponent("\(base)_Imports.swift", isDirectory: false)
         let varsPath = path.appendingPathComponent("\(base)_Vars.swift", isDirectory: false)
@@ -417,7 +404,7 @@ public final class MachineParser: ErrorContainer {
             vars: vars,
             actions: actions,
             transitions: transitions,
-            submachines: submachines
+            submachines: []
         )
     }
 
