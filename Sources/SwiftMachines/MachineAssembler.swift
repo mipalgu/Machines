@@ -641,7 +641,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         for m in machine.parameterisedMachines {
             let parameterList = m.parameters?.lazy.map { $0.type }.combine("") { $0 + ", " + $1 }
-            str += "    public private(set) var \(m.name)Machine: (\(parameterList)) -> Promise<\(m.returnType ?? "Void")>\n"
+            str += "    fileprivate var _\(m.name)Machine: (\(parameterList)) -> Promise<\(m.returnType ?? "Void")>\n"
         }
         if (false == machine.parameterisedMachines.isEmpty) {
             str += "\n"
@@ -702,10 +702,22 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "        self.\(submachine.name)Machine = \(submachine.name)Machine\n"
         }
         for m in machine.parameterisedMachines {
-            str += "        self.\(m.name)Machine = \(m.name)Machine\n"
+            str += "        self._\(m.name)Machine = \(m.name)Machine\n"
         }
         str += "        super.init(name, transitions: cast(transitions: transitions))\n"
         str += "    }\n\n"
+        // Parameterised Machine Functions
+        for m in machine.parameterisedMachines {
+            let parameterList = m.parameters?.lazy.map {
+                let start = $0.label + ": " + $0.type
+                guard let initialValue = $0.initialValue else {
+                    return start
+                }
+                return start + " = " + initialValue
+            }.combine("") { $0 + ", " + $1 }
+            let callList = m.parameters?.lazy.map { $0.label + ": " + $0.label }.combine("") { $0 + ", " + $1 }
+            str += "    public func \(m.name)Machine(\(parameterList ?? "") -> \(m.returnType ?? "Void") { return self._\(m.name)Machine(\(callList ?? "") }"
+        }
         // Actions.
         for action in state.actions {
             str += "    public override func \(action.name)() {\n"
