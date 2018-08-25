@@ -147,7 +147,8 @@ public class MachinesTestCase: XCTestCase {
                 transitions: [Transition(target: "Ping", condition: nil)]
             )
         ],
-        submachines: []
+        submachines: [],
+        parameterisedMachines: []
     )
 
     public var controllerBuildDir: URL {
@@ -249,7 +250,8 @@ public class MachinesTestCase: XCTestCase {
                     transitions: []
                 )
             ],
-            submachines: [self.pingPongMachine]
+            submachines: [self.pingPongMachine],
+            parameterisedMachines: []
         )
     }
 

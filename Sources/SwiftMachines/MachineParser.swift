@@ -133,7 +133,8 @@ public final class MachineParser: ErrorContainer {
             initialState: initialState,
             suspendState: suspendState,
             states: states,
-            submachines: submachines
+            submachines: submachines,
+            parameterisedMachines: parameterisedMachines
         )
         self.cache[machineDir] = machine
         self.processing.remove(machineDir)

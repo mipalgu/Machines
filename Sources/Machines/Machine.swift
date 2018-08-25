@@ -79,7 +79,7 @@ public struct Machine {
     public let vars: [Variable]
 
     public let model: Model?
-
+    
     public let parameters: [Variable]?
 
     public let returnType: String?
@@ -91,6 +91,8 @@ public struct Machine {
     public let states: [State]
 
     public let submachines: [Machine]
+    
+    public let parameterisedMachines: [Machine]
 
     public init(
         name: String,
@@ -108,7 +110,8 @@ public struct Machine {
         initialState: State,
         suspendState: State?,
         states: [State],
-        submachines: [Machine]
+        submachines: [Machine],
+        parameterisedMachines: [Machine]
     ) {
         self.name = name
         self.filePath = filePath
@@ -126,6 +129,7 @@ public struct Machine {
         self.suspendState = suspendState
         self.states = states
         self.submachines = submachines
+        self.parameterisedMachines = parameterisedMachines
     }
 
 }
@@ -155,5 +159,6 @@ public func ==(lhs: Machine, rhs: Machine) -> Bool {
         lhs.initialState == rhs.initialState &&
         lhs.suspendState == rhs.suspendState &&
         lhs.states == rhs.states &&
-        lhs.submachines == rhs.submachines
+        lhs.submachines == rhs.submachines &&
+        lhs.parameterisedMachines == rhs.parameterisedMachines
 }
