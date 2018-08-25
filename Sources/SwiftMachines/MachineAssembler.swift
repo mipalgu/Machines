@@ -109,9 +109,9 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         self.takenVars = Set(machine.externalVariables.map { $0.label }) 
         self.takenVars.insert("fsmVars")
         let errorMsg = "Unable to assemble \(machine.filePath.path)"
-        var dependencies = machine.submachines.flatMap { self.assemble($0, isSubMachine: true)?.0 }
-        if dependencies.count != machine.submachines.count {
-            self.errors.append("Unable to assemble submachines.")
+        var dependencies = (machine.submachines + machine.parameterisedMachines).flatMap { self.assemble($0, isSubMachine: true)?.0 }
+        if dependencies.count != (machine.submachines.count + machine.parameterisedMachines.count) {
+            self.errors.append("Unable to assemble dependencies.")
             return nil
         }
         guard
@@ -215,8 +215,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }.reduce(".package(url: \"ssh://git.mipal.net/git/CGUSimpleWhiteboard\", .branch(\"swift-4.2\")),\n        .package(url: \"ssh://git.mipal.net/git/swift_wb\", .branch(\"swift-4.2\"))") { $0 + ",\n        " + $1 }
         let dependencyList: String
         let defaults = "\"GUSimpleWhiteboard\""
-        if let first = machine.submachines.first {
-            let list = machine.submachines.dropFirst().reduce("\"" + first.name + "Machine\"") {
+        if let first = (machine.submachines + machine.parameterisedMachines).first {
+            let list = (machine.submachines + machine.parameterisedMachines).dropFirst().reduce("\"" + first.name + "Machine\"") {
                 $0 + ", \"" + $1.name + "Machine\""
             }
             dependencyList = "[" + defaults + ", " + list + "]"
@@ -623,7 +623,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         if (false == state.imports.isEmpty) {
             str += "\(state.imports)\n"
         }
-        for m in machine.submachines {
+        for m in machine.submachines + machine.parameterisedMachines {
             str += "import \(m.name)Machine\n"
         }
         str += "\n"
@@ -637,6 +637,13 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "    public private(set) var \(submachine.name)Machine: AnyControllableFiniteStateMachine\n"
         }
         if (false == machine.submachines.isEmpty) {
+            str += "\n"
+        }
+        for m in machine.parameterisedMachines {
+            let parameterList = m.parameters?.lazy.map { $0.type }.combine("") { $0 + ", " + $1 }
+            str += "    public private(set) var \(m.name)Machine: (\(parameterList)) -> Promise<\(m.returnType ?? "Void")>\n"
+        }
+        if (false == machine.parameterisedMachines.isEmpty) {
             str += "\n"
         }
         // State variables.
@@ -681,6 +688,10 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         for submachine in machine.submachines {
             str += "        \(submachine.name)Machine: AnyControllableFiniteStateMachine,\n"
         }
+        for m in machine.parameterisedMachines {
+            let parameterList = m.parameters?.lazy.map { $0.type }.combine("") { $0 + ", " + $1 }
+            str += "    \(m.name)Machine: (\(parameterList)) -> Promise<\(m.returnType ?? "Void")>,\n"
+        }
         str = str.trimmingCharacters(in: CharacterSet(charactersIn: ",\n"))
         str += "\n    ) {\n"
         for external in machine.externalVariables {
@@ -689,6 +700,9 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "        self._fsmVars = fsmVars\n"
         for submachine in machine.submachines {
             str += "        self.\(submachine.name)Machine = \(submachine.name)Machine\n"
+        }
+        for m in machine.parameterisedMachines {
+            str += "        self.\(m.name)Machine = \(m.name)Machine\n"
         }
         str += "        super.init(name, transitions: cast(transitions: transitions))\n"
         str += "    }\n\n"
@@ -709,6 +723,9 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "            fsmVars: self._fsmVars,\n"
         for submachine in machine.submachines {
             str += "            \(submachine.name)Machine: self.\(submachine.name)Machine,\n"
+        }
+        for m in machine.parameterisedMachines {
+            str += "            \(m.name)Machine: self.\(m.name)Machine,\n"
         }
         str = str.trimmingCharacters(in: CharacterSet(charactersIn: ",\n"))
         str += "\n        )\n"
