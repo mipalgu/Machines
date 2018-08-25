@@ -73,7 +73,7 @@ public final class MachineGenerator {
 
     public func generate(_ machine: Machine) -> (URL, [URL])? {
         guard
-            let machineDir = self.helpers.overwriteDirectory(machine.filePath, ignoringSubFiles: [machine.filePath.appendingPathComponent("submachines", isDirectory: true)]),
+            let machineDir = self.helpers.overwriteDirectory(machine.filePath, ignoringSubFiles: [machine.filePath.appendingPathComponent("dependencies", isDirectory: true)]),
             let swiftIncludePath = self.helpers.createFile(
                 "SwiftIncludePath",
                 inDirectory: machine.filePath,
