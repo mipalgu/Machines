@@ -411,7 +411,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                 str += "        \(external.label): \(external.label),\n"
             }
             str += "        fsmVars: fsmVars,"
-            for m in state.submachines {
+            for m in machine.submachines {
                 str += "\n        \(m.name)Machine: \(m.name)Machine,"
             }
             str = str.trimmingCharacters(in: CharacterSet(charactersIn: ","))
@@ -599,7 +599,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         if (false == state.imports.isEmpty) {
             str += "\(state.imports)\n"
         }
-        for m in state.submachines {
+        for m in machine.submachines {
             str += "import \(m.name)Machine\n"
         }
         str += "\n"
@@ -609,10 +609,10 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "    public let _\(external.label): SnapshotCollectionController<GenericWhiteboard<\(external.messageClass)>>\n"
         }
         str += "    private let _fsmVars: SimpleVariablesContainer<\(machine.name)Vars>\n\n"
-        for submachine in state.submachines {
+        for submachine in machine.submachines {
             str += "    public private(set) var \(submachine.name)Machine: AnyControllableFiniteStateMachine\n"
         }
-        if (false == state.submachines.isEmpty) {
+        if (false == machine.submachines.isEmpty) {
             str += "\n"
         }
         // State variables.
@@ -654,7 +654,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "        \(external.label): SnapshotCollectionController<GenericWhiteboard<\(external.messageClass)>>,\n"
         }
         str += "        fsmVars: SimpleVariablesContainer<\(machine.name)Vars>,\n"
-        for submachine in state.submachines {
+        for submachine in machine.submachines {
             str += "        \(submachine.name)Machine: AnyControllableFiniteStateMachine,\n"
         }
         str = str.trimmingCharacters(in: CharacterSet(charactersIn: ",\n"))
@@ -663,7 +663,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "        self._\(external.label) = \(external.label)\n"
         }
         str += "        self._fsmVars = fsmVars\n"
-        for submachine in state.submachines {
+        for submachine in machine.submachines {
             str += "        self.\(submachine.name)Machine = \(submachine.name)Machine\n"
         }
         str += "        super.init(name, transitions: cast(transitions: transitions))\n"
@@ -683,7 +683,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "            \(external.label): self._\(external.label),\n"
         }
         str += "            fsmVars: self._fsmVars,\n"
-        for submachine in state.submachines {
+        for submachine in machine.submachines {
             str += "            \(submachine.name)Machine: self.\(submachine.name)Machine,\n"
         }
         str = str.trimmingCharacters(in: CharacterSet(charactersIn: ",\n"))

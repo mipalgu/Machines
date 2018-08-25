@@ -104,11 +104,11 @@ public final class MachineGenerator {
             let stateFiles = self.makeStates(forMachine: machine),
             let stateList = self.makeStateList(forMachine: machine),
             let externalVariables = self.makeExternalVariables(forMachine: machine),
-            let submachines = self.makeSubmachinesFile(forMachine: machine)
+            let dependencies = self.makeDependenciesFile(forMachine: machine)
         else {
             return nil
         }
-        var files = [swiftIncludePath, includePath, libPath, imports, vars, stateList, externalVariables, submachines]
+        var files = [swiftIncludePath, includePath, libPath, imports, vars, stateList, externalVariables, dependencies]
         files.append(contentsOf: stateFiles)
         if let includes = machine.includes {
             guard let bridgingHeader = self.helpers.createFile(
@@ -281,16 +281,13 @@ public final class MachineGenerator {
         return path
     }
 
-    func makeSubmachinesFile(forMachine machine: Machine) -> URL? {
-        let path = machine.filePath.appendingPathComponent("submachines.json", isDirectory: false)
-        let submachinesJson: [[String: Any]] = Array(machine.states.lazy.filter { false == $0.submachines.isEmpty }.map {
-            [
-                "state": $0.name,
-                "machines": $0.submachines.map { $0.name }
-            ]
-        })
+    func makeDependenciesFile(forMachine machine: Machine) -> URL? {
+        let path = machine.filePath.appendingPathComponent("dependencies.json", isDirectory: false)
+        let submachines: String = machine.submachines.lazy.map { $0.name }.combine("") { $0 + "," + $1 }
+        let parameterisedMachines = ""
         let dict: [String: Any] = [
-            "controllers": submachinesJson
+            "submachines": "[" + submachines  + "]",
+            "parameterisedMachines": "[" + parameterisedMachines + "]"
         ]
         guard
             let json = self.encode(json: dict),

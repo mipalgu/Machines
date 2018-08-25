@@ -403,8 +403,7 @@ public final class MachineParser: ErrorContainer {
             imports: imports,
             vars: vars,
             actions: actions,
-            transitions: transitions,
-            submachines: []
+            transitions: transitions
         )
     }
 

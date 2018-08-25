@@ -124,8 +124,7 @@ public class MachinesTestCase: XCTestCase {
             actions: [
                 Action(name: "onEntry", implementation: "print(\"Ping\")")
             ],
-            transitions: [Transition(target: "Pong", condition: nil)],
-            submachines: []
+            transitions: [Transition(target: "Pong", condition: nil)]
         ),
         suspendState: nil,
         states: [
@@ -136,8 +135,7 @@ public class MachinesTestCase: XCTestCase {
                 actions: [
                     Action(name: "onEntry", implementation: "print(\"Ping\")")
                 ],
-                transitions: [Transition(target: "Pong", condition: nil)],
-                submachines: []
+                transitions: [Transition(target: "Pong", condition: nil)]
             ),
             State(
                 name: "Pong",
@@ -146,8 +144,7 @@ public class MachinesTestCase: XCTestCase {
                 actions: [
                     Action(name: "onEntry", implementation: "print(\"Pong\")")
                 ],
-                transitions: [Transition(target: "Ping", condition: nil)],
-                submachines: []
+                transitions: [Transition(target: "Ping", condition: nil)]
             )
         ],
         submachines: []
@@ -218,8 +215,7 @@ public class MachinesTestCase: XCTestCase {
                     Action(name: "main", implementation: "count += 1"),
                     Action(name: "onExit", implementation: "PingPongMachine.exit()")
                 ],
-                transitions: [Transition(target: "Exit", condition: "state.count >= 100")],
-                submachines: [self.pingPongMachine]
+                transitions: [Transition(target: "Exit", condition: "state.count >= 100")]
             ),
             suspendState: nil,
             states: [
@@ -239,8 +235,7 @@ public class MachinesTestCase: XCTestCase {
                         Action(name: "main", implementation: "count += 1"),
                         Action(name: "onExit", implementation: "PingPongMachine.exit()")
                     ],
-                    transitions: [Transition(target: "Exit", condition: "state.count >= 100")],
-                    submachines: [self.pingPongMachine]
+                    transitions: [Transition(target: "Exit", condition: "state.count >= 100")]
                 ),
                 State(
                     name: "Exit",
@@ -251,8 +246,7 @@ public class MachinesTestCase: XCTestCase {
                         Action(name: "main", implementation: ""),
                         Action(name: "onExit", implementation: "")
                     ],
-                    transitions: [],
-                    submachines: []
+                    transitions: []
                 )
             ],
             submachines: [self.pingPongMachine]

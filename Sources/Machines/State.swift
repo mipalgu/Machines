@@ -68,22 +68,18 @@ public struct State {
 
     public let transitions: [Transition]
 
-    public let submachines: [Machine]
-
     public init(
         name: String,
         imports: String,
         vars: [Variable],
         actions: [Action],
-        transitions: [Transition],
-        submachines: [Machine]
+        transitions: [Transition]
     ) {
         self.name = name
         self.imports = imports
         self.vars = vars
         self.actions = actions
         self.transitions = transitions
-        self.submachines = submachines
     }
 
 }
@@ -96,6 +92,5 @@ public func == (lhs: State, rhs: State) -> Bool {
         lhs.imports == rhs.imports &&
         lhs.vars == rhs.vars &&
         lhs.actions == rhs.actions &&
-        lhs.transitions == rhs.transitions &&
-        lhs.submachines == rhs.submachines
+        lhs.transitions == rhs.transitions
 }
