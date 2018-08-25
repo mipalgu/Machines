@@ -363,8 +363,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
 
     private func makeFactoryFunction(forMachine machine: Machine) -> String {
         return """
-            public func make_\(machine.name)(name: String) -> (AnyScheduleableFiniteStateMachine, [Dependency]) {
-                let (fsm, dependencies) = make_submachine_\(machine.name)(name: name)
+            public func make_\(machine.name)(name: String, invoker: Invoker) -> (AnyScheduleableFiniteStateMachine, [Dependency]) {
+                let (fsm, dependencies) = make_submachine_\(machine.name)(name: name, invoker: invoker)
                 return (fsm.asScheduleableFiniteStateMachine, dependencies)
             }
             """
@@ -372,7 +372,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
 
     private func makeSubmachineFactoryFunction(forMachine machine: Machine) -> String {
         let nameParam = "name" + (machine.submachines.isEmpty ? " _" : "")
-        var str = "public func make_submachine_\(machine.name)(\(nameParam): String) -> (AnyControllableFiniteStateMachine, [Dependency]) {\n"
+        var str = "public func make_submachine_\(machine.name)(\(nameParam): String, invoker: Invoker) -> (AnyControllableFiniteStateMachine, [Dependency]) {\n"
         /*for v in machine.externalVariables {
             str += "    let wbds\n"
         }*/
@@ -396,7 +396,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "    // Submachines.\n"
             str += "    var submachines: [(AnyScheduleableFiniteStateMachine, [Dependency])] = []\n"
             for m in machine.submachines {
-                str += "    let (\(m.name)Machine, \(m.name)MachineDependencies) = make_submachine_\(m.name)(name: name + \".\(m.name)\")\n"
+                str += "    let (\(m.name)Machine, \(m.name)MachineDependencies) = make_submachine_\(m.name)(name: name + \".\(m.name)\", invoker: invoker)\n"
                 str += "    submachines.append((\(m.name)Machine.asScheduleableFiniteStateMachine, \(m.name)MachineDependencies))\n"
             }
         }
