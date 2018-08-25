@@ -1,4 +1,4 @@
 {
-    "parameterised": [],
+    "parameterised": ["Sum"],
     "submachines": ["PingPong"]
 }

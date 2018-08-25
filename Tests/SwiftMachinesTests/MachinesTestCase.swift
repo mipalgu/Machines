@@ -251,8 +251,58 @@ public class MachinesTestCase: XCTestCase {
                 )
             ],
             submachines: [self.pingPongMachine],
-            parameterisedMachines: []
+            parameterisedMachines: [self.sumMachine]
         )
     }
+    
+    public let sumMachine = Machine(
+        name: "Sum",
+        filePath: URL(fileURLWithPath: NSString(string: "machines/Sum.machine").standardizingPath, isDirectory: true).resolvingSymlinksInPath(),
+        externalVariables: [],
+        swiftIncludeSearchPaths: [
+            "/usr/local/include/swiftfsm"
+        ],
+        includeSearchPaths: [
+            "/usr/local/include",
+            "../../../../..",
+            "../../../../../../Common"
+        ],
+        libSearchPaths: [
+            "/usr/local/lib",
+            "/usr/local/lib/swiftfsm"
+        ],
+        imports: "",
+        includes: nil,
+        vars: [],
+        model: nil,
+        parameters: [
+            Variable(constant: true, label: "a", type: "Int", initialValue: nil),
+            Variable(constant: true, label: "b", type: "Int", initialValue: nil)
+        ],
+        returnType: nil,
+        initialState: State(
+            name: "Initial",
+            imports: "",
+            vars: [],
+            actions: [
+                Action(name: "onEntry", implementation: "result = a + b")
+            ],
+            transitions: []
+        ),
+        suspendState: nil,
+        states: [
+            State(
+                name: "Initial",
+                imports: "",
+                vars: [],
+                actions: [
+                    Action(name: "onEntry", implementation: "result = a + b")
+                ],
+                transitions: []
+            )
+        ],
+        submachines: [],
+        parameterisedMachines: []
+    )
 
 }
