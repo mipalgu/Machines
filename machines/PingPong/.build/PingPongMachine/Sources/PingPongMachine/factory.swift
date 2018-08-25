@@ -1,12 +1,12 @@
 import FSM
 import swiftfsm
 
-public func make_PingPong() -> (AnyScheduleableFiniteStateMachine, [Dependency]) {
-    let (fsm, dependencies) = make_submachine_PingPong()
+public func make_PingPong(name: String) -> (AnyScheduleableFiniteStateMachine, [Dependency]) {
+    let (fsm, dependencies) = make_submachine_PingPong(name: name)
     return (fsm.asScheduleableFiniteStateMachine, dependencies)
 }
 
-public func make_submachine_PingPong() -> (AnyControllableFiniteStateMachine, [Dependency]) {
+public func make_submachine_PingPong(name _: String) -> (AnyControllableFiniteStateMachine, [Dependency]) {
     // FSM Variables.
     let fsmVars = SimpleVariablesContainer(vars: PingPongVars())
     // States.
