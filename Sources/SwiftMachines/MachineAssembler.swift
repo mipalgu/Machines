@@ -364,7 +364,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
     private func makeFactoryFunction(forMachine machine: Machine) -> String {
         return """
             public func make_\(machine.name)(name: String) -> (AnyScheduleableFiniteStateMachine, [Dependency]) {
-            let (fsm, dependencies) = make_submachine_\(machine.name)(name: name)
+                let (fsm, dependencies) = make_submachine_\(machine.name)(name: name)
                 return (fsm.asScheduleableFiniteStateMachine, dependencies)
             }
             """
