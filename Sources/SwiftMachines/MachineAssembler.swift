@@ -347,7 +347,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "import CGUSimpleWhiteboard\n"
             str += "import GUSimpleWhiteboard\n"
         }
-        for m in machine.submachines {
+        for m in machine.submachines + machine.parameterisedMachines {
             str += "import \(m.name)Machine\n"
         }
         str += "\n"
@@ -371,7 +371,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
     }
 
     private func makeSubmachineFactoryFunction(forMachine machine: Machine) -> String {
-        let nameParam = "name" + (machine.submachines.isEmpty ? " _" : "")
+        let nameParam = "name" + (machine.submachines.isEmpty && machine.parameterisedMachines.isEmpty ? " _" : "")
         var str = "public func make_submachine_\(machine.name)(\(nameParam): String, invoker: Invoker) -> (AnyControllableFiniteStateMachine, [Dependency]) {\n"
         /*for v in machine.externalVariables {
             str += "    let wbds\n"
@@ -392,12 +392,28 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "        )\n"
             str += "    )\n"
         }
-        if (false == machine.submachines.isEmpty) {
+        if false == machine.submachines.isEmpty {
             str += "    // Submachines.\n"
             str += "    var submachines: [(AnyScheduleableFiniteStateMachine, [Dependency])] = []\n"
             for m in machine.submachines {
-                str += "    let (\(m.name)Machine, \(m.name)MachineDependencies) = make_submachine_\(m.name)(name: name + \".\(m.name)\", invoker: invoker)\n"
+                str += "    let (\(m.name)Machine, \(m.name)MachineDependencies) = make_submachine_\(m.name)(name: name + \".\(machine.name)\", invoker: invoker)\n"
                 str += "    submachines.append((\(m.name)Machine.asScheduleableFiniteStateMachine, \(m.name)MachineDependencies))\n"
+            }
+        }
+        if false == machine.parameterisedMachines.isEmpty {
+            str += "    // Parameterised Machines.\n"
+            str += "    var parameterisedMachines: [(AnyParameterisedFiniteStateMachine, String, [Dependency])] = []\n"
+            for m in machine.parameterisedMachines {
+                let parameterList = m.parameters?.lazy.map {
+                    let start = $0.label + ": " + $0.type
+                    guard let initialValue = $0.initialValue else {
+                        return start
+                    }
+                    return start + " = " + initialValue
+                }.combine("") { $0 + ", " + $1 }
+                str += "    let (\(m.name)FSM, \(m.name)MachineDependencies) = make_submachine\(m.name)(name: name + \"\(m.name)\", invoker: invoker)\n"
+                str += "    parameterisedMachines.append((\(m.name)FSM.asParameterisedFiniteStateMachine, name + \".\(machine.name)\", \(m.name)MachineDependencies))\n"
+                str += "    func \(m.name)Machine(\(parameterList ?? "")) -> Promise<\(m.returnType ?? "Void")> { invoker.invoke(\(m.name)FSM.asParameterisedFiniteStateMachine) }\n"
             }
         }
         str += "    // FSM Variables.\n"
@@ -411,7 +427,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                 str += "        \(external.label): \(external.label),\n"
             }
             str += "        fsmVars: fsmVars,"
-            for m in machine.submachines {
+            for m in machine.submachines + machine.parameterisedMachines {
                 str += "\n        \(m.name)Machine: \(m.name)Machine,"
             }
             str = str.trimmingCharacters(in: CharacterSet(charactersIn: ","))
@@ -465,6 +481,14 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             initialPreviousState = "Empty\(machine.model!.stateType)(\"_Previous\")"
             exitState = "Empty\(machine.model!.stateType)(\"_Exit\")"
         }
+        var dependencies: [String] = []
+        if false == machine.submachines.isEmpty {
+            dependencies.append("submachines.map { Dependency.submachine($0, $1) }")
+        }
+        if false == machine.parameterisedMachines.isEmpty {
+            dependencies.append("parameterisedMachines.map { Dependency.parameterisedMachine($0, $1, $2) }")
+        }
+        let dependencyList = dependencies.isEmpty ? "[]" : dependencies.combine("") { $0 + " + " + $1 }
         let fsm = """
             MachineFSM(
                     \"\(machine.name)\",
@@ -479,7 +503,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                 )
             """
         str += "    // Create FSM.\n"
-        str += "    return (\(fsm), \(machine.submachines.isEmpty ? "[]" : "submachines.map { Dependency.submachine($0, $1) }"))\n"
+        str += "    return (\(fsm), \(dependencyList))\n"
         str += "}\n\n"
         return str
     }
