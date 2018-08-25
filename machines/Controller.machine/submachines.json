@@ -1,8 +1,0 @@
-{
-    "controllers": [
-        {
-            "state": "Controller",
-            "machines": ["PingPong"]
-        }
-    ]
-}
