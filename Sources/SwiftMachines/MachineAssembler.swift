@@ -443,7 +443,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                     }
                     return start + " = " + initialValue
                     }.combine("") { $0 + ", " + $1 }
-                str += "    let (\(m.name)FSM, \(m.name)MachineDependencies) = make_parameterised_\(m.name)(name: name + \"\(m.name)\", invoker: invoker)\n"
+                str += "    let (\(m.name)FSM, \(m.name)MachineDependencies) = make_parameterised_\(m.name)(name: name + \".\(machine.name)\", invoker: invoker)\n"
                 str += "    parameterisedMachines.append((\(m.name)FSM, name + \".\(machine.name)\", \(m.name)MachineDependencies))\n"
                 str += "    func \(m.name)Machine(\(parameterList ?? "")) -> Promise<\(m.returnType ?? "Void")> {\n"
                 let callParams = m.parameters?.map { $0.label + ": " + $0.label} ?? []
