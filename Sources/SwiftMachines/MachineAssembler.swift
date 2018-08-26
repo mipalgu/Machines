@@ -147,14 +147,27 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             let sourcesDir = self.helpers.overwriteSubDirectory("Sources", inDirectory: packageDir),
             let srcDir = self.helpers.overwriteSubDirectory(machine.name + "Machine", inDirectory: sourcesDir),
             let externals = self.makeExternalExtensions(forMachine: machine, inDirectory: srcDir),
-            let factoryPath = self.makeFactory(forMachine: machine, inDirectory: srcDir),
+            let factoryPath = self.makeFactory(forMachine: machine, inDirectory: srcDir)
+        else {
+            self.errors.append(errorMsg)
+            return nil
+        }
+        files.append(factoryPath)
+        if nil != machine.parameters {
+            guard let parametersPath = self.makeParameters(forMachine: machine, inDirectory: srcDir) else {
+                self.errors.append(errorMsg)
+                return nil
+            }
+            files.append(parametersPath)
+        }
+        guard
             let fsmVarsPath = self.makeFsmVars(forMachine: machine, inDirectory: srcDir),
             let statePaths = self.makeStates(forMachine: machine, inDirectory: srcDir)
         else {
             self.errors.append(errorMsg)
             return nil
         }
-        files.append(contentsOf: [factoryPath, fsmVarsPath, package])
+        files.append(contentsOf: [fsmVarsPath, package])
         files.append(contentsOf: externals)
         files.append(contentsOf: statePaths)
         if false == isSubMachine {
@@ -559,9 +572,47 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         return mainPath
     }
+    
+    private func makeParameters(forMachine machine: Machine, inDirectory path: URL) -> URL? {
+        guard let machineParameters = machine.parameters else {
+            self.errors.append("Attempting to create parameters when they don't exist.")
+            return nil
+        }
+        let machinePath = path.appendingPathComponent("\(machine.name)Parameters.swift", isDirectory: false)
+        let returnType: String
+        if let rt = machine.returnType {
+            let trimmed = rt.trimmingCharacters(in: .whitespacesAndNewlines)
+            if let last = trimmed.last {
+                returnType = last == "?" || last == "!" ? trimmed : String(trimmed.dropLast())
+            } else {
+                returnType = "Void!"
+            }
+        } else {
+            returnType = "Void!"
+        }
+        let str = self.makeVarsContent(
+            forMachine: machine,
+            name: "\(machine.name)Parameters",
+            vars: machineParameters + [Variable(constant: false, label: "result", type: returnType, initialValue: "nil")]
+        )
+        guard true == self.helpers.createFile(atPath: machinePath, withContents: str) else {
+            self.errors.append("Unable to create \(machinePath.path)")
+            return nil
+        }
+        return machinePath
+    }
 
     private func makeFsmVars(forMachine machine: Machine, inDirectory path: URL) -> URL? {
         let machinePath = path.appendingPathComponent("\(machine.name)Vars.swift", isDirectory: false)
+        let str = self.makeVarsContent(forMachine: machine, name: "\(machine.name)Vars", vars: machine.vars)
+        guard true == self.helpers.createFile(atPath: machinePath, withContents: str) else {
+            self.errors.append("Unable to create \(machinePath.path)")
+            return nil
+        }
+        return machinePath
+    }
+    
+    private func makeVarsContent(forMachine machine: Machine, name: String, vars: [Variable]) -> String {
         var str = "import FSM\n"
         str += "import swiftfsm\n"
         str += "import ModelChecking\n"
@@ -570,30 +621,26 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         if (false == machine.imports.isEmpty) {
             str += "\n"
         }
-        str += "\npublic final class \(machine.name)Vars: Variables, Updateable {\n\n"
-        if (false == machine.vars.isEmpty) {
-            str += "\(machine.vars.reduce("") { $0 + "    \(self.varHelpers.makeDeclarationAndAssignment(forVariable: $1))\n" })"
+        str += "\npublic final class \(name): Variables, Updateable {\n\n"
+        if (false == vars.isEmpty) {
+            str += "\(vars.reduce("") { $0 + "    \(self.varHelpers.makeDeclarationAndAssignment(forVariable: $1))\n" })"
         }
-        str += "    public final func clone() -> \(machine.name)Vars {\n"
-        str += "        let vars = \(machine.name)Vars()\n"
-        str += machine.vars.reduce("") {
+        str += "    public final func clone() -> \(name) {\n"
+        str += "        let vars = \(name)()\n"
+        str += vars.reduce("") {
             $0 + "        " + self.varHelpers.makeAssignment(withLabel: "vars.\($1.label)", andValue: "self.\($1.label)") + "\n"
         }
         str += "        return vars\n"
         str += "    }\n\n"
         str += "    public final func update(fromDictionary dictionary: [String: Any]) {\n"
-        str += machine.vars.reduce("") {
+        str += vars.reduce("") {
             $0 + "        " + (true == self.varHelpers.isComplex(variable: $1)
                 ? "self.\($1.label).update(fromDictionary: dictionary[\"\($1.label)\"] as! [String: Any])\n"
-                : "self.\($1.label) = dictioanry[\"\($1.label)\"] as! \($1.type)\n")
+                : "self.\($1.label) = dictionary[\"\($1.label)\"] as! \($1.type)\n")
         }
         str += "    }\n\n"
         str += "}\n"
-        guard true == self.helpers.createFile(atPath: machinePath, withContents: str) else {
-            self.errors.append("Unable to create \(machinePath.path)")
-            return nil
-        }
-        return machinePath
+        return str
     }
 
     private func makeRinglet(forRinglet ringlet: Ringlet, withMachineName machine: String, andStateType stateType: String, inDirectory path: URL) -> URL? {
@@ -673,6 +720,9 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         for external in machine.externalVariables {
             str += "    public let _\(external.label): SnapshotCollectionController<GenericWhiteboard<\(external.messageClass)>>\n"
         }
+        if nil != machine.parameters {
+            str += "    private let _parameters: SimpleVariablesContainer<\(machine.name)Parameters>\n"
+        }
         str += "    private let _fsmVars: SimpleVariablesContainer<\(machine.name)Vars>\n\n"
         for submachine in machine.submachines {
             str += "    public private(set) var \(submachine.name)Machine: AnyControllableFiniteStateMachine\n"
@@ -713,6 +763,11 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         // FSM variables.
         str += self.createComputedProperty(withLabel: "fsmVars", andType: "\(machine.name)Vars", referencing: "self._fsmVars.vars")
         str += self.createComputedProperties(fromVars: machine.vars, withinContainer: "self.fsmVars")
+        //Parameters
+        if let parameters = machine.parameters {
+            str += self.createComputedProperty(withLabel: "parameters", andType: "\(machine.name)Parameters", referencing: "self._parameters.vars")
+            str += self.createComputedProperties(fromVars: parameters, withinContainer: "self.parameters")
+        }
         // External variables.
         for external in machine.externalVariables {
             str += self.createComputedProperty(withLabel: external.label, andType: external.messageClass, referencing: "_\(external.label).val")
@@ -724,6 +779,9 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "        transitions: [Transition<\(state.name)State, \(stateType)>] = [],\n"
         for external in machine.externalVariables {
             str += "        \(external.label): SnapshotCollectionController<GenericWhiteboard<\(external.messageClass)>>,\n"
+        }
+        if nil != machine.parameters {
+            str += "        parameters: SimpleVariablesContainer<\(machine.name)Parameters>,\n"
         }
         str += "        fsmVars: SimpleVariablesContainer<\(machine.name)Vars>,\n"
         for submachine in machine.submachines {
@@ -737,6 +795,9 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "\n    ) {\n"
         for external in machine.externalVariables {
             str += "        self._\(external.label) = \(external.label)\n"
+        }
+        if nil != machine.parameters {
+            str += "        self._parameters = parameters\n"
         }
         str += "        self._fsmVars = fsmVars\n"
         for submachine in machine.submachines {
@@ -773,6 +834,9 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "            transitions: cast(transitions: self.transitions),\n"
         for external in machine.externalVariables {
             str += "            \(external.label): self._\(external.label),\n"
+        }
+        if nil != machine.parameters {
+            str += "            parameters: self._parameters,\n"
         }
         str += "            fsmVars: self._fsmVars,\n"
         for submachine in machine.submachines {
