@@ -272,7 +272,7 @@ public class MachinesTestCase: XCTestCase {
             "/usr/local/lib/swiftfsm"
         ],
         imports: "",
-        includes: nil,
+        includes: "",
         vars: [],
         model: nil,
         parameters: [
@@ -285,7 +285,9 @@ public class MachinesTestCase: XCTestCase {
             imports: "",
             vars: [],
             actions: [
-                Action(name: "onEntry", implementation: "result = a + b")
+                Action(name: "onEntry", implementation: "result = a + b"),
+                Action(name: "main", implementation: ""),
+                Action(name: "onExit", implementation: "")
             ],
             transitions: []
         ),
@@ -296,7 +298,9 @@ public class MachinesTestCase: XCTestCase {
                 imports: "",
                 vars: [],
                 actions: [
-                    Action(name: "onEntry", implementation: "result = a + b")
+                    Action(name: "onEntry", implementation: "result = a + b"),
+                    Action(name: "main", implementation: ""),
+                    Action(name: "onExit", implementation: "")
                 ],
                 transitions: []
             )
