@@ -283,11 +283,11 @@ public final class MachineGenerator {
 
     func makeDependenciesFile(forMachine machine: Machine) -> URL? {
         let path = machine.filePath.appendingPathComponent("dependencies.json", isDirectory: false)
-        let submachines: String = machine.submachines.lazy.map { $0.name }.combine("") { $0 + "," + $1 }
-        let parameterisedMachines: String = machine.parameterisedMachines.lazy.map { $0.name }.combine("") { $0 + "," + $1 }
+        let submachines: [String] = machine.submachines.lazy.map { $0.name }
+        let parameterisedMachines: [String] = machine.parameterisedMachines.lazy.map { $0.name }
         let dict: [String: Any] = [
-            "submachines": "[" + submachines  + "]",
-            "parameterisedMachines": "[" + parameterisedMachines + "]"
+            "submachines": submachines,
+            "parameterisedMachines": parameterisedMachines
         ]
         guard
             let json = self.encode(json: dict),
