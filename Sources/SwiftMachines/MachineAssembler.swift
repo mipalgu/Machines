@@ -549,6 +549,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                         externalVariables: \(externalsArray),
                         fsmVars: fsmVars,
                         parameters: \(parameters),
+                        result: Optional<\(machine.returnType ?? "Void")>.none,
                         ringlet: \(ringlet),
                         initialPreviousState: \(initialPreviousState),
                         suspendedState: nil,
