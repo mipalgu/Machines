@@ -444,14 +444,14 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                     return start + " = " + initialValue
                     }.combine("") { $0 + ", " + $1 }
                 str += "    let (\(m.name)FSM, \(m.name)MachineDependencies) = make_parameterised_\(m.name)(name: name + \".\(machine.name)\", invoker: invoker)\n"
-                str += "    parameterisedMachines.append((\(m.name)FSM, name + \".\(machine.name)\", \(m.name)MachineDependencies))\n"
+                str += "    parameterisedMachines.append((\(m.name)FSM, \(m.name)FSM.name, \(m.name)MachineDependencies))\n"
                 str += "    func \(m.name)Machine(\(parameterList ?? "")) -> Promise<\(m.returnType ?? "Void")> {\n"
                 let callParams = m.parameters?.map { $0.label + ": " + $0.label} ?? []
                 let callStr = callParams.combine("") { $0 + ", " + $1 }
                 str += "        let params = \(m.name)Parameters(\(callStr))\n"
                 str += "        let resultContainer: AnyResultContainer<Any> = \(m.name)FSM.resultContainer\n"
                 str += "        let actualResultContainer = AnyResultContainer({ resultContainer.result as! \(m.returnType ?? "Void") })\n"
-                str += "        return invoker.invoke(name + \".\(machine.name).\(m.name)\", with: params, withResults: actualResultContainer)"
+                str += "        return invoker.invoke(\(m.name)FSM.name, with: params, withResults: actualResultContainer)"
                 str += "    }\n"
             }
         }
