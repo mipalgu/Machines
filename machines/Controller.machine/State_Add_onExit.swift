@@ -1,1 +1,1 @@
-print(promise.result)
+print("result: \(promise.result)")
