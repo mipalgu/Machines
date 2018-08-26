@@ -87,7 +87,12 @@ public final class VariableHelpers {
         let trimmed = variable.type.trimmingCharacters(in: .whitespacesAndNewlines)
         let type: String
         if let last = trimmed.last {
-            type = last == "?" || last == "!" ? trimmed : trimmed + "!"
+            if nil != variable.initialValue {
+                type = trimmed
+            } else {
+                type = last == "?" || last == "!" ? trimmed : trimmed + "!"
+            }
+            
         } else {
             type = "Void!"
         }
