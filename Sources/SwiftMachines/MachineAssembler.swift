@@ -641,7 +641,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         let conformances = extraConformances.reduce("") { $0 + ", " + $1}
         str += "\npublic final class \(name): Variables, Updateable\(conformances) {\n\n"
         if (false == vars.isEmpty) {
-            str += "\(vars.reduce("") { $0 + "    \(self.varHelpers.makeDeclaration(forVariable: $1))\n" })"
+            str += "\(vars.reduce("") { $0 + "    public \(self.varHelpers.makeDeclaration(forVariable: $1))\n" })"
         }
         // Init.
         let args: [String] = vars.map {

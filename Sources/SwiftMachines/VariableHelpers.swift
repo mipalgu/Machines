@@ -96,7 +96,7 @@ public final class VariableHelpers {
         } else {
             type = "Void!"
         }
-        return "public \(true == variable.constant ? "let" : "var") \(variable.label): \(type)"
+        return "\(true == variable.constant ? "let" : "var") \(variable.label): \(type)"
     } 
 
     public func makeDeclarationAndAssignment(forVariable variable: Variable) -> String {
