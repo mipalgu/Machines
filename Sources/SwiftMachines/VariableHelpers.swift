@@ -63,12 +63,16 @@ public final class VariableHelpers {
     public init() {}
 
     public func isComplex(variable: Variable) -> Bool {
-        switch variable.type {
+        let type = variable.type.trimmingCharacters(in: .whitespacesAndNewlines)
+        if type.last == "?" || type.last == "!" {
+            return false
+        }
+        switch type {
             case "Bool",
                  "Int8", "Int16", "Int32", "Int64", "Int",
                  "UIn8", "UInt16", "UInt32", "UInt64", "UInt",
                  "Float80", "Float", "Double",
-                 "String":
+                 "String", "Void":
                 return false
             default:
                 return true
@@ -80,7 +84,14 @@ public final class VariableHelpers {
     }
 
     public func makeDeclaration(forVariable variable: Variable) -> String {
-        return "\(true == variable.constant ? "let" : "var") \(variable.label): \(variable.type)"
+        let trimmed = variable.type.trimmingCharacters(in: .whitespacesAndNewlines)
+        let type: String
+        if let last = trimmed.last {
+            type = last == "?" || last == "!" ? trimmed : trimmed + "!"
+        } else {
+            type = "Void!"
+        }
+        return "\(true == variable.constant ? "let" : "var") \(variable.label): \(type)"
     } 
 
     public func makeDeclarationAndAssignment(forVariable variable: Variable) -> String {

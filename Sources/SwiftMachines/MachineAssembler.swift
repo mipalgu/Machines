@@ -583,7 +583,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         if let rt = machine.returnType {
             let trimmed = rt.trimmingCharacters(in: .whitespacesAndNewlines)
             if let last = trimmed.last {
-                returnType = last == "?" || last == "!" ? trimmed : String(trimmed.dropLast())
+                returnType = last == "?" || last == "!" ? trimmed : trimmed + "!"
             } else {
                 returnType = "Void!"
             }
@@ -625,16 +625,26 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         if (false == vars.isEmpty) {
             str += "\(vars.reduce("") { $0 + "    \(self.varHelpers.makeDeclarationAndAssignment(forVariable: $1))\n" })"
         }
+        // Init.
+        str += "    public init() {}\n\n"
+        // Clone.
         str += "    public final func clone() -> \(name) {\n"
         str += "        let vars = \(name)()\n"
         str += vars.reduce("") {
-            $0 + "        " + self.varHelpers.makeAssignment(withLabel: "vars.\($1.label)", andValue: "self.\($1.label)") + "\n"
+            if $1.constant {
+                return $0
+            }
+            return $0 + "        " + self.varHelpers.makeAssignment(withLabel: "vars.\($1.label)", andValue: "self.\($1.label)") + "\n"
         }
         str += "        return vars\n"
         str += "    }\n\n"
+        // Update.
         str += "    public final func update(fromDictionary dictionary: [String: Any]) {\n"
         str += vars.reduce("") {
-            $0 + "        " + (true == self.varHelpers.isComplex(variable: $1)
+            if $1.constant {
+                return $0
+            }
+            return $0 + "        " + (true == self.varHelpers.isComplex(variable: $1)
                 ? "self.\($1.label).update(fromDictionary: dictionary[\"\($1.label)\"] as! [String: Any])\n"
                 : "self.\($1.label) = dictionary[\"\($1.label)\"] as! \($1.type)\n")
         }
@@ -761,16 +771,16 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "\n"
         }
         // FSM variables.
-        str += self.createComputedProperty(withLabel: "fsmVars", andType: "\(machine.name)Vars", referencing: "self._fsmVars.vars")
+        str += self.createComputedProperty(mutable: true, withLabel: "fsmVars", andType: "\(machine.name)Vars", referencing: "self._fsmVars.vars")
         str += self.createComputedProperties(fromVars: machine.vars, withinContainer: "self.fsmVars")
         //Parameters
         if let parameters = machine.parameters {
-            str += self.createComputedProperty(withLabel: "parameters", andType: "\(machine.name)Parameters", referencing: "self._parameters.vars")
+            str += self.createComputedProperty(mutable: true, withLabel: "parameters", andType: "\(machine.name)Parameters", referencing: "self._parameters.vars")
             str += self.createComputedProperties(fromVars: parameters, withinContainer: "self.parameters")
         }
         // External variables.
         for external in machine.externalVariables {
-            str += self.createComputedProperty(withLabel: external.label, andType: external.messageClass, referencing: "_\(external.label).val")
+            str += self.createComputedProperty(mutable: true, withLabel: external.label, andType: external.messageClass, referencing: "_\(external.label).val")
             //str += self.createComputedProperties(fromVars: external.vars, withinContainer: "\(external.label)")
         }
         // Init.
@@ -980,18 +990,24 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                 return $0
             }
             takenVars.insert($1.label)
-            return $0 + self.createComputedProperty(withLabel: $1.label, andType: $1.type, referencing: "\(container).\($1.label)")
+            return $0 + self.createComputedProperty(mutable: !$1.constant, withLabel: $1.label, andType: $1.type, referencing: "\(container).\($1.label)")
         }
     }
 
-    private func createComputedProperty(withLabel label: String, andType type: String, referencing reference: String) -> String {
+    private func createComputedProperty(mutable: Bool, withLabel label: String, andType type: String, referencing reference: String) -> String {
+        let getter = "return \(reference)"
+        let accessor = "public" + (mutable ? " private(set)" : "")
         var str = ""
-        str += "    public private(set) var \(label): \(type) {\n"
-        str += "        get {\n"
-        str += "            return \(reference)\n"
-        str += "        } set {\n"
-        str += "            \(reference) = newValue\n"
-        str += "        }\n"
+        str += "    \(accessor) var \(label): \(type) {\n"
+        if mutable {
+            str += "        get {\n"
+            str += "            \(getter)\n"
+            str += "        } set {\n"
+            str += "            \(reference) = newValue\n"
+            str += "        }\n"
+        } else {
+            str += "        \(getter)\n"
+        }
         str += "    }\n\n"
         return str
     }
