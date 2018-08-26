@@ -154,11 +154,14 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         files.append(factoryPath)
         if nil != machine.parameters {
-            guard let parametersPath = self.makeParameters(forMachine: machine, inDirectory: srcDir) else {
+            guard
+                let parametersPath = self.makeParameters(forMachine: machine, inDirectory: srcDir),
+                let resultsPath = self.makeResultsContainer(forMachine: machine, inDirectory: srcDir)
+            else {
                 self.errors.append(errorMsg)
                 return nil
             }
-            files.append(parametersPath)
+            files.append(contentsOf: [parametersPath, resultsPath])
         }
         guard
             let fsmVarsPath = self.makeFsmVars(forMachine: machine, inDirectory: srcDir),
@@ -448,6 +451,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         if nil != machine.parameters {
             str += "    // Parameters.\n"
             str += "    let parameters = SimpleVariablesContainer(vars: \(machine.name)Parameters())\n"
+            str += "    let results = SimpleVariablesContainer(vars: \(machine.name)ResultsContainer())\n"
         }
         str += "    // FSM Variables.\n"
         str += "    let fsmVars = SimpleVariablesContainer(vars: \(machine.name)Vars())\n"
@@ -461,6 +465,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             }
             if nil != machine.parameters {
                 str += "        parameters: parameters,"
+                str += "        results: results,"
             }
             str += "        fsmVars: fsmVars,"
             for m in machine.submachines + machine.parameterisedMachines {
@@ -549,7 +554,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                         externalVariables: \(externalsArray),
                         fsmVars: fsmVars,
                         parameters: \(parameters),
-                        result: Optional<\(machine.returnType ?? "Void")>.none,
+                        results: results,
                         ringlet: \(ringlet),
                         initialPreviousState: \(initialPreviousState),
                         suspendedState: nil,
@@ -580,21 +585,24 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             return nil
         }
         let machinePath = path.appendingPathComponent("\(machine.name)Parameters.swift", isDirectory: false)
-        let returnType: String
-        if let rt = machine.returnType {
-            let trimmed = rt.trimmingCharacters(in: .whitespacesAndNewlines)
-            if let last = trimmed.last {
-                returnType = last == "?" || last == "!" ? trimmed : trimmed + "!"
-            } else {
-                returnType = "Void!"
-            }
-        } else {
-            returnType = "Void!"
-        }
         let str = self.makeVarsContent(
             forMachine: machine,
             name: "\(machine.name)Parameters",
-            vars: machineParameters + [Variable(constant: false, label: "result", type: returnType, initialValue: "nil")]
+            vars: machineParameters
+        )
+        guard true == self.helpers.createFile(atPath: machinePath, withContents: str) else {
+            self.errors.append("Unable to create \(machinePath.path)")
+            return nil
+        }
+        return machinePath
+    }
+    
+    private func makeResultsContainer(forMachine machine: Machine, inDirectory path: URL) -> URL? {
+        let machinePath = path.appendingPathComponent("\(machine.name)ResultsContainer.swift", isDirectory: false)
+        let str = self.makeVarsContent(
+            forMachine: machine,
+            name: "\(machine.name)ResultsContainer",
+            vars: [Variable(constant: false, label: "result", type: machine.returnType ?? "Void", initialValue: nil)]
         )
         guard true == self.helpers.createFile(atPath: machinePath, withContents: str) else {
             self.errors.append("Unable to create \(machinePath.path)")
@@ -733,6 +741,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         if nil != machine.parameters {
             str += "    private let _parameters: SimpleVariablesContainer<\(machine.name)Parameters>\n"
+            str += "    private let _results: SimpleVariablesContainer<\(machine.name)ResultsContainer>\n"
         }
         str += "    private let _fsmVars: SimpleVariablesContainer<\(machine.name)Vars>\n\n"
         for submachine in machine.submachines {
@@ -778,6 +787,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         if let parameters = machine.parameters {
             str += self.createComputedProperty(mutable: true, withLabel: "parameters", andType: "\(machine.name)Parameters", referencing: "self._parameters.vars")
             str += self.createComputedProperties(fromVars: parameters, withinContainer: "self.parameters")
+            str += self.createComputedProperty(mutable: true, withLabel: "result", andType: machine.returnType ?? "Void", referencing: "self._results.vars.result")
         }
         // External variables.
         for external in machine.externalVariables {
@@ -793,6 +803,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         if nil != machine.parameters {
             str += "        parameters: SimpleVariablesContainer<\(machine.name)Parameters>,\n"
+            str += "        results: SimpleVariablesContainer<\(machine.name)ResultsContainer>,\n"
         }
         str += "        fsmVars: SimpleVariablesContainer<\(machine.name)Vars>,\n"
         for submachine in machine.submachines {
@@ -809,6 +820,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         if nil != machine.parameters {
             str += "        self._parameters = parameters\n"
+            str += "        self._results = results\n"
         }
         str += "        self._fsmVars = fsmVars\n"
         for submachine in machine.submachines {
@@ -848,6 +860,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         if nil != machine.parameters {
             str += "            parameters: self._parameters,\n"
+            str += "            results: self._results,\n"
         }
         str += "            fsmVars: self._fsmVars,\n"
         for submachine in machine.submachines {
