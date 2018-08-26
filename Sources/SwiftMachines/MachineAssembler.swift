@@ -445,7 +445,15 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                     }.combine("") { $0 + ", " + $1 }
                 str += "    let (\(m.name)FSM, \(m.name)MachineDependencies) = make_parameterised_\(m.name)(name: name + \"\(m.name)\", invoker: invoker)\n"
                 str += "    parameterisedMachines.append((\(m.name)FSM, name + \".\(machine.name)\", \(m.name)MachineDependencies))\n"
-                str += "    func \(m.name)Machine(\(parameterList ?? "")) -> Promise<\(m.returnType ?? "Void")> { invoker.invoke(\(m.name)FSM) }\n"
+                str += "    func \(m.name)Machine(\(parameterList ?? "")) -> Promise<\(m.returnType ?? "Void")> {\n"
+                str += "        let params = \(m.name)Parameters()\n"
+                for p in m.parameters ?? [] {
+                    str += "        params.\(p.label) = \(p.label)\n"
+                }
+                str += "        let resultContainer: AnyResultContainer<Any> = \(m.name)FSM.resultContainer\n"
+                str += "        let actualResultContainer = AnyResultContainer({ resultContainer.hasFinished }, { resultContainer.result as! \(m.returnType ?? "Void") })\n"
+                str += "        invoker.invoke(name + \".\(machine.name)\", with: params, withResults: actualResultContainer)"
+                str += "    }\n"
             }
         }
         if nil != machine.parameters {
@@ -842,7 +850,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             }.combine("") { $0 + ", " + $1 }
             let paramsCalled = m.parameters?.lazy.map { $0.label + ": " + $0.label }
             let callList: String? = paramsCalled?.combine("") { $0 + ", " + $1 }
-            str += "    public func \(m.name)Machine(\(parameterList ?? "") -> \(m.returnType ?? "Void") { return self._\(m.name)Machine(\(callList ?? "") }"
+            str += "    public func \(m.name)Machine(\(parameterList ?? "")) -> \(m.returnType ?? "Void") { return self._\(m.name)Machine(\(callList ?? "") }\n\n"
         }
         // Actions.
         for action in state.actions {

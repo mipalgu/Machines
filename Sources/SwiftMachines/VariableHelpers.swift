@@ -97,7 +97,7 @@ public final class VariableHelpers {
     public func makeDeclarationAndAssignment(forVariable variable: Variable) -> String {
         let declaration = self.makeDeclaration(forVariable: variable)
         guard let initialValue = variable.initialValue else {
-            return declaration
+            return declaration + " = nil"
         }
         return declaration + " = " + initialValue
     }

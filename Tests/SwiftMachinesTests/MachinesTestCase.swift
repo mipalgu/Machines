@@ -279,7 +279,7 @@ public class MachinesTestCase: XCTestCase {
             Variable(constant: true, label: "a", type: "Int", initialValue: nil),
             Variable(constant: true, label: "b", type: "Int", initialValue: nil)
         ],
-        returnType: nil,
+        returnType: "Int",
         initialState: State(
             name: "Initial",
             imports: "",
