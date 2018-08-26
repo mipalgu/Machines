@@ -1,9 +1,11 @@
 {
-    "externalVariables": {
-        "wbcount": {
-            "wbName": "privateWhiteboard",
-            "type": "kCount_v",
-            "class": "wb_count"
-        }
+  "externalVariables" : {
+    "wbcount" : {
+      "atomic" : true,
+      "class" : "wb_count",
+      "shouldNotifySubscribers" : true,
+      "type" : "kCount_v",
+      "wbName" : "privateWhiteboard"
     }
+  }
 }
