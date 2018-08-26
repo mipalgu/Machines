@@ -105,7 +105,7 @@ public final class VarParser {
             return Variable(
                 constant: constant,
                 label: label,
-                type: tokens.suffix(3).reduce("") { $0 + $1 + " " }.trimmingCharacters(in: .whitespaces),
+                type: tokens.suffix(1).reduce("") { $0 + $1 + " " }.trimmingCharacters(in: .whitespaces),
                 initialValue: nil
             )
         }
