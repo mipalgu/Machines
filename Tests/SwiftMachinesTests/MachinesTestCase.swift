@@ -216,7 +216,7 @@ public class MachinesTestCase: XCTestCase {
                     Action(name: "main", implementation: "count += 1"),
                     Action(name: "onExit", implementation: "PingPongMachine.exit()")
                 ],
-                transitions: [Transition(target: "Exit", condition: "state.count >= 100")]
+                transitions: [Transition(target: "Add", condition: "state.count >= 100")]
             ),
             suspendState: nil,
             states: [
@@ -237,6 +237,42 @@ public class MachinesTestCase: XCTestCase {
                         Action(name: "onExit", implementation: "PingPongMachine.exit()")
                     ],
                     transitions: [Transition(target: "Exit", condition: "state.count >= 100")]
+                ),
+                State(
+                    name: "Add",
+                    imports: "",
+                    vars: [
+                        Variable(
+                            constant: false,
+                            label: "promise",
+                            type: "Promise<Int>",
+                            initialValue: nil
+                        )
+                    ],
+                    actions: [
+                        Action(name: "onEntry", implementation: "promise = SumMachine(a: 2, b: 3)"),
+                        Action(name: "main", implementation: ""),
+                        Action(name: "onExit", implementation: "print(\"result: \\(promise.result)\")")
+                    ],
+                    transitions: [Transition(target: "Add_2", condition: "state.promise.hasFinished")]
+                ),
+                State(
+                    name: "Add_2",
+                    imports: "",
+                    vars: [
+                        Variable(
+                            constant: false,
+                            label: "promise",
+                            type: "Promise<Int>",
+                            initialValue: nil
+                        )
+                    ],
+                    actions: [
+                        Action(name: "onEntry", implementation: "promise = SumMachine(a: 2, b: 3)"),
+                        Action(name: "main", implementation: ""),
+                        Action(name: "onExit", implementation: "print(\"result: \\(promise.result)\")")
+                    ],
+                    transitions: [Transition(target: "Exit", condition: "state.promise.hasFinished")]
                 ),
                 State(
                     name: "Exit",

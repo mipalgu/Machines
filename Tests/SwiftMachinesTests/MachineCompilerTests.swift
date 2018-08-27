@@ -91,28 +91,33 @@ public class MachineCompilerTests: MachinesTestCase {
     }
 
     private var compiler: MachineCompiler<MachineAssembler>!
+    private let assembler = MachineAssembler()
 
     public override func setUp() {
         super.setUp()
-        self.compiler = MachineCompiler(assembler: MachineAssembler())
+        self.compiler = MachineCompiler(assembler: self.assembler)
     }
 
     public func testCompilesPingPong() {
-        XCTAssertNotNil(
-            self.compiler.compile(
-                super.pingPongMachine,
-                andSwiftCompilerFlags: self.args
-            )
+        guard nil != self.compiler.compile(
+            super.pingPongMachine,
+            andSwiftCompilerFlags: self.args
         )
+        else {
+            XCTFail("Unable to compile pingPong - \(self.assembler.errors)")
+            return
+        }
     }
 
     public func testCompilesController() {
-        XCTAssertNotNil(
-            self.compiler.compile(
+        guard nil != self.compiler.compile(
                 super.controllerMachine,
                 andSwiftCompilerFlags: self.args
             )
-        )
+        else {
+            XCTFail("Unable to compile controller - \(self.assembler.errors)")
+            return
+        }
     }
 
 }

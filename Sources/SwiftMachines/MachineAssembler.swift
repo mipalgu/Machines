@@ -106,11 +106,6 @@ public final class MachineAssembler: Assembler, ErrorContainer {
     }
 
     private func assemble(_ machine: Machine, isSubMachine: Bool) -> (URL, [URL])? {
-        self.takenVars = Set(machine.externalVariables.map { $0.label }) 
-        self.takenVars.insert("fsmVars")
-        if nil != machine.parameters {
-            self.takenVars.insert("parameters")
-        }
         let errorMsg = "Unable to assemble \(machine.filePath.path)"
         var dependencies = (machine.submachines + machine.parameterisedMachines).flatMap { self.assemble($0, isSubMachine: true)?.0 }
         if dependencies.count != (machine.submachines.count + machine.parameterisedMachines.count) {
@@ -743,6 +738,11 @@ public final class MachineAssembler: Assembler, ErrorContainer {
     }
 
     private func makeState(_ state: State, forMachine machine: Machine, inDirectory path: URL) -> URL? {
+        self.takenVars = Set(machine.externalVariables.map { $0.label })
+        self.takenVars.insert("fsmVars")
+        if nil != machine.parameters {
+            self.takenVars.insert("parameters")
+        }
         let statePath = path.appendingPathComponent("\(state.name)State.swift", isDirectory: false)
         var str = "import FSM\nimport swiftfsm\nimport ExternalVariables\n"
         if let _ = machine.includes {
