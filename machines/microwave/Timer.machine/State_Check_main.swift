@@ -1,0 +1,1 @@
+timeLeft = 0 < currentTime
