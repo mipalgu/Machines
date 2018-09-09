@@ -4,7 +4,8 @@
       "atomic" : false,
       "class" : "wb_microwave_status",
       "shouldNotifySubscribers" : true,
-      "type" : "kMicrowaveStatus_v"
+      "type" : "kMicrowaveStatus_v",
+      "wbName" : null
     }
   }
 }
