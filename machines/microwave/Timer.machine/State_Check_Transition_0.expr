@@ -1,1 +1,1 @@
-state.buttonPushed && !state.doorOpen
+state.microwave_status.buttonPushed && !state.microwave_status.doorOpen

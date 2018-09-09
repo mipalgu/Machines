@@ -1,1 +1,1 @@
-timeLeft = 0 < currentTime
+microwave_status.timeLeft = 0 < currentTime
