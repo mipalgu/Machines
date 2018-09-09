@@ -1,0 +1,10 @@
+{
+  "externalVariables" : {
+    "microwave_status" : {
+      "atomic" : false,
+      "class" : "wb_microwave_status",
+      "shouldNotifySubscribers" : true,
+      "type" : "kMicrowaveStatus_v"
+    }
+  }
+}
