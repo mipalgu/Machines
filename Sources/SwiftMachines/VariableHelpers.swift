@@ -70,7 +70,7 @@ public final class VariableHelpers {
         switch type {
             case "Bool",
                  "Int8", "Int16", "Int32", "Int64", "Int",
-                 "UIn8", "UInt16", "UInt32", "UInt64", "UInt",
+                 "UInt8", "UInt16", "UInt32", "UInt64", "UInt",
                  "Float80", "Float", "Double",
                  "String", "Void":
                 return false
