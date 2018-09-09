@@ -1,2 +1,2 @@
 
-var currentTime: UInt = 0
+var currentTime: UInt8 = 0
