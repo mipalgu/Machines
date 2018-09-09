@@ -1,1 +1,5 @@
 print("Exiting...")
+TimerMachine.exit()
+CookerMachine.exit()
+AlarmMachine.exit()
+LightMachine.exit()

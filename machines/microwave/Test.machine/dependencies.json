@@ -3,6 +3,9 @@
 
   ],
   "submachines" : [
-
+    "Timer",
+    "Cooker",
+    "Alarm",
+    "Light"
   ]
 }
