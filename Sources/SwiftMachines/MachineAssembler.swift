@@ -141,7 +141,6 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             let package = self.makePackage(forMachine: machine, inDirectory: packageDir, withDependencies: dependencies),
             let sourcesDir = self.helpers.overwriteSubDirectory("Sources", inDirectory: packageDir),
             let srcDir = self.helpers.overwriteSubDirectory(machine.name + "Machine", inDirectory: sourcesDir),
-            let externals = self.makeExternalExtensions(forMachine: machine, inDirectory: srcDir),
             let factoryPath = self.makeFactory(forMachine: machine, inDirectory: srcDir)
         else {
             self.errors.append(errorMsg)
@@ -166,7 +165,6 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             return nil
         }
         files.append(contentsOf: [fsmVarsPath, package])
-        files.append(contentsOf: externals)
         files.append(contentsOf: statePaths)
         if false == isSubMachine {
             guard let mainPath = self.makeMain(forMachine: machine, inDirectory: srcDir) else {
@@ -264,37 +262,6 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             return nil
         }
         return packagePath
-    }
-
-    private func makeExternalExtensions(forMachine machine: Machine, inDirectory path: URL) -> [URL]? {
-        var arr: [URL] = []
-        arr.reserveCapacity(machine.externalVariables.count)
-        var completed: Set<String> = []
-        for e in machine.externalVariables {
-            if (true == completed.contains(e.messageClass)) {
-                continue
-            }
-            guard let file = self.makeExternalExtension(forExternalVariables: e, inDirectory: path) else {
-                return nil
-            }
-            completed.insert(e.messageClass)
-            arr.append(file)
-        }
-        return arr
-    }
-
-    private func makeExternalExtension(forExternalVariables externals: ExternalVariables, inDirectory path: URL) -> URL? {
-        let file = path.appendingPathComponent("\(externals.messageClass).swift", isDirectory: false)
-        var contents: String = ""
-        contents += "import FSM\n"
-        contents += "import CGUSimpleWhiteboard\n"
-        contents += "import GUSimpleWhiteboard\n\n"
-        contents += "extension \(externals.messageClass): ExternalVariables {}\n"
-        guard true == self.helpers.createFile(atPath: file, withContents: contents) else {
-            self.errors.append("Unable to create \(file.path)")
-            return nil
-        }
-        return file
     }
 
     private func makeInvoker(forMachine machine: Machine, inDirectory path: URL) -> URL? {
