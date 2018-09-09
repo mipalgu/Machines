@@ -1,0 +1,2 @@
+
+var motor: Bool = false

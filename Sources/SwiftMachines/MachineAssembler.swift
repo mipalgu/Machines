@@ -379,8 +379,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
     private func makeFactoryFunction(forMachine machine: Machine) -> String {
         let fun = nil == machine.parameters ? "make_submachine_" : "make_parameterised_"
         return """
-            public func make_\(machine.name)(name: String, invoker: Invoker) -> (AnyScheduleableFiniteStateMachine, [Dependency]) {
-                let (fsm, dependencies) = \(fun)\(machine.name)(name: name, invoker: invoker)
+            public func make_\(machine.name)(name: String, invoker: Invoker, clock: Timer) -> (AnyScheduleableFiniteStateMachine, [Dependency]) {
+                let (fsm, dependencies) = \(fun)\(machine.name)(name: name, invoker: invoker, clock: clock)
                 return (fsm.asScheduleableFiniteStateMachine, dependencies)
             }
             """
@@ -388,13 +388,13 @@ public final class MachineAssembler: Assembler, ErrorContainer {
 
     private func makeSubmachineFactoryFunction(forMachine machine: Machine) -> String {
         //let nameParam = "name" + (machine.submachines.isEmpty && machine.parameterisedMachines.isEmpty ? " _" : "")
-        let fun = "public func make_submachine_\(machine.name)(name: String, invoker: Invoker) -> (AnyControllableFiniteStateMachine, [Dependency]) {\n"
+        let fun = "public func make_submachine_\(machine.name)(name: String, invoker: Invoker, clock: Timer) -> (AnyControllableFiniteStateMachine, [Dependency]) {\n"
         return fun + self.makeFactoryContent(forMachine: machine, createParameterisedMachine: false) + "}\n\n"
     }
     
     private func makeParameterisedFactoryFunction(forMachine machine: Machine) -> String {
         //let nameParam = "name" + (machine.submachines.isEmpty && machine.parameterisedMachines.isEmpty ? " _" : "")
-        let fun = "public func make_parameterised_\(machine.name)(name: String, invoker: Invoker) -> (AnyParameterisedFiniteStateMachine, [Dependency]) {\n"
+        let fun = "public func make_parameterised_\(machine.name)(name: String, invoker: Invoker, clock: Timer) -> (AnyParameterisedFiniteStateMachine, [Dependency]) {\n"
         return fun + self.makeFactoryContent(forMachine: machine, createParameterisedMachine: true) + "}\n\n"
     }
     
@@ -423,7 +423,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "    // Submachines.\n"
             str += "    var submachines: [(AnyScheduleableFiniteStateMachine, [Dependency])] = []\n"
             for m in machine.submachines {
-                str += "    let (\(m.name)Machine, \(m.name)MachineDependencies) = make_submachine_\(m.name)(name: name + \".\(machine.name)\", invoker: invoker)\n"
+                str += "    let (\(m.name)Machine, \(m.name)MachineDependencies) = make_submachine_\(m.name)(name: name + \".\(machine.name)\", invoker: invoker, clock: clock)\n"
                 str += "    submachines.append((\(m.name)Machine.asScheduleableFiniteStateMachine, \(m.name)MachineDependencies))\n"
             }
         }
@@ -438,7 +438,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                     }
                     return start + " = " + initialValue
                     }.combine("") { $0 + ", " + $1 }
-                str += "    let (\(m.name)FSM, \(m.name)MachineDependencies) = make_parameterised_\(m.name)(name: name + \".\(machine.name)\", invoker: invoker)\n"
+                str += "    let (\(m.name)FSM, \(m.name)MachineDependencies) = make_parameterised_\(m.name)(name: name + \".\(machine.name)\", invoker: invoker, clock: clock)\n"
                 str += "    parameterisedMachines.append((\(m.name)FSM, \(m.name)FSM.name, \(m.name)MachineDependencies))\n"
                 str += "    func \(m.name)Machine(\(parameterList ?? "")) -> Promise<\(m.returnType ?? "Void")> {\n"
                 let callParams = m.parameters?.map { $0.label + ": " + $0.label} ?? []
@@ -469,7 +469,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                 str += "        parameters: parameters,"
                 str += "        results: results,"
             }
-            str += "        fsmVars: fsmVars,"
+            str += "        fsmVars: fsmVars, clock: clock,"
             for m in machine.submachines + machine.parameterisedMachines {
                 str += "\n        \(m.name)Machine: \(m.name)Machine,"
             }
@@ -740,6 +740,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
     private func makeState(_ state: State, forMachine machine: Machine, inDirectory path: URL) -> URL? {
         self.takenVars = Set(machine.externalVariables.map { $0.label })
         self.takenVars.insert("fsmVars")
+        self.takenVars.insert("clock")
         if nil != machine.parameters {
             self.takenVars.insert("parameters")
         }
@@ -769,6 +770,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "    private let _results: SimpleVariablesContainer<\(machine.name)ResultsContainer>\n"
         }
         str += "    private let _fsmVars: SimpleVariablesContainer<\(machine.name)Vars>\n\n"
+        str += "    public let clock: Timer\n\n"
         for submachine in machine.submachines {
             str += "    public private(set) var \(submachine.name)Machine: AnyControllableFiniteStateMachine\n"
         }
@@ -831,6 +833,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "        results: SimpleVariablesContainer<\(machine.name)ResultsContainer>,\n"
         }
         str += "        fsmVars: SimpleVariablesContainer<\(machine.name)Vars>,\n"
+        str += "        clock: Timer,\n"
         for submachine in machine.submachines {
             str += "        \(submachine.name)Machine: AnyControllableFiniteStateMachine,\n"
         }
@@ -848,6 +851,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "        self._results = results\n"
         }
         str += "        self._fsmVars = fsmVars\n"
+        str += "        self.clock = clock\n"
         for submachine in machine.submachines {
             str += "        self.\(submachine.name)Machine = \(submachine.name)Machine\n"
         }
@@ -888,6 +892,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "            results: self._results,\n"
         }
         str += "            fsmVars: self._fsmVars,\n"
+        str += "            clock: self.clock,\n"
         for submachine in machine.submachines {
             str += "            \(submachine.name)Machine: self.\(submachine.name)Machine,\n"
         }

@@ -67,7 +67,8 @@ public class MachineParserTests: MachinesTestCase {
             ("testParsesPingPongMachine", testParsesPingPongMachine),
             ("testParsesControllerMachine", testParsesControllerMachine),
             ("testParsesSumMachine", testParsesSumMachine),
-            ("testFailsToParseRecursiveMachine", testFailsToParseRecursiveMachine)
+            ("testFailsToParseRecursiveMachine", testFailsToParseRecursiveMachine),
+            ("testParsesMicrowaveTimerMachine", testParsesMicrowaveTimerMachine)
         ]
     }
 
@@ -106,6 +107,17 @@ public class MachineParserTests: MachinesTestCase {
             return
         }
         XCTAssertEqual(machine, super.sumMachine)
+        if (false == self.parser.errors.isEmpty) {
+            print(self.parser.errors)
+        }
+    }
+    
+    public func testParsesMicrowaveTimerMachine() {
+        let path = "./machines/microwave/Timer.machine"
+        guard let machine = self.parser.parseMachine(atPath: path) else {
+            XCTFail("Unable to parse machine at path: \(path) - \(self.parser.errors)")
+            return
+        }
         if (false == self.parser.errors.isEmpty) {
             print(self.parser.errors)
         }
