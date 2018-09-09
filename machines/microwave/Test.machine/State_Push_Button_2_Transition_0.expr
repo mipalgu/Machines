@@ -1,1 +1,1 @@
-state.clock.after(10)
+true
