@@ -770,7 +770,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "    private let _results: SimpleVariablesContainer<\(machine.name)ResultsContainer>\n"
         }
         str += "    private let _fsmVars: SimpleVariablesContainer<\(machine.name)Vars>\n\n"
-        str += "    private let clock: Timer\n\n"
+        str += "    public let clock: Timer\n\n"
         for submachine in machine.submachines {
             str += "    public private(set) var \(submachine.name)Machine: AnyControllableFiniteStateMachine\n"
         }
