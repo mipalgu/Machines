@@ -730,10 +730,11 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         let stateType = nil == machine.model ? "MiPalState" : machine.model!.stateType
         str += "public class \(state.name)State: \(stateType) {\n\n"
         str += "    public override var validVars: [String: [Any]] {\n"
-        str += "        return ["
-        let validVars = machine.externalVariables.lazy.map { "            \"_\($0.label)\": []" }
-        str += validVars.isEmpty ? ":]" : "\n" + validVars.combine("") { $0 + ",\n" + $1 } + "\n        ]"
-        str += "\n    }\n\n"
+        str += "        return [\n"
+        str += machine.externalVariables.lazy.map { "            \"_\($0.label)\": []" }.combine("") { $0 + ",\n" + $1 }
+        str += "            \"_fsmVars\": []\n"
+        str += "        ]\n"
+        str += "    }\n\n"
         for external in machine.externalVariables {
             str += "    public let _\(external.label): SnapshotCollectionController<GenericWhiteboard<\(external.messageClass)>>\n"
         }
