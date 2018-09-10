@@ -601,7 +601,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "\n"
         }
         let conformances = extraConformances.reduce("") { $0 + ", " + $1}
-        str += "\npublic final class \(name): Variables, Updateable\(conformances) {\n\n"
+        str += "\npublic final class \(name): Variables\(conformances) {\n\n"
         if (false == vars.isEmpty) {
             str += "\(vars.reduce("") { $0 + "    public \(self.varHelpers.makeDeclaration(forVariable: $1))\n" })"
         }
@@ -634,17 +634,6 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         str += "        return vars\n"
         str += "    }\n\n"
-        // Update.
-        str += "    public final func update(fromDictionary dictionary: [String: Any]) {\n"
-        str += vars.reduce("") {
-            if $1.constant {
-                return $0
-            }
-            return $0 + "        " + (true == self.varHelpers.isComplex(variable: $1)
-                ? "self.\($1.label).update(fromDictionary: dictionary[\"\($1.label)\"] as! [String: Any])\n"
-                : "self.\($1.label) = dictionary[\"\($1.label)\"] as! \($1.type)\n")
-        }
-        str += "    }\n\n"
         str += "}\n"
         return str
     }
@@ -656,7 +645,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "import ModelChecking\n"
         str += "import KripkeStructure\n"
         str += ringlet.imports
-        str += "\npublic final class \(machine)Ringlet: Ringlet, Cloneable, Updateable {\n\n"
+        str += "\npublic final class \(machine)Ringlet: Ringlet, Cloneable {\n\n"
         str += "    public typealias _StateType = \(stateType)\n\n"
         str += "\(ringlet.vars.reduce("") { $0 + "    \(self.varHelpers.makeDeclarationAndAssignment(forVariable: $1))\n" })\n"
         str += "    public init() {}\n\n"
@@ -675,13 +664,6 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             $0 + "        " + self.varHelpers.makeAssignment(withLabel: "ringlet.\($1.label)", andValue: "self.\($1.label)") + "\n"
         }
         str += "        return ringlet\n"
-        str += "    }\n\n"
-        str += "    public final func update(fromDictionary dictionary: [String: Any]) {\n"
-        str += ringlet.vars.reduce("") {
-            $0 + "        " + (true == self.varHelpers.isComplex(variable: $1)
-                ? "self.\($1.label).update(fromDictionary: dictionary[\"\($1.label)\"] as! [String: Any])\n"
-                : "self.\($1.label) = dictionary[\"\($1.label)\"] as! \($1.type)\n")
-        }
         str += "    }\n\n"
         str += "}\n"
         if (false == self.helpers.createFile(atPath: ringletPath, withContents: str)) {
@@ -924,7 +906,6 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "    public func clone() -> Self {\n"
         str += "        fatalError(\"Please implement your own clone.\")\n"
         str += "    }\n\n"
-        str += "    public func update(fromDictionary dictionary: [String: Any]) {}\n\n"
         str += "}\n"
         if (false == self.helpers.createFile(atPath: stateTypePath, withContents: str)) {
             self.errors.append("Unable to create \(model.stateType) at \(stateTypePath.path)")
