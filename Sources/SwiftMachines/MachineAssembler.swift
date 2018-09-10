@@ -625,14 +625,9 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "    }\n\n"
         // Clone.
         str += "    public final func clone() -> \(name) {\n"
-        str += "        let vars = \(name)()\n"
-        str += vars.reduce("") {
-            if $1.constant {
-                return $0
-            }
-            return $0 + "        " + self.varHelpers.makeAssignment(withLabel: "vars.\($1.label)", andValue: "self.\($1.label)") + "\n"
-        }
-        str += "        return vars\n"
+        str += "        return \(name)("
+        str += vars.lazy.map { "\n            \($0.label): (((self.\($0.label) as? Cloneable)?.clone()) as? \($0.type)) ?? self.\($0.label)" }.combine("") { $0 + "," + $1 }
+        str += "\n        )\n"
         str += "    }\n\n"
         str += "}\n"
         return str
@@ -851,10 +846,10 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "            \(external.label): self._\(external.label),\n"
         }
         if nil != machine.parameters {
-            str += "            parameters: self._parameters,\n"
-            str += "            results: self._results,\n"
+            str += "            parameters: SimpleVariablesContainer(vars: self._parameters.vars.clone()),\n"
+            str += "            results: SimpleVariablesContainer(vars: self._results.vars.clone()),\n"
         }
-        str += "            fsmVars: self._fsmVars,\n"
+        str += "            fsmVars: SimpleVariablesContainer(vars: self._fsmVars.vars.clone()),\n"
         str += "            clock: self.clock,\n"
         for submachine in machine.submachines {
             str += "            \(submachine.name)Machine: self.\(submachine.name)Machine,\n"
