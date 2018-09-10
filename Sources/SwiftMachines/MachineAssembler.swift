@@ -601,7 +601,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "\n"
         }
         let conformances = extraConformances.reduce("") { $0 + ", " + $1}
-        str += "\npublic final class \(name): Variables, Updateable\(conformances) {\n\n"
+        str += "\npublic final class \(name): Variables\(conformances) {\n\n"
         if (false == vars.isEmpty) {
             str += "\(vars.reduce("") { $0 + "    public \(self.varHelpers.makeDeclaration(forVariable: $1))\n" })"
         }
@@ -625,25 +625,9 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "    }\n\n"
         // Clone.
         str += "    public final func clone() -> \(name) {\n"
-        str += "        let vars = \(name)()\n"
-        str += vars.reduce("") {
-            if $1.constant {
-                return $0
-            }
-            return $0 + "        " + self.varHelpers.makeAssignment(withLabel: "vars.\($1.label)", andValue: "self.\($1.label)") + "\n"
-        }
-        str += "        return vars\n"
-        str += "    }\n\n"
-        // Update.
-        str += "    public final func update(fromDictionary dictionary: [String: Any]) {\n"
-        str += vars.reduce("") {
-            if $1.constant {
-                return $0
-            }
-            return $0 + "        " + (true == self.varHelpers.isComplex(variable: $1)
-                ? "self.\($1.label).update(fromDictionary: dictionary[\"\($1.label)\"] as! [String: Any])\n"
-                : "self.\($1.label) = dictionary[\"\($1.label)\"] as! \($1.type)\n")
-        }
+        str += "        return \(name)("
+        str += vars.lazy.map { "\n            \($0.label): (((self.\($0.label) as? Cloneable)?.clone()) as? \($0.type)) ?? self.\($0.label)" }.combine("") { $0 + "," + $1 }
+        str += "\n        )\n"
         str += "    }\n\n"
         str += "}\n"
         return str
@@ -656,7 +640,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "import ModelChecking\n"
         str += "import KripkeStructure\n"
         str += ringlet.imports
-        str += "\npublic final class \(machine)Ringlet: Ringlet, Cloneable, Updateable {\n\n"
+        str += "\npublic final class \(machine)Ringlet: Ringlet, Cloneable {\n\n"
         str += "    public typealias _StateType = \(stateType)\n\n"
         str += "\(ringlet.vars.reduce("") { $0 + "    \(self.varHelpers.makeDeclarationAndAssignment(forVariable: $1))\n" })\n"
         str += "    public init() {}\n\n"
@@ -675,13 +659,6 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             $0 + "        " + self.varHelpers.makeAssignment(withLabel: "ringlet.\($1.label)", andValue: "self.\($1.label)") + "\n"
         }
         str += "        return ringlet\n"
-        str += "    }\n\n"
-        str += "    public final func update(fromDictionary dictionary: [String: Any]) {\n"
-        str += ringlet.vars.reduce("") {
-            $0 + "        " + (true == self.varHelpers.isComplex(variable: $1)
-                ? "self.\($1.label).update(fromDictionary: dictionary[\"\($1.label)\"] as! [String: Any])\n"
-                : "self.\($1.label) = dictioanry[\"\($1.label)\"] as! \($1.type)\n")
-        }
         str += "    }\n\n"
         str += "}\n"
         if (false == self.helpers.createFile(atPath: ringletPath, withContents: str)) {
@@ -708,6 +685,9 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         self.takenVars = Set(machine.externalVariables.map { $0.label })
         self.takenVars.insert("fsmVars")
         self.takenVars.insert("clock")
+        self.takenVars.insert("name")
+        self.takenVars.insert("transitions")
+        (machine.model?.actions ?? ["onEntry", "main", "onExit"]).forEach { self.takenVars.insert($0) }
         if nil != machine.parameters {
             self.takenVars.insert("parameters")
         }
@@ -729,6 +709,17 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "\n"
         let stateType = nil == machine.model ? "MiPalState" : machine.model!.stateType
         str += "public class \(state.name)State: \(stateType) {\n\n"
+        str += "    public override var validVars: [String: [Any]] {\n"
+        str += "        return [\n"
+        let start = """
+                        \"name\": [],
+                        \"transitions\": [],
+                        \"clock\": [],
+                        \"_fsmVars\": []
+            """
+        str += machine.externalVariables.reduce(start) { $0 + ",\n            \"_\($1.label)\": []" }
+        str += "\n        ]\n"
+        str += "    }\n\n"
         for external in machine.externalVariables {
             str += "    public let _\(external.label): SnapshotCollectionController<GenericWhiteboard<\(external.messageClass)>>\n"
         }
@@ -855,10 +846,10 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "            \(external.label): self._\(external.label),\n"
         }
         if nil != machine.parameters {
-            str += "            parameters: self._parameters,\n"
-            str += "            results: self._results,\n"
+            str += "            parameters: SimpleVariablesContainer(vars: self._parameters.vars.clone()),\n"
+            str += "            results: SimpleVariablesContainer(vars: self._results.vars.clone()),\n"
         }
-        str += "            fsmVars: self._fsmVars,\n"
+        str += "            fsmVars: SimpleVariablesContainer(vars: self._fsmVars.vars.clone()),\n"
         str += "            clock: self.clock,\n"
         for submachine in machine.submachines {
             str += "            \(submachine.name)Machine: self.\(submachine.name)Machine,\n"
@@ -910,7 +901,6 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "    public func clone() -> Self {\n"
         str += "        fatalError(\"Please implement your own clone.\")\n"
         str += "    }\n\n"
-        str += "    public func update(fromDictionary dictionary: [String: Any]) {}\n\n"
         str += "}\n"
         if (false == self.helpers.createFile(atPath: stateTypePath, withContents: str)) {
             self.errors.append("Unable to create \(model.stateType) at \(stateTypePath.path)")
