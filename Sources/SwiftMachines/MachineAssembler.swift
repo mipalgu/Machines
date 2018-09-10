@@ -680,7 +680,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += ringlet.vars.reduce("") {
             $0 + "        " + (true == self.varHelpers.isComplex(variable: $1)
                 ? "self.\($1.label).update(fromDictionary: dictionary[\"\($1.label)\"] as! [String: Any])\n"
-                : "self.\($1.label) = dictioanry[\"\($1.label)\"] as! \($1.type)\n")
+                : "self.\($1.label) = dictionary[\"\($1.label)\"] as! \($1.type)\n")
         }
         str += "    }\n\n"
         str += "}\n"
