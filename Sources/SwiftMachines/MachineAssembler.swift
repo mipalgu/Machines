@@ -731,9 +731,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "public class \(state.name)State: \(stateType) {\n\n"
         str += "    public override var validVars: [String: [Any]] {\n"
         str += "        return [\n"
-        str += machine.externalVariables.lazy.map { "            \"_\($0.label)\": []" }.combine("") { $0 + ",\n" + $1 }
-        str += "            \"_fsmVars\": []\n"
-        str += "        ]\n"
+        str += machine.externalVariables.reduce("            \"_fsmVars\": []") { $0 + ",\n            \"_\($1.label)\": []" }
+        str += "\n        ]\n"
         str += "    }\n\n"
         for external in machine.externalVariables {
             str += "    public let _\(external.label): SnapshotCollectionController<GenericWhiteboard<\(external.messageClass)>>\n"
