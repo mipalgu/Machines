@@ -734,7 +734,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "public class \(state.name)State: \(stateType) {\n\n"
         str += "    public override var validVars: [String: [Any]] {\n"
         str += "        return [\n"
-        let start = "            \"_name\": [],\n            \"_fsmVars\": []"
+        let start = "            \"name\": [],\n            \"_fsmVars\": []"
         str += machine.externalVariables.reduce(start) { $0 + ",\n            \"_\($1.label)\": []" }
         str += "\n        ]\n"
         str += "    }\n\n"
