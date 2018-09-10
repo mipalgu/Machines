@@ -1,1 +1,1 @@
-var previousState: SleepingState = EmptySleepingState("_previous")
+var shouldExecuteOnEntry: Bool = true
