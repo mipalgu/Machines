@@ -708,6 +708,9 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         self.takenVars = Set(machine.externalVariables.map { $0.label })
         self.takenVars.insert("fsmVars")
         self.takenVars.insert("clock")
+        self.takenVars.insert("name")
+        self.takenVars.insert("transitions")
+        (machine.model?.actions ?? ["onEntry", "main", "onExit"]).forEach { self.takenVars.insert($0) }
         if nil != machine.parameters {
             self.takenVars.insert("parameters")
         }
@@ -731,7 +734,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "public class \(state.name)State: \(stateType) {\n\n"
         str += "    public override var validVars: [String: [Any]] {\n"
         str += "        return [\n"
-        str += machine.externalVariables.reduce("            \"_fsmVars\": []") { $0 + ",\n            \"_\($1.label)\": []" }
+        let start = "            \"_name\": [],\n            \"_fsmVars\": []"
+        str += machine.externalVariables.reduce(start) { $0 + ",\n            \"_\($1.label)\": []" }
         str += "\n        ]\n"
         str += "    }\n\n"
         for external in machine.externalVariables {
