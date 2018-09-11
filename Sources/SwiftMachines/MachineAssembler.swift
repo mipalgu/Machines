@@ -744,13 +744,13 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "    public let _\(external.label): SnapshotCollectionController<GenericWhiteboard<\(external.messageClass)>>\n"
         }
         if nil != machine.parameters {
-            str += "    private let _parameters: SimpleVariablesContainer<\(machine.name)Parameters>\n"
-            str += "    private let _results: SimpleVariablesContainer<\(machine.name)ResultsContainer>\n"
+            str += "    public let _parameters: SimpleVariablesContainer<\(machine.name)Parameters>\n"
+            str += "    public let _results: SimpleVariablesContainer<\(machine.name)ResultsContainer>\n"
         }
-        str += "    private let _fsmVars: SimpleVariablesContainer<\(machine.name)Vars>\n\n"
+        str += "    public let _fsmVars: SimpleVariablesContainer<\(machine.name)Vars>\n\n"
         str += "    public let clock: Timer\n\n"
         for submachine in machine.submachines {
-            str += "    public private(set) var \(submachine.name)Machine: AnyControllableFiniteStateMachine\n"
+            str += "    public internal(set) var \(submachine.name)Machine: AnyControllableFiniteStateMachine\n"
         }
         if (false == machine.submachines.isEmpty) {
             str += "\n"
