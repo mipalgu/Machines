@@ -99,8 +99,11 @@ public final class VariableHelpers {
         return "\(true == variable.constant ? "let" : "var") \(variable.label): \(type)"
     } 
 
-    public func makeDeclarationAndAssignment(forVariable variable: Variable) -> String {
+    public func makeDeclarationAndAssignment(forVariable variable: Variable, _ defaultValue: ((Variable) -> String)? = nil) -> String {
         let declaration = self.makeDeclaration(forVariable: variable)
+        if let defaultFunc = defaultValue {
+            return declaration + " = " + defaultFunc(variable)
+        }
         guard let initialValue = variable.initialValue else {
             return declaration + " = nil"
         }

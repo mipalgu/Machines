@@ -334,7 +334,13 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "\n"
         str += self.makeFactoryFunction(forMachine: machine)
         str += "\n\n"
-        str += nil == machine.parameters ? self.makeSubmachineFactoryFunction(forMachine: machine) : self.makeParameterisedFactoryFunction(forMachine: machine)
+        guard let subFactory = (nil == machine.parameters ?
+            self.makeSubmachineFactoryFunction(forMachine: machine) :
+            self.makeParameterisedFactoryFunction(forMachine: machine))
+        else {
+            return nil
+        }
+        str += subFactory
         str += "\n\n"
         guard true == self.helpers.createFile(atPath: factoryPath, withContents: str) else {
             self.errors.append("Unable to create \(factoryPath.path)")
@@ -353,19 +359,25 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             """
     }
 
-    private func makeSubmachineFactoryFunction(forMachine machine: Machine) -> String {
+    private func makeSubmachineFactoryFunction(forMachine machine: Machine) -> String? {
         //let nameParam = "name" + (machine.submachines.isEmpty && machine.parameterisedMachines.isEmpty ? " _" : "")
         let fun = "public func make_submachine_\(machine.name)(name: String, invoker: Invoker, clock: Timer) -> (AnyControllableFiniteStateMachine, [Dependency]) {\n"
-        return fun + self.makeFactoryContent(forMachine: machine, createParameterisedMachine: false) + "}\n\n"
+        guard let content = self.makeFactoryContent(forMachine: machine, createParameterisedMachine: false) else {
+            return nil
+        }
+        return fun + content + "}\n\n"
     }
     
-    private func makeParameterisedFactoryFunction(forMachine machine: Machine) -> String {
+    private func makeParameterisedFactoryFunction(forMachine machine: Machine) -> String? {
         //let nameParam = "name" + (machine.submachines.isEmpty && machine.parameterisedMachines.isEmpty ? " _" : "")
         let fun = "public func make_parameterised_\(machine.name)(name: String, invoker: Invoker, clock: Timer) -> (AnyParameterisedFiniteStateMachine, [Dependency]) {\n"
-        return fun + self.makeFactoryContent(forMachine: machine, createParameterisedMachine: true) + "}\n\n"
+        guard let content = self.makeFactoryContent(forMachine: machine, createParameterisedMachine: true) else {
+            return nil
+        }
+        return fun + content + "}\n\n"
     }
     
-    private func makeFactoryContent(forMachine machine: Machine, createParameterisedMachine: Bool) -> String {
+    private func makeFactoryContent(forMachine machine: Machine, createParameterisedMachine: Bool) -> String? {
         var str = ""
         /*for v in machine.externalVariables {
          str += "    let wbds\n"
@@ -456,6 +468,23 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                     continue
                 }
                 var condition = "        let state = $0 as! \(state.name)State\n"
+                for external in machine.externalVariables {
+                    condition += "        let _\(external.label): SnapshotCollectionController<GenericWhiteboard<\(external.messageClass)>> = state._\(external.label)\n"
+                }
+                if nil != machine.parameters {
+                    condition += "        let _parameters: SimpleVariablesContainer<\(machine.name)Parameters> = state._parameters\n"
+                    condition += "        let _results: SimpleVariablesContainer<\(machine.name)ResultsContainer> = state._results\n"
+                }
+                condition += "        let _fsmVars: SimpleVariablesContainer<\(machine.name)Vars> = state._fsmVars\n"
+                condition += "        let clock: Timer = state.clock\n"
+                for submachine in machine.submachines {
+                    condition += "        var \(submachine.name)Machine: AnyControllableFiniteStateMachine = state.\(submachine.name)Machine\n"
+                }
+                guard let vars = self.makeStateVariables(forState: state, inMachine: machine, indent: "        ", { "state." + $0.label }) else {
+                    return nil
+                }
+                condition += vars
+                condition += self.makeComputedVariables(forState: state, inMachine: machine, includeScope: false, indent: "        ")
                 let last = conditionLines.removeLast()
                 condition += conditionLines.reduce("") { $0 + "        \($1)\n" }
                 let lastTokens = last.components(separatedBy: CharacterSet.whitespaces)
@@ -682,15 +711,6 @@ public final class MachineAssembler: Assembler, ErrorContainer {
     }
 
     private func makeState(_ state: State, forMachine machine: Machine, inDirectory path: URL) -> URL? {
-        self.takenVars = Set(machine.externalVariables.map { $0.label })
-        self.takenVars.insert("fsmVars")
-        self.takenVars.insert("clock")
-        self.takenVars.insert("name")
-        self.takenVars.insert("transitions")
-        (machine.model?.actions ?? ["onEntry", "main", "onExit"]).forEach { self.takenVars.insert($0) }
-        if nil != machine.parameters {
-            self.takenVars.insert("parameters")
-        }
         let statePath = path.appendingPathComponent("\(state.name)State.swift", isDirectory: false)
         var str = "import FSM\nimport swiftfsm\nimport ExternalVariables\n"
         if let _ = machine.includes {
@@ -742,43 +762,11 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         if (false == machine.parameterisedMachines.isEmpty) {
             str += "\n"
         }
-        // State variables.
-        guard
-            let _ = state.vars.failMap({ (v: Variable) -> Variable? in
-                if "_" == v.label.characters.first {
-                    self.errors.append("\(v.label) cannot start with an underscore in state \(state.name)")
-                    return nil
-                }
-                if true == takenVars.contains(v.label) {
-                    self.errors.append("\(v.label) is defined twice in state \(state.name)")
-                    return nil
-                }
-                takenVars.insert(v.label)
-                return v
-            })
-        else {
+        guard let vars = self.makeStateVariables(forState: state, inMachine: machine, indent: "    ") else {
             return nil
         }
-        str += state.vars.reduce("") {
-            $0 + "    " + self.varHelpers.makeDeclarationAndAssignment(forVariable: $1) + "\n"
-        }
-        if (false == state.vars.isEmpty) {
-            str += "\n"
-        }
-        // FSM variables.
-        str += self.createComputedProperty(mutable: true, withLabel: "fsmVars", andType: "\(machine.name)Vars", referencing: "self._fsmVars.vars")
-        str += self.createComputedProperties(fromVars: machine.vars, withinContainer: "self.fsmVars")
-        //Parameters
-        if let parameters = machine.parameters {
-            str += self.createComputedProperty(mutable: true, withLabel: "parameters", andType: "\(machine.name)Parameters", referencing: "self._parameters.vars")
-            str += self.createComputedProperties(fromVars: parameters, withinContainer: "self.parameters")
-            str += self.createComputedProperty(mutable: true, withLabel: "result", andType: machine.returnType ?? "Void", referencing: "self._results.vars.result")
-        }
-        // External variables.
-        for external in machine.externalVariables {
-            str += self.createComputedProperty(mutable: true, withLabel: external.label, andType: external.messageClass, referencing: "_\(external.label).val")
-            //str += self.createComputedProperties(fromVars: external.vars, withinContainer: "\(external.label)")
-        }
+        str += vars
+        str += self.makeComputedVariables(forState: state, inMachine: machine, indent: "    ")
         // Init.
         str += "    public init(\n"
         str += "        _ name: String,\n"
@@ -870,6 +858,62 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             return nil
         }
         return statePath
+    }
+    
+    private func makeStateVariables(forState state: State, inMachine machine: Machine, indent: String = "", _ defaultValues: ((Variable) -> String)? = nil) -> String? {
+        self.takenVars = Set(machine.externalVariables.map { $0.label })
+        (machine.model?.actions ?? ["onEntry", "main", "onExit"]).forEach { self.takenVars.insert($0) }
+        if nil != machine.parameters {
+            self.takenVars.insert("parameters")
+        }
+        self.takenVars.insert("fsmVars")
+        self.takenVars.insert("clock")
+        self.takenVars.insert("name")
+        self.takenVars.insert("transitions")
+        var str = ""
+        // State variables.
+        guard
+            let _ = state.vars.failMap({ (v: Variable) -> Variable? in
+                if "_" == v.label.characters.first {
+                    self.errors.append("\(v.label) cannot start with an underscore in state \(state.name)")
+                    return nil
+                }
+                if true == takenVars.contains(v.label) {
+                    self.errors.append("\(v.label) is defined twice in state \(state.name)")
+                    return nil
+                }
+                takenVars.insert(v.label)
+                return v
+            })
+            else {
+                return nil
+        }
+        str += state.vars.reduce("") {
+            $0 + indent + self.varHelpers.makeDeclarationAndAssignment(forVariable: $1, defaultValues) + "\n"
+        }
+        if (false == state.vars.isEmpty) {
+            str += "\n"
+        }
+        return str
+    }
+    
+    private func makeComputedVariables(forState state: State, inMachine machine: Machine, includeScope: Bool = true, indent: String = "") -> String {
+        var str = ""
+        // FSM variables.
+        str += self.createComputedProperty(mutable: true, withLabel: "fsmVars", andType: "\(machine.name)Vars", referencing: "_fsmVars.vars", includeScope: includeScope, indent: indent)
+        str += self.createComputedProperties(fromVars: machine.vars, withinContainer: "fsmVars", includeScope: includeScope, indent: indent)
+        //Parameters
+        if let parameters = machine.parameters {
+            str += self.createComputedProperty(mutable: true, withLabel: "parameters", andType: "\(machine.name)Parameters", referencing: "_parameters.vars", includeScope: includeScope, indent: indent)
+            str += self.createComputedProperties(fromVars: parameters, withinContainer: "parameters", includeScope: includeScope, indent: indent)
+            str += self.createComputedProperty(mutable: true, withLabel: "result", andType: machine.returnType ?? "Void", referencing: "_results.vars.result", includeScope: includeScope, indent: indent)
+        }
+        // External variables.
+        for external in machine.externalVariables {
+            str += self.createComputedProperty(mutable: true, withLabel: external.label, andType: external.messageClass, referencing: "_\(external.label).val", includeScope: includeScope, indent: indent)
+            //str += self.createComputedProperties(fromVars: external.vars, withinContainer: "\(external.label)")
+        }
+        return str
     }
 
     private func makeStateType(fromModel model: Model, inDirectory path: URL) -> URL? {
@@ -985,31 +1029,31 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         return true
     }
 
-    private func createComputedProperties(fromVars vars: [Variable], withinContainer container: String) -> String {
+    private func createComputedProperties(fromVars vars: [Variable], withinContainer container: String, includeScope: Bool = true, indent: String = "") -> String {
         return vars.reduce("") {
             if true == takenVars.contains($1.label) {
                 return $0
             }
             takenVars.insert($1.label)
-            return $0 + self.createComputedProperty(mutable: !$1.constant, withLabel: $1.label, andType: $1.type, referencing: "\(container).\($1.label)")
+            return $0 + self.createComputedProperty(mutable: !$1.constant, withLabel: $1.label, andType: $1.type, referencing: "\(container).\($1.label)", indent: indent)
         }
     }
 
-    private func createComputedProperty(mutable: Bool, withLabel label: String, andType type: String, referencing reference: String) -> String {
+    private func createComputedProperty(mutable: Bool, withLabel label: String, andType type: String, referencing reference: String, includeScope: Bool = true, indent: String = "") -> String {
         let getter = "return \(reference)"
-        let accessor = "public" + (mutable ? " private(set)" : "")
+        let accessor = !includeScope ? "" : "public " + (mutable ? "internal(set) " : "")
         var str = ""
-        str += "    \(accessor) var \(label): \(type) {\n"
+        str += indent + "\(accessor)var \(label): \(type) {\n"
         if mutable {
-            str += "        get {\n"
-            str += "            \(getter)\n"
-            str += "        } set {\n"
-            str += "            \(reference) = newValue\n"
-            str += "        }\n"
+            str += indent + "    get {\n"
+            str += indent + "        \(getter)\n"
+            str += indent + "    } set {\n"
+            str += indent + "        \(reference) = newValue\n"
+            str += indent + "    }\n"
         } else {
-            str += "        \(getter)\n"
+            str += indent + "    \(getter)\n"
         }
-        str += "    }\n\n"
+        str += indent + "}\n\n"
         return str
     }
 
