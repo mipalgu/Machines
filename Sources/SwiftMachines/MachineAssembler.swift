@@ -1035,7 +1035,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                 return $0
             }
             takenVars.insert($1.label)
-            return $0 + self.createComputedProperty(mutable: !$1.constant, withLabel: $1.label, andType: $1.type, referencing: "\(container).\($1.label)", indent: indent)
+            return $0 + self.createComputedProperty(mutable: !$1.constant, withLabel: $1.label, andType: $1.type, referencing: "\(container).\($1.label)", includeScope: includeScope, indent: indent)
         }
     }
 
