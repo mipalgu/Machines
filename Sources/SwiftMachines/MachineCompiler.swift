@@ -60,8 +60,14 @@ import Machines
 import Foundation
 
 @available(macOS 10.11, *)
-public class MachineCompiler<A: Assembler> {
+public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContainer {
 
+    public fileprivate(set) var errors: [String] = []
+    
+    public var lastError: String? {
+        return self.errors.last
+    }
+    
     private let assembler: A
 
     private let invoker: Invoker
@@ -90,6 +96,7 @@ public class MachineCompiler<A: Assembler> {
         andLinkerFlags linkerFlags: [String] = [],
         andSwiftCompilerFlags swiftCompilerFlags: [String] = []
     ) -> String? {
+        self.errors = []
         guard
             let (_, outputPath) = self.compileMachine(
                     machine,
@@ -111,12 +118,14 @@ public class MachineCompiler<A: Assembler> {
     ) -> (URL, URL)? {
         print("Compile: \(machine.name)")
         guard let (buildPath, _) = self.assembler.assemble(machine) else {
+            self.errors = self.assembler.errors
             return nil
         }
         print("Compiling \(machine.name) with Package at path: \(buildPath.path)")
         let fm = FileManager.default
         let cwd = fm.currentDirectoryPath
         guard true == fm.changeCurrentDirectoryPath(buildPath.path) else {
+            self.errors.append("Unable to change into directory \(buildPath.path)")
             return nil
         }
         print("Compiling at path: \(buildPath.path)")
