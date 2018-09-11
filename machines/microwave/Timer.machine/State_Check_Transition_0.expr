@@ -1,1 +1,1 @@
-state.microwave_status.buttonPushed && !state.microwave_status.doorOpen && state.currentTime < UInt8.max
+microwave_status.buttonPushed && !microwave_status.doorOpen && currentTime < UInt8.max
