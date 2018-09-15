@@ -654,8 +654,12 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "    }\n\n"
         // Clone.
         str += "    public final func clone() -> \(name) {\n"
+        vars.forEach {
+            str += "        print(self.\($0.label))\n"
+            str += "        print(((self.\($0.label) as? Cloneable)?.clone() as? \($0.type)) ?? self.\($0.label))\n"
+        }
         str += "        return \(name)("
-        str += vars.lazy.map { "\n            \($0.label): (((self.\($0.label) as? Cloneable)?.clone()) as? \($0.type)) ?? self.\($0.label)" }.combine("") { $0 + "," + $1 }
+        str += vars.lazy.map { "\n            \($0.label): ((self.\($0.label) as? Cloneable)?.clone() as? \($0.type)) ?? self.\($0.label)" }.combine("") { $0 + "," + $1 }
         str += "\n        )\n"
         str += "    }\n\n"
         str += "}\n"
