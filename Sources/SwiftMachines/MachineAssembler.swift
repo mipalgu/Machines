@@ -141,12 +141,13 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             let package = self.makePackage(forMachine: machine, inDirectory: packageDir, withDependencies: dependencies),
             let sourcesDir = self.helpers.overwriteSubDirectory("Sources", inDirectory: packageDir),
             let srcDir = self.helpers.overwriteSubDirectory(machine.name + "Machine", inDirectory: sourcesDir),
-            let factoryPath = self.makeFactory(forMachine: machine, inDirectory: srcDir)
+            let factoryPath = self.makeFactory(forMachine: machine, inDirectory: srcDir),
+            let fsmPath = self.makeFiniteStateMachine(fromMachine: machine, inDirectory: srcDir)
         else {
             self.errors.append(errorMsg)
             return nil
         }
-        files.append(factoryPath)
+        files.append(contentsOf: [fsmPath, factoryPath])
         if nil != machine.parameters {
             guard
                 let parametersPath = self.makeParameters(forMachine: machine, inDirectory: srcDir),
@@ -1009,7 +1010,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         var str = "import FSM\nimport swiftfsm\n\n"
         let conformance = nil == machine.parameters ? "MachineFSM" : "ParameterisedMachineFSM"
         let stateType = machine.model?.stateType ?? machine.name.capitalized + "State"
-        let ringlet = nil == machine.model ? machine.name.capitalized + "Ringlet" : "MiPalRinglet"
+        let ringlet = nil != machine.model ? machine.name.capitalized + "Ringlet" : "MiPalRinglet"
         str += "internal final class " + name + ": " + conformance + "{\n\n"
         // Computed Properties
         str += "    fileprivate var allStates: [String: " + stateType + "] {\n"
@@ -1024,6 +1025,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "            }\n"
         str += "        }\n"
         str += "        fetchAllStates(fromState: self.initialState)\n"
+        str += "        fetchAllStates(fromState: self.suspendState)\n"
+        str += "        fetchAllStates(fromState: self.exitState)\n"
         str += "        return stateCache\n"
         str += "    }\n\n"
         str += "    public var computedVars: [String: Any] {\n"
@@ -1034,7 +1037,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "        \"parameters\": self.parameters.vars,\n"
             str += "        \"results\": self.results.vars,\n"
         }
-        str += "        \"states\": self.allStates,\n"
+        str += "        \"states\": self.allStates.lazy.map { $1 }.sorted { $0.name < $1.name },\n"
         str += "    }\n\n"
         str += "    public var validVars: [String: [Any]] {\n"
         str += "        return [\n"
@@ -1089,19 +1092,19 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "     *  - Warning: This must be unique between FSMs.\n"
         str += "     */\n"
         str += "    public let name: String\n\n"
-        str += "    /**\n"
-        str += "     *  The last state that was executed.\n"
-        str += "     */\n"
         if nil != machine.parameters {
             str += "    /**\n"
             str += "     * All parameters used by the machine.\n"
-            str += "     */"
+            str += "     */\n"
             str += "    public let parameters: SimpleVariablesContainer<" + machine.name.capitalized + "Parameters>\n\n"
         }
+        str += "    /**\n"
+        str += "     *  The last state that was executed.\n"
+        str += "     */\n"
         str += "    public var previousState: " + stateType + "\n\n"
         if nil != machine.parameters {
             str += "    /**\n"
-            str += "     * All results returned by the machine when called."
+            str += "     * All results returned by the machine when called.\n"
             str += "     */\n"
             str += "    public let results: SimpleVariablesContainer<" + machine.name.capitalized + "Results>\n\n"
         }
@@ -1126,7 +1129,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "        name: String,\n"
         str += "        initialState: " + stateType + ",\n"
         str += "        externalVariables: [AnySnapshotController],\n"
-        str += "        fsmVars: SimpleVariablesContainer<" + machine.name.capitalized + "Vars>,\n\n"
+        str += "        fsmVars: SimpleVariablesContainer<" + machine.name.capitalized + "Vars>,\n"
         if nil != machine.parameters {
             str += "        parameters: SimpleVariablesContainer<" + machine.name.capitalized + "Parameters>,\n"
             str += "        results: SimpleVariablesContainer<" + machine.name.capitalized + "Results>,\n"
@@ -1136,7 +1139,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "        suspendedState: " + stateType + "?,\n"
         str += "        suspendState: " + stateType + ",\n"
         str += "        exitState: " + stateType + ",\n"
-        str += "        submachines: [AnyControllableFiniteStateMachine]"
+        str += "        submachines: [AnyControllableFiniteStateMachine]\n"
         str += "    ) {\n"
         str += "        self.currentState = initialState\n"
         str += "        self.exitState = exitState\n"
@@ -1157,7 +1160,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "        self.allStates.forEach { $1.Me = self }\n"
         str += "    }\n\n"
         // Clone
-        str += "    public func clone() -> " + name + "{\n"
+        str += "    public func clone() -> " + name + " {\n"
         str += "        var stateCache: [String: " + stateType + "] = [:]\n"
         str += "        let allStates = self.allStates\n"
         str += "        func apply(_ state: " + stateType + ") -> " + stateType + " {\n"
@@ -1196,7 +1199,6 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "        )\n"
         str += "        fsm.currentState = apply(self.currentState.clone())\n"
         str += "        fsm.previousState = apply(self.previousState.clone())\n"
-        str += "        fsm.allStates.forEach { $1.Me = fsm }\n"
         str += "        return fsm\n"
         str += "    }\n\n"
         str += "}"
