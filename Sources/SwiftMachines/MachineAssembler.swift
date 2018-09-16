@@ -445,11 +445,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             for external in machine.externalVariables {
                 str += "        \(external.label): \(external.label),\n"
             }
-            if nil != machine.parameters {
-                str += "        parameters: parameters,"
-                str += "        results: results,"
-            }
-            str += "        fsmVars: fsmVars, clock: clock,"
+            str += "        clock: clock,"
             for m in machine.submachines + machine.parameterisedMachines {
                 str += "\n        \(m.name)Machine: \(m.name)Machine,"
             }
@@ -530,9 +526,10 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         let dependencyList = dependencies.isEmpty ? "[]" : dependencies.combine("") { $0 + " + " + $1 }
         let fsm: String
+        let fsmName = machine.name + "FiniteStateMachine"
         if false == createParameterisedMachine {
             fsm = """
-                MachineFSM(
+                \(fsmName)(
                         name + \".\(machine.name)\",
                         initialState: \(machine.initialState.name),
                         externalVariables: \(externalsArray),
@@ -547,7 +544,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         } else {
             let parameters = nil == machine.parameters ? "SimpleVariablesContainer(vars: EmptyVariables())" : "parameters"
             fsm = """
-                parameterisedFSM(
+                \(fsmName)(
                         name + \".\(machine.name)\",
                         initialState: \(machine.initialState.name),
                         externalVariables: \(externalsArray),
@@ -562,11 +559,12 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                     )
                 """
         }
+        str += "    // Create FSM.\n"
+        str += "    let fsm = \(fsm)\n"
         for state in machine.states {
             str += "    \(state.name).Me = fsm\n"
         }
-        str += "    // Create FSM.\n"
-        str += "    return (\(fsm), \(dependencyList))\n"
+        str += "    return (fsm, \(dependencyList))\n"
         return str
     }
 
@@ -781,7 +779,6 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         for external in machine.externalVariables {
             str += "        \(external.label): SnapshotCollectionController<GenericWhiteboard<\(external.messageClass)>>,\n"
         }
-        str += "        Me: " + meType + "! = nil,\n"
         str += "        clock: Timer,\n"
         for submachine in machine.submachines {
             str += "        \(submachine.name)Machine: AnyControllableFiniteStateMachine,\n"
@@ -832,7 +829,6 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         for external in machine.externalVariables {
             str += "            \(external.label): self._\(external.label),\n"
         }
-        str += "            Me: self.Me,\n"
         str += "            clock: self.clock,\n"
         for submachine in machine.submachines {
             str += "            \(submachine.name)Machine: self.\(submachine.name)Machine,\n"
@@ -845,6 +841,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += state.vars.reduce("") {
             $0 + "        " + self.varHelpers.makeAssignment(withLabel: "state.\($1.label)", andValue: "self.\($1.label)") + "\n"
         }
+        str += "        state.Me = self.Me\n"
         str += "        return state\n"
         str += "    }\n\n"
         str += "}\n"
