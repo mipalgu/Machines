@@ -561,6 +561,9 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                     )
                 """
         }
+        for state in machine.states {
+            str += "    \(state.name).Me = fsm\n"
+        }
         str += "    // Create FSM.\n"
         str += "    return (\(fsm), \(dependencyList))\n"
         return str
@@ -749,11 +752,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         for external in machine.externalVariables {
             str += "    public let _\(external.label): SnapshotCollectionController<GenericWhiteboard<\(external.messageClass)>>\n"
         }
-        if nil != machine.parameters {
-            str += "    public let _parameters: SimpleVariablesContainer<\(machine.name)Parameters>\n"
-            str += "    public let _results: SimpleVariablesContainer<\(machine.name)ResultsContainer>\n"
-        }
-        str += "    public let _fsmVars: SimpleVariablesContainer<\(machine.name)Vars>\n\n"
+        let meType = machine.name.capitalized + "FiniteStateMachine"
+        str += "    internal var Me: " + meType + "!\n"
         str += "    public let clock: Timer\n\n"
         for submachine in machine.submachines {
             str += "    public internal(set) var \(submachine.name)Machine: AnyControllableFiniteStateMachine\n"
@@ -780,11 +780,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         for external in machine.externalVariables {
             str += "        \(external.label): SnapshotCollectionController<GenericWhiteboard<\(external.messageClass)>>,\n"
         }
-        if nil != machine.parameters {
-            str += "        parameters: SimpleVariablesContainer<\(machine.name)Parameters>,\n"
-            str += "        results: SimpleVariablesContainer<\(machine.name)ResultsContainer>,\n"
-        }
-        str += "        fsmVars: SimpleVariablesContainer<\(machine.name)Vars>,\n"
+        str += "        Me: " + meType + "! = nil,\n"
         str += "        clock: Timer,\n"
         for submachine in machine.submachines {
             str += "        \(submachine.name)Machine: AnyControllableFiniteStateMachine,\n"
@@ -798,11 +794,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         for external in machine.externalVariables {
             str += "        self._\(external.label) = \(external.label)\n"
         }
-        if nil != machine.parameters {
-            str += "        self._parameters = parameters\n"
-            str += "        self._results = results\n"
-        }
-        str += "        self._fsmVars = fsmVars\n"
+        str += "        self.Me = Me\n"
         str += "        self.clock = clock\n"
         for submachine in machine.submachines {
             str += "        self.\(submachine.name)Machine = \(submachine.name)Machine\n"
@@ -839,11 +831,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         for external in machine.externalVariables {
             str += "            \(external.label): self._\(external.label),\n"
         }
-        if nil != machine.parameters {
-            str += "            parameters: SimpleVariablesContainer(vars: self._parameters.vars.clone()),\n"
-            str += "            results: SimpleVariablesContainer(vars: self._results.vars.clone()),\n"
-        }
-        str += "            fsmVars: SimpleVariablesContainer(vars: self._fsmVars.vars.clone()),\n"
+        str += "            Me: self.Me,\n"
         str += "            clock: self.clock,\n"
         for submachine in machine.submachines {
             str += "            \(submachine.name)Machine: self.\(submachine.name)Machine,\n"
@@ -876,6 +864,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         self.takenVars.insert("clock")
         self.takenVars.insert("name")
         self.takenVars.insert("transitions")
+        self.takenVars.insert("Me")
         var str = ""
         // State variables.
         guard
@@ -906,13 +895,13 @@ public final class MachineAssembler: Assembler, ErrorContainer {
     private func makeComputedVariables(forState state: State, inMachine machine: Machine, includeScope: Bool = true, indent: String = "") -> String {
         var str = ""
         // FSM variables.
-        str += self.createComputedProperty(mutable: true, withLabel: "fsmVars", andType: "\(machine.name)Vars", referencing: "_fsmVars.vars", includeScope: includeScope, indent: indent)
+        str += self.createComputedProperty(mutable: true, withLabel: "fsmVars", andType: "\(machine.name)Vars", referencing: "self.Me.fsmVars.vars", includeScope: includeScope, indent: indent)
         str += self.createComputedProperties(fromVars: machine.vars, withinContainer: "fsmVars", includeScope: includeScope, indent: indent)
         //Parameters
         if let parameters = machine.parameters {
-            str += self.createComputedProperty(mutable: true, withLabel: "parameters", andType: "\(machine.name)Parameters", referencing: "_parameters.vars", includeScope: includeScope, indent: indent)
+            str += self.createComputedProperty(mutable: true, withLabel: "parameters", andType: "\(machine.name)Parameters", referencing: "self.Me.parameters.vars", includeScope: includeScope, indent: indent)
             str += self.createComputedProperties(fromVars: parameters, withinContainer: "parameters", includeScope: includeScope, indent: indent)
-            str += self.createComputedProperty(mutable: true, withLabel: "result", andType: machine.returnType ?? "Void", referencing: "_results.vars.result", includeScope: includeScope, indent: indent)
+            str += self.createComputedProperty(mutable: true, withLabel: "result", andType: machine.returnType ?? "Void", referencing: "self.Me.results.vars.result", includeScope: includeScope, indent: indent)
         }
         // External variables.
         for external in machine.externalVariables {
@@ -1012,6 +1001,211 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             return nil
         }
         return callbackStateTypePath
+    }
+    
+    public func makeFiniteStateMachine(fromMachine machine: Machine, inDirectory path: URL) -> URL? {
+        let name = machine.name.capitalized + "FiniteStateMachine"
+        let fsmPath = path.appendingPathComponent(name + ".swift", isDirectory: false)
+        var str = "import FSM\nimport swiftfsm\n\n"
+        let conformance = nil == machine.parameters ? "MachineFSM" : "ParameterisedMachineFSM"
+        let stateType = machine.model?.stateType ?? machine.name.capitalized + "State"
+        let ringlet = nil == machine.model ? machine.name.capitalized + "Ringlet" : "MiPalRinglet"
+        str += "internal final class " + name + ": " + conformance + "{\n\n"
+        // Computed Properties
+        str += "    fileprivate var allStates: [String: " + stateType + "] {\n"
+        str += "        var stateCache: [String: " + stateType + "] = [:]\n"
+        str += "        func fetchAllStates(fromState state: " + stateType + ") {\n"
+        str += "            if stateCache[state.name] != nil {\n"
+        str += "                return\n"
+        str += "            }\n"
+        str += "            stateCache[state.name] = state\n"
+        str += "            state.transitions.forEach {\n"
+        str += "                fetchAllStates(fromState: $0.target)\n"
+        str += "            }\n"
+        str += "        }\n"
+        str += "        fetchAllStates(fromState: self.initialState)\n"
+        str += "        return stateCache\n"
+        str += "    }\n\n"
+        str += "    public var computedVars: [String: Any] {\n"
+        str += "        \"fsmVars\": self.fsmVars.vars,\n"
+        str += "        \"hasFinished\": self.hasFinished,\n"
+        str += "        \"isSuspended\": self.isSuspended,\n"
+        if nil != machine.parameters {
+            str += "        \"parameters\": self.parameters.vars,\n"
+            str += "        \"results\": self.results.vars,\n"
+        }
+        str += "        \"states\": self.allStates,\n"
+        str += "    }\n\n"
+        str += "    public var validVars: [String: [Any]] {\n"
+        str += "        return [\n"
+        str += "            \"exitState\": [],\n"
+        str += "            \"externalVariables\": [],\n"
+        str += "            \"fsmVars\": [],\n"
+        str += "            \"initialPreviousState\": [],\n"
+        str += "            \"initialState\": [],\n"
+        str += "            \"name\": [],\n"
+        if nil != machine.parameters {
+            str += "            \"parameters\": [],\n"
+        }
+        str += "            \"previousState\": [],\n"
+        if nil != machine.parameters {
+            str += "            \"results\": [],\n"
+        }
+        str += "            \"submachines\": [],\n"
+        str += "            \"suspendedState\": [],\n"
+        str += "            \"suspendState\": [],\n"
+        str += "        ]\n"
+        str += "    }\n\n"
+        // Properties
+        str += "    /**\n"
+        str += "     *  The state that is currently executing.\n"
+        str += "     */\n"
+        str += "    public var currentState: " + stateType + "\n\n"
+        str += "    /**\n"
+        str += "     *  The state that is used to exit the FSM.\n"
+        str += "     */\n"
+        str += "    public let exitState: " + stateType + "\n\n"
+        str += "    /**\n"
+        str += "     * All external variables used by the machine.\n"
+        str += "     */\n"
+        str += "    public var externalVariables: [AnySnapshotController]\n\n"
+        str += "    /**\n"
+        str += "     * All FSM variables used by the machine.\n"
+        str += "     */\n"
+        str += "    public let fsmVars: SimpleVariablesContainer<" + machine.name.capitalized + "Vars>\n\n"
+        str += "    /**\n"
+        str += "     *  The initial state of the previous state.\n"
+        str += "     *\n"
+        str += "     *  `previousState` is set to this value on restart.\n"
+        str += "     */\n"
+        str += "    public let initialPreviousState: " + stateType + "\n\n"
+        str += "    /**\n"
+        str += "     *  The starting state of the FSM.\n"
+        str += "     */\n"
+        str += "    public let initialState: " + stateType + "\n\n"
+        str += "    /**\n"
+        str += "     *  The name of the FSM.\n"
+        str += "     *\n"
+        str += "     *  - Warning: This must be unique between FSMs.\n"
+        str += "     */\n"
+        str += "    public let name: String\n\n"
+        str += "    /**\n"
+        str += "     *  The last state that was executed.\n"
+        str += "     */\n"
+        if nil != machine.parameters {
+            str += "    /**\n"
+            str += "     * All parameters used by the machine.\n"
+            str += "     */"
+            str += "    public let parameters: SimpleVariablesContainer<" + machine.name.capitalized + "Parameters>\n\n"
+        }
+        str += "    public var previousState: " + stateType + "\n\n"
+        if nil != machine.parameters {
+            str += "    /**\n"
+            str += "     * All results returned by the machine when called."
+            str += "     */\n"
+            str += "    public let results: SimpleVariablesContainer<" + machine.name.capitalized + "Results>\n\n"
+        }
+        str += "    /**\n"
+        str += "     *  An instance of `Ringlet` that is used to execute the states.\n"
+        str += "     */\n"
+        str += "    public fileprivate(set) var ringlet: " + ringlet + "\n\n"
+        str += "    /**\n"
+        str += "     * All submachines of this machine.\n"
+        str += "     */\n"
+        str += "    public var submachines: [AnyControllableFiniteStateMachine]\n\n"
+        str += "    /**\n"
+        str += "     *  The state that was the `currentState` before the FSM was suspended.\n"
+        str += "     */\n"
+        str += "    public var suspendedState: " + stateType + "?\n\n"
+        str += "    /**\n"
+        str += "     *  The state that is set to `currentState` when the FSM is suspended.\n"
+        str += "     */\n"
+        str += "    public let suspendState: " + stateType + "\n\n"
+        // Init
+        str += "    internal init(\n"
+        str += "        name: String,\n"
+        str += "        initialState: " + stateType + ",\n"
+        str += "        externalVariables: [AnySnapshotController],\n"
+        str += "        fsmVars: SimpleVariablesContainer<" + machine.name.capitalized + "Vars>,\n\n"
+        if nil != machine.parameters {
+            str += "        parameters: SimpleVariablesContainer<" + machine.name.capitalized + "Parameters>,\n"
+            str += "        results: SimpleVariablesContainer<" + machine.name.capitalized + "Results>,\n"
+        }
+        str += "        ringlet: " + ringlet + ",\n"
+        str += "        initialPreviousState: " + stateType + ",\n"
+        str += "        suspendedState: " + stateType + "?,\n"
+        str += "        suspendState: " + stateType + ",\n"
+        str += "        exitState: " + stateType + ",\n"
+        str += "        submachines: [AnyControllableFiniteStateMachine]"
+        str += "    ) {\n"
+        str += "        self.currentState = initialState\n"
+        str += "        self.exitState = exitState\n"
+        str += "        self.externalVariables = externalVariables\n"
+        str += "        self.fsmVars = fsmVars\n"
+        if nil != machine.parameters {
+            str += "        self.parameters = parameters\n"
+            str += "        self.results = results\n"
+        }
+        str += "        self.initialState = initialState\n"
+        str += "        self.initialPreviousState = initialPreviousState\n"
+        str += "        self.name = name\n"
+        str += "        self.previousState = initialPreviousState\n"
+        str += "        self.ringlet = ringlet\n"
+        str += "        self.submachines = submachines\n"
+        str += "        self.suspendedState = suspendedState\n"
+        str += "        self.suspendState = suspendState\n"
+        str += "        self.allStates.forEach { $1.Me = self }\n"
+        str += "    }\n\n"
+        // Clone
+        str += "    public func clone() -> " + name + "{\n"
+        str += "        var stateCache: [String: " + stateType + "] = [:]\n"
+        str += "        let allStates = self.allStates\n"
+        str += "        func apply(_ state: " + stateType + ") -> " + stateType + " {\n"
+        str += "            if let s = stateCache[state.name] {\n"
+        str += "                return s\n"
+        str += "            }\n"
+        str += "            var state = state\n"
+        str += "            stateCache[state.name] = state\n"
+        str += "            state.transitions = state.transitions.map {\n"
+        str += "                if $0.target == state {\n"
+        str += "                    return $0\n"
+        str += "                }\n"
+        str += "                guard let target = allStates[$0.target.name] else {\n"
+        str += "                    return $0\n"
+        str += "                }\n"
+        str += "                return $0.map { _ in apply(target.clone()) }\n"
+        str += "            }\n"
+        str += "            return state\n"
+        str += "        }\n"
+        str += "        self.fsmVars.vars = self.fsmVars.vars.clone()\n"
+        str += "        var fsm = " + name + "(\n"
+        str += "            name: self.name,\n"
+        str += "            initialState: apply(self.initialState.clone()),\n"
+        str += "            externalVariables: self.externalVariables,\n"
+        str += "            fsmVars: SimpleVariablesContainer(vars: self.fsmVars.vars.clone()),\n"
+        if nil != machine.parameters {
+            str += "            parameters: SimpleVariablesContainer(vars: self.parameters.vars.clone()),\n"
+            str += "            results: SimpleVariablesContainer(vars: self.results.vars.clone()),\n"
+        }
+        str += "            ringlet: self.ringlet.clone(),\n"
+        str += "            initialPreviousState: apply(self.initialPreviousState.clone()),\n"
+        str += "            suspendedState: self.suspendedState.map { apply($0.clone()) },\n"
+        str += "            suspendState: apply(self.suspendState.clone()),\n"
+        str += "            exitState: apply(self.exitState.clone()),\n"
+        str += "            submachines: self.submachines.map { $0.clone() }\n"
+        str += "        )\n"
+        str += "        fsm.currentState = apply(self.currentState.clone())\n"
+        str += "        fsm.previousState = apply(self.previousState.clone())\n"
+        str += "        fsm.allStates.forEach { $1.Me = fsm }\n"
+        str += "        return fsm\n"
+        str += "    }\n\n"
+        str += "}"
+        // Create the file.
+        if (false == self.helpers.createFile(atPath: fsmPath, withContents: str)) {
+            self.errors.append("Unable to create \(name) at \(fsmPath.path)")
+            return nil
+        }
+        return fsmPath
     }
 
     private func createAndTagGitRepo(inDirectory dir: URL) -> Bool {
