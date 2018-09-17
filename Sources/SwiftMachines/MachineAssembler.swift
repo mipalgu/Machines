@@ -1021,8 +1021,6 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "        return [\n"
         str += "            \"currentState\": self.currentState.name,\n"
         str += "            \"fsmVars\": self.fsmVars.vars,\n"
-        str += "            \"hasFinished\": self.hasFinished,\n"
-        str += "            \"isSuspended\": self.isSuspended,\n"
         if nil != machine.parameters {
             str += "            \"parameters\": self.parameters.vars,\n"
             str += "            \"results\": self.results.vars,\n"
