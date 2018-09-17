@@ -142,7 +142,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             let sourcesDir = self.helpers.overwriteSubDirectory("Sources", inDirectory: packageDir),
             let srcDir = self.helpers.overwriteSubDirectory(machine.name + "Machine", inDirectory: sourcesDir),
             let factoryPath = self.makeFactory(forMachine: machine, inDirectory: srcDir),
-            let fsmPath = self.makeFiniteStateMachine(fromMachine: machine, inDirectory: srcDir)
+            let fsmPath = self.makeFiniteStateMachine(fromMachine: machine, inDirectory: srcDir),
+            let parentStatePath = self.makeParentState(fromMachine: machine, inDirectory: srcDir)
         else {
             self.errors.append(errorMsg)
             return nil
@@ -285,7 +286,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             import CGUSimpleWhiteboard
             import GUSimpleWhiteboard
 
-            public final class \(machine.name.capitalized)Invoker: Invoker {
+            public final class \(machine.name)Invoker: Invoker {
 
                 public typealias ReturnType: \(returnType)
 
@@ -299,11 +300,11 @@ public final class MachineAssembler: Assembler, ErrorContainer {
 
                 public func invoke(\(parameterList)) -> Promise<\(returnType)> {
                     guard let delegate = self.delegate else {
-                        fatalError("\(machine.name.capitalized)Invoker delegate not set.")
+                        fatalError("\(machine.name)Invoker delegate not set.")
                     }
                     let clone = fsm.clone()
                     clone.restart()
-                    let parameters = \(machine.name.capitalized)Parameters(\(invokeList))
+                    let parameters = \(machine.name)Parameters(\(invokeList))
                     clone.parameters = parameters
                     return delegate.invoker(self, invoke: clone)
                 }
@@ -465,14 +466,10 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                     continue
                 }
                 var condition = "        let state = $0 as! \(state.name)State\n"
+                condition += "        let Me = state.Me\n"
                 for external in machine.externalVariables {
                     condition += "        let _\(external.label): SnapshotCollectionController<GenericWhiteboard<\(external.messageClass)>> = state._\(external.label)\n"
                 }
-                if nil != machine.parameters {
-                    condition += "        let _parameters: SimpleVariablesContainer<\(machine.name)Parameters> = state._parameters\n"
-                    condition += "        let _results: SimpleVariablesContainer<\(machine.name)ResultsContainer> = state._results\n"
-                }
-                condition += "        let _fsmVars: SimpleVariablesContainer<\(machine.name)Vars> = state._fsmVars\n"
                 condition += "        let clock: Timer = state.clock\n"
                 for submachine in machine.submachines {
                     condition += "        var \(submachine.name)Machine: AnyControllableFiniteStateMachine = state.\(submachine.name)Machine\n"
@@ -735,7 +732,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "import \(m.name)Machine\n"
         }
         str += "\n"
-        let stateType = nil == machine.model ? "MiPalState" : machine.model!.stateType
+        let stateType = machine.name + "State"
         str += "public class \(state.name)State: \(stateType) {\n\n"
         str += "    public override var validVars: [String: [Any]] {\n"
         str += "        return [\n"
@@ -751,8 +748,6 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         for external in machine.externalVariables {
             str += "    public let _\(external.label): SnapshotCollectionController<GenericWhiteboard<\(external.messageClass)>>\n"
         }
-        let meType = machine.name.capitalized + "FiniteStateMachine"
-        str += "    internal var Me: " + meType + "!\n"
         str += "    public let clock: Timer\n\n"
         for submachine in machine.submachines {
             str += "    public internal(set) var \(submachine.name)Machine: AnyControllableFiniteStateMachine\n"
@@ -792,7 +787,6 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         for external in machine.externalVariables {
             str += "        self._\(external.label) = \(external.label)\n"
         }
-        str += "        self.Me = Me\n"
         str += "        self.clock = clock\n"
         for submachine in machine.submachines {
             str += "        self.\(submachine.name)Machine = \(submachine.name)Machine\n"
@@ -897,9 +891,9 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += self.createComputedProperties(fromVars: machine.vars, withinContainer: "fsmVars", includeScope: includeScope, indent: indent)
         //Parameters
         if let parameters = machine.parameters {
-            str += self.createComputedProperty(mutable: true, withLabel: "parameters", andType: "\(machine.name)Parameters", referencing: "self.Me.parameters.vars", includeScope: includeScope, indent: indent)
+            str += self.createComputedProperty(mutable: true, withLabel: "parameters", andType: "\(machine.name)Parameters", referencing: "Me.parameters.vars", includeScope: includeScope, indent: indent)
             str += self.createComputedProperties(fromVars: parameters, withinContainer: "parameters", includeScope: includeScope, indent: indent)
-            str += self.createComputedProperty(mutable: true, withLabel: "result", andType: machine.returnType ?? "Void", referencing: "self.Me.results.vars.result", includeScope: includeScope, indent: indent)
+            str += self.createComputedProperty(mutable: true, withLabel: "result", andType: machine.returnType ?? "Void", referencing: "Me.results.vars.result", includeScope: includeScope, indent: indent)
         }
         // External variables.
         for external in machine.externalVariables {
@@ -907,6 +901,26 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             //str += self.createComputedProperties(fromVars: external.vars, withinContainer: "\(external.label)")
         }
         return str
+    }
+    
+    private func makeParentState(fromMachine machine: Machine, inDirectory path: URL) -> URL? {
+        let parentStatePath = path.appendingPathComponent("\(machine.name)State.swift", isDirectory: false)
+        let stateType = machine.model?.stateType ?? "MiPalState"
+        var str = "import FSM\n"
+        str += "import swiftfsm\n"
+        str += "import ModelChecking\n"
+        str += "import KripkeStructure\n\n"
+        str += "public class \(machine.name)State: " + stateType + "{\n\n"
+        str += "    internal var Me: " + machine.name + "FiniteStateMachine!\n\n"
+        str += "    public init(_ name: String, transitions: [Transition<\(stateType), \(stateType)>] = []) {\n"
+        str += "        super.init(name, transitions: transitions)\n"
+        str += "    }\n\n"
+        str += "}\n"
+        if (false == self.helpers.createFile(atPath: parentStatePath, withContents: str)) {
+            self.errors.append("Unable to create \(machine.name)State at \(parentStatePath.path)")
+            return nil
+        }
+        return parentStatePath
     }
 
     private func makeStateType(fromModel model: Model, inDirectory path: URL) -> URL? {
@@ -1002,12 +1016,12 @@ public final class MachineAssembler: Assembler, ErrorContainer {
     }
     
     public func makeFiniteStateMachine(fromMachine machine: Machine, inDirectory path: URL) -> URL? {
-        let name = machine.name.capitalized + "FiniteStateMachine"
+        let name = machine.name + "FiniteStateMachine"
         let fsmPath = path.appendingPathComponent(name + ".swift", isDirectory: false)
         var str = "import FSM\nimport swiftfsm\n\n"
         let conformance = nil == machine.parameters ? "MachineFSM" : "ParameterisedMachineFSM"
-        let stateType = machine.model?.stateType ?? machine.name.capitalized + "State"
-        let ringlet = nil != machine.model ? machine.name.capitalized + "Ringlet" : "MiPalRinglet"
+        let stateType = machine.model?.stateType ?? machine.name + "State"
+        let ringlet = nil != machine.model ? machine.name + "Ringlet" : "MiPalRinglet"
         str += "internal final class " + name + ": " + conformance + "{\n\n"
         // Computed Properties
         str += "    fileprivate var allStates: [String: " + stateType + "] {\n"
@@ -1072,7 +1086,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "    /**\n"
         str += "     * All FSM variables used by the machine.\n"
         str += "     */\n"
-        str += "    public let fsmVars: SimpleVariablesContainer<" + machine.name.capitalized + "Vars>\n\n"
+        str += "    public let fsmVars: SimpleVariablesContainer<" + machine.name + "Vars>\n\n"
         str += "    /**\n"
         str += "     *  The initial state of the previous state.\n"
         str += "     *\n"
@@ -1093,7 +1107,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "    /**\n"
             str += "     * All parameters used by the machine.\n"
             str += "     */\n"
-            str += "    public let parameters: SimpleVariablesContainer<" + machine.name.capitalized + "Parameters>\n\n"
+            str += "    public let parameters: SimpleVariablesContainer<" + machine.name + "Parameters>\n\n"
         }
         str += "    /**\n"
         str += "     *  The last state that was executed.\n"
@@ -1103,7 +1117,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "    /**\n"
             str += "     * All results returned by the machine when called.\n"
             str += "     */\n"
-            str += "    public let results: SimpleVariablesContainer<" + machine.name.capitalized + "Results>\n\n"
+            str += "    public let results: SimpleVariablesContainer<" + machine.name + "Results>\n\n"
         }
         str += "    /**\n"
         str += "     *  An instance of `Ringlet` that is used to execute the states.\n"
@@ -1126,10 +1140,10 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "        name: String,\n"
         str += "        initialState: " + stateType + ",\n"
         str += "        externalVariables: [AnySnapshotController],\n"
-        str += "        fsmVars: SimpleVariablesContainer<" + machine.name.capitalized + "Vars>,\n"
+        str += "        fsmVars: SimpleVariablesContainer<" + machine.name + "Vars>,\n"
         if nil != machine.parameters {
-            str += "        parameters: SimpleVariablesContainer<" + machine.name.capitalized + "Parameters>,\n"
-            str += "        results: SimpleVariablesContainer<" + machine.name.capitalized + "Results>,\n"
+            str += "        parameters: SimpleVariablesContainer<" + machine.name + "Parameters>,\n"
+            str += "        results: SimpleVariablesContainer<" + machine.name + "Results>,\n"
         }
         str += "        ringlet: " + ringlet + ",\n"
         str += "        initialPreviousState: " + stateType + ",\n"
