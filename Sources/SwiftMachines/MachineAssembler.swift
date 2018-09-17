@@ -393,10 +393,10 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         if false == machine.submachines.isEmpty {
             str += "    // Submachines.\n"
-            str += "    var submachines: [(AnyScheduleableFiniteStateMachine, [Dependency])] = []\n"
+            str += "    var submachines: [(AnyControllableFiniteStateMachine, [Dependency])] = []\n"
             for m in machine.submachines {
                 str += "    let (\(m.name)Machine, \(m.name)MachineDependencies) = make_submachine_\(m.name)(name: name + \".\(machine.name)\", invoker: invoker, clock: clock)\n"
-                str += "    submachines.append((\(m.name)Machine.asScheduleableFiniteStateMachine, \(m.name)MachineDependencies))\n"
+                str += "    submachines.append((\(m.name)Machine, \(m.name)MachineDependencies))\n"
             }
         }
         if false == machine.parameterisedMachines.isEmpty {
@@ -432,7 +432,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "    // States.\n"
         for state in machine.states {
             let v = true == state.transitions.isEmpty ? "let" : "var"
-            str += "    \(v) \(state.name) = \(state.name)State(\n"
+            str += "    \(v) state_\(state.name) = State_\(state.name)(\n"
             str += "        \"\(state.name)\",\n"
             for external in machine.externalVariables {
                 str += "        \(external.label): \(external.label),\n"
@@ -448,15 +448,15 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         for state in machine.states {
             for transition in state.transitions {
                 guard let c = transition.condition else {
-                    str += "    \(state.name).addTransition(Transition(\(transition.target)) { _ in true })\n"
+                    str += "    state_\(state.name).addTransition(Transition(state_\(transition.target)) { _ in true })\n"
                     continue
                 }
                 var conditionLines = c.components(separatedBy: CharacterSet.newlines)
                 if (true == conditionLines.isEmpty) {
-                    str += "    \(state.name).addTransition(Transition(\(transition.target)) { _ in true })\n"
+                    str += "    state_\(state.name).addTransition(Transition(state_\(transition.target)) { _ in true })\n"
                     continue
                 }
-                var condition = "        let state = $0 as! \(state.name)State\n"
+                var condition = "        let state = $0 as! State_\(state.name)\n"
                 condition += "        let Me = state.Me!\n"
                 for external in machine.externalVariables {
                     condition += "        let _\(external.label): SnapshotCollectionController<GenericWhiteboard<\(external.messageClass)>> = state._\(external.label)\n"
@@ -478,7 +478,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                 } else {
                     condition += "        \(last)\n"
                 }
-                str += "    \(state.name).addTransition(Transition(\(transition.target)) {\n\(condition)    })\n"
+                str += "    state_\(state.name).addTransition(Transition(state_\(transition.target)) {\n\(condition)    })\n"
             }
         }
         let externalsArray: String
@@ -490,13 +490,13 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             externalsArray = externals.reduce("[AnySnapshotController(\(first.label))") { $0 + ", AnySnapshotController(\($1.label))" } + "]"
         }
         str += "    let ringlet = \(machine.name)Ringlet()\n"
-        let suspendState = nil == machine.suspendState ? "Empty\(machine.name)State(\"_Suspend\")" : machine.suspendState!.name
+        let suspendState = nil == machine.suspendState ? "Empty\(machine.name)State(\"_Suspend\")" : "state_" + machine.suspendState!.name
         let ringlet = "ringlet"
         let initialPreviousState = "Empty\(machine.name)State(\"_Previous\")"
         let exitState = "Empty\(machine.name)State(\"_Exit\")"
         var dependencies: [String] = []
         if false == machine.submachines.isEmpty {
-            dependencies.append("submachines.map { Dependency.submachine($0, $1) }")
+            dependencies.append("submachines.map { Dependency.submachine($0.asScheduleableFiniteStateMachine, $1) }")
         }
         if false == machine.parameterisedMachines.isEmpty {
             dependencies.append("parameterisedMachines.map { Dependency.parameterisedMachine($0, $1, $2) }")
@@ -504,11 +504,12 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         let dependencyList = dependencies.isEmpty ? "[]" : dependencies.combine("") { $0 + " + " + $1 }
         let fsm: String
         let fsmName = machine.name + "FiniteStateMachine"
+        let submachines = machine.submachines.isEmpty ? "[]" : "submachines.map { $0.0 }"
         if false == createParameterisedMachine {
             fsm = """
                 \(fsmName)(
                         name: name + \".\(machine.name)\",
-                        initialState: \(machine.initialState.name),
+                        initialState: state_\(machine.initialState.name),
                         externalVariables: \(externalsArray),
                         fsmVars: fsmVars,
                         ringlet: \(ringlet),
@@ -516,7 +517,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                         suspendedState: nil,
                         suspendState: \(suspendState),
                         exitState: \(exitState),
-                        submachines: \(machine.submachines.isEmpty ? "[]" : "submachines")
+                        submachines: \(submachines)
                     )
                 """
         } else {
@@ -524,7 +525,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             fsm = """
                 \(fsmName)(
                         name: name + \".\(machine.name)\",
-                        initialState: \(machine.initialState.name),
+                        initialState: state_\(machine.initialState.name),
                         externalVariables: \(externalsArray),
                         fsmVars: fsmVars,
                         parameters: \(parameters),
@@ -534,14 +535,14 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                         suspendedState: nil,
                         suspendState: \(suspendState),
                         exitState: \(exitState),
-                        submachines: \(machine.submachines.isEmpty ? "[]" : "submachines")
+                        submachines: \(submachines)
                     )
                 """
         }
         str += "    // Create FSM.\n"
         str += "    let fsm = \(fsm)\n"
         for state in machine.states {
-            str += "    \(state.name).Me = fsm\n"
+            str += "    state_\(state.name).Me = fsm\n"
         }
         if nil == machine.parameters {
             str += "    return (AnyControllableFiniteStateMachine(fsm), \(dependencyList))\n"
@@ -703,7 +704,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
     }
 
     private func makeState(_ state: State, forMachine machine: Machine, inDirectory path: URL) -> URL? {
-        let statePath = path.appendingPathComponent("\(state.name)State.swift", isDirectory: false)
+        let statePath = path.appendingPathComponent("State_\(state.name).swift", isDirectory: false)
         var str = "import FSM\nimport swiftfsm\nimport ExternalVariables\n"
         if let _ = machine.includes {
             str += "import \(machine.name)MachineBridging\n"
@@ -720,7 +721,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         str += "\n"
         let stateType = machine.name + "State"
-        str += "public class \(state.name)State: \(stateType) {\n\n"
+        str += "public class State_\(state.name): \(stateType) {\n\n"
         str += "    public override var validVars: [String: [Any]] {\n"
         str += "        return [\n"
         let start = """
@@ -757,7 +758,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         // Init.
         str += "    public init(\n"
         str += "        _ name: String,\n"
-        str += "        transitions: [Transition<\(state.name)State, \(stateType)>] = [],\n"
+        str += "        transitions: [Transition<State_\(state.name), \(stateType)>] = [],\n"
         for external in machine.externalVariables {
             str += "        \(external.label): SnapshotCollectionController<GenericWhiteboard<\(external.messageClass)>>,\n"
         }
@@ -803,8 +804,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "    }\n\n"
         }
         // Clone.
-        str += "    public override final func clone() -> \(state.name)State {\n"
-        str += "        let state = \(state.name)State(\n"
+        str += "    public override final func clone() -> State_\(state.name) {\n"
+        str += "        let state = State_\(state.name)(\n"
         str += "            \"\(state.name)\",\n"
         str += "            transitions: cast(transitions: self.transitions),\n"
         for external in machine.externalVariables {
