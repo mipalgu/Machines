@@ -97,7 +97,7 @@ public final class MachineParser: ErrorContainer {
         self.processing.insert(machineDir)
         guard
             let model = self.parseModelFromMachine(atPath: machineDir),
-            let actions = model?.actions ?? .some(["onEntry", "main", "onExit"]),
+            let actions = model?.actions ?? .some(MiPalModelFactory().make().actions),
             let name = self.fetchMachineName(fromPath: machineDir),
             let externalVariables = self.parseExternalVariablesFromMachine(atPath: machineDir),
             let swiftIncludeSearchPaths = self.parseSwiftIncludeSearchPathsFromMachine(atPath: machineDir),
@@ -126,7 +126,7 @@ public final class MachineParser: ErrorContainer {
             imports: imports,
             includes: includes,
             vars: vars,
-            model: model,
+            model: model ?? MiPalModelFactory().make(),
             parameters: parameters,
             returnType: returnType,
             initialState: initialState,

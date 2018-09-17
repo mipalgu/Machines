@@ -78,7 +78,7 @@ public struct Machine {
 
     public let vars: [Variable]
 
-    public let model: Model?
+    public let model: Model
     
     public let parameters: [Variable]?
 
@@ -104,7 +104,7 @@ public struct Machine {
         imports: String,
         includes: String?,
         vars: [Variable],
-        model: Model?,
+        model: Model = MiPalModelFactory().make(),
         parameters: [Variable]?,
         returnType: String?,
         initialState: State,

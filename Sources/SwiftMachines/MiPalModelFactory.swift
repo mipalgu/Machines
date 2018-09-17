@@ -58,6 +58,8 @@
 
 public final class MiPalModelFactory {
     
+    public init() {}
+    
     public func make() -> Model {
         return Model(
             actions: ["onEntry", "onExit", "main"],
@@ -76,7 +78,7 @@ public final class MiPalModelFactory {
                     if self.shouldExecuteOnEntry {
                         state.onEntry()
                     }
-                    if let target = checkTransitions(state) {
+                    if let target = checkTransitions(forState: state) {
                         state.onExit()
                         self.shouldExecuteOnEntry = target != state
                         return target

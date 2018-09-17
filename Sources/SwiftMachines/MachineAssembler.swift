@@ -174,18 +174,11 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             }
             files.append(mainPath)
         }
-        guard let model = machine.model else {
-            guard true == self.createAndTagGitRepo(inDirectory: packageDir) else {
-                self.errors.append(errorMsg)
-                return nil
-            }
-            return (packageDir, files)
-        }
         guard
-            let ringletPath = self.makeRinglet(forRinglet: model.ringlet, withMachineName: machine.name, andStateType: model.stateType, inDirectory: srcDir),
-            let stateTypePath = self.makeStateType(fromModel: model, inDirectory: srcDir),
-            let emptyStateTypePath = self.makeEmptyStateType(fromModel: model, inDirectory: srcDir),
-            let callbackStateTypePath = self.makeCallbackStateType(fromModel: model, inDirectory: srcDir)
+            let ringletPath = self.makeRinglet(forRinglet: machine.model.ringlet, withMachineName: machine.name, andStateType: machine.model.stateType, inDirectory: srcDir),
+            let stateTypePath = self.makeStateType(fromModel: machine.model, inDirectory: srcDir),
+            let emptyStateTypePath = self.makeEmptyStateType(fromModel: machine.model, inDirectory: srcDir),
+            let callbackStateTypePath = self.makeCallbackStateType(fromModel: machine.model, inDirectory: srcDir)
         else {
             self.errors.append(errorMsg)
             return nil
@@ -497,22 +490,11 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             let first = externals.removeFirst()
             externalsArray = externals.reduce("[AnySnapshotController(\(first.label))") { $0 + ", AnySnapshotController(\($1.label))" } + "]"
         }
-        let suspendState: String
-        let ringlet: String
-        let initialPreviousState: String
-        let exitState: String
-        if (nil == machine.model) {
-            suspendState = nil == machine.suspendState ? "EmptyMiPalState(\"_Suspend\")" : machine.suspendState!.name
-            ringlet = "MiPalRinglet()"
-            initialPreviousState = "EmptyMiPalState(\"_Previous\")"
-            exitState = "EmptyMiPalState(\"_Exit\")"
-        } else {
-            str += "    let ringlet = \(machine.name)Ringlet()\n"
-            suspendState = nil == machine.suspendState ? "Empty\(machine.model!.stateType)(\"_Suspend\")" : machine.suspendState!.name
-            ringlet = "ringlet"
-            initialPreviousState = "Empty\(machine.model!.stateType)(\"_Previous\")"
-            exitState = "Empty\(machine.model!.stateType)(\"_Exit\")"
-        }
+        str += "    let ringlet = \(machine.name)Ringlet()\n"
+        let suspendState = nil == machine.suspendState ? "Empty\(machine.model.stateType)(\"_Suspend\")" : machine.suspendState!.name
+        let ringlet = "ringlet"
+        let initialPreviousState = "Empty\(machine.model.stateType)(\"_Previous\")"
+        let exitState = "Empty\(machine.model.stateType)(\"_Exit\")"
         var dependencies: [String] = []
         if false == machine.submachines.isEmpty {
             dependencies.append("submachines.map { Dependency.submachine($0, $1) }")
@@ -847,7 +829,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
     
     private func makeStateVariables(forState state: State, inMachine machine: Machine, indent: String = "", _ defaultValues: ((Variable) -> String)? = nil) -> String? {
         self.takenVars = Set(machine.externalVariables.map { $0.label })
-        (machine.model?.actions ?? ["onEntry", "main", "onExit"]).forEach { self.takenVars.insert($0) }
+        (machine.model.actions).forEach { self.takenVars.insert($0) }
         if nil != machine.parameters {
             self.takenVars.insert("parameters")
         }
@@ -904,7 +886,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
     
     private func makeParentState(fromMachine machine: Machine, inDirectory path: URL) -> URL? {
         let parentStatePath = path.appendingPathComponent("\(machine.name)State.swift", isDirectory: false)
-        let stateType = machine.model?.stateType ?? "MiPalState"
+        let stateType = machine.model.stateType
         var str = "import FSM\n"
         str += "import swiftfsm\n"
         str += "import ModelChecking\n"
@@ -1019,8 +1001,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         let fsmPath = path.appendingPathComponent(name + ".swift", isDirectory: false)
         var str = "import FSM\nimport swiftfsm\n\n"
         let conformance = nil == machine.parameters ? "MachineFSM" : "ParameterisedMachineFSM"
-        let stateType = machine.model?.stateType ?? machine.name + "State"
-        let ringlet = nil != machine.model ? machine.name + "Ringlet" : "MiPalRinglet"
+        let stateType = machine.model.stateType
+        let ringlet = machine.name + "Ringlet"
         str += "internal final class " + name + ": " + conformance + "{\n\n"
         // Computed Properties
         str += "    fileprivate var allStates: [String: " + stateType + "] {\n"

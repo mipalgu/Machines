@@ -196,7 +196,6 @@ public class MachinesTestCase: XCTestCase {
             imports: "",
             includes: "#include <gu_util.h>",
             vars: [],
-            model: nil,
             parameters: nil,
             returnType: nil,
             initialState: State(
@@ -309,7 +308,6 @@ public class MachinesTestCase: XCTestCase {
         imports: "",
         includes: "",
         vars: [],
-        model: nil,
         parameters: [
             Variable(constant: true, label: "a", type: "Int", initialValue: nil),
             Variable(constant: true, label: "b", type: "Int", initialValue: nil)
