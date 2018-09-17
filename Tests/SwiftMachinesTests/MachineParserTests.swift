@@ -56,7 +56,6 @@
  *
  */
 
-import Machines
 @testable import SwiftMachines
 import XCTest
 

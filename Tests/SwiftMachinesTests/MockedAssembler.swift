@@ -57,7 +57,6 @@
  */
 
 import Foundation
-import Machines
 @testable import SwiftMachines
 
 public class MockedAssembler: Assembler {
