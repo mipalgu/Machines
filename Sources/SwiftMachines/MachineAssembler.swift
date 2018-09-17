@@ -418,7 +418,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                 str += "        let params = \(m.name)Parameters(\(callStr))\n"
                 str += "        let resultContainer: AnyResultContainer<Any> = \(m.name)FSM.resultContainer\n"
                 str += "        let actualResultContainer = AnyResultContainer({ resultContainer.result as! \(m.returnType ?? "Void") })\n"
-                str += "        return invoker.invoke(\(m.name)FSM.name, with: params, withResults: actualResultContainer)"
+                str += "        return invoker.invoke(\(m.name)FSM.name, with: params, withResults: actualResultContainer)\n"
                 str += "    }\n"
             }
         }
