@@ -728,7 +728,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                         \"name\": [],
                         \"transitions\": [],
                         \"clock\": [],
-                        \"_fsmVars\": []
+                        \"Me\": []
             """
         str += machine.externalVariables.reduce(start) { $0 + ",\n            \"_\($1.label)\": []" }
         str += "\n        ]\n"
