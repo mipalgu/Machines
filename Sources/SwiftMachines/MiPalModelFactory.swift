@@ -63,7 +63,6 @@ public final class MiPalModelFactory {
     public func make() -> Model {
         return Model(
             actions: ["onEntry", "onExit", "main"],
-            stateType: "MiPalState",
             ringlet: Ringlet(
                 imports: "import FSM\nimport swiftfsm",
                 vars: [

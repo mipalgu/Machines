@@ -141,8 +141,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             let sourcesDir = self.helpers.overwriteSubDirectory("Sources", inDirectory: packageDir),
             let srcDir = self.helpers.overwriteSubDirectory(machine.name + "Machine", inDirectory: sourcesDir),
             let factoryPath = self.makeFactory(forMachine: machine, inDirectory: srcDir),
-            let fsmPath = self.makeFiniteStateMachine(fromMachine: machine, inDirectory: srcDir),
-            let parentStatePath = self.makeParentState(fromMachine: machine, inDirectory: srcDir)
+            let fsmPath = self.makeFiniteStateMachine(fromMachine: machine, inDirectory: srcDir)
         else {
             self.errors.append(errorMsg)
             return nil
@@ -175,10 +174,10 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             files.append(mainPath)
         }
         guard
-            let ringletPath = self.makeRinglet(forRinglet: machine.model.ringlet, withMachineName: machine.name, andStateType: machine.model.stateType, inDirectory: srcDir),
-            let stateTypePath = self.makeStateType(fromModel: machine.model, inDirectory: srcDir),
-            let emptyStateTypePath = self.makeEmptyStateType(fromModel: machine.model, inDirectory: srcDir),
-            let callbackStateTypePath = self.makeCallbackStateType(fromModel: machine.model, inDirectory: srcDir)
+            let ringletPath = self.makeRinglet(forRinglet: machine.model.ringlet, withMachineName: machine.name, inDirectory: srcDir),
+            let stateTypePath = self.makeStateType(forMachine: machine.name, fromModel: machine.model, inDirectory: srcDir),
+            let emptyStateTypePath = self.makeEmptyStateType(forMachine: machine.name, fromModel: machine.model, inDirectory: srcDir),
+            let callbackStateTypePath = self.makeCallbackStateType(forMachine: machine.name, fromModel: machine.model, inDirectory: srcDir)
         else {
             self.errors.append(errorMsg)
             return nil
@@ -491,10 +490,10 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             externalsArray = externals.reduce("[AnySnapshotController(\(first.label))") { $0 + ", AnySnapshotController(\($1.label))" } + "]"
         }
         str += "    let ringlet = \(machine.name)Ringlet()\n"
-        let suspendState = nil == machine.suspendState ? "Empty\(machine.model.stateType)(\"_Suspend\")" : machine.suspendState!.name
+        let suspendState = nil == machine.suspendState ? "Empty\(machine.name)State(\"_Suspend\")" : machine.suspendState!.name
         let ringlet = "ringlet"
-        let initialPreviousState = "Empty\(machine.model.stateType)(\"_Previous\")"
-        let exitState = "Empty\(machine.model.stateType)(\"_Exit\")"
+        let initialPreviousState = "Empty\(machine.name)State(\"_Previous\")"
+        let exitState = "Empty\(machine.name)State(\"_Exit\")"
         var dependencies: [String] = []
         if false == machine.submachines.isEmpty {
             dependencies.append("submachines.map { Dependency.submachine($0, $1) }")
@@ -648,8 +647,9 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         return str
     }
 
-    private func makeRinglet(forRinglet ringlet: Ringlet, withMachineName machine: String, andStateType stateType: String, inDirectory path: URL) -> URL? {
+    private func makeRinglet(forRinglet ringlet: Ringlet, withMachineName machine: String, inDirectory path: URL) -> URL? {
         let ringletPath = path.appendingPathComponent("\(machine)Ringlet.swift")
+        let stateType = machine + "State"
         var str = "import FSM\n"
         str += "import swiftfsm\n"
         str += "import ModelChecking\n"
@@ -883,34 +883,15 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         return str
     }
-    
-    private func makeParentState(fromMachine machine: Machine, inDirectory path: URL) -> URL? {
-        let parentStatePath = path.appendingPathComponent("\(machine.name)State.swift", isDirectory: false)
-        let stateType = machine.model.stateType
-        var str = "import FSM\n"
-        str += "import swiftfsm\n"
-        str += "import ModelChecking\n"
-        str += "import KripkeStructure\n\n"
-        str += "public class \(machine.name)State: " + stateType + "{\n\n"
-        str += "    internal var Me: " + machine.name + "FiniteStateMachine!\n\n"
-        str += "    public init(_ name: String, transitions: [Transition<\(stateType), \(stateType)>] = []) {\n"
-        str += "        super.init(name, transitions: transitions)\n"
-        str += "    }\n\n"
-        str += "}\n"
-        if (false == self.helpers.createFile(atPath: parentStatePath, withContents: str)) {
-            self.errors.append("Unable to create \(machine.name)State at \(parentStatePath.path)")
-            return nil
-        }
-        return parentStatePath
-    }
 
-    private func makeStateType(fromModel model: Model, inDirectory path: URL) -> URL? {
-        let stateTypePath = path.appendingPathComponent("\(model.stateType).swift", isDirectory: false)
+    private func makeStateType(forMachine machine: String, fromModel model: Model, inDirectory path: URL) -> URL? {
+        let stateTypePath = path.appendingPathComponent("\(machine)State.swift", isDirectory: false)
+        let stateType = machine + "State"
         var str = "import FSM\n"
         str += "import swiftfsm\n"
         str += "import ModelChecking\n"
         str += "import KripkeStructure\n\n"
-        str += "public class \(model.stateType):\n"
+        str += "public class \(stateType):\n"
         str += "    StateType,\n"
         str += "    CloneableState,\n"
         str += "    CustomStringConvertible,\n"
@@ -919,11 +900,11 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "    KripkeVariablesModifier\n"
         str += "{\n\n"
         str += "    public let name: String\n\n"
-        str += "    public var transitions: [Transition<\(model.stateType), \(model.stateType)>]\n\n"
+        str += "    public var transitions: [Transition<\(stateType), \(stateType)>]\n\n"
         str += "    public var validVars: [String: [Any]] {\n"
         str += "        return [:]\n"
         str += "    }\n\n"
-        str += "    public init(_ name: String, transitions: [Transition<\(model.stateType), \(model.stateType)>] = []) {\n"
+        str += "    public init(_ name: String, transitions: [Transition<\(stateType), \(stateType)>] = []) {\n"
         str += "        self.name = name\n"
         str += "        self.transitions = transitions\n"
         str += "    }\n\n"
@@ -935,40 +916,42 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "    }\n\n"
         str += "}\n"
         if (false == self.helpers.createFile(atPath: stateTypePath, withContents: str)) {
-            self.errors.append("Unable to create \(model.stateType) at \(stateTypePath.path)")
+            self.errors.append("Unable to create \(stateType) at \(stateTypePath.path)")
             return nil
         }
         return stateTypePath
     }
 
-    public func makeEmptyStateType(fromModel model: Model, inDirectory path: URL) -> URL? {
-        let emptyStateTypePath = path.appendingPathComponent("Empty\(model.stateType).swift", isDirectory: false)
+    public func makeEmptyStateType(forMachine machine: String, fromModel model: Model, inDirectory path: URL) -> URL? {
+        let emptyStateTypePath = path.appendingPathComponent("Empty\(machine)State.swift", isDirectory: false)
+        let stateType = machine + "State"
         var str = "import FSM\nimport swiftfsm\n\n"
-        str += "public final class Empty\(model.stateType): \(model.stateType) {\n\n"
+        str += "public final class Empty\(stateType): \(stateType) {\n\n"
         for action in model.actions {
             str += "    public override final func \(action)() {}\n\n"
         }
-        str += "    public override final func clone() -> Empty\(model.stateType) {\n"
-        str += "        return Empty\(model.stateType)(self.name, transitions: self.transitions)\n"
+        str += "    public override final func clone() -> Empty\(stateType) {\n"
+        str += "        return Empty\(stateType)(self.name, transitions: self.transitions)\n"
         str += "    }\n\n"
         str += "}\n"
         if (false == self.helpers.createFile(atPath: emptyStateTypePath, withContents: str)) {
-            self.errors.append("Unable to create Empty\(model.stateType) at \(emptyStateTypePath.path)")
+            self.errors.append("Unable to create Empty\(stateType) at \(emptyStateTypePath.path)")
             return nil
         }
         return emptyStateTypePath
     }
 
-    public func makeCallbackStateType(fromModel model: Model, inDirectory path: URL) -> URL? {
-        let callbackStateTypePath = path.appendingPathComponent("Callback\(model.stateType).swift", isDirectory: false)
+    public func makeCallbackStateType(forMachine machine: String, fromModel model: Model, inDirectory path: URL) -> URL? {
+        let callbackStateTypePath = path.appendingPathComponent("Callback\(machine)State.swift", isDirectory: false)
+        let stateType = machine + "State"
         var str = "import FSM\nimport swiftfsm\n\n"
-        str += "public final class Callback\(model.stateType): \(model.stateType) {\n\n"
+        str += "public final class Callback\(stateType): \(stateType) {\n\n"
         for action in model.actions {
             str += "    private let _\(action): () -> Void\n\n"
         }
         str += "    public init(\n"
         str += "        _ name: String,\n"
-        str += "        transitions: [Transition<Callback\(model.stateType), \(model.stateType)>] = [],"
+        str += "        transitions: [Transition<Callback\(stateType), \(stateType)>] = [],"
         var actionsList = ""
         for action in model.actions {
             actionsList += "\n        \(action): @escaping () -> Void = {},"
@@ -985,12 +968,12 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "        self._\(action)()\n"
             str += "    }\n\n"
         }
-        str += "    public override final func clone() -> Callback\(model.stateType) {\n"
-        str += "        return Callback\(model.stateType)(self.name, transitions: cast(transitions: self.transitions))\n"
+        str += "    public override final func clone() -> Callback\(stateType) {\n"
+        str += "        return Callback\(stateType)(self.name, transitions: cast(transitions: self.transitions))\n"
         str += "    }\n\n"
         str += "}\n"
         if (false == self.helpers.createFile(atPath: callbackStateTypePath, withContents: str)) {
-            self.errors.append("Unable to create Callback\(model.stateType) at \(callbackStateTypePath.path)")
+            self.errors.append("Unable to create Callback\(stateType) at \(callbackStateTypePath.path)")
             return nil
         }
         return callbackStateTypePath
@@ -1001,7 +984,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         let fsmPath = path.appendingPathComponent(name + ".swift", isDirectory: false)
         var str = "import FSM\nimport swiftfsm\n\n"
         let conformance = nil == machine.parameters ? "MachineFSM" : "ParameterisedMachineFSM"
-        let stateType = machine.model.stateType
+        let stateType = machine.name + "State"
         let ringlet = machine.name + "Ringlet"
         str += "internal final class " + name + ": " + conformance + "{\n\n"
         // Computed Properties

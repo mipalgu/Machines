@@ -60,13 +60,10 @@ public struct Model {
 
     public let actions: [String]
 
-    public let stateType: String
-
     public let ringlet: Ringlet
 
-    public init(actions: [String], stateType: String, ringlet: Ringlet) {
+    public init(actions: [String], ringlet: Ringlet) {
         self.actions = actions
-        self.stateType = stateType
         self.ringlet = ringlet
     }
 
@@ -77,6 +74,5 @@ extension Model: Equatable {}
 public func == (lhs: Model, rhs: Model) -> Bool {
     return
         lhs.actions == rhs.actions &&
-        lhs.stateType == rhs.stateType &&
         lhs.ringlet == rhs.ringlet
 }

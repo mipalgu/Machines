@@ -262,8 +262,7 @@ public final class MachineGenerator {
     func makeModelFile(forMachine machine: Machine) -> URL? {
         let path = machine.filePath.appendingPathComponent("model.json", isDirectory: false)
         let dict: [String: Any] = [
-            "actions": machine.model.actions,
-            "stateType": machine.model.stateType
+            "actions": machine.model.actions
         ]
         guard
             let json = self.encode(json: dict),

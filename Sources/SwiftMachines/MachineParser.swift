@@ -295,8 +295,7 @@ public final class MachineParser: ErrorContainer {
         guard
             let modelJson = try? JSONSerialization.jsonObject(with: modelData),
             let model = modelJson as? [String: Any],
-            let actions = model["actions"] as? [String],
-            let stateType = model["stateType"] as? String
+            let actions = model["actions"] as? [String]
         else {
             self.errors.append("Unable to parse \(modelPath.path)")
             return .none
@@ -307,7 +306,6 @@ public final class MachineParser: ErrorContainer {
         }
         return .some(Model(
             actions: actions,
-            stateType: stateType,
             ringlet: Ringlet(
                 imports: imports,
                 vars: vars,

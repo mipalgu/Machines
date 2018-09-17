@@ -100,7 +100,6 @@ public class MachinesTestCase: XCTestCase {
         vars: [],
         model: Model(
             actions: ["onEntry"],
-            stateType: "SleepingState",
             ringlet: Ringlet(
                 imports: "",
                 vars: [
