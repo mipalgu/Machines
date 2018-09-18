@@ -73,7 +73,6 @@ public final class MachineGenerator {
         self.swiftGenerator = swiftGenerator
     }
     
-    
     public func generate(_ machine: Machine) -> (URL, [URL])? {
         self.errors = []
         switch machine {
