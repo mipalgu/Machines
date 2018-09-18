@@ -7,8 +7,7 @@ let package = Package(
     name: "Machines",
     products: [
         // Products define the executables and libraries produced by a package, and make them visible to other packages.
-        .library(name: "SwiftMachines",
-            targets: ["SwiftMachines"])
+        .library(name: "Machines", targets: ["Machines", "SwiftMachines", "CXXMachines"])
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -22,12 +21,19 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages which this package depends on.
         .target(
             name: "SwiftMachines",
-            dependencies: ["swift_helpers", "IO"]),
+            dependencies: ["swift_helpers", "IO"]
+        ),
         .target(
-            name: "CXXParser",
-            dependencies: ["swift_helpers", "Functional"]),
+            name: "CXXMachines",
+            dependencies: ["swift_helpers", "Functional"]
+        ),
+        .target(
+            name: "Machines",
+            dependencies: ["swift_helpers", "IO", "Functional", "SwiftMachines", "CXXMachines"]
+        ),
         .testTarget(
             name: "SwiftMachinesTests",
-            dependencies: ["SwiftMachines"])
+            dependencies: ["SwiftMachines"]
+        )
     ]
 )
