@@ -75,6 +75,7 @@ public final class MachineGenerator {
     
     
     public func generate(_ machine: Machine) -> (URL, [URL])? {
+        self.errors = []
         switch machine {
         case .swiftMachine(let machine):
             guard let results = self.swiftGenerator.generate(machine) else {
