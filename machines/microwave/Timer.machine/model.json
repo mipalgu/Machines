@@ -1,0 +1,7 @@
+{
+  "actions" : [
+    "onEntry",
+    "onExit",
+    "main"
+  ]
+}
