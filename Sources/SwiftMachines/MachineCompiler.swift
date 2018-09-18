@@ -56,7 +56,6 @@
  *
  */
 
-import Machines
 import Foundation
 
 @available(macOS 10.11, *)

@@ -1,9 +1,9 @@
 /*
- * Machine.swift 
- * Machines 
+ * Machine.swift
+ * Machines
  *
- * Created by Callum McColl on 19/02/2017.
- * Copyright © 2017 Callum McColl. All rights reserved.
+ * Created by Callum McColl on 18/9/18.
+ * Copyright © 2018 Callum McColl. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -56,109 +56,11 @@
  *
  */
 
-import Foundation
+import SwiftMachines
 
-public struct Machine {
-
-    public let name: String
-
-    public let filePath: URL
-
-    public let externalVariables: [ExternalVariables]
-
-    public let swiftIncludeSearchPaths: [String]
-
-    public let includeSearchPaths: [String]
-
-    public let libSearchPaths: [String]
-
-    public let imports: String
-
-    public let includes: String?
-
-    public let vars: [Variable]
-
-    public let model: Model?
+public enum Machine {
     
-    public let parameters: [Variable]?
-
-    public let returnType: String?
-
-    public let initialState: State
-
-    public let suspendState: State?
-
-    public let states: [State]
-
-    public let submachines: [Machine]
+    case cxxMachine
+    case swiftMachine(SwiftMachines.Machine)
     
-    public let parameterisedMachines: [Machine]
-
-    public init(
-        name: String,
-        filePath: URL,
-        externalVariables: [ExternalVariables],
-        swiftIncludeSearchPaths: [String],
-        includeSearchPaths: [String],
-        libSearchPaths: [String],
-        imports: String,
-        includes: String?,
-        vars: [Variable],
-        model: Model?,
-        parameters: [Variable]?,
-        returnType: String?,
-        initialState: State,
-        suspendState: State?,
-        states: [State],
-        submachines: [Machine],
-        parameterisedMachines: [Machine]
-    ) {
-        self.name = name
-        self.filePath = filePath
-        self.externalVariables = externalVariables
-        self.swiftIncludeSearchPaths = swiftIncludeSearchPaths
-        self.includeSearchPaths = includeSearchPaths
-        self.libSearchPaths = libSearchPaths
-        self.imports = imports
-        self.includes = includes
-        self.vars = vars
-        self.model = model
-        self.parameters = parameters
-        self.returnType = returnType
-        self.initialState = initialState
-        self.suspendState = suspendState
-        self.states = states
-        self.submachines = submachines
-        self.parameterisedMachines = parameterisedMachines
-    }
-
-}
-
-extension Machine: Hashable {
-
-    public var hashValue: Int {
-        return "\(self)".hashValue
-    }
-
-}
-
-public func ==(lhs: Machine, rhs: Machine) -> Bool {
-    return
-        lhs.name == rhs.name &&
-        lhs.filePath == rhs.filePath &&
-        lhs.externalVariables == rhs.externalVariables &&
-        lhs.swiftIncludeSearchPaths == rhs.swiftIncludeSearchPaths &&
-        lhs.includeSearchPaths == rhs.includeSearchPaths &&
-        lhs.libSearchPaths == rhs.libSearchPaths &&
-        lhs.includes == rhs.includes &&
-        lhs.imports == rhs.imports &&
-        lhs.vars == rhs.vars &&
-        lhs.model == rhs.model &&
-        lhs.parameters == rhs.parameters &&
-        lhs.returnType == rhs.returnType &&
-        lhs.initialState == rhs.initialState &&
-        lhs.suspendState == rhs.suspendState &&
-        lhs.states == rhs.states &&
-        lhs.submachines == rhs.submachines &&
-        lhs.parameterisedMachines == rhs.parameterisedMachines
 }

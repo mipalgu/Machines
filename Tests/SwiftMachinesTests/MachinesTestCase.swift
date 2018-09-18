@@ -57,7 +57,6 @@
  */
 
 import Foundation
-import Machines
 @testable import SwiftMachines
 import XCTest
 
@@ -101,15 +100,14 @@ public class MachinesTestCase: XCTestCase {
         vars: [],
         model: Model(
             actions: ["onEntry"],
-            stateType: "SleepingState",
             ringlet: Ringlet(
                 imports: "",
                 vars: [
                     Variable(
                         constant: false,
                         label: "previousState",
-                        type: "SleepingState",
-                        initialValue: "EmptySleepingState(\"_previous\")"
+                        type: "PingPongState",
+                        initialValue: "EmptyPingPongState(\"_previous\")"
                     )
                 ],
                 execute: "// Call onEntry if we have just transitioned into this state.\nif (state != previousState) {\n    state.onEntry()\n}\npreviousState = state\n// Can we transition to another state?\nif let target = checkTransitions(forState: state) {\n    // Yes - Return the next state to execute.\n    return target\n}\nreturn state"
@@ -197,7 +195,6 @@ public class MachinesTestCase: XCTestCase {
             imports: "",
             includes: "#include <gu_util.h>",
             vars: [],
-            model: nil,
             parameters: nil,
             returnType: nil,
             initialState: State(
@@ -310,7 +307,6 @@ public class MachinesTestCase: XCTestCase {
         imports: "",
         includes: "",
         vars: [],
-        model: nil,
         parameters: [
             Variable(constant: true, label: "a", type: "Int", initialValue: nil),
             Variable(constant: true, label: "b", type: "Int", initialValue: nil)

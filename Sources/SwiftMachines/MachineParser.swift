@@ -56,7 +56,6 @@
  *
  */
 
-import Machines
 import Foundation
 
 public final class MachineParser: ErrorContainer {
@@ -98,7 +97,7 @@ public final class MachineParser: ErrorContainer {
         self.processing.insert(machineDir)
         guard
             let model = self.parseModelFromMachine(atPath: machineDir),
-            let actions = model?.actions ?? .some(["onEntry", "main", "onExit"]),
+            let actions = model?.actions ?? .some(MiPalModelFactory().make().actions),
             let name = self.fetchMachineName(fromPath: machineDir),
             let externalVariables = self.parseExternalVariablesFromMachine(atPath: machineDir),
             let swiftIncludeSearchPaths = self.parseSwiftIncludeSearchPathsFromMachine(atPath: machineDir),
@@ -127,7 +126,7 @@ public final class MachineParser: ErrorContainer {
             imports: imports,
             includes: includes,
             vars: vars,
-            model: model,
+            model: model ?? MiPalModelFactory().make(),
             parameters: parameters,
             returnType: returnType,
             initialState: initialState,
@@ -296,8 +295,7 @@ public final class MachineParser: ErrorContainer {
         guard
             let modelJson = try? JSONSerialization.jsonObject(with: modelData),
             let model = modelJson as? [String: Any],
-            let actions = model["actions"] as? [String],
-            let stateType = model["stateType"] as? String
+            let actions = model["actions"] as? [String]
         else {
             self.errors.append("Unable to parse \(modelPath.path)")
             return .none
@@ -308,7 +306,6 @@ public final class MachineParser: ErrorContainer {
         }
         return .some(Model(
             actions: actions,
-            stateType: stateType,
             ringlet: Ringlet(
                 imports: imports,
                 vars: vars,

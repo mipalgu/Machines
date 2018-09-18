@@ -1,9 +1,9 @@
 /*
- * VarParser.swift 
- * Sources 
+ * MiPalModelFactory
+ * Machines
  *
- * Created by Callum McColl on 02/04/2017.
- * Copyright © 2017 Callum McColl. All rights reserved.
+ * Created by Callum McColl on 17/9/18.
+ * Copyright © 2018 Callum McColl. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -56,58 +56,38 @@
  *
  */
 
-import Foundation
-
-public final class VarParser {
-
+public final class MiPalModelFactory {
+    
     public init() {}
-
-    func parse(fromString str: String) -> [Variable]? {
-        let lines = str.components(separatedBy: CharacterSet.newlines)
-        let statements = lines.lazy.flatMap { $0.components(separatedBy: ";") }
-        let trimmedStatements = statements.map { $0.trimmingCharacters(in: .whitespaces) }
-        let words = trimmedStatements.map { $0.components(separatedBy: CharacterSet.whitespaces) }
-        let tokens = words.map { $0.lazy.flatMap { $0.components(separatedBy: ":") } }
-        let trimmedTokens = tokens.flatMap { (tokens) -> [String]? in
-            let tokens = Array(tokens.flatMap { (token: String) -> String? in
-                let trimmed = token.trimmingCharacters(in: .whitespaces)
-                if true == trimmed.isEmpty {
-                    return nil
-                }
-                return trimmed
-            })
-            if true == tokens.isEmpty {
-                return nil
-            }
-            return tokens
-        }
-        return trimmedTokens.failMap { tokens in
-            if tokens.count < 3 {
-                return nil
-            }
-            if (tokens[0] != "let" && tokens[0] != "var" ) {
-                return nil
-            }
-            let constant = tokens[0] == "let"
-            let label = tokens[1]
-            if let index = tokens.index(of: "=") {
-                if (index <= 2 || index + 1 >= tokens.count) {
-                    return nil
-                }
-                return Variable(
-                    constant: constant,
-                    label: label,
-                    type: tokens.dropFirst().dropFirst().prefix(index - 2).reduce("") { $0 + $1 + " " }.trimmingCharacters(in: .whitespaces),
-                    initialValue: tokens.suffix(from: index + 1).reduce("") { $0 + $1 + " " }.trimmingCharacters(in: .whitespaces)
-                )
-            }
-            return Variable(
-                constant: constant,
-                label: label,
-                type: tokens.suffix(1).reduce("") { $0 + $1 + " " }.trimmingCharacters(in: .whitespaces),
-                initialValue: nil
+    
+    public func make() -> Model {
+        return Model(
+            actions: ["onEntry", "onExit", "main"],
+            ringlet: Ringlet(
+                imports: "import FSM\nimport swiftfsm",
+                vars: [
+                    Variable(
+                        constant: false,
+                        label: "shouldExecuteOnEntry",
+                        type: "Bool",
+                        initialValue: "true"
+                    )
+                ],
+                execute: """
+                    if self.shouldExecuteOnEntry {
+                        state.onEntry()
+                    }
+                    if let target = checkTransitions(forState: state) {
+                        state.onExit()
+                        self.shouldExecuteOnEntry = target != state
+                        return target
+                    }
+                    state.main()
+                    self.shouldExecuteOnEntry = false
+                    return state
+                    """
             )
-        }
+        )
     }
-
+    
 }

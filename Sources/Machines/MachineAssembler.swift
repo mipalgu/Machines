@@ -1,9 +1,9 @@
 /*
- * Model.swift 
- * Machines 
+ * MachineAssembler.swift
+ * Machines
  *
- * Created by Callum McColl on 19/02/2017.
- * Copyright © 2017 Callum McColl. All rights reserved.
+ * Created by Callum McColl on 18/9/18.
+ * Copyright © 2018 Callum McColl. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -56,27 +56,36 @@
  *
  */
 
-public struct Model {
+import Foundation
+import SwiftMachines
 
-    public let actions: [String]
-
-    public let stateType: String
-
-    public let ringlet: Ringlet
-
-    public init(actions: [String], stateType: String, ringlet: Ringlet) {
-        self.actions = actions
-        self.stateType = stateType
-        self.ringlet = ringlet
+public final class MachineAssembler {
+    
+    public fileprivate(set) var errors: [String] = []
+    
+    public var lastError: String? {
+        return self.errors.last
     }
-
-}
-
-extension Model: Equatable {}
-
-public func == (lhs: Model, rhs: Model) -> Bool {
-    return
-        lhs.actions == rhs.actions &&
-        lhs.stateType == rhs.stateType &&
-        lhs.ringlet == rhs.ringlet
+    
+    fileprivate let swiftAssembler: SwiftMachines.MachineAssembler
+    
+    public init(swiftAssembler: SwiftMachines.MachineAssembler = SwiftMachines.MachineAssembler()) {
+        self.swiftAssembler = swiftAssembler
+    }
+    
+    public func assemble(_ machine: Machine) -> (URL, [URL])? {
+        self.errors = []
+        switch machine {
+        case .swiftMachine(let machine):
+            guard let results = self.swiftAssembler.assemble(machine) else {
+                self.errors = self.swiftAssembler.errors
+                return nil
+            }
+            return results
+        default:
+            self.errors.append("C++ Machines are currently not supported.")
+            return nil
+        }
+    }
+    
 }

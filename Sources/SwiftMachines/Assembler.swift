@@ -56,7 +56,6 @@
  *
  */
 
-import Machines
 import Foundation
 
 public protocol Assembler {
