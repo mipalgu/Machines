@@ -63,6 +63,10 @@ public final class MachineParser {
     
     public fileprivate(set) var errors: [String] = []
     
+    public var lastError: String? {
+        return self.errors.last
+    }
+    
     fileprivate let swiftParser: SwiftMachines.MachineParser
     
     public init(swiftParser: SwiftMachines.MachineParser = SwiftMachines.MachineParser()) {
