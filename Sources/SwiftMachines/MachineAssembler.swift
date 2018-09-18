@@ -379,7 +379,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "    // External Variables.\n"
         }
         for external in machine.externalVariables {
-            str += "    let \(external.label) = SnapshotCollectionController<GenericWhiteboard<\(external.messageClass)>>(\n"
+            str += "    let external_\(external.label) = SnapshotCollectionController<GenericWhiteboard<\(external.messageClass)>>(\n"
             str += "        \"\(external.wbName.map { $0 + "." } ?? "")\(external.messageType)\",\n"
             str += "        collection: GenericWhiteboard<\(external.messageClass)>(\n"
             str += "            msgType: \(external.messageType),\n"
@@ -434,9 +434,6 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             let v = true == state.transitions.isEmpty ? "let" : "var"
             str += "    \(v) state_\(state.name) = State_\(state.name)(\n"
             str += "        \"\(state.name)\",\n"
-            for external in machine.externalVariables {
-                str += "        \(external.label): \(external.label),\n"
-            }
             str += "        clock: clock,"
             for m in machine.submachines + machine.parameterisedMachines {
                 str += "\n        \(m.name)Machine: \(m.name)Machine,"
@@ -458,9 +455,6 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                 }
                 var condition = "        let state = $0 as! State_\(state.name)\n"
                 condition += "        let Me = state.Me!\n"
-                for external in machine.externalVariables {
-                    condition += "        let _\(external.label): SnapshotCollectionController<GenericWhiteboard<\(external.messageClass)>> = state._\(external.label)\n"
-                }
                 condition += "        let clock: Timer = state.clock\n"
                 for submachine in machine.submachines {
                     condition += "        var \(submachine.name)Machine: AnyControllableFiniteStateMachine = state.\(submachine.name)Machine\n"
@@ -481,14 +475,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                 str += "    state_\(state.name).addTransition(Transition(state_\(transition.target)) {\n\(condition)    })\n"
             }
         }
-        let externalsArray: String
-        if (true == machine.externalVariables.isEmpty) {
-            externalsArray = "[]"
-        } else {
-            var externals = machine.externalVariables
-            let first = externals.removeFirst()
-            externalsArray = externals.reduce("[AnySnapshotController(\(first.label))") { $0 + ", AnySnapshotController(\($1.label))" } + "]"
-        }
+        let externalsListMapped = machine.externalVariables.lazy.map { "        external_" + $0.label + ": external_" + $0.label }
+        let externalsList = externalsListMapped.combine("") { $0 + ",\n" + $1 }
         str += "    let ringlet = \(machine.name)Ringlet()\n"
         let suspendState = nil == machine.suspendState ? "Empty\(machine.name)State(\"_Suspend\")" : "state_" + machine.suspendState!.name
         let ringlet = "ringlet"
@@ -509,8 +497,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             fsm = """
                 \(fsmName)(
                         name: name + \".\(machine.name)\",
-                        initialState: state_\(machine.initialState.name),
-                        externalVariables: \(externalsArray),
+                        initialState: state_\(machine.initialState.name),\(externalsList.isEmpty ? "" : "\n" + externalsList + ",\n")
                         fsmVars: fsmVars,
                         ringlet: \(ringlet),
                         initialPreviousState: \(initialPreviousState),
@@ -525,8 +512,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             fsm = """
                 \(fsmName)(
                         name: name + \".\(machine.name)\",
-                        initialState: state_\(machine.initialState.name),
-                        externalVariables: \(externalsArray),
+                        initialState: state_\(machine.initialState.name),\(externalsList.isEmpty ? "" : "\n" + externalsList + ",\n")
                         fsmVars: fsmVars,
                         parameters: \(parameters),
                         results: results,
@@ -759,9 +745,6 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "    public init(\n"
         str += "        _ name: String,\n"
         str += "        transitions: [Transition<State_\(state.name), \(stateType)>] = [],\n"
-        for external in machine.externalVariables {
-            str += "        \(external.label): SnapshotCollectionController<GenericWhiteboard<\(external.messageClass)>>,\n"
-        }
         str += "        clock: Timer,\n"
         for submachine in machine.submachines {
             str += "        \(submachine.name)Machine: AnyControllableFiniteStateMachine,\n"
@@ -772,9 +755,6 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         str = str.trimmingCharacters(in: CharacterSet(charactersIn: ",\n"))
         str += "\n    ) {\n"
-        for external in machine.externalVariables {
-            str += "        self._\(external.label) = \(external.label)\n"
-        }
         str += "        self.clock = clock\n"
         for submachine in machine.submachines {
             str += "        self.\(submachine.name)Machine = \(submachine.name)Machine\n"
@@ -808,9 +788,6 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "        let state = State_\(state.name)(\n"
         str += "            \"\(state.name)\",\n"
         str += "            transitions: cast(transitions: self.transitions),\n"
-        for external in machine.externalVariables {
-            str += "            \(external.label): self._\(external.label),\n"
-        }
         str += "            clock: self.clock,\n"
         for submachine in machine.submachines {
             str += "            \(submachine.name)Machine: self.\(submachine.name)Machine,\n"
@@ -885,6 +862,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         // External variables.
         for external in machine.externalVariables {
+            str += self.createComputedProperty(mutable: true, withLabel: "_\(external.label)", andType: "SnapshotCollectionController<GenericWhiteboard<\(external.messageClass)>>", referencing: "Me.external_\(external.label)", includeScope: includeScope, indent: indent)
             str += self.createComputedProperty(mutable: true, withLabel: external.label, andType: external.messageClass, referencing: "_\(external.label).val", includeScope: includeScope, indent: indent)
             //str += self.createComputedProperties(fromVars: external.vars, withinContainer: "\(external.label)")
         }
@@ -994,7 +972,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
     public func makeFiniteStateMachine(fromMachine machine: Machine, inDirectory path: URL) -> URL? {
         let name = machine.name + "FiniteStateMachine"
         let fsmPath = path.appendingPathComponent(name + ".swift", isDirectory: false)
-        var str = "import FSM\nimport swiftfsm\n\n"
+        var str = "import FSM\nimport swiftfsm\nimport CGUSimpleWhiteboard\nimport GUSimpleWhiteboard\n\n"
         let conformance = nil == machine.parameters ? "MachineProtocol" : "ParameterisedMachineProtocol"
         let stateType = machine.name + "State"
         let ringlet = machine.name + "Ringlet"
@@ -1028,6 +1006,26 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "            \"states\": self.allStates.lazy.map { $1 }.sorted { $0.name < $1.name },\n"
         str += "        ]\n"
         str += "    }\n\n"
+        str += "    /**\n"
+        str += "     * All external variables used by the machine.\n"
+        str += "     */\n"
+        let externalsList = machine.externalVariables.lazy.map { "AnySnapshotController(self.external_\($0.label))" }.combine("") { $0 + ", " + $1 }
+        str += "    public var externalVariables: [AnySnapshotController] {\n"
+        str += "        get {\n"
+        str += "            return [" + externalsList + "]\n"
+        str += "        } set {\n"
+        let externalsSwitch = machine.externalVariables.lazy.map { "                case self.external_\($0.label).name:\n                    self.external_\($0.label).val = external.val as! \($0.messageClass)" }.combine("") { $0 + "\n" + $1 }
+        str += "            for external in newValue {\n"
+        str += "                switch external.name {\n"
+        if false == externalsSwitch.isEmpty {
+            str += externalsSwitch + "\n"
+        }
+        str += "                default:\n"
+        str += "                    continue\n"
+        str += "                }\n"
+        str += "            }\n"
+        str += "        }\n"
+        str += "    }\n\n"
         str += "    public var validVars: [String: [Any]] {\n"
         str += "        return [\n"
         str += "            \"currentState\": [],\n"
@@ -1058,10 +1056,6 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "     *  The state that is used to exit the FSM.\n"
         str += "     */\n"
         str += "    public let exitState: " + stateType + "\n\n"
-        str += "    /**\n"
-        str += "     * All external variables used by the machine.\n"
-        str += "     */\n"
-        str += "    public var externalVariables: [AnySnapshotController]\n\n"
         str += "    /**\n"
         str += "     * All FSM variables used by the machine.\n"
         str += "     */\n"
@@ -1114,11 +1108,18 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "     *  The state that is set to `currentState` when the FSM is suspended.\n"
         str += "     */\n"
         str += "    public let suspendState: " + stateType + "\n\n"
+        // External Variable Properties
+        let externalsMapped = machine.externalVariables.lazy.map { "    public var external_" + $0.label + ": SnapshotCollectionController<GenericWhiteboard<" + $0.messageClass + ">>" }
+        str += externalsMapped.combine("") { $0 + "\n\n" + $1 }
+        str += "\n\n"
         // Init
         str += "    internal init(\n"
         str += "        name: String,\n"
         str += "        initialState: " + stateType + ",\n"
-        str += "        externalVariables: [AnySnapshotController],\n"
+        let externalArgs = machine.externalVariables.lazy.map { "        external_\($0.label): SnapshotCollectionController<GenericWhiteboard<\($0.messageClass)>>" }.combine("") { $0 + ",\n" + $1 }
+        if false == externalArgs.isEmpty {
+            str += externalArgs + ",\n"
+        }
         str += "        fsmVars: SimpleVariablesContainer<" + machine.name + "Vars>,\n"
         if nil != machine.parameters {
             str += "        parameters: SimpleVariablesContainer<" + machine.name + "Parameters>,\n"
@@ -1133,7 +1134,10 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "    ) {\n"
         str += "        self.currentState = initialState\n"
         str += "        self.exitState = exitState\n"
-        str += "        self.externalVariables = externalVariables\n"
+        let externalSetters = machine.externalVariables.lazy.map { "        self.external_\($0.label) = external_\($0.label)" }.combine("") { $0 + "\n" + $1 }
+        if false == externalSetters.isEmpty {
+            str += externalSetters + "\n"
+        }
         str += "        self.fsmVars = fsmVars\n"
         if nil != machine.parameters {
             str += "        self.parameters = parameters\n"
@@ -1174,7 +1178,10 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "        var fsm = " + name + "(\n"
         str += "            name: self.name,\n"
         str += "            initialState: apply(self.initialState.clone()),\n"
-        str += "            externalVariables: self.externalVariables,\n"
+        let clonedExternalArgs = machine.externalVariables.lazy.map { "            external_\($0.label): self.external_\($0.label)" }.combine("") { $0 + ",\n" + $1 }
+        if false == clonedExternalArgs.isEmpty {
+            str += clonedExternalArgs + ",\n"
+        }
         str += "            fsmVars: SimpleVariablesContainer(vars: self.fsmVars.vars.clone()),\n"
         if nil != machine.parameters {
             str += "            parameters: SimpleVariablesContainer(vars: self.parameters.vars.clone()),\n"
