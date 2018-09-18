@@ -710,18 +710,14 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "public class State_\(state.name): \(stateType) {\n\n"
         str += "    public override var validVars: [String: [Any]] {\n"
         str += "        return [\n"
-        let start = """
+        str += """
                         \"name\": [],
                         \"transitions\": [],
                         \"clock\": [],
                         \"Me\": []
             """
-        str += machine.externalVariables.reduce(start) { $0 + ",\n            \"_\($1.label)\": []" }
         str += "\n        ]\n"
         str += "    }\n\n"
-        for external in machine.externalVariables {
-            str += "    public let _\(external.label): SnapshotCollectionController<GenericWhiteboard<\(external.messageClass)>>\n"
-        }
         str += "    public let clock: Timer\n\n"
         for submachine in machine.submachines {
             str += "    public internal(set) var \(submachine.name)Machine: AnyControllableFiniteStateMachine\n"
