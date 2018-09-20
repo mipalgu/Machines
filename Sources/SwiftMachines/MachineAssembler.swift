@@ -410,16 +410,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                     }
                     return start + " = " + initialValue
                     }.combine("") { $0 + ", " + $1 }
-                str += "    let (\(m.name)FSM, \(m.name)MachineDependencies) = make_parameterised_\(m.name)(name: name + \".\(machine.name)\", invoker: invoker, clock: clock)\n"
-                str += "    parameterisedMachines.append((\(m.name)FSM, \(m.name)FSM.name, \(m.name)MachineDependencies))\n"
-                str += "    func \(m.name)Machine(\(parameterList ?? "")) -> Promise<\(m.returnType ?? "Void")> {\n"
-                let callParams = m.parameters?.map { $0.label + ": " + $0.label} ?? []
-                let callStr = callParams.combine("") { $0 + ", " + $1 }
-                str += "        let params = \(m.name)Parameters(\(callStr))\n"
-                str += "        let resultContainer: AnyResultContainer<Any> = \(m.name)FSM.resultContainer\n"
-                str += "        let actualResultContainer = AnyResultContainer({ resultContainer.result as! \(m.returnType ?? "Void") })\n"
-                str += "        return invoker.invoke(\(m.name)FSM.name, with: params, withResults: actualResultContainer)\n"
-                str += "    }\n"
+                str += "    let (\(m.name)Machine, \(m.name)MachineDependencies) = make_parameterised_\(m.name)(name: name + \".\(machine.name)\", invoker: invoker, clock: clock)\n"
+                str += "    parameterisedMachines.append((\(m.name)Machine, \(m.name)Machine.name, \(m.name)MachineDependencies))\n"
             }
         }
         if nil != machine.parameters {
@@ -434,7 +426,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             let v = true == state.transitions.isEmpty ? "let" : "var"
             str += "    \(v) state_\(state.name) = State_\(state.name)(\n"
             str += "        \"\(state.name)\",\n"
-            str += "        clock: clock,"
+            str += "        clock: clock,\n"
+            str += "        invoker: invoker,"
             for m in machine.submachines + machine.parameterisedMachines {
                 str += "\n        \(m.name)Machine: \(m.name)Machine,"
             }
@@ -719,6 +712,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "\n        ]\n"
         str += "    }\n\n"
         str += "    public let clock: Timer\n\n"
+        str += "    fileprivate let _invoker: Invoker\n\n"
         for submachine in machine.submachines {
             str += "    public internal(set) var \(submachine.name)Machine: AnyControllableFiniteStateMachine\n"
         }
@@ -727,7 +721,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         for m in machine.parameterisedMachines {
             let parameterList = m.parameters?.lazy.map { $0.type }.combine("") { $0 + ", " + $1 } ?? ""
-            str += "    fileprivate var _\(m.name)Machine: (\(parameterList)) -> Promise<\(m.returnType ?? "Void")>\n"
+            str += "    fileprivate var _\(m.name)Machine: AnyParameterisedFiniteStateMachine\n"
         }
         if (false == machine.parameterisedMachines.isEmpty) {
             str += "\n"
@@ -742,16 +736,18 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "        _ name: String,\n"
         str += "        transitions: [Transition<State_\(state.name), \(stateType)>] = [],\n"
         str += "        clock: Timer,\n"
+        str += "        invoker: Invoker,\n"
         for submachine in machine.submachines {
             str += "        \(submachine.name)Machine: AnyControllableFiniteStateMachine,\n"
         }
         for m in machine.parameterisedMachines {
             let parameterList = m.parameters?.lazy.map { $0.type }.combine("") { $0 + ", " + $1 } ?? ""
-            str += "    \(m.name)Machine: @escaping (\(parameterList)) -> Promise<\(m.returnType ?? "Void")>,\n"
+            str += "        \(m.name)Machine: AnyParameterisedFiniteStateMachine,\n"
         }
         str = str.trimmingCharacters(in: CharacterSet(charactersIn: ",\n"))
         str += "\n    ) {\n"
         str += "        self.clock = clock\n"
+        str += "        self._invoker = invoker\n"
         for submachine in machine.submachines {
             str += "        self.\(submachine.name)Machine = \(submachine.name)Machine\n"
         }
@@ -769,9 +765,13 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                 }
                 return start + " = " + initialValue
             }.combine("") { $0 + ", " + $1 }
-            let paramsCalled = m.parameters?.lazy.map { $0.label }
-            let callList: String? = paramsCalled?.combine("") { $0 + ", " + $1 }
-            str += "    public func \(m.name)Machine(\(parameterList ?? "")) -> Promise<\(m.returnType ?? "Void")> { return self._\(m.name)Machine(\(callList ?? "")) }\n\n"
+            str += "    public func \(m.name)Machine(\(parameterList ?? "")) -> Promise<\(m.returnType ?? "Void")> {\n"
+            let callParams = m.parameters?.map { $0.label + ": " + $0.label} ?? []
+            let callStr = callParams.combine("") { $0 + ", " + $1 }
+            str += "        let parameters = \(m.name)Parameters(\(callStr))\n"
+            str += "        let resultContainer = AnyResultContainer({ self._\(m.name)Machine.resultContainer as! \(m.returnType ?? "Void") })\n"
+            str += "        return self._invoker.invoke(self._\(m.name)Machine.name, with: parameters, withResults: resultContainer)\n"
+            str += "    }\n\n"
         }
         // Actions.
         for action in state.actions {
@@ -785,11 +785,12 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "            \"\(state.name)\",\n"
         str += "            transitions: cast(transitions: self.transitions),\n"
         str += "            clock: self.clock,\n"
+        str += "            invoker: self._invoker,\n"
         for submachine in machine.submachines {
             str += "            \(submachine.name)Machine: self.\(submachine.name)Machine,\n"
         }
         for m in machine.parameterisedMachines {
-            str += "            \(m.name)Machine: self.\(m.name)Machine,\n"
+            str += "            \(m.name)Machine: self._\(m.name)Machine,\n"
         }
         str = str.trimmingCharacters(in: CharacterSet(charactersIn: ",\n"))
         str += "\n        )\n"
@@ -810,11 +811,13 @@ public final class MachineAssembler: Assembler, ErrorContainer {
     private func makeStateVariables(forState state: State, inMachine machine: Machine, indent: String = "", _ defaultValues: ((Variable) -> String)? = nil) -> String? {
         self.takenVars = Set(machine.externalVariables.map { $0.label })
         (machine.model.actions).forEach { self.takenVars.insert($0) }
+        (machine.parameterisedMachines + machine.submachines).forEach { self.takenVars.insert($0.name + "Machine") }
         if nil != machine.parameters {
             self.takenVars.insert("parameters")
         }
         self.takenVars.insert("fsmVars")
         self.takenVars.insert("clock")
+        self.takenVars.insert("_invoker")
         self.takenVars.insert("name")
         self.takenVars.insert("transitions")
         self.takenVars.insert("Me")
