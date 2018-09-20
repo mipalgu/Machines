@@ -660,6 +660,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += ringlet.imports
         str += "\npublic final class \(machine)Ringlet: Ringlet, Cloneable {\n\n"
         str += "    public typealias _StateType = \(stateType)\n\n"
+        str += "    internal var Me: \(machine)FiniteStateMachine!\n\n"
         str += "\(ringlet.vars.reduce("") { $0 + "    \(self.varHelpers.makeDeclarationAndAssignment(forVariable: $1))\n" })\n"
         str += "    public init() {}\n\n"
         str += "    public func execute(state: \(stateType)) -> \(stateType) {\n"
@@ -703,12 +704,12 @@ public final class MachineAssembler: Assembler, ErrorContainer {
              */
             public final class \(machine)Ringlet: Ringlet, Cloneable, KripkeVariablesModifier {
 
-                internal var previousState: \(stateType)
-
-                internal var shouldExecuteOnEntry: Bool = true
+                internal var Me: \(machine)FiniteStateMachine!
 
                 public var computedVars: [String: Any] {
-                    return [:]
+                    return [
+                        "shouldExecuteOnEntry": self.Me.currentState != self.Me.previousState
+                    ]
                 }
 
                 public var manipulators: [String : (Any) -> Any] {
@@ -717,19 +718,15 @@ public final class MachineAssembler: Assembler, ErrorContainer {
 
                 public var validVars: [String: [Any]] {
                     return [
-                        "previousState": []
+                        "Me": []
                     ]
                 }
 
                 /**
                  *  Create a new `MiPalRinglet`.
                  *
-                 *  - Parameter previousState:  The last `MiPalState` that was executed.
-                 *  This is used to check whether the `MiPalState.onEntry()` should run.
                  */
-                public init(previousState: \(stateType) = Empty\(machine)State("_previous")) {
-                    self.previousState = previousState
-                }
+                public init() {}
 
                 /**
                  *  Execute the ringlet.
@@ -740,26 +737,23 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                  */
                 public func execute(state: \(stateType)) -> \(stateType) {
                     // Call onEntry if we have just transitioned to this state.
-                    if state != self.previousState {
+                    if state != self.Me.previousState {
                         state.onEntry()
                     }
-                    self.previousState = state
                     // Can we transition to another state?
-                    if let t = state.transitions.lazy.filter({ $0.canTransition(state) }).first {
+                    if let t = state.transitions.first(where: { $0.canTransition(state) }) {
                         // Yes - Exit state and return the new state.
                         state.onExit()
-                        self.shouldExecuteOnEntry = self.previousState != t.target
                         return t.target
                     }
                     // No - Execute main method and return state.
                     state.main()
-                    self.shouldExecuteOnEntry = false
                     return state
                 }
 
                 public func clone() -> \(machine)Ringlet {
-                    let r = \(machine)Ringlet(previousState: self.previousState.clone())
-                    r.shouldExecuteOnEntry = self.shouldExecuteOnEntry
+                    let r = \(machine)Ringlet()
+                    r.Me = self.Me
                     return r
                 }
 
@@ -1348,6 +1342,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "        self.suspendedState = suspendedState\n"
         str += "        self.suspendState = suspendState\n"
         str += "        self.allStates.forEach { $1.Me = self }\n"
+        str += "        self.ringlet.Me = self\n"
         str += "    }\n\n"
         // Clone
         str += "    public func clone() -> " + name + " {\n"
