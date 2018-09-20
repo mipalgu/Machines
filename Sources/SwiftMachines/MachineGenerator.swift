@@ -119,29 +119,31 @@ public final class MachineGenerator {
             }
             files.append(bridgingHeader)
         }
-        guard
-            let ringletImports = self.helpers.createFile(
-                "Ringlet_Imports.swift",
-                inDirectory: machine.filePath,
-                withContents: machine.model.ringlet.imports
-            ),
-            let ringletVars = self.helpers.createFile(
-                "Ringlet_Vars.swift",
-                inDirectory: machine.filePath,
-                withContents: machine.model.ringlet.vars.reduce("") {
-                    $0 + "\n" + self.varHelpers.makeDeclarationAndAssignment(forVariable: $1)
-                }
-            ),
-            let ringletExecute = self.helpers.createFile(
-                "Ringlet_Execute.swift",
-                inDirectory: machine.filePath,
-                withContents: machine.model.ringlet.execute
-            ),
-            let modelFile = self.makeModelFile(forMachine: machine)
-        else {
-            return nil
+        if let model = machine.model {
+            guard
+                let ringletImports = self.helpers.createFile(
+                    "Ringlet_Imports.swift",
+                    inDirectory: machine.filePath,
+                    withContents: model.ringlet.imports
+                ),
+                let ringletVars = self.helpers.createFile(
+                    "Ringlet_Vars.swift",
+                    inDirectory: machine.filePath,
+                    withContents: model.ringlet.vars.reduce("") {
+                        $0 + "\n" + self.varHelpers.makeDeclarationAndAssignment(forVariable: $1)
+                    }
+                ),
+                let ringletExecute = self.helpers.createFile(
+                    "Ringlet_Execute.swift",
+                    inDirectory: machine.filePath,
+                    withContents: model.ringlet.execute
+                ),
+                let modelFile = self.makeModelFile(forMachine: machine, withModel: model)
+            else {
+                return nil
+            }
+            files.append(contentsOf: [ringletImports, ringletVars, ringletExecute, modelFile])
         }
-        files.append(contentsOf: [ringletImports, ringletVars, ringletExecute, modelFile])
         if nil != machine.parameters {
             guard let parametersFile = self.makeParametersFile(forMachine: machine) else {
                 return nil
@@ -259,10 +261,10 @@ public final class MachineGenerator {
         return path
     }
 
-    func makeModelFile(forMachine machine: Machine) -> URL? {
+    func makeModelFile(forMachine machine: Machine, withModel model: Model) -> URL? {
         let path = machine.filePath.appendingPathComponent("model.json", isDirectory: false)
         let dict: [String: Any] = [
-            "actions": machine.model.actions
+            "actions": model.actions
         ]
         guard
             let json = self.encode(json: dict),
