@@ -565,7 +565,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         let str = self.makeVarsContent(
             forMachine: machine,
             name: "\(machine.name)ResultsContainer",
-            vars: [Variable(constant: false, label: "result", type: machine.returnType ?? "Void", initialValue: nil)],
+            vars: [Variable(constant: false, label: "result", type: (machine.returnType ?? "Void") + "?", initialValue: "nil")],
             extraConformances: ["MutableResultContainer"]
         )
         guard true == self.helpers.createFile(atPath: machinePath, withContents: str) else {
@@ -858,7 +858,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         if let parameters = machine.parameters {
             str += self.createComputedProperty(mutable: true, withLabel: "parameters", andType: "\(machine.name)Parameters", referencing: "Me.parameters.vars", includeScope: includeScope, indent: indent)
             str += self.createComputedProperties(fromVars: parameters, withinContainer: "parameters", includeScope: includeScope, indent: indent)
-            str += self.createComputedProperty(mutable: true, withLabel: "result", andType: machine.returnType ?? "Void", referencing: "Me.results.vars.result", includeScope: includeScope, indent: indent)
+            str += self.createComputedProperty(mutable: true, withLabel: "result", andType: machine.returnType ?? "Void", referencing: "Me.results.vars.result", includeScope: includeScope, indent: indent, unwrap: true)
         }
         // External variables.
         for external in machine.externalVariables {
@@ -1244,8 +1244,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
     }
 
-    private func createComputedProperty(mutable: Bool, withLabel label: String, andType type: String, referencing reference: String, includeScope: Bool = true, indent: String = "") -> String {
-        let getter = "return \(reference)"
+    private func createComputedProperty(mutable: Bool, withLabel label: String, andType type: String, referencing reference: String, includeScope: Bool = true, indent: String = "", unwrap: Bool = false) -> String {
+        let getter = "return \(reference)\(unwrap ? "!" : "")"
         let accessor = !includeScope ? "" : "public " + (mutable ? "internal(set) " : "")
         var str = ""
         str += indent + "\(accessor)var \(label): \(type) {\n"
