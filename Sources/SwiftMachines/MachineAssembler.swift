@@ -566,7 +566,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             forMachine: machine,
             name: "\(machine.name)ResultsContainer",
             vars: [Variable(constant: false, label: "result", type: machine.returnType ?? "Void", initialValue: nil)],
-            extraConformances: ["ResultContainer"]
+            extraConformances: ["MutableResultContainer"]
         )
         guard true == self.helpers.createFile(atPath: machinePath, withContents: str) else {
             self.errors.append("Unable to create \(machinePath.path)")
@@ -769,6 +769,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             let callParams = m.parameters?.map { $0.label + ": " + $0.label} ?? []
             let callStr = callParams.combine("") { $0 + ", " + $1 }
             str += "        let parameters = \(m.name)Parameters(\(callStr))\n"
+            str += "        self._\(m.name)Machine.resetResult()\n"
             str += "        let resultContainer = AnyResultContainer({ self._\(m.name)Machine.resultContainer.result as! \(m.returnType ?? "Void") })\n"
             str += "        return self._invoker.invoke(self._\(m.name)Machine.name, with: parameters, withResults: resultContainer)\n"
             str += "    }\n\n"
@@ -1197,6 +1198,12 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "        fsm.previousState = apply(self.previousState.clone())\n"
         str += "        return fsm\n"
         str += "    }\n\n"
+        // resetResults
+        if nil != machine.parameters {
+            str += "    public func resetResult() {\n"
+            str += "        self.results.vars.result = nil\n"
+            str += "    }\n\n"
+        }
         str += "}"
         // Create the file.
         if (false == self.helpers.createFile(atPath: fsmPath, withContents: str)) {
