@@ -769,7 +769,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             let callParams = m.parameters?.map { $0.label + ": " + $0.label} ?? []
             let callStr = callParams.combine("") { $0 + ", " + $1 }
             str += "        let parameters = \(m.name)Parameters(\(callStr))\n"
-            str += "        let resultContainer = AnyResultContainer({ self._\(m.name)Machine.resultContainer as! \(m.returnType ?? "Void") })\n"
+            str += "        let resultContainer = AnyResultContainer({ self._\(m.name)Machine.resultContainer.result as! \(m.returnType ?? "Void") })\n"
             str += "        return self._invoker.invoke(self._\(m.name)Machine.name, with: parameters, withResults: resultContainer)\n"
             str += "    }\n\n"
         }
