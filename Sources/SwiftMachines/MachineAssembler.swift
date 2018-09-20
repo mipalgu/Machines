@@ -174,15 +174,32 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             files.append(mainPath)
         }
         guard
-            let ringletPath = self.makeRinglet(forRinglet: machine.model.ringlet, withMachineName: machine.name, inDirectory: srcDir),
-            let stateTypePath = self.makeStateType(forMachine: machine.name, fromModel: machine.model, inDirectory: srcDir),
-            let emptyStateTypePath = self.makeEmptyStateType(forMachine: machine.name, fromModel: machine.model, inDirectory: srcDir),
-            let callbackStateTypePath = self.makeCallbackStateType(forMachine: machine.name, fromModel: machine.model, inDirectory: srcDir)
+            let emptyStateTypePath = self.makeEmptyStateType(forMachine: machine.name, withActions: machine.model?.actions ?? ["onEntry", "onExit", "main"], inDirectory: srcDir),
+            let callbackStateTypePath = self.makeCallbackStateType(forMachine: machine.name, withActions: machine.model?.actions ?? ["onEntry", "onExit", "main"], inDirectory: srcDir)
         else {
             self.errors.append(errorMsg)
             return nil
         }
-        files.append(contentsOf: [ringletPath, stateTypePath, emptyStateTypePath, callbackStateTypePath])
+        if let model = machine.model {
+            guard
+                let ringletPath = self.makeRinglet(forRinglet: model.ringlet, withMachineName: machine.name, inDirectory: srcDir),
+                let stateTypePath = self.makeStateType(forMachine: machine.name, fromModel: model, inDirectory: srcDir)
+            else {
+                self.errors.append(errorMsg)
+                return nil
+            }
+            files.append(contentsOf: [ringletPath, stateTypePath])
+        } else {
+            guard
+                let ringletPath = self.makeMiPalRinglet(withMachineName: machine.name, inDirectory: srcDir),
+                let stateTypePath = self.makeMiPalStateType(forMachine: machine.name, inDirectory: srcDir)
+            else {
+                self.errors.append(errorMsg)
+                return nil
+            }
+            files.append(contentsOf: [ringletPath, stateTypePath])
+        }
+        files.append(contentsOf: [emptyStateTypePath, callbackStateTypePath])
         guard true == self.createAndTagGitRepo(inDirectory: packageDir) else {
             self.errors.append(errorMsg)
             return nil
@@ -410,16 +427,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                     }
                     return start + " = " + initialValue
                     }.combine("") { $0 + ", " + $1 }
-                str += "    let (\(m.name)FSM, \(m.name)MachineDependencies) = make_parameterised_\(m.name)(name: name + \".\(machine.name)\", invoker: invoker, clock: clock)\n"
-                str += "    parameterisedMachines.append((\(m.name)FSM, \(m.name)FSM.name, \(m.name)MachineDependencies))\n"
-                str += "    func \(m.name)Machine(\(parameterList ?? "")) -> Promise<\(m.returnType ?? "Void")> {\n"
-                let callParams = m.parameters?.map { $0.label + ": " + $0.label} ?? []
-                let callStr = callParams.combine("") { $0 + ", " + $1 }
-                str += "        let params = \(m.name)Parameters(\(callStr))\n"
-                str += "        let resultContainer: AnyResultContainer<Any> = \(m.name)FSM.resultContainer\n"
-                str += "        let actualResultContainer = AnyResultContainer({ resultContainer.result as! \(m.returnType ?? "Void") })\n"
-                str += "        return invoker.invoke(\(m.name)FSM.name, with: params, withResults: actualResultContainer)\n"
-                str += "    }\n"
+                str += "    let (\(m.name)Machine, \(m.name)MachineDependencies) = make_parameterised_\(m.name)(name: name + \".\(machine.name)\", invoker: invoker, clock: clock)\n"
+                str += "    parameterisedMachines.append((\(m.name)Machine, \(m.name)Machine.name, \(m.name)MachineDependencies))\n"
             }
         }
         if nil != machine.parameters {
@@ -434,7 +443,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             let v = true == state.transitions.isEmpty ? "let" : "var"
             str += "    \(v) state_\(state.name) = State_\(state.name)(\n"
             str += "        \"\(state.name)\",\n"
-            str += "        clock: clock,"
+            str += "        clock: clock,\n"
+            str += "        invoker: invoker,"
             for m in machine.submachines + machine.parameterisedMachines {
                 str += "\n        \(m.name)Machine: \(m.name)Machine,"
             }
@@ -572,8 +582,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         let str = self.makeVarsContent(
             forMachine: machine,
             name: "\(machine.name)ResultsContainer",
-            vars: [Variable(constant: false, label: "result", type: machine.returnType ?? "Void", initialValue: nil)],
-            extraConformances: ["ResultContainer"]
+            vars: [Variable(constant: false, label: "result", type: (machine.returnType ?? "Void") + "?", initialValue: "nil")],
+            extraConformances: ["MutableResultContainer"]
         )
         guard true == self.helpers.createFile(atPath: machinePath, withContents: str) else {
             self.errors.append("Unable to create \(machinePath.path)")
@@ -650,6 +660,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += ringlet.imports
         str += "\npublic final class \(machine)Ringlet: Ringlet, Cloneable {\n\n"
         str += "    public typealias _StateType = \(stateType)\n\n"
+        str += "    internal var Me: \(machine)FiniteStateMachine!\n\n"
         str += "\(ringlet.vars.reduce("") { $0 + "    \(self.varHelpers.makeDeclarationAndAssignment(forVariable: $1))\n" })\n"
         str += "    public init() {}\n\n"
         str += "    public func execute(state: \(stateType)) -> \(stateType) {\n"
@@ -674,6 +685,87 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         return ringletPath
     }
+    
+    private func makeMiPalRinglet(withMachineName machine: String, inDirectory path: URL) -> URL? {
+        let ringletPath = path.appendingPathComponent("\(machine)Ringlet.swift")
+        let stateType = machine + "State"
+        let str = """
+            import FSM
+            import ModelChecking
+            import swiftfsm
+
+            /**
+             *  A standard ringlet.
+             *
+             *  Firstly calls onEntry if we have just transitioned to this state.  If a
+             *  transition is possible then the states onExit method is called and the new
+             *  state is returned.  If no transitions are possible then the main method is
+             *  called and the state is returned.
+             */
+            public final class \(machine)Ringlet: Ringlet, Cloneable, KripkeVariablesModifier {
+
+                internal var Me: \(machine)FiniteStateMachine!
+
+                public var computedVars: [String: Any] {
+                    return [
+                        "shouldExecuteOnEntry": self.Me.currentState != self.Me.previousState
+                    ]
+                }
+
+                public var manipulators: [String : (Any) -> Any] {
+                    return [:]
+                }
+
+                public var validVars: [String: [Any]] {
+                    return [
+                        "Me": []
+                    ]
+                }
+
+                /**
+                 *  Create a new `MiPalRinglet`.
+                 *
+                 */
+                public init() {}
+
+                /**
+                 *  Execute the ringlet.
+                 *
+                 *  - Parameter state: The `\(stateType)` that is being executed.
+                 *
+                 *  - Returns: A state representing the next state to execute.
+                 */
+                public func execute(state: \(stateType)) -> \(stateType) {
+                    // Call onEntry if we have just transitioned to this state.
+                    if state != self.Me.previousState {
+                        state.onEntry()
+                    }
+                    // Can we transition to another state?
+                    if let t = state.transitions.first(where: { $0.canTransition(state) }) {
+                        // Yes - Exit state and return the new state.
+                        state.onExit()
+                        return t.target
+                    }
+                    // No - Execute main method and return state.
+                    state.main()
+                    return state
+                }
+
+                public func clone() -> \(machine)Ringlet {
+                    let r = \(machine)Ringlet()
+                    r.Me = self.Me
+                    return r
+                }
+
+            }
+            """
+        if (false == self.helpers.createFile(atPath: ringletPath, withContents: str)) {
+            return nil
+        }
+        return ringletPath
+    }
+    
+    
 
     private func makeStates(forMachine machine: Machine, inDirectory path: URL) -> [URL]? {
         var paths: [URL] = []
@@ -719,6 +811,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "\n        ]\n"
         str += "    }\n\n"
         str += "    public let clock: Timer\n\n"
+        str += "    fileprivate let _invoker: Invoker\n\n"
         for submachine in machine.submachines {
             str += "    public internal(set) var \(submachine.name)Machine: AnyControllableFiniteStateMachine\n"
         }
@@ -727,7 +820,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         for m in machine.parameterisedMachines {
             let parameterList = m.parameters?.lazy.map { $0.type }.combine("") { $0 + ", " + $1 } ?? ""
-            str += "    fileprivate var _\(m.name)Machine: (\(parameterList)) -> Promise<\(m.returnType ?? "Void")>\n"
+            str += "    fileprivate var _\(m.name)Machine: AnyParameterisedFiniteStateMachine\n"
         }
         if (false == machine.parameterisedMachines.isEmpty) {
             str += "\n"
@@ -742,16 +835,18 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "        _ name: String,\n"
         str += "        transitions: [Transition<State_\(state.name), \(stateType)>] = [],\n"
         str += "        clock: Timer,\n"
+        str += "        invoker: Invoker,\n"
         for submachine in machine.submachines {
             str += "        \(submachine.name)Machine: AnyControllableFiniteStateMachine,\n"
         }
         for m in machine.parameterisedMachines {
             let parameterList = m.parameters?.lazy.map { $0.type }.combine("") { $0 + ", " + $1 } ?? ""
-            str += "    \(m.name)Machine: @escaping (\(parameterList)) -> Promise<\(m.returnType ?? "Void")>,\n"
+            str += "        \(m.name)Machine: AnyParameterisedFiniteStateMachine,\n"
         }
         str = str.trimmingCharacters(in: CharacterSet(charactersIn: ",\n"))
         str += "\n    ) {\n"
         str += "        self.clock = clock\n"
+        str += "        self._invoker = invoker\n"
         for submachine in machine.submachines {
             str += "        self.\(submachine.name)Machine = \(submachine.name)Machine\n"
         }
@@ -769,9 +864,14 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                 }
                 return start + " = " + initialValue
             }.combine("") { $0 + ", " + $1 }
-            let paramsCalled = m.parameters?.lazy.map { $0.label }
-            let callList: String? = paramsCalled?.combine("") { $0 + ", " + $1 }
-            str += "    public func \(m.name)Machine(\(parameterList ?? "")) -> Promise<\(m.returnType ?? "Void")> { return self._\(m.name)Machine(\(callList ?? "")) }\n\n"
+            str += "    public func \(m.name)Machine(\(parameterList ?? "")) -> Promise<\(m.returnType ?? "Void")> {\n"
+            let callParams = m.parameters?.map { $0.label + ": " + $0.label} ?? []
+            let callStr = callParams.combine("") { $0 + ", " + $1 }
+            str += "        let parameters = \(m.name)Parameters(\(callStr))\n"
+            str += "        self._\(m.name)Machine.resetResult()\n"
+            str += "        let resultContainer = AnyResultContainer({ self._\(m.name)Machine.resultContainer.result as! \(m.returnType ?? "Void") })\n"
+            str += "        return self._invoker.invoke(self._\(m.name)Machine.name, with: parameters, withResults: resultContainer)\n"
+            str += "    }\n\n"
         }
         // Actions.
         for action in state.actions {
@@ -785,11 +885,12 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "            \"\(state.name)\",\n"
         str += "            transitions: cast(transitions: self.transitions),\n"
         str += "            clock: self.clock,\n"
+        str += "            invoker: self._invoker,\n"
         for submachine in machine.submachines {
             str += "            \(submachine.name)Machine: self.\(submachine.name)Machine,\n"
         }
         for m in machine.parameterisedMachines {
-            str += "            \(m.name)Machine: self.\(m.name)Machine,\n"
+            str += "            \(m.name)Machine: self._\(m.name)Machine,\n"
         }
         str = str.trimmingCharacters(in: CharacterSet(charactersIn: ",\n"))
         str += "\n        )\n"
@@ -809,12 +910,14 @@ public final class MachineAssembler: Assembler, ErrorContainer {
     
     private func makeStateVariables(forState state: State, inMachine machine: Machine, indent: String = "", _ defaultValues: ((Variable) -> String)? = nil) -> String? {
         self.takenVars = Set(machine.externalVariables.map { $0.label })
-        (machine.model.actions).forEach { self.takenVars.insert($0) }
+        (machine.model?.actions ?? ["onEntry", "onExit", "main"]).forEach { self.takenVars.insert($0) }
+        (machine.parameterisedMachines + machine.submachines).forEach { self.takenVars.insert($0.name + "Machine") }
         if nil != machine.parameters {
             self.takenVars.insert("parameters")
         }
         self.takenVars.insert("fsmVars")
         self.takenVars.insert("clock")
+        self.takenVars.insert("_invoker")
         self.takenVars.insert("name")
         self.takenVars.insert("transitions")
         self.takenVars.insert("Me")
@@ -854,7 +957,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         if let parameters = machine.parameters {
             str += self.createComputedProperty(mutable: true, withLabel: "parameters", andType: "\(machine.name)Parameters", referencing: "Me.parameters.vars", includeScope: includeScope, indent: indent)
             str += self.createComputedProperties(fromVars: parameters, withinContainer: "parameters", includeScope: includeScope, indent: indent)
-            str += self.createComputedProperty(mutable: true, withLabel: "result", andType: machine.returnType ?? "Void", referencing: "Me.results.vars.result", includeScope: includeScope, indent: indent)
+            str += self.createComputedProperty(mutable: true, withLabel: "result", andType: machine.returnType ?? "Void", referencing: "Me.results.vars.result", includeScope: includeScope, indent: indent, unwrap: true)
         }
         // External variables.
         for external in machine.externalVariables {
@@ -907,13 +1010,104 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         return stateTypePath
     }
+    
+    private func makeMiPalStateType(forMachine machine: String, inDirectory path: URL) -> URL? {
+        let stateTypePath = path.appendingPathComponent("\(machine)State.swift", isDirectory: false)
+        let stateType = machine + "State"
+        let str = """
+            import FSM
+            import ModelChecking
+            import swiftfsm
 
-    public func makeEmptyStateType(forMachine machine: String, fromModel model: Model, inDirectory path: URL) -> URL? {
+            /**
+             *  The base class for all states that conform to `MiPalAction`s.
+             */
+            public class \(stateType):
+                StateType,
+                CloneableState,
+                CustomStringConvertible,
+                CustomDebugStringConvertible,
+                MiPalActions,
+                Transitionable,
+                KripkeVariablesModifier
+            {
+
+                /**
+                 *  The name of the state.
+                 *
+                 *  - Requires: Must be unique for each state.
+                 */
+                public let name: String
+
+                /**
+                 *  An array of transitions that this state may use to move to another
+                 *  state.
+                 */
+                public var transitions: [Transition<\(stateType), \(stateType)>]
+
+                internal var Me: \(machine)FiniteStateMachine!
+
+                open var validVars: [String: [Any]] {
+                    return [
+                        "name": [],
+                        "transitions": [],
+                        "Me": []
+                    ]
+                }
+
+                /**
+                 *  Create a new `\(stateType)`.
+                 *
+                 *  - Parameter name: The name of the state.
+                 *
+                 *  - transitions: All transitions to other states that this state can use.
+                 */
+                public init(_ name: String, transitions: [Transition<\(stateType), \(stateType)>] = []) {
+                    self.name = name
+                    self.transitions = transitions
+                }
+
+                /**
+                 *  Does nothing.
+                 */
+                open func onEntry() {}
+
+                /**
+                 *  Does nothing.
+                 */
+                open func main() {}
+
+                /**
+                 *  Does nothing.
+                 */
+                open func onExit() {}
+
+                /**
+                 *  Create a copy of `self`.
+                 *
+                 *  - Warning: Child classes should override this method.  If they do not
+                 *  then the application will crash when trying to generate
+                 *  `KripkeStructures`.
+                 */
+                open func clone() -> Self {
+                    fatalError("Please implement your own clone")
+                }
+                
+            }
+            """
+        if (false == self.helpers.createFile(atPath: stateTypePath, withContents: str)) {
+            self.errors.append("Unable to create \(stateType) at \(stateTypePath.path)")
+            return nil
+        }
+        return stateTypePath
+    }
+
+    public func makeEmptyStateType(forMachine machine: String, withActions actions: [String], inDirectory path: URL) -> URL? {
         let emptyStateTypePath = path.appendingPathComponent("Empty\(machine)State.swift", isDirectory: false)
         let stateType = machine + "State"
         var str = "import FSM\nimport swiftfsm\n\n"
         str += "public final class Empty\(stateType): \(stateType) {\n\n"
-        for action in model.actions {
+        for action in actions {
             str += "    public override final func \(action)() {}\n\n"
         }
         str += "    public override final func clone() -> Empty\(stateType) {\n"
@@ -927,29 +1121,29 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         return emptyStateTypePath
     }
 
-    public func makeCallbackStateType(forMachine machine: String, fromModel model: Model, inDirectory path: URL) -> URL? {
+    public func makeCallbackStateType(forMachine machine: String, withActions actions: [String], inDirectory path: URL) -> URL? {
         let callbackStateTypePath = path.appendingPathComponent("Callback\(machine)State.swift", isDirectory: false)
         let stateType = machine + "State"
         var str = "import FSM\nimport swiftfsm\n\n"
         str += "public final class Callback\(stateType): \(stateType) {\n\n"
-        for action in model.actions {
+        for action in actions {
             str += "    private let _\(action): () -> Void\n\n"
         }
         str += "    public init(\n"
         str += "        _ name: String,\n"
         str += "        transitions: [Transition<Callback\(stateType), \(stateType)>] = [],"
         var actionsList = ""
-        for action in model.actions {
+        for action in actions {
             actionsList += "\n        \(action): @escaping () -> Void = {},"
         }
         str += "\(String(actionsList.characters.dropLast()))\n"
         str += "    ) {\n"
-        for action in model.actions {
+        for action in actions {
             str += "        self._\(action) = \(action)\n"
         }
         str += "        super.init(name, transitions: cast(transitions: transitions))\n"
         str += "    }\n\n"
-        for action in model.actions {
+        for action in actions {
             str += "    public final override func \(action)() {\n"
             str += "        self._\(action)()\n"
             str += "    }\n\n"
@@ -1148,6 +1342,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "        self.suspendedState = suspendedState\n"
         str += "        self.suspendState = suspendState\n"
         str += "        self.allStates.forEach { $1.Me = self }\n"
+        str += "        self.ringlet.Me = self\n"
         str += "    }\n\n"
         // Clone
         str += "    public func clone() -> " + name + " {\n"
@@ -1194,6 +1389,12 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "        fsm.previousState = apply(self.previousState.clone())\n"
         str += "        return fsm\n"
         str += "    }\n\n"
+        // resetResults
+        if nil != machine.parameters {
+            str += "    public func resetResult() {\n"
+            str += "        self.results.vars.result = nil\n"
+            str += "    }\n\n"
+        }
         str += "}"
         // Create the file.
         if (false == self.helpers.createFile(atPath: fsmPath, withContents: str)) {
@@ -1234,8 +1435,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
     }
 
-    private func createComputedProperty(mutable: Bool, withLabel label: String, andType type: String, referencing reference: String, includeScope: Bool = true, indent: String = "") -> String {
-        let getter = "return \(reference)"
+    private func createComputedProperty(mutable: Bool, withLabel label: String, andType type: String, referencing reference: String, includeScope: Bool = true, indent: String = "", unwrap: Bool = false) -> String {
+        let getter = "return \(reference)\(unwrap ? "!" : "")"
         let accessor = !includeScope ? "" : "public " + (mutable ? "internal(set) " : "")
         var str = ""
         str += indent + "\(accessor)var \(label): \(type) {\n"

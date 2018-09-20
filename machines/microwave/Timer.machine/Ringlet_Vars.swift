@@ -1,2 +1,0 @@
-
-var shouldExecuteOnEntry: Bool = true
