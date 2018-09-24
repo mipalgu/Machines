@@ -1,1 +1,1 @@
-microwave_status.buttonPushed && !microwave_status.doorOpen && currentTime < 10
+microwave_status.buttonPushed && !microwave_status.doorOpen && currentTime < 60
