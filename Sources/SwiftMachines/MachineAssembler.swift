@@ -652,8 +652,11 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "import ModelChecking\n"
         str += "import KripkeStructure\n"
         str += ringlet.imports
-        str += "\npublic final class \(machine)Ringlet: Ringlet, Cloneable {\n\n"
+        str += "\npublic final class \(machine)Ringlet: Ringlet, Cloneable, KripkeVariablesModifier {\n\n"
         str += "    public typealias _StateType = \(stateType)\n\n"
+        str += "    public var computedVars: [String: Any] { return [:] }\n\n"
+        str += "    public var manipulators: [String: (Any) -> Any] { return [:] }\n\n"
+        str += "    public var validVars: [String: [Any]] { return [\"Me\": []] }\n\n"
         str += "    internal var Me: \(machine)FiniteStateMachine!\n\n"
         str += "\(ringlet.vars.reduce("") { $0 + "    \(self.varHelpers.makeDeclarationAndAssignment(forVariable: $1))\n" })\n"
         str += "    public init() {}\n\n"
