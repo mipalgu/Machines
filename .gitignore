@@ -5,3 +5,7 @@
 *.smv
 *.gv
 *.pdf
+*.gexf
+*.tlp
+*.png
+*.svg
