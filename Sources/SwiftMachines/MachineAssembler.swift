@@ -1190,7 +1190,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "            \"parameters\": self.parameters.vars,\n"
             str += "            \"results\": self.results.vars,\n"
         }
-        str += "            \"states\": self.allStates.lazy.map { $1 }.sorted { $0.name < $1.name },\n"
+        str += "            \"states\": self.allStates,\n"
         str += "        ]\n"
         str += "    }\n\n"
         str += "    /**\n"
