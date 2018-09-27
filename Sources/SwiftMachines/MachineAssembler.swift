@@ -803,7 +803,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                         \"name\": [],
                         \"transitions\": [],
                         \"clock\": [],
-                        \"Me\": []
+                        \"Me\": [],
+                        \"_invoker\": []
             """
         str += "\n        ]\n"
         str += "    }\n\n"
