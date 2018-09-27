@@ -1,0 +1,11 @@
+{
+  "externalVariables" : {
+    "buttons" : {
+      "atomic" : false,
+      "class" : "wb_buttons",
+      "shouldNotifySubscribers" : true,
+      "type" : "kButtons_v",
+      "wbName" : null
+    }
+  }
+}
