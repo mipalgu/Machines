@@ -1,1 +1,0 @@
-print("Factorial of 5 is \(promise.result)")
