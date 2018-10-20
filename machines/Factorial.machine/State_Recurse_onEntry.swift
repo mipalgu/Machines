@@ -1,0 +1,1 @@
+factorial = Me(num: num - 1)
