@@ -1,9 +1,8 @@
 {
   "parameterised" : [
-    "Factorial",
-    "Sum"
+
   ],
   "submachines" : [
-    "PingPong"
+
   ]
 }
