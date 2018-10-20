@@ -1,1 +1,1 @@
-factorial = Me(num: num - 1)
+factorial = FactorialMachine(num: num - 1)
