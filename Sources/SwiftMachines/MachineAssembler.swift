@@ -853,6 +853,21 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         str += "        super.init(name, transitions: cast(transitions: transitions))\n"
         str += "    }\n\n"
+        // Recursive machine.
+        if nil != machine.parameters {
+            let parameterList = (machine.parameters ?? []).lazy.map {
+                let start = $0.label + ": " + $0.type
+                guard let initialValue = $0.initialValue else {
+                    return start
+                }
+                return start + " = " + initialValue
+            }.combine("") { $0 + ", " + $1 }
+            str += "    public func \(machine.name)Machine(\(parameterList ?? "")) -> Promise<\(machine.returnType ?? "Void")> {\n"
+            let callParams = machine.parameters?.map { $0.label + ": " + $0.label} ?? []
+            let callStr = callParams.combine("") { $0 + ", " + $1 }
+            str += "        return self._invoker.invokeSelf(self.Me.name, with: \(machine.name)Parameters(\(callStr)))\n"
+            str += "    }\n\n"
+        }
         // Parameterised Machine Functions
         for m in machine.parameterisedMachines {
             let parameterList = (m.parameters ?? []).lazy.map {
