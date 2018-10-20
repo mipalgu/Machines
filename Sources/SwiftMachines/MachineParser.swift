@@ -107,7 +107,7 @@ public final class MachineParser: ErrorContainer {
             let vars = self.parseMachineVarsFromMachine(atPath: machineDir, withName: name),
             let parameters = self.parseMachineParametersFromMachine(atPath: machineDir, withName: name),
             let returnType = self.parseMachineReturnTypeFromMachine(atPath: machineDir, withName: name),
-            let (parameterisedMachines, submachines) = self.parseDependencies(atPath: machineDir),
+            let (parameterisedMachines, submachines) = self.parseDependencies(forMachineNamed: name, atPath: machineDir),
             let states = self.parseStatesFromMachine(atPath: machineDir, withActions: actions),
             let initialState = states.first,
             let includes = self.parseMachineBridgingHeaderFromMachine(atPath: machineDir, withName: name)
@@ -314,7 +314,7 @@ public final class MachineParser: ErrorContainer {
         ))
     }
 
-    private func parseDependencies(atPath path: URL) -> ([Machine], [Machine])? {
+    private func parseDependencies(forMachineNamed name: String, atPath path: URL) -> ([Machine], [Machine])? {
         let dependenciesPath = path.appendingPathComponent("dependencies.json", isDirectory: false)
         guard
             let data = try? Data(contentsOf: dependenciesPath)
@@ -335,6 +335,10 @@ public final class MachineParser: ErrorContainer {
             let machinePath = dependenciesDir.appendingPathComponent("\(machineName).machine", isDirectory: true)
             guard let machine = self.parseMachine(atPath: machinePath.path) else {
                 self.errors.append("Unable to load machine at: \(machinePath.path)")
+                return nil
+            }
+            guard machine.name != name else {
+                self.errors.append("You cannot have a dependent machine \(machine.filePath.path) having the same name as the parent machine.")
                 return nil
             }
             return machine
