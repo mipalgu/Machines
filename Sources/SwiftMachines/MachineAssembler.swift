@@ -639,7 +639,6 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         // Dictionary Convertible.
         if shouldIncludeDictionaryConvertible {
             str += "    public required init?(_ dictionary: [String: String]) {\n"
-            str += "        print(dictionary)\n"
             str += "        func convert<T>(_ str: String) -> T? {\n"
             str += "            guard let t = (T.self as? LosslessStringConvertible.Type) else { return nil }\n"
             str += "            return t.init(str) as? T\n"
