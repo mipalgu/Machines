@@ -81,7 +81,7 @@ public final class VariableHelpers {
         return "\(label) = \(value)"
     }
 
-    public func makeDeclaration(forVariable variable: Variable) -> String {
+    public func makeDeclaration(forVariable variable: Variable, allowModifications: Bool = false) -> String {
         let trimmed = variable.type.trimmingCharacters(in: .whitespacesAndNewlines)
         let type: String
         if let last = trimmed.last {
@@ -94,7 +94,8 @@ public final class VariableHelpers {
         } else {
             type = "Void!"
         }
-        return "\(true == variable.constant ? "let" : "var") \(variable.label): \(type)"
+        let constantDeclaration = allowModifications ? "fileprivate(set) var" : "let"
+        return "\(true == variable.constant ? constantDeclaration : "var") \(variable.label): \(type)"
     } 
 
     public func makeDeclarationAndAssignment(forVariable variable: Variable, _ defaultValue: ((Variable) -> String)? = nil) -> String {

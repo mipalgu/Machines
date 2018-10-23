@@ -568,7 +568,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         let str = self.makeVarsContent(
             forMachine: machine,
             name: "\(machine.name)Parameters",
-            vars: machineParameters
+            vars: machineParameters,
+            shouldIncludeDictionaryConvertible: true
         )
         guard true == self.helpers.createFile(atPath: machinePath, withContents: str) else {
             self.errors.append("Unable to create \(machinePath.path)")
@@ -602,7 +603,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         return machinePath
     }
     
-    private func makeVarsContent(forMachine machine: Machine, name: String, vars: [Variable], extraConformances: [String] = []) -> String {
+    private func makeVarsContent(forMachine machine: Machine, name: String, vars: [Variable], extraConformances: [String] = [], shouldIncludeDictionaryConvertible: Bool = false) -> String {
         var str = "import FSM\n"
         str += "import swiftfsm\n"
         str += "import ModelChecking\n"
@@ -611,10 +612,11 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         if (false == machine.imports.isEmpty) {
             str += "\n"
         }
-        let conformances = extraConformances.reduce("") { $0 + ", " + $1}
-        str += "\npublic final class \(name): Variables\(conformances) {\n\n"
+        let defaultConformances = "Variables" + (shouldIncludeDictionaryConvertible ? ", DictionaryConvertible" : "")
+        let conformances = extraConformances.reduce(defaultConformances) { $0 + ", " + $1}
+        str += "\npublic final class \(name): \(conformances) {\n\n"
         if (false == vars.isEmpty) {
-            str += "\(vars.reduce("") { $0 + "    public \(self.varHelpers.makeDeclaration(forVariable: $1))\n" })"
+            str += "\(vars.reduce("") { $0 + "    public \(self.varHelpers.makeDeclaration(forVariable: $1, allowModifications: true))\n\n" })"
         }
         // Init.
         let args: [String] = vars.map {
@@ -634,6 +636,21 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "        self.\(v.label) = \(v.label)\n"
         }
         str += "    }\n\n"
+        // Dictionary Convertible.
+        if shouldIncludeDictionaryConvertible {
+            str += "    public required convenience init?(_ dictionary: [String: String]) {\n"
+            str += "        self.init()\n"
+            if false == vars.isEmpty {
+                let convert = vars.lazy.map {
+                    "            let \($0.label) = dictionary[\"\($0.label)\"].flatMap({(type(of: self.\($0.label)).self is LosslessStringConvertible) ? type(of: self.\($0.label)).init($0) : nil})"
+                }.combine("") { $0 + ",\n" + $1}
+                let assign = vars.lazy.map {
+                    "        self.\($0.label) = \($0.label)"
+                }.combine("") { $0 + "\n" + $1 }
+                str += "        guard\n" + convert + "\n" + "        else {\n            return nil\n        }\n" + assign + "\n"
+            }
+            str += "    }\n\n"
+        }
         // Clone.
         str += "    public final func clone() -> \(name) {\n"
         str += "        return \(name)("
