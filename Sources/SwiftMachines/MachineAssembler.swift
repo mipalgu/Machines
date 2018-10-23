@@ -639,6 +639,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         // Dictionary Convertible.
         if shouldIncludeDictionaryConvertible {
             str += "    public required convenience init?(_ dictionary: [String: String]) {\n"
+            str += "        print(dictionary)\n"
             str += "        self.init()\n"
             if false == vars.isEmpty {
                 let convert = vars.lazy.map {
