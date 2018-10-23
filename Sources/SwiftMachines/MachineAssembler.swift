@@ -638,12 +638,15 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "    }\n\n"
         // Dictionary Convertible.
         if shouldIncludeDictionaryConvertible {
-            str += "    public required convenience init?(_ dictionary: [String: String]) {\n"
+            str += "    public required init?(_ dictionary: [String: String]) {\n"
             str += "        print(dictionary)\n"
-            str += "        self.init()\n"
+            str += "        func convert<T>(_ str: String) -> T? {\n"
+            str += "            guard let t = (T.self as? LosslessStringConvertible.Type) else { return nil }\n"
+            str += "            return t.init(str) as? T\n"
+            str += "        }\n"
             if false == vars.isEmpty {
                 let convert = vars.lazy.map {
-                    "            let \($0.label) = dictionary[\"\($0.label)\"].flatMap({(type(of: self.\($0.label)).self is LosslessStringConvertible) ? type(of: self.\($0.label)).init($0) : nil})"
+                    "            let \($0.label): \($0.type) = dictionary[\"\($0.label)\"].flatMap(convert)"
                 }.combine("") { $0 + ",\n" + $1}
                 let assign = vars.lazy.map {
                     "        self.\($0.label) = \($0.label)"
