@@ -361,10 +361,12 @@ public final class MachineAssembler: Assembler, ErrorContainer {
 
     private func makeFactoryFunction(forMachine machine: Machine) -> String {
         let fun = nil == machine.parameters ? "make_submachine_" : "make_parameterised_"
+        let type = nil == machine.parameters ? "scheduleableFSM" : "parameterisedFSM"
+        let convert = nil == machine.parameters
         return """
-            public func make_\(machine.name)(name: String, invoker: Invoker, clock: Timer) -> (AnyScheduleableFiniteStateMachine, [Dependency]) {
+            public func make_\(machine.name)(name: String, invoker: Invoker, clock: Timer) -> (FSMType, [Dependency]) {
                 let (fsm, dependencies) = \(fun)\(machine.name)(name: name, invoker: invoker, clock: clock)
-                return (fsm.asScheduleableFiniteStateMachine, dependencies)
+                return (.\(type)(fsm\(true == convert ? ".asScheduleableFiniteStateMachine": "")), dependencies)
             }
             """
     }
