@@ -1,0 +1,1 @@
+promise = HanoiMachine(num: 5, sourceTower: "L", targetTower: "R", auxTower: "M" )
