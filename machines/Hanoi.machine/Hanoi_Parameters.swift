@@ -1,5 +1,5 @@
 
-let num: UInt! = nil
-let sourceTower: Character! = nil
-let targetTower: Character! = nil
-let auxTower: Character! = nil
+let num: UInt
+let sourceTower: Character
+let targetTower: Character
+let auxTower: Character
