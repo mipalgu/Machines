@@ -56,6 +56,10 @@
  *
  */
 
+/* Takes an object of class Machine and produces the files for a machine
+ editor, for example
+ */
+
 import Foundation
 import IO
 

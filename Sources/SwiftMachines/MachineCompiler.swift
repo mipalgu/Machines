@@ -56,6 +56,9 @@
  *
  */
 
+/* This takes a packaged machine and compiles it
+ */
+
 import Foundation
 
 @available(macOS 10.11, *)

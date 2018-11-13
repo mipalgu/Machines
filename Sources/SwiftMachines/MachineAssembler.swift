@@ -56,6 +56,9 @@
  *
  */
 
+/* This takes an object of class Machine and packages it
+ */
+
 import IO
 import Foundation
 import swift_helpers
