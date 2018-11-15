@@ -101,7 +101,7 @@ public final class MachineGenerator {
                 "\(machine.name)_Vars.swift",
                 inDirectory: machine.filePath,
                 withContents: machine.vars.reduce("") {
-                    $0 + "\n" + self.varHelpers.makeDeclarationAndAssignment(forVariable: $1)
+                    $0 + "\n" + self.varHelpers.makeDeclarationWithAvailableAssignment(forVariable: $1)
                 }
             ),
             let stateFiles = self.makeStates(forMachine: machine),
@@ -134,7 +134,7 @@ public final class MachineGenerator {
                     "Ringlet_Vars.swift",
                     inDirectory: machine.filePath,
                     withContents: model.ringlet.vars.reduce("") {
-                        $0 + "\n" + self.varHelpers.makeDeclarationAndAssignment(forVariable: $1)
+                        $0 + "\n" + self.varHelpers.makeDeclarationWithAvailableAssignment(forVariable: $1)
                     }
                 ),
                 let ringletExecute = self.helpers.createFile(
@@ -184,9 +184,9 @@ public final class MachineGenerator {
             let stateVars = self.helpers.createFile(
                 "State_\(state.name)_Vars.swift",
                 inDirectory: machine.filePath,
-                withContents: state.vars.reduce("", {
-                    $0 + "\n" + self.varHelpers.makeDeclarationAndAssignment(forVariable: $1)
-                })
+                withContents: state.vars.lazy.map {
+                    self.varHelpers.makeDeclarationWithAvailableAssignment(forVariable: $0)
+                }.combine("") { $0 + "\n" + $1 }
             )
         else {
             return nil
@@ -305,7 +305,7 @@ public final class MachineGenerator {
                 machine.name + "_Parameters.swift",
                 inDirectory: machine.filePath,
                 withContents: parameters.reduce("", {
-                    $0 + "\n" + self.varHelpers.makeDeclarationAndAssignment(forVariable: $1)
+                    $0 + "\n" + self.varHelpers.makeDeclarationWithAvailableAssignment(forVariable: $1)
                 })
             )
         else {

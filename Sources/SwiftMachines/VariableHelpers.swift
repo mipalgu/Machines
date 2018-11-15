@@ -108,5 +108,16 @@ public final class VariableHelpers {
         }
         return declaration + " = " + initialValue
     }
+    
+    public func makeDeclarationWithAvailableAssignment(forVariable variable: Variable, _ defaultValue: ((Variable) -> String)? = nil) -> String {
+        let declaration = (true == variable.constant ? "let " : "var ") + variable.label + ": " + variable.type
+        if let defaultFunc = defaultValue {
+            return declaration + " = " + defaultFunc(variable)
+        }
+        if let initialValue = variable.initialValue {
+            return declaration + " = " + initialValue
+        }
+        return declaration
+    }
 
 }
