@@ -367,6 +367,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         let type = nil == machine.parameters ? "scheduleableFSM" : "parameterisedFSM"
         let convert = nil == machine.parameters
         return """
+            @_silgen_name(\"make_\(machine.name)\")
             public func make_\(machine.name)(name: String, invoker: Invoker, clock: Timer) -> (FSMType, [Dependency]) {
                 let (fsm, dependencies) = \(fun)\(machine.name)(name: name, invoker: invoker, clock: clock)
                 return (.\(type)(fsm\(true == convert ? ".asScheduleableFiniteStateMachine": "")), dependencies)
