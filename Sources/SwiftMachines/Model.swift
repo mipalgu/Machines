@@ -58,9 +58,9 @@
 
 public struct Model {
 
-    public let actions: [String]
+    public var actions: [String]
 
-    public let ringlet: Ringlet
+    public var ringlet: Ringlet
 
     public init(actions: [String], ringlet: Ringlet) {
         self.actions = actions

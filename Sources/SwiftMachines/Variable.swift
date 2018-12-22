@@ -58,13 +58,13 @@
 
 public struct Variable {
 
-    public let constant: Bool
+    public var constant: Bool
 
-    public let label: String
+    public var label: String
 
-    public let type: String
+    public var type: String
 
-    public let initialValue: String?
+    public var initialValue: String?
 
     public init(constant: Bool, label: String, type: String, initialValue: String?) {
         self.constant = constant

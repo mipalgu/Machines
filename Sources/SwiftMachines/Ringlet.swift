@@ -58,11 +58,11 @@
 
 public struct Ringlet {
 
-    public let imports: String
+    public var imports: String
 
-    public let vars: [Variable]
+    public var vars: [Variable]
 
-    public let execute: String
+    public var execute: String
 
     public init(imports: String, vars: [Variable], execute: String) {
         self.imports = imports
