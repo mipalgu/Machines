@@ -169,13 +169,6 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         files.append(contentsOf: [fsmVarsPath, package])
         files.append(contentsOf: statePaths)
-        if false == isSubMachine {
-            guard let mainPath = self.makeMain(forMachine: machine, inDirectory: srcDir) else {
-                self.errors.append(errorMsg)
-                return nil
-            }
-            files.append(mainPath)
-        }
         guard
             let emptyStateTypePath = self.makeEmptyStateType(forMachine: machine.name, withActions: machine.model?.actions ?? ["onEntry", "onExit", "main"], inDirectory: srcDir),
             let callbackStateTypePath = self.makeCallbackStateType(forMachine: machine.name, withActions: machine.model?.actions ?? ["onEntry", "onExit", "main"], inDirectory: srcDir)
@@ -567,17 +560,6 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "    return (AnyParameterisedFiniteStateMachine(fsm), \(dependencyList))\n"
         }
         return str
-    }
-
-    private func makeMain(forMachine machine: Machine, inDirectory path: URL) -> URL? {
-        let mainPath = path.appendingPathComponent("main.swift", isDirectory: false)
-        var str = "import swiftfsm\n\n"
-        str += "addFactory(make_\(machine.name))\n"
-        guard true == self.helpers.createFile(atPath: mainPath, withContents: str) else {
-            self.errors.append("Unable to create \(mainPath.path)")
-            return nil
-        }
-        return mainPath
     }
     
     private func makeParameters(forMachine machine: Machine, inDirectory path: URL) -> URL? {
