@@ -80,10 +80,15 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
     }
 
     public func outputPath(forMachine machine: Machine) -> String {
+        #if os(macOS)
+        let ext = ".dylib"
+        #else
+        let ext = ".so"
+        #endif
         return URL(fileURLWithPath: self.assembler.packagePath(forMachine: machine), isDirectory: true)
             .appendingPathComponent(".build", isDirectory: true)
             .appendingPathComponent("release", isDirectory: true)
-            .appendingPathComponent(machine.name + "Machine", isDirectory: false)
+            .appendingPathComponent("lib" + machine.name + "Machine" + ext, isDirectory: false)
             .path
     }
 
