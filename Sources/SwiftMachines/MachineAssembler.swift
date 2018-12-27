@@ -415,10 +415,11 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         if false == machine.submachines.isEmpty {
             str += "    // Submachines.\n"
-            //str += "    var submachines: [(AnyControllableFiniteStateMachine, [Dependency])] = []\n"
+            str += "    var submachines: [() -> AnyControllableFiniteStateMachine] = []\n"
             for m in machine.submachines {
                 str += "    let \(m.name)MachineID = gateway.id(of: \"\(m.name)\")\n"
                 str += "    let _\(m.name)Machine = { gateway.fsm(fromID: \(m.name)MachineID) }\n"
+                str += "    submachines.append(_\(m.name)Machine)\n"
             }
         }
         if false == machine.parameterisedMachines.isEmpty {
@@ -507,7 +508,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         let exitState = "Empty\(machine.name)State(\"_Exit\")"
         let fsm: String
         let fsmName = machine.name + "FiniteStateMachine"
-        let submachines = machine.submachines.isEmpty ? "[]" : "submachines.map { $0.0 }"
+        let submachines = machine.submachines.isEmpty ? "[]" : "submachines"
         if false == createParameterisedMachine {
             fsm = """
                 \(fsmName)(
@@ -519,7 +520,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                         suspendedState: nil,
                         suspendState: \(suspendState),
                         exitState: \(exitState),
-                        submachines: []
+                        submachines: \(submachines)
                     )
                 """
         } else {
@@ -536,7 +537,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                         suspendedState: nil,
                         suspendState: \(suspendState),
                         exitState: \(exitState),
-                        submachines: []
+                        submachines: \(submachines)
                     )
                 """
         }
@@ -1313,10 +1314,15 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "     *  An instance of `Ringlet` that is used to execute the states.\n"
         str += "     */\n"
         str += "    public fileprivate(set) var ringlet: " + ringlet + "\n\n"
+        str += "    fileprivate let submachineFunctions: [() -> AnyControllableFiniteStateMachine]\n\n"
         str += "    /**\n"
         str += "     * All submachines of this machine.\n"
         str += "     */\n"
-        str += "    public var submachines: [AnyControllableFiniteStateMachine]\n\n"
+        str += "    public var submachines: [AnyControllableFiniteStateMachine] {\n"
+        str += "        get {\n"
+        str += "            return self.submachineFunctions.map { $0() }\n"
+        str += "        } set {}"
+        str += "    }\n\n"
         str += "    /**\n"
         str += "     *  The state that was the `currentState` before the FSM was suspended.\n"
         str += "     */\n"
@@ -1347,7 +1353,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "        suspendedState: " + stateType + "?,\n"
         str += "        suspendState: " + stateType + ",\n"
         str += "        exitState: " + stateType + ",\n"
-        str += "        submachines: [AnyControllableFiniteStateMachine]\n"
+        str += "        submachines: [() -> AnyControllableFiniteStateMachine]\n"
         str += "    ) {\n"
         str += "        self.currentState = initialState\n"
         str += "        self.exitState = exitState\n"
@@ -1365,7 +1371,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "        self.name = name\n"
         str += "        self.previousState = initialPreviousState\n"
         str += "        self.ringlet = ringlet\n"
-        str += "        self.submachines = submachines\n"
+        str += "        self.submachineFunctions = submachines\n"
         str += "        self.suspendedState = suspendedState\n"
         str += "        self.suspendState = suspendState\n"
         str += "        self.allStates.forEach { $1.Me = self }\n"
@@ -1410,7 +1416,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "            suspendedState: self.suspendedState.map { apply($0.clone()) },\n"
         str += "            suspendState: apply(self.suspendState.clone()),\n"
         str += "            exitState: apply(self.exitState.clone()),\n"
-        str += "            submachines: self.submachines.map { $0.clone() }\n"
+        str += "            submachines: self.submachineFunctions\n"
         str += "        )\n"
         str += "        fsm.currentState = apply(self.currentState.clone())\n"
         str += "        fsm.previousState = apply(self.previousState.clone())\n"
