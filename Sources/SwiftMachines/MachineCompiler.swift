@@ -80,6 +80,10 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
     }
 
     public func outputPath(forMachine machine: Machine) -> String {
+        return self.outputURL(forMachine: machine).path
+    }
+    
+    public func outputURL(forMachine machine: Machine) -> URL {
         #if os(macOS)
         let ext = ".dylib"
         #else
@@ -89,7 +93,6 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
             .appendingPathComponent(".build", isDirectory: true)
             .appendingPathComponent("release", isDirectory: true)
             .appendingPathComponent("lib" + machine.name + "Machine" + ext, isDirectory: false)
-            .path
     }
 
     public func shouldCompile(_ machine: Machine) -> Bool {
@@ -149,8 +152,7 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
         }
         let _ = fm.changeCurrentDirectoryPath(cwd)
         let compileDir = buildPath.appendingPathComponent(".build", isDirectory: true).appendingPathComponent("release", isDirectory: true)
-        let outputPath = compileDir.appendingPathComponent(machine.name + "Machine", isDirectory: false)
-        return (compileDir, outputPath)
+        return (compileDir, self.outputURL(forMachine: machine))
     }
 
     private func makeCompilerFlags(
