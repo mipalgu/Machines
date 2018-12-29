@@ -563,6 +563,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             forMachine: machine,
             name: "\(machine.name)Parameters",
             vars: machineParameters,
+            shouldIncludeDictionaryStringConvertible: true,
             shouldIncludeDictionaryConvertible: true
         )
         guard true == self.helpers.createFile(atPath: machinePath, withContents: str) else {
@@ -597,7 +598,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         return machinePath
     }
     
-    private func makeVarsContent(forMachine machine: Machine, name: String, vars: [Variable], extraConformances: [String] = [], shouldIncludeDictionaryConvertible: Bool = false) -> String {
+    private func makeVarsContent(forMachine machine: Machine, name: String, vars: [Variable], extraConformances: [String] = [], shouldIncludeDictionaryStringConvertible: Bool = false, shouldIncludeDictionaryConvertible: Bool = false) -> String {
         var str = "import FSM\n"
         str += "import swiftfsm\n"
         str += "import ModelChecking\n"
@@ -606,7 +607,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         if (false == machine.imports.isEmpty) {
             str += "\n"
         }
-        let defaultConformances = "Variables" + (shouldIncludeDictionaryConvertible ? ", DictionaryConvertible" : "")
+        let defaultConformances = "Variables"
+            + (shouldIncludeDictionaryStringConvertible ? ", DictionaryConvertible" : "") + (shouldIncludeDictionaryConvertible ? ", ConvertibleFromDictionary" : "")
         let conformances = extraConformances.reduce(defaultConformances) { $0 + ", " + $1}
         str += "\npublic final class \(name): \(conformances) {\n\n"
         if (false == vars.isEmpty) {
@@ -630,8 +632,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "        self.\(v.label) = \(v.label)\n"
         }
         str += "    }\n\n"
-        // Dictionary Convertible.
-        if shouldIncludeDictionaryConvertible {
+        // Dictionary String Convertible
+        if shouldIncludeDictionaryStringConvertible {
             str += "    public required convenience init?(_ dictionary: [String: String]) {\n"
             str += "        self.init()\n"
             str += "        func convert<T>(_ str: String) -> T? {\n"
@@ -646,6 +648,19 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                             }
                             self.\(v.label) = \(v.label)
                         }\n
+                """
+            }
+            str += "    }\n\n"
+        }
+        // Dictionary Convertible.
+        if shouldIncludeDictionaryConvertible {
+            str += "    public required convenience init(fromDictionary dictionary: [String: Any]) {\n"
+            for v in vars {
+                str += """
+                        guard let \(v.label) = dictionary[\"\(v.label)\"] as? \(v.type) else {
+                            fatalError("Unable to convert dictionary[\\"\(v.label)\\"] to \(v.type) when attempting to initialise \(name)")
+                        }
+                        self.\(v.label) = \(v.label)\n
                 """
             }
             str += "    }\n\n"
