@@ -431,11 +431,11 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                     }
                     return start + " = " + initialValue
                 }.combine("") { $0 + ", " + $1 }
-                let callParams = m.parameters?.map { $0.label + ": " + $0.label} ?? []
-                let callStr = callParams.combine("") { $0 + ", " + $1 }
+                let params = m.parameters?.map { "\"" + $0.label + "\": " + $0.label } ?? []
+                let dictionary = params.isEmpty ? "[:]" : "[" + params.combine("") { $0 + ", " + $1 } + "]"
                 str += "    let \(m.name)MachineID = gateway.id(of: \"\(m.name)\")\n"
                 str += "    func \(m.name)Machine(\(parameterList)) -> Promise<\(m.returnType ?? "Void")> {\n"
-                str += "        return gateway.invoke(\(m.name)MachineID, with: \(m.name)Parameters(\(callStr)))\n"
+                str += "        return gateway.invoke(\(m.name)MachineID, withParameters: \(dictionary))\n"
                 str += "    }\n"
             }
         }
@@ -655,6 +655,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         // Dictionary Convertible.
         if shouldIncludeDictionaryConvertible {
             str += "    public required convenience init(fromDictionary dictionary: [String: Any]) {\n"
+            str += "        self.init()\n"
             for v in vars {
                 str += """
                         guard let \(v.label) = dictionary[\"\(v.label)\"] as? \(v.type) else {
@@ -895,9 +896,9 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                 return start + " = " + initialValue
             }.combine("") { $0 + ", " + $1 }
             str += "    public func \(machine.name)Machine(\(parameterList ?? "")) -> Promise<\(machine.returnType ?? "Void")> {\n"
-            let callParams = machine.parameters?.map { $0.label + ": " + $0.label} ?? []
-            let callStr = callParams.combine("") { $0 + ", " + $1 }
-            str += "        return self.gateway.invokeSelf(self.Me.name, with: \(machine.name)Parameters(\(callStr)))\n"
+            let params = machine.parameters?.map { "\"" + $0.label + "\": " + $0.label } ?? []
+            let dictionary = params.isEmpty ? "[:]" : "[" + params.combine("") { $0 + ", " + $1 } + "]"
+            str += "        return self.gateway.invokeSelf(self.Me.name, withParameters: \(dictionary))\n"
             str += "    }\n\n"
         }
         // Parameterised Machine Functions
