@@ -1258,6 +1258,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         if nil != machine.parameters {
             str += "            \"results\": [],\n"
         }
+        str += "            \"submachineFunctions\": [],\n"
         str += "            \"submachines\": [],\n"
         str += "            \"suspendedState\": [],\n"
         str += "            \"suspendState\": [],\n"
