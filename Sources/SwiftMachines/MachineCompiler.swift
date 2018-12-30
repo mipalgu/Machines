@@ -119,6 +119,23 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
         }
         return outputPath.path
     }
+    
+    public func compileTree(
+        _ machine: Machine,
+        withCCompilerFlags cCompilerFlags: [String] = [],
+        andLinkerFlags linkerFlags: [String] = [],
+        andSwiftCompilerFlags swiftCompilerFlags: [String] = []
+    ) -> [String]? {
+        self.errors = []
+        return ([machine] + machine.submachines + machine.parameterisedMachines).failMap {
+            self.compileMachine(
+                $0,
+                withCCompilerFlags: cCompilerFlags,
+                andLinkerFlags: linkerFlags,
+                andSwiftCompilerFlags: swiftCompilerFlags
+            )?.1.path
+        }
+    }
 
     private func compileMachine(
         _ machine: Machine,
