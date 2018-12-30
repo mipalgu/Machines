@@ -127,14 +127,25 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
         andSwiftCompilerFlags swiftCompilerFlags: [String] = []
     ) -> [String]? {
         self.errors = []
-        return ([machine] + machine.submachines + machine.parameterisedMachines).failMap {
-            self.compileMachine(
-                $0,
+        guard
+            let dependentMachines = (machine.submachines + machine.parameterisedMachines).failMap({
+                self.compileTree(
+                    $0,
+                    withCCompilerFlags: cCompilerFlags,
+                    andLinkerFlags: linkerFlags,
+                    andSwiftCompilerFlags: swiftCompilerFlags
+                )
+            }),
+            let (_, outputPath) = self.compileMachine(
+                machine,
                 withCCompilerFlags: cCompilerFlags,
                 andLinkerFlags: linkerFlags,
                 andSwiftCompilerFlags: swiftCompilerFlags
-            )?.1.path
+            )
+        else {
+            return nil
         }
+        return [outputPath.path] + dependentMachines.flatMap { $0 }
     }
 
     private func compileMachine(
