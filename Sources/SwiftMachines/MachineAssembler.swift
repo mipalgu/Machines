@@ -1011,7 +1011,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "{\n\n"
         str += "    public let name: String\n\n"
         str += "    public var transitions: [Transition<\(stateType), \(stateType)>]\n\n"
-        str += "    internal var Me: " + machine + "FiniteStateMachine!\n\n"
+        str += "    internal weak var Me: " + machine + "FiniteStateMachine!\n\n"
         str += "    public var validVars: [String: [Any]] {\n"
         str += "        return [\n"
         str += "            \"name\": [],\n"
@@ -1071,7 +1071,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                  */
                 public var transitions: [Transition<\(stateType), \(stateType)>]
 
-                internal var Me: \(machine)FiniteStateMachine!
+                internal weak var Me: \(machine)FiniteStateMachine!
 
                 open var validVars: [String: [Any]] {
                     return [
