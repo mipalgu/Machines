@@ -233,14 +233,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }.reduce(".package(url: \"ssh://git.mipal.net/git/CGUSimpleWhiteboard\", .branch(\"swift-4.2\")),\n        .package(url: \"ssh://git.mipal.net/git/swift_wb\", .branch(\"swift-4.2\"))") { $0 + ",\n        " + $1 }
         let dependencyList: String
         let defaults = "\"GUSimpleWhiteboard\""
-        if let first = (machine.submachines + machine.parameterisedMachines).first {
-            let list = (machine.submachines + machine.parameterisedMachines).dropFirst().reduce("\"" + first.name + "Machine\"") {
-                $0 + ", \"" + $1.name + "Machine\""
-            }
-            dependencyList = "[" + defaults + ", " + list + "]"
-        } else {
-            dependencyList = "[" + defaults + "]"
-        }
+        dependencyList = "[" + defaults + "]"
         let str = """
             // swift-tools-version:4.0
             import PackageDescription
@@ -333,9 +326,6 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         if (false == machine.externalVariables.isEmpty) {
             str += "import CGUSimpleWhiteboard\n"
             str += "import GUSimpleWhiteboard\n"
-        }
-        for m in machine.submachines + machine.parameterisedMachines {
-            str += "import \(m.name)Machine\n"
         }
         str += "\n"
         str += self.makeFactoryFunction(forMachine: machine)
@@ -822,9 +812,6 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         if (false == state.imports.isEmpty) {
             str += "\(state.imports)\n"
-        }
-        for m in machine.submachines + machine.parameterisedMachines {
-            str += "import \(m.name)Machine\n"
         }
         str += "\n"
         let stateType = machine.name + "State"
