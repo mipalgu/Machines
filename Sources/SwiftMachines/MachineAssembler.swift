@@ -109,11 +109,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
 
     private func assemble(_ machine: Machine, isSubMachine: Bool) -> (URL, [URL])? {
         let errorMsg = "Unable to assemble \(machine.filePath.path)"
-        var dependencies = (machine.submachines + machine.parameterisedMachines).flatMap { self.assemble($0, isSubMachine: true)?.0 }
-        if dependencies.count != (machine.submachines.count + machine.parameterisedMachines.count) {
-            self.errors.append("Unable to assemble dependencies.")
-            return nil
-        }
+        var dependencies: [URL] = []
         guard
             let buildDir = self.helpers.overwriteSubDirectory(".build", inDirectory: machine.filePath)
         else {
