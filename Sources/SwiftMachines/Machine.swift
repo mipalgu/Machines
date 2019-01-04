@@ -92,7 +92,17 @@ public struct Machine {
 
     public var submachines: [Machine]
     
-    public var parameterisedMachines: [Machine]
+    public var callableMachines: [Machine]
+    
+    public var invocableMachines: [Machine]
+    
+    public var dependantMachines: [Machine] {
+        return self.submachines + self.parameterisedMachines
+    }
+    
+    public var parameterisedMachines: [Machine] {
+        return self.callableMachines + self.invocableMachines
+    }
 
     public init(
         name: String,
@@ -111,7 +121,8 @@ public struct Machine {
         suspendState: State?,
         states: [State],
         submachines: [Machine],
-        parameterisedMachines: [Machine]
+        callableMachines: [Machine],
+        invocableMachines: [Machine]
     ) {
         self.name = name
         self.filePath = filePath
@@ -129,7 +140,8 @@ public struct Machine {
         self.suspendState = suspendState
         self.states = states
         self.submachines = submachines
-        self.parameterisedMachines = parameterisedMachines
+        self.callableMachines = callableMachines
+        self.invocableMachines = invocableMachines
     }
 
 }
@@ -160,5 +172,6 @@ public func ==(lhs: Machine, rhs: Machine) -> Bool {
         lhs.suspendState == rhs.suspendState &&
         lhs.states == rhs.states &&
         lhs.submachines == rhs.submachines &&
-        lhs.parameterisedMachines == rhs.parameterisedMachines
+        lhs.callableMachines == rhs.callableMachines &&
+        lhs.invocableMachines == rhs.invocableMachines
 }

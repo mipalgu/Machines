@@ -109,7 +109,7 @@ public final class MachineParser: ErrorContainer {
             let vars = self.parseMachineVarsFromMachine(atPath: machineDir, withName: name),
             let parameters = self.parseMachineParametersFromMachine(atPath: machineDir, withName: name),
             let returnType = self.parseMachineReturnTypeFromMachine(atPath: machineDir, withName: name),
-            let (parameterisedMachines, submachines) = self.parseDependencies(forMachineNamed: name, atPath: machineDir),
+            let (callableMachines, invocableMachines, submachines) = self.parseDependencies(forMachineNamed: name, atPath: machineDir),
             let states = self.parseStatesFromMachine(atPath: machineDir, withActions: actions),
             let initialState = states.first,
             let includes = self.parseMachineBridgingHeaderFromMachine(atPath: machineDir, withName: name)
@@ -135,7 +135,8 @@ public final class MachineParser: ErrorContainer {
             suspendState: suspendState,
             states: states,
             submachines: submachines,
-            parameterisedMachines: parameterisedMachines
+            callableMachines: callableMachines,
+            invocableMachines: invocableMachines
         )
         self.cache[machineDir] = machine
         self.processing.remove(machineDir)
@@ -316,17 +317,18 @@ public final class MachineParser: ErrorContainer {
         ))
     }
 
-    private func parseDependencies(forMachineNamed name: String, atPath path: URL) -> ([Machine], [Machine])? {
+    private func parseDependencies(forMachineNamed name: String, atPath path: URL) -> ([Machine], [Machine], [Machine])? {
         let dependenciesPath = path.appendingPathComponent("dependencies.json", isDirectory: false)
         guard
             let data = try? Data(contentsOf: dependenciesPath)
         else {
-            return ([], [])
+            return ([], [], [])
         }
         guard
             let temp = try? JSONSerialization.jsonObject(with: data),
             let json = temp as? [String: Any],
-            let parameterised = json["parameterised"] as? [String],
+            let callable = json["callable"] as? [String],
+            let invocable = json["invokable"] as? [String],
             let submachines = json["submachines"] as? [String]
         else {
             self.errors.append("Unable to read \(dependenciesPath.path)")
@@ -346,12 +348,13 @@ public final class MachineParser: ErrorContainer {
             return machine
         }
         guard
-            let parameterisedMachines = parameterised.failMap(loadDependency),
+            let callableMachines = callable.failMap(loadDependency),
+            let invocableMachines = invocable.failMap(loadDependency),
             let submachinesMachines = submachines.failMap(loadDependency)
         else {
             return nil
         }
-        return (parameterisedMachines, submachinesMachines)
+        return (callableMachines, invocableMachines, submachinesMachines)
     }
 
     private func parseStatesFromMachine(atPath path: URL, withActions actions: [String]) -> [State]? {

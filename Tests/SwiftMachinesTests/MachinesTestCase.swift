@@ -146,7 +146,8 @@ public class MachinesTestCase: XCTestCase {
             )
         ],
         submachines: [],
-        parameterisedMachines: []
+        callableMachines: [],
+        invocableMachines: []
     )
 
     public var controllerBuildDir: URL {
@@ -284,7 +285,8 @@ public class MachinesTestCase: XCTestCase {
                 )
             ],
             submachines: [self.pingPongMachine],
-            parameterisedMachines: [self.sumMachine]
+            callableMachines: [],
+            invocableMachines: [self.sumMachine]
         )
     }
     
@@ -338,7 +340,8 @@ public class MachinesTestCase: XCTestCase {
             )
         ],
         submachines: [],
-        parameterisedMachines: []
+        callableMachines: [],
+        invocableMachines: []
     )
 
 }

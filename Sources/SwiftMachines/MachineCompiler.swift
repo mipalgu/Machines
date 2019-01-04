@@ -128,7 +128,7 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
     ) -> [String]? {
         self.errors = []
         guard
-            let dependentMachines = (machine.submachines + machine.parameterisedMachines).failMap({
+            let dependentMachines = machine.dependantMachines.failMap({
                 self.compileTree(
                     $0,
                     withCCompilerFlags: cCompilerFlags,

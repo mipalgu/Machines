@@ -409,20 +409,22 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         if false == machine.parameterisedMachines.isEmpty {
             str += "    // Parameterised Machines.\n"
+            str += "    let myId = gateway.id(of: \"\(machine.name)\")\n"
             for m in machine.parameterisedMachines {
-                let parameterList = (m.parameters ?? []).lazy.map {
-                    let start = $0.label + ": " + $0.type
-                    guard let initialValue = $0.initialValue else {
-                        return start
-                    }
-                    return start + " = " + initialValue
-                }.combine("") { $0 + ", " + $1 }
+                let (parameterList, _) = self.makeParametersList(forMachine: m)
                 let params = m.parameters?.map { "\"" + $0.label + "\": " + $0.label } ?? []
                 let dictionary = params.isEmpty ? "[:]" : "[" + params.combine("") { $0 + ", " + $1 } + "]"
                 str += "    let \(m.name)MachineID = gateway.id(of: \"\(m.name)\")\n"
-                str += "    func \(m.name)Machine(\(parameterList)) -> Promise<\(m.returnType ?? "Void")> {\n"
-                str += "        return gateway.invoke(\(m.name)MachineID, withParameters: \(dictionary))\n"
-                str += "    }\n"
+                if nil != machine.callableMachines.first(where: { $0.name == m.name }) {
+                    str += "    func \(m.name)Machine(\(parameterList)) -> Promise<\(m.returnType ?? "Void")> {\n"
+                    str += "        return gateway.call(\(m.name)MachineID, withParameters: \(dictionary), caller: myId)\n"
+                    str += "    }\n"
+                }
+                if nil != machine.invocableMachines.first(where: { $0.name == m.name }) {
+                    str += "    func invoke_\(m.name)Machine(\(parameterList)) -> Promise<\(m.returnType ?? "Void")> {\n"
+                    str += "        return gateway.invoke(\(m.name)MachineID, withParameters: \(dictionary))\n"
+                    str += "    }\n"
+                }
             }
         }
         if nil != machine.parameters {
@@ -442,8 +444,11 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             for m in machine.submachines {
                 str += "\n        \(m.name)Machine: _\(m.name)Machine,"
             }
-            for m in machine.parameterisedMachines {
+            for m in machine.callableMachines {
                 str += "\n        \(m.name)Machine: \(m.name)Machine,"
+            }
+            for m in machine.invocableMachines {
+                str += "\n        invoke_\(m.name)Machine: invoke_\(m.name)Machine,"
             }
             str = str.trimmingCharacters(in: CharacterSet(charactersIn: ","))
             str += "\n    )\n"
@@ -832,9 +837,13 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         if (false == machine.submachines.isEmpty) {
             str += "\n"
         }
-        for m in machine.parameterisedMachines {
+        for m in machine.callableMachines {
             let parameterList = m.parameters?.lazy.map { $0.type }.combine("") { $0 + ", " + $1 } ?? ""
             str += "    fileprivate var _\(m.name)Machine: (\(parameterList)) -> Promise<\(m.returnType ?? "Void")>\n"
+        }
+        for m in machine.invocableMachines {
+            let parameterList = m.parameters?.lazy.map { $0.type }.combine("") { $0 + ", " + $1 } ?? ""
+            str += "    fileprivate var _invoke_\(m.name)Machine: (\(parameterList)) -> Promise<\(m.returnType ?? "Void")>\n"
         }
         if (false == machine.parameterisedMachines.isEmpty) {
             str += "\n"
@@ -853,9 +862,13 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         for submachine in machine.submachines {
             str += "        \(submachine.name)Machine: @escaping () -> AnyControllableFiniteStateMachine,\n"
         }
-        for m in machine.parameterisedMachines {
+        for m in machine.callableMachines {
             let parameterList = m.parameters?.lazy.map { $0.type }.combine("") { $0 + ", " + $1 } ?? ""
             str += "        \(m.name)Machine: @escaping (\(parameterList)) -> Promise<\(m.returnType ?? "Void")>,\n"
+        }
+        for m in machine.invocableMachines {
+            let parameterList = m.parameters?.lazy.map { $0.type }.combine("") { $0 + ", " + $1 } ?? ""
+            str += "        invoke_\(m.name)Machine: @escaping (\(parameterList)) -> Promise<\(m.returnType ?? "Void")>,\n"
         }
         str = str.trimmingCharacters(in: CharacterSet(charactersIn: ",\n"))
         str += "\n    ) {\n"
@@ -864,8 +877,11 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         for submachine in machine.submachines {
             str += "        self._\(submachine.name)Machine = \(submachine.name)Machine\n"
         }
-        for m in machine.parameterisedMachines {
+        for m in machine.callableMachines {
             str += "        self._\(m.name)Machine = \(m.name)Machine\n"
+        }
+        for m in machine.invocableMachines {
+            str += "        self._invoke_\(m.name)Machine = invoke_\(m.name)Machine\n"
         }
         str += "        super.init(name, transitions: cast(transitions: transitions))\n"
         str += "    }\n\n"
@@ -885,17 +901,15 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "    }\n\n"
         }
         // Parameterised Machine Functions
-        for m in machine.parameterisedMachines {
-            let parameterList = (m.parameters ?? []).lazy.map {
-                let start = $0.label + ": " + $0.type
-                guard let initialValue = $0.initialValue else {
-                    return start
-                }
-                return start + " = " + initialValue
-            }.combine("") { $0 + ", " + $1 }
-            str += "    public func \(m.name)Machine(\(parameterList ?? "")) -> Promise<\(m.returnType ?? "Void")> {\n"
-            let callParams = m.parameters?.map { $0.label } ?? []
-            let callStr = callParams.combine("") { $0 + ", " + $1 }
+        for m in machine.invocableMachines {
+            let (parameterList, callStr) = self.makeParametersList(forMachine: m)
+            str += "    public func invoke_\(m.name)Machine(\(parameterList ?? "")) -> Promise<\(m.returnType ?? "Void")> {\n"
+            str += "        return self._invoke_\(m.name)Machine(\(callStr))\n"
+            str += "    }\n\n"
+        }
+        for m in machine.callableMachines {
+            let (parameterList, callStr) = self.makeParametersList(forMachine: m)
+            str += "    public func \(m.name)Machine(\(parameterList)) -> Promise<\(m.returnType ?? "Void")> {\n"
             str += "        return self._\(m.name)Machine(\(callStr))\n"
             str += "    }\n\n"
         }
@@ -915,8 +929,11 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         for submachine in machine.submachines {
             str += "            \(submachine.name)Machine: self._\(submachine.name)Machine,\n"
         }
-        for m in machine.parameterisedMachines {
+        for m in machine.callableMachines {
             str += "            \(m.name)Machine: self._\(m.name)Machine,\n"
+        }
+        for m in machine.invocableMachines {
+            str += "            invoke_\(m.name)Machine: self._invoke_\(m.name)Machine,\n"
         }
         str = str.trimmingCharacters(in: CharacterSet(charactersIn: ",\n"))
         str += "\n        )\n"
@@ -934,10 +951,30 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         return statePath
     }
     
+    private func makeParametersList(forMachine machine: Machine) -> (String, String) {
+        let parameterList = (machine.parameters ?? []).lazy.map {
+            let start = $0.label + ": " + $0.type
+            guard let initialValue = $0.initialValue else {
+                return start
+            }
+            return start + " = " + initialValue
+        }.combine("") { $0 + ", " + $1 }
+        let callParams = machine.parameters?.map { $0.label } ?? []
+        let callStr = callParams.combine("") { $0 + ", " + $1 }
+        return (parameterList, callStr)
+    }
+    
     private func makeStateVariables(forState state: State, inMachine machine: Machine, indent: String = "", _ defaultValues: ((Variable) -> String)? = nil) -> String? {
         self.takenVars = Set(machine.externalVariables.map { $0.label })
         (machine.model?.actions ?? ["onEntry", "onExit", "main"]).forEach { self.takenVars.insert($0) }
-        (machine.parameterisedMachines + machine.submachines).forEach { self.takenVars.insert($0.name + "Machine") }
+        (machine.callableMachines + machine.submachines).forEach {
+            self.takenVars.insert($0.name + "Machine")
+            self.takenVars.insert("_" + $0.name + "Machine")
+        }
+        machine.invocableMachines.forEach {
+            self.takenVars.insert("invoke_" + $0.name + "Machine")
+            self.takenVars.insert("_invoke_" + $0.name + "Machine")
+        }
         if nil != machine.parameters {
             self.takenVars.insert("parameters")
         }
