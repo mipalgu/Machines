@@ -248,7 +248,7 @@ public class MachinesTestCase: XCTestCase {
                         )
                     ],
                     actions: [
-                        Action(name: "onEntry", implementation: "promise = SumMachine(a: 2, b: 3)"),
+                        Action(name: "onEntry", implementation: "promise = invoke_SumMachine(a: 2, b: 3)"),
                         Action(name: "main", implementation: ""),
                         Action(name: "onExit", implementation: "print(\"result: \\(promise.result)\")")
                     ],
@@ -266,7 +266,7 @@ public class MachinesTestCase: XCTestCase {
                         )
                     ],
                     actions: [
-                        Action(name: "onEntry", implementation: "promise = SumMachine(a: 2, b: 3)"),
+                        Action(name: "onEntry", implementation: "promise = invoke_SumMachine(a: 2, b: 3)"),
                         Action(name: "main", implementation: ""),
                         Action(name: "onExit", implementation: "print(\"result: \\(promise.result)\")")
                     ],
@@ -285,10 +285,93 @@ public class MachinesTestCase: XCTestCase {
                 )
             ],
             submachines: [self.pingPongMachine],
-            callableMachines: [],
+            callableMachines: [self.factorialMachine],
             invocableMachines: [self.sumMachine]
         )
     }
+    
+    public let factorialMachine = Machine(
+        name: "Factorial",
+        filePath: URL(fileURLWithPath: NSString(string: "machines/Factorial.machine").standardizingPath, isDirectory: true).resolvingSymlinksInPath(),
+        externalVariables: [],
+        swiftIncludeSearchPaths: [
+            "/usr/local/include/swiftfsm"
+        ],
+        includeSearchPaths: [
+            "/usr/local/include",
+            "../../../../..",
+            "../../../../../../Common"
+        ],
+        libSearchPaths: [
+            "/usr/local/lib",
+            "/usr/local/lib/swiftfsm"
+        ],
+        imports: "",
+        includes: "",
+        vars: [Variable(constant: false, label: "total", type: "UInt", initialValue: "1")],
+        parameters: [
+            Variable(constant: true, label: "num", type: "UInt", initialValue: "1")
+        ],
+        returnType: "UInt",
+        initialState: State(
+            name: "Factorial",
+            imports: "",
+            vars: [],
+            actions: [
+                Action(name: "onEntry", implementation: ""),
+                Action(name: "main", implementation: ""),
+                Action(name: "onExit", implementation: "")
+            ],
+            transitions: [
+                Transition(target: "Recurse", condition: "num > 0"),
+                Transition(target: "Exit", condition: "num <= 1")
+            ]
+        ),
+        suspendState: nil,
+        states: [
+            State(
+                name: "Factorial",
+                imports: "",
+                vars: [],
+                actions: [
+                    Action(name: "onEntry", implementation: ""),
+                    Action(name: "main", implementation: ""),
+                    Action(name: "onExit", implementation: "")
+                ],
+                transitions: [
+                    Transition(target: "Recurse", condition: "num > 0"),
+                    Transition(target: "Exit", condition: "num <= 1")
+                ]
+            ),
+            State(
+                name: "Recurse",
+                imports: "",
+                vars: [Variable(constant: false, label: "factorial", type: "Promise<UInt>", initialValue: nil)],
+                actions: [
+                    Action(name: "onEntry", implementation: "factorial = FactorialMachine(num: num - 1)"),
+                    Action(name: "main", implementation: ""),
+                    Action(name: "onExit", implementation: "total = num * factorial.result")
+                ],
+                transitions: [
+                    Transition(target: "Exit", condition: "factorial.hasFinished")
+                ]
+            ),
+            State(
+                name: "Exit",
+                imports: "",
+                vars: [],
+                actions: [
+                    Action(name: "onEntry", implementation: "result = total\nprint(\"Factorial of \\(num) is \\(result)\")"),
+                    Action(name: "main", implementation: ""),
+                    Action(name: "onExit", implementation: "")
+                ],
+                transitions: []
+            )
+        ],
+        submachines: [],
+        callableMachines: [],
+        invocableMachines: []
+    )
     
     public let sumMachine = Machine(
         name: "Sum",
