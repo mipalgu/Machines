@@ -1,6 +1,6 @@
 {
   "callable": [
-      "Factorial"
+    "Factorial"
   ],
   "invokable" : [
     "Sum"

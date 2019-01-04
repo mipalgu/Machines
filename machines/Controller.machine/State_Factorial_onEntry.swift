@@ -1,1 +1,1 @@
-promise = FactorialMachine(num: 5)
+promise = Factorial(num: 5)
