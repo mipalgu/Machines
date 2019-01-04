@@ -109,7 +109,7 @@ public class MachineCompilerTests: MachinesTestCase {
     }
 
     public func testCompilesController() {
-        guard nil != self.compiler.compile(
+        guard nil != self.compiler.compileTree(
                 super.controllerMachine,
                 andSwiftCompilerFlags: self.args
             )

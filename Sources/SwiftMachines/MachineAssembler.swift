@@ -881,7 +881,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "    public func \(machine.name)Machine(\(parameterList ?? "")) -> Promise<\(machine.returnType ?? "Void")> {\n"
             let params = machine.parameters?.map { "\"" + $0.label + "\": " + $0.label } ?? []
             let dictionary = params.isEmpty ? "[:]" : "[" + params.combine("") { $0 + ", " + $1 } + "]"
-            str += "        return self.gateway.callSelf(self.Me.name, withParameters: \(dictionary))\n"
+            str += "        return self.gateway.callSelf(self.gateway.id(of: self.Me.name), withParameters: \(dictionary))\n"
             str += "    }\n\n"
         }
         // Parameterised Machine Functions
