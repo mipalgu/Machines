@@ -248,7 +248,7 @@ public class MachinesTestCase: XCTestCase {
                         )
                     ],
                     actions: [
-                        Action(name: "onEntry", implementation: "promise = invoke_SumMachine(a: 2, b: 3)"),
+                        Action(name: "onEntry", implementation: "promise = SumMachine(a: 2, b: 3)"),
                         Action(name: "main", implementation: ""),
                         Action(name: "onExit", implementation: "print(\"result: \\(promise.result)\")")
                     ],
@@ -266,7 +266,7 @@ public class MachinesTestCase: XCTestCase {
                         )
                     ],
                     actions: [
-                        Action(name: "onEntry", implementation: "promise = invoke_SumMachine(a: 2, b: 3)"),
+                        Action(name: "onEntry", implementation: "promise = SumMachine(a: 2, b: 3)"),
                         Action(name: "main", implementation: ""),
                         Action(name: "onExit", implementation: "print(\"result: \\(promise.result)\")")
                     ],
@@ -348,7 +348,7 @@ public class MachinesTestCase: XCTestCase {
                 imports: "",
                 vars: [Variable(constant: false, label: "factorial", type: "Promise<UInt>", initialValue: nil)],
                 actions: [
-                    Action(name: "onEntry", implementation: "factorial = FactorialMachine(num: num - 1)"),
+                    Action(name: "onEntry", implementation: "factorial = Factorial(num: num - 1)"),
                     Action(name: "main", implementation: ""),
                     Action(name: "onExit", implementation: "total = num * factorial.result")
                 ],

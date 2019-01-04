@@ -1,1 +1,1 @@
-factorial = FactorialMachine(num: num - 1)
+factorial = Factorial(num: num - 1)

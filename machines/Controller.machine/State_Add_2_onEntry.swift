@@ -1,1 +1,1 @@
-promise = invoke_SumMachine(a: 4, b: 3)
+promise = SumMachine(a: 4, b: 3)
