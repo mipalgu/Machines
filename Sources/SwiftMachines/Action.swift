@@ -70,12 +70,12 @@ public struct Action {
      *
      *  This name must be unique between other actions within the same `Model`.
      */
-    public let name: String
+    public var name: String
 
     /**
      *  The actual implementation of the action.
      */
-    public let implementation: String
+    public var implementation: String
 
     public init(name: String, implementation: String) {
         self.name = name

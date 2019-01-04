@@ -60,39 +60,39 @@ import Foundation
 
 public struct Machine {
 
-    public let name: String
+    public var name: String
 
-    public let filePath: URL
+    public var filePath: URL
 
-    public let externalVariables: [ExternalVariables]
+    public var externalVariables: [ExternalVariables]
 
-    public let swiftIncludeSearchPaths: [String]
+    public var swiftIncludeSearchPaths: [String]
 
-    public let includeSearchPaths: [String]
+    public var includeSearchPaths: [String]
 
-    public let libSearchPaths: [String]
+    public var libSearchPaths: [String]
 
-    public let imports: String
+    public var imports: String
 
-    public let includes: String?
+    public var includes: String?
 
-    public let vars: [Variable]
+    public var vars: [Variable]
 
-    public let model: Model?
+    public var model: Model?
     
-    public let parameters: [Variable]?
+    public var parameters: [Variable]?
 
-    public let returnType: String?
+    public var returnType: String?
 
-    public let initialState: State
+    public var initialState: State
 
-    public let suspendState: State?
+    public var suspendState: State?
 
-    public let states: [State]
+    public var states: [State]
 
-    public let submachines: [Machine]
+    public var submachines: [Machine]
     
-    public let parameterisedMachines: [Machine]
+    public var parameterisedMachines: [Machine]
 
     public init(
         name: String,

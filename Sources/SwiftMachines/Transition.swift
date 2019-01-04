@@ -58,9 +58,9 @@
 
  public struct Transition {
 
-    public let target: String
+    public var target: String
 
-    public let condition: String?
+    public var condition: String?
 
     public init(target: String, condition: String?) {
         self.target = target

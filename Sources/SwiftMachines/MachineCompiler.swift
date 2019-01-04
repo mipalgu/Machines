@@ -80,11 +80,19 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
     }
 
     public func outputPath(forMachine machine: Machine) -> String {
+        return self.outputURL(forMachine: machine).path
+    }
+    
+    public func outputURL(forMachine machine: Machine) -> URL {
+        #if os(macOS)
+        let ext = ".dylib"
+        #else
+        let ext = ".so"
+        #endif
         return URL(fileURLWithPath: self.assembler.packagePath(forMachine: machine), isDirectory: true)
             .appendingPathComponent(".build", isDirectory: true)
             .appendingPathComponent("release", isDirectory: true)
-            .appendingPathComponent(machine.name + "Machine", isDirectory: false)
-            .path
+            .appendingPathComponent("lib" + machine.name + "Machine" + ext, isDirectory: false)
     }
 
     public func shouldCompile(_ machine: Machine) -> Bool {
@@ -110,6 +118,34 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
             return nil
         }
         return outputPath.path
+    }
+    
+    public func compileTree(
+        _ machine: Machine,
+        withCCompilerFlags cCompilerFlags: [String] = [],
+        andLinkerFlags linkerFlags: [String] = [],
+        andSwiftCompilerFlags swiftCompilerFlags: [String] = []
+    ) -> [String]? {
+        self.errors = []
+        guard
+            let dependentMachines = (machine.submachines + machine.parameterisedMachines).failMap({
+                self.compileTree(
+                    $0,
+                    withCCompilerFlags: cCompilerFlags,
+                    andLinkerFlags: linkerFlags,
+                    andSwiftCompilerFlags: swiftCompilerFlags
+                )
+            }),
+            let (_, outputPath) = self.compileMachine(
+                machine,
+                withCCompilerFlags: cCompilerFlags,
+                andLinkerFlags: linkerFlags,
+                andSwiftCompilerFlags: swiftCompilerFlags
+            )
+        else {
+            return nil
+        }
+        return [outputPath.path] + dependentMachines.flatMap { $0 }
     }
 
     private func compileMachine(
@@ -144,8 +180,7 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
         }
         let _ = fm.changeCurrentDirectoryPath(cwd)
         let compileDir = buildPath.appendingPathComponent(".build", isDirectory: true).appendingPathComponent("release", isDirectory: true)
-        let outputPath = compileDir.appendingPathComponent(machine.name + "Machine", isDirectory: false)
-        return (compileDir, outputPath)
+        return (compileDir, self.outputURL(forMachine: machine))
     }
 
     private func makeCompilerFlags(

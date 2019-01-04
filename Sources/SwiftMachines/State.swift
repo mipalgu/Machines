@@ -58,15 +58,15 @@
 
 public struct State {
 
-    public let name: String
+    public var name: String
 
-    public let imports: String
+    public var imports: String
 
-    public let vars: [Variable]
+    public var vars: [Variable]
 
-    public let actions: [Action]
+    public var actions: [Action]
 
-    public let transitions: [Transition]
+    public var transitions: [Transition]
 
     public init(
         name: String,

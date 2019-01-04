@@ -58,17 +58,17 @@
 
 public struct ExternalVariables {
 
-    public let label: String
+    public var label: String
 
-    public let wbName: String?
+    public var wbName: String?
 
-    public let messageType: String
+    public var messageType: String
 
-    public let messageClass: String
+    public var messageClass: String
 
-    public let atomic: Bool
+    public var atomic: Bool
 
-    public let shouldNotifySubscribers: Bool
+    public var shouldNotifySubscribers: Bool
 
     public init(
         label: String,
