@@ -2,7 +2,7 @@
   "callable": [
     "Factorial"
   ],
-  "invokable" : [
+  "parameterised" : [
     "Sum"
   ],
   "submachines" : [

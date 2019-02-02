@@ -328,7 +328,7 @@ public final class MachineParser: ErrorContainer {
             let temp = try? JSONSerialization.jsonObject(with: data),
             let json = temp as? [String: Any],
             let callable = json["callable"] as? [String],
-            let invocable = json["invokable"] as? [String],
+            let invokable = json["parameterised"] as? [String],
             let submachines = json["submachines"] as? [String]
         else {
             self.errors.append("Unable to read \(dependenciesPath.path)")
@@ -349,12 +349,12 @@ public final class MachineParser: ErrorContainer {
         }
         guard
             let callableMachines = callable.failMap(loadDependency),
-            let invocableMachines = invocable.failMap(loadDependency),
+            let invokableMachines = invokable.failMap(loadDependency),
             let submachinesMachines = submachines.failMap(loadDependency)
         else {
             return nil
         }
-        return (callableMachines, invocableMachines, submachinesMachines)
+        return (callableMachines, invokableMachines, submachinesMachines)
     }
 
     private func parseStatesFromMachine(atPath path: URL, withActions actions: [String]) -> [State]? {
