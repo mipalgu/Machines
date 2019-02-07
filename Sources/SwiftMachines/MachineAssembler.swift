@@ -605,6 +605,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "import swiftfsm\n"
         str += "import ModelChecking\n"
         str += "import KripkeStructure\n"
+        str += "import Utilities\n"
         str += "\(machine.imports)"
         if (false == machine.imports.isEmpty) {
             str += "\n"
