@@ -964,7 +964,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "}\n\n"
         // Extensions.
         let varList = state.vars.lazy.map { "                \($0.label): \\(self.\($0.label))" }.combine("") {$0 + ",\n" + $1 }
-        str += "extension State_\(state.name) {\n\n"
+        str += "extension State_\(state.name): CustomStringConvertible {\n\n"
         str += "    public var description: String {\n"
         str += "        return \"\"\"\n"
         str += "            {\n"
@@ -1075,8 +1075,6 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "public class \(stateType):\n"
         str += "    StateType,\n"
         str += "    CloneableState,\n"
-        str += "    CustomStringConvertible,\n"
-        str += "    CustomDebugStringConvertible,\n"
         str += "    Transitionable,\n"
         str += "    KripkeVariablesModifier\n"
         str += "{\n\n"
@@ -1122,8 +1120,6 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             public class \(stateType):
                 StateType,
                 CloneableState,
-                CustomStringConvertible,
-                CustomDebugStringConvertible,
                 MiPalActions,
                 Transitionable,
                 KripkeVariablesModifier
