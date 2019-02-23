@@ -961,6 +961,19 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "        state.Me = self.Me\n"
         str += "        return state\n"
         str += "    }\n\n"
+        str += "}\n\n"
+        // Extensions.
+        let varList = state.vars.lazy.map { "                \($0.label): \\(self.\($0.label))" }.combine("") {$0 + ",\n" + $1 }
+        str += "extension State_\(state.name) {\n\n"
+        str += "    var description: String {\n"
+        str += "        return \"\"\"\n"
+        str += "            {\n"
+        str += "                name: \\(self.name),\n"
+        str += varList + (varList.isEmpty ? "" : ",\n")
+        str += "                transitions: \\(self.transitions.map { $0.target.name })\n"
+        str += "            }\n"
+        str += "            \"\"\"\n"
+        str += "    }\n\n"
         str += "}\n"
         if (false == self.helpers.createFile(atPath: statePath, withContents: str)) {
             self.errors.append("Unable to create state at \(statePath.path)")
