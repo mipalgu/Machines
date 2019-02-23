@@ -965,7 +965,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         // Extensions.
         let varList = state.vars.lazy.map { "                \($0.label): \\(self.\($0.label))" }.combine("") {$0 + ",\n" + $1 }
         str += "extension State_\(state.name) {\n\n"
-        str += "    var description: String {\n"
+        str += "    public var description: String {\n"
         str += "        return \"\"\"\n"
         str += "            {\n"
         str += "                name: \\(self.name),\n"
