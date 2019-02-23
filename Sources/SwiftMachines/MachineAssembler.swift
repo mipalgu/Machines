@@ -1486,6 +1486,27 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "    }\n\n"
         }
         str += "}"
+        // Extensions.
+        str += "\n\nextension \(name): CustomStringConvertible {\n\n"
+        str += "    var description: String {\n"
+        str += "        return \"\"\"\n"
+        str += "            name: \\(self.name),\n"
+        str += "\(clonedExternalArgs)\(clonedExternalArgs.isEmpty ? "" : ",\n")"
+        str += "            fsmVars: \\(self.fsmVars.vars),\n"
+        if nil != machine.parameters {
+            str += "            parameters: \\(self.parameters.vars),\n"
+            str += "            results: \\(self.results.vars),\n"
+        }
+        str += "            initialState: \\(self.initialState.name),\n"
+        str += "            currentState: \\(self.currentState.name),\n"
+        str += "            previousState: \\(self.previousState.name),\n"
+        str += "            suspendState: \\(self.suspendState.name),\n"
+        str += "            suspendedState: \\(self.suspendedState.map { $0.name }),\n"
+        str += "            exitState: \\(self.exitState.name),\n"
+        str += "            states: \\(self.allStates)\n"
+        str += "            \"\"\"\n"
+        str += "    }\n"
+        str += "\n}"
         // Create the file.
         if (false == self.helpers.createFile(atPath: fsmPath, withContents: str)) {
             self.errors.append("Unable to create \(name) at \(fsmPath.path)")
