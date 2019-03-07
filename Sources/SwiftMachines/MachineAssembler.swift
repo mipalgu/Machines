@@ -422,7 +422,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                 }
                 if nil != machine.invocableMachines.first(where: { $0.name == m.name }) {
                     str += "    func \(m.name)Machine(\(parameterList)) -> Promise<\(m.returnType ?? "Void")> {\n"
-                    str += "        return gateway.invoke(\(m.name)MachineID, withParameters: \(dictionary))\n"
+                    str += "        return gateway.invoke(\(m.name)MachineID, withParameters: \(dictionary), caller: caller)\n"
                     str += "    }\n"
                 }
             }
