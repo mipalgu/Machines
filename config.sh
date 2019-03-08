@@ -1,0 +1,21 @@
+#!/bin/bash
+#
+ID=au.edu.griffith.ict.mipal
+modver=1.0
+ver=3.0
+Mod=`grep name: Package.swift | head -n1 | cut -d'"' -f2`
+Module=${Mod}-$ver
+mod=`echo "${Mod}" | tr '[:upper:]' '[:lower:]'`+
+module="${mod}-${modver}"
+EXECUTABLE_NAME=${Mod}
+PRODUCT_NAME=${Mod}
+FULL_PRODUCT_NAME=${Mod}.app
+PRODUCT_BUNDLE_IDENTIFIER=${ID}.${Mod}
+MACOSX_DEPLOYMENT_TARGET=10.11
+RESOURCES_DIR=`pwd`/Resources
+BUILD_DIR=`pwd`/.build
+BUILD_BIN=${BUILD_DIR}/debug
+BUILT_PRODUCTS_DIR=${BUILD_DIR}/app
+CCFLAGS="-Xcc -O2"
+LINKFLAGS="-Xlinker -L/usr/local/lib -Xlinker -L/usr/local/lib -Xlinker -F/Applications/Xcode.app/Contents/Developer/Library/Frameworks"
+SWIFTCFLAGS="-Xswiftc -Xfrontend -Xswiftc -color-diagnostics"

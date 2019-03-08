@@ -146,7 +146,8 @@ public class MachinesTestCase: XCTestCase {
             )
         ],
         submachines: [],
-        parameterisedMachines: []
+        callableMachines: [],
+        invocableMachines: []
     )
 
     public var controllerBuildDir: URL {
@@ -284,9 +285,93 @@ public class MachinesTestCase: XCTestCase {
                 )
             ],
             submachines: [self.pingPongMachine],
-            parameterisedMachines: [self.sumMachine]
+            callableMachines: [self.factorialMachine],
+            invocableMachines: [self.sumMachine]
         )
     }
+    
+    public let factorialMachine = Machine(
+        name: "Factorial",
+        filePath: URL(fileURLWithPath: NSString(string: "machines/Factorial.machine").standardizingPath, isDirectory: true).resolvingSymlinksInPath(),
+        externalVariables: [],
+        swiftIncludeSearchPaths: [
+            "/usr/local/include/swiftfsm"
+        ],
+        includeSearchPaths: [
+            "/usr/local/include",
+            "../../../../..",
+            "../../../../../../Common"
+        ],
+        libSearchPaths: [
+            "/usr/local/lib",
+            "/usr/local/lib/swiftfsm"
+        ],
+        imports: "",
+        includes: "",
+        vars: [Variable(constant: false, label: "total", type: "UInt", initialValue: "1")],
+        parameters: [
+            Variable(constant: true, label: "num", type: "UInt", initialValue: "1")
+        ],
+        returnType: "UInt",
+        initialState: State(
+            name: "Factorial",
+            imports: "",
+            vars: [],
+            actions: [
+                Action(name: "onEntry", implementation: ""),
+                Action(name: "main", implementation: ""),
+                Action(name: "onExit", implementation: "")
+            ],
+            transitions: [
+                Transition(target: "Recurse", condition: "num > 0"),
+                Transition(target: "Exit", condition: "num <= 1")
+            ]
+        ),
+        suspendState: nil,
+        states: [
+            State(
+                name: "Factorial",
+                imports: "",
+                vars: [],
+                actions: [
+                    Action(name: "onEntry", implementation: ""),
+                    Action(name: "main", implementation: ""),
+                    Action(name: "onExit", implementation: "")
+                ],
+                transitions: [
+                    Transition(target: "Recurse", condition: "num > 0"),
+                    Transition(target: "Exit", condition: "num <= 1")
+                ]
+            ),
+            State(
+                name: "Recurse",
+                imports: "",
+                vars: [Variable(constant: false, label: "factorial", type: "Promise<UInt>", initialValue: nil)],
+                actions: [
+                    Action(name: "onEntry", implementation: "factorial = Factorial(num: num - 1)"),
+                    Action(name: "main", implementation: ""),
+                    Action(name: "onExit", implementation: "total = num * factorial.result")
+                ],
+                transitions: [
+                    Transition(target: "Exit", condition: "factorial.hasFinished")
+                ]
+            ),
+            State(
+                name: "Exit",
+                imports: "",
+                vars: [],
+                actions: [
+                    Action(name: "onEntry", implementation: "result = total\nprint(\"Factorial of \\(num) is \\(result)\")"),
+                    Action(name: "main", implementation: ""),
+                    Action(name: "onExit", implementation: "")
+                ],
+                transitions: []
+            )
+        ],
+        submachines: [],
+        callableMachines: [],
+        invocableMachines: []
+    )
     
     public let sumMachine = Machine(
         name: "Sum",
@@ -338,7 +423,8 @@ public class MachinesTestCase: XCTestCase {
             )
         ],
         submachines: [],
-        parameterisedMachines: []
+        callableMachines: [],
+        invocableMachines: []
     )
 
 }

@@ -283,10 +283,12 @@ public final class MachineGenerator {
     func makeDependenciesFile(forMachine machine: Machine) -> URL? {
         let path = machine.filePath.appendingPathComponent("dependencies.json", isDirectory: false)
         let submachines: [String] = machine.submachines.map { $0.name }
-        let parameterisedMachines: [String] = machine.parameterisedMachines.map { $0.name }
+        let callableMachines: [String] = machine.callableMachines.map { $0.name }
+        let invokableMachines: [String] = machine.invocableMachines.map { $0.name }
         let dict: [String: Any] = [
             "submachines": submachines,
-            "parameterised": parameterisedMachines
+            "callable": callableMachines,
+            "parameterised": invokableMachines
         ]
         guard
             let json = self.encode(json: dict),

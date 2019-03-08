@@ -1,6 +1,8 @@
 {
+  "callable": [
+    "Factorial"
+  ],
   "parameterised" : [
-    "Factorial",
     "Sum"
   ],
   "submachines" : [
