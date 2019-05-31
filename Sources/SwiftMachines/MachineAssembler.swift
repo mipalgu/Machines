@@ -317,6 +317,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         var str = """
             import FSM
             import swiftfsm
+            import \(machine.name)MachineBridging
             
             """
         if (false == machine.externalVariables.isEmpty) {
