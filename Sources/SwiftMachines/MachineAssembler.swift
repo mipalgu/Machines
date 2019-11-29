@@ -317,9 +317,10 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         var str = """
             import FSM
             import swiftfsm
-            import \(machine.name)MachineBridging
-            
             """
+        if nil != machine.includes {
+            str += "import \(machine.name)MachineBridging\n"
+        }
         if (false == machine.externalVariables.isEmpty) {
             str += "import CGUSimpleWhiteboard\n"
             str += "import GUSimpleWhiteboard\n"
