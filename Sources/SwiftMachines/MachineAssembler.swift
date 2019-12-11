@@ -231,7 +231,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         let defaults = "\"GUSimpleWhiteboard\""
         dependencyList = "[" + defaults + "]"
         let str = """
-            // swift-tools-version:4.0
+            // swift-tools-version:5.1
             import PackageDescription
 
             let package = Package(
