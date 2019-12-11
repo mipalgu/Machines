@@ -236,7 +236,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         else {
             return nil
         }
-        let dependencies = constructedDependencies.combine("") { $0 + ",\n        " + $1 }
+        let dependencies = constructedDependencies.isEmpty ? "" : "\n        " + constructedDependencies.combine("") { $0 + ",\n        " + $1 } + "\n    "
         let products = Set(machine.packageDependencies.lazy.flatMap { $0.products }.map { "\"" + $0 + "\"" })
         let productList = products.sorted().combine("") { $0 + ", " + $1 }
         let str = """
@@ -252,9 +252,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                         targets: ["\(machine.name)Machine"]
                     )
                 ],
-                dependencies: [
-                    \(dependencies)
-                ],
+                dependencies: [\(dependencies)],
                 targets: [
                     .target(name: "\(machine.name)Machine", dependencies: [\(productList)])
                 ]
