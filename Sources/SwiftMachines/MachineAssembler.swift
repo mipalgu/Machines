@@ -174,7 +174,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         if let model = machine.model {
             guard
-                let ringletPath = self.makeRinglet(forRinglet: model.ringlet, withMachineName: machine.name, inDirectory: srcDir),
+                let ringletPath = self.makeRinglet(forRinglet: model.ringlet, inMachine: machine, inDirectory: srcDir),
                 let stateTypePath = self.makeStateType(forMachine: machine.name, fromModel: model, inDirectory: srcDir)
             else {
                 self.errors.append(errorMsg)
@@ -266,6 +266,10 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         return packagePath
     }
+    
+    private func makeImports(forMachine machine: Machine) -> [String] {
+        return Set(machine.packageDependencies.flatMap { $0.targets.map { "import " + $0 } }).sorted()
+    }
 
     private func makeInvoker(forMachine machine: Machine, inDirectory path: URL) -> URL? {
         guard let parameters = machine.parameters else {
@@ -282,11 +286,9 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }.combine("") { $0 + ", " + $1 }
         let invokeList = parameters.lazy.map { $0.label + ": " + $0.label }.combine("") { $0 + ", " + $1 }
         let returnType = machine.returnType ?? "Void"
+        let imports = self.makeImports(forMachine: machine).reduce("") { $0 + "\n" + $1 } + "\n"
         let str = """
-            import FSM
-            import CGUSimpleWhiteboard
-            import GUSimpleWhiteboard
-
+            import FSM\(imports)
             public final class \(machine.name)Invoker: Invoker {
 
                 public typealias ReturnType: \(returnType)
@@ -330,9 +332,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         if nil != machine.includes {
             str += "import \(machine.name)MachineBridging\n"
         }
-        if (false == machine.externalVariables.isEmpty) {
-            str += "import CGUSimpleWhiteboard\n"
-            str += "import GUSimpleWhiteboard\n"
+        if (false == machine.packageDependencies.isEmpty) {
+            let imports = self.makeImports(forMachine: machine).reduce("") { $0 + $1 + "\n" }
         }
         str += "\n"
         str += self.makeFactoryFunction(forMachine: machine)
@@ -617,6 +618,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "import ModelChecking\n"
         str += "import KripkeStructure\n"
         str += "import Utilities\n"
+        str += self.makeImports(forMachine: machine).reduce("") { $0 + $1 + "\n" }
         str += "\(machine.imports)"
         if (false == machine.imports.isEmpty) {
             str += "\n"
@@ -690,20 +692,21 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         return str
     }
 
-    private func makeRinglet(forRinglet ringlet: Ringlet, withMachineName machine: String, inDirectory path: URL) -> URL? {
-        let ringletPath = path.appendingPathComponent("\(machine)Ringlet.swift")
-        let stateType = machine + "State"
+    private func makeRinglet(forRinglet ringlet: Ringlet, inMachine machine: Machine, inDirectory path: URL) -> URL? {
+        let ringletPath = path.appendingPathComponent("\(machine.name)Ringlet.swift")
+        let stateType = machine.name + "State"
         var str = "import FSM\n"
         str += "import swiftfsm\n"
         str += "import ModelChecking\n"
         str += "import KripkeStructure\n"
+        str += self.makeImports(forMachine: machine).reduce("") { $0 + $1 + "\n" }
         str += ringlet.imports
-        str += "\npublic final class \(machine)Ringlet: Ringlet, Cloneable, KripkeVariablesModifier {\n\n"
+        str += "\npublic final class \(machine.name)Ringlet: Ringlet, Cloneable, KripkeVariablesModifier {\n\n"
         str += "    public typealias _StateType = \(stateType)\n\n"
         str += "    public var computedVars: [String: Any] { return [:] }\n\n"
         str += "    public var manipulators: [String: (Any) -> Any] { return [:] }\n\n"
         str += "    public var validVars: [String: [Any]] { return [\"Me\": []] }\n\n"
-        str += "    internal var Me: \(machine)FiniteStateMachine!\n\n"
+        str += "    internal var Me: \(machine.name)FiniteStateMachine!\n\n"
         str += "\(ringlet.vars.reduce("") { $0 + "    \(self.varHelpers.makeDeclarationAndAssignment(forVariable: $1))\n" })\n"
         str += "    public init() {}\n\n"
         str += "    public func execute(state: \(stateType)) -> \(stateType) {\n"
@@ -715,8 +718,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "    private func isValid(forState state: \(stateType)) -> (Transition<\(stateType), \(stateType)>) -> Bool {\n"
         str += "        return { $0.canTransition(state) }\n"
         str += "    }\n\n"
-        str += "    public final func clone() -> \(machine)Ringlet {\n"
-        str += "        let ringlet = \(machine)Ringlet()\n"
+        str += "    public final func clone() -> \(machine.name)Ringlet {\n"
+        str += "        let ringlet = \(machine.name)Ringlet()\n"
         str += ringlet.vars.reduce("") {
             $0 + "        " + self.varHelpers.makeAssignment(withLabel: "ringlet.\($1.label)", andValue: "self.\($1.label)") + "\n"
         }
@@ -830,10 +833,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         if let _ = machine.includes {
             str += "import \(machine.name)MachineBridging\n"
         }
-        if (false == machine.externalVariables.isEmpty) {
-            str += "import CGUSimpleWhiteboard\n"
-            str += "import GUSimpleWhiteboard\n"
-        }
+        str += self.makeImports(forMachine: machine).reduce("") { $0 + $1 + "\n" }
         if (false == state.imports.isEmpty) {
             str += "\(state.imports)\n"
         }
@@ -1266,7 +1266,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
     public func makeFiniteStateMachine(fromMachine machine: Machine, inDirectory path: URL) -> URL? {
         let name = machine.name + "FiniteStateMachine"
         let fsmPath = path.appendingPathComponent(name + ".swift", isDirectory: false)
-        var str = "import FSM\nimport swiftfsm\nimport CGUSimpleWhiteboard\nimport GUSimpleWhiteboard\n\n"
+        var str = "import FSM\nimport swiftfsm\n"
+        str += self.makeImports(forMachine: machine).reduce("") { $0 + $1 + "\n" } + "\n"
         let conformance = nil == machine.parameters ? "MachineProtocol" : "ParameterisedMachineProtocol"
         let stateType = machine.name + "State"
         let ringlet = machine.name + "Ringlet"
