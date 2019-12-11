@@ -60,10 +60,13 @@ public struct PackageDependency {
     
     public var products: [String]
     
+    public var targets: [String]
+    
     public var url: String
     
-    public init(products: [String], url: String) {
+    public init(products: [String], targets: [String], url: String) {
         self.products = products
+        self.targets = targets
         self.url = url
     }
     
