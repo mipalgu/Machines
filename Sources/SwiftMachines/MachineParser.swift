@@ -102,6 +102,7 @@ public final class MachineParser: ErrorContainer {
             let actions = model?.actions ?? .some(["onEntry", "onExit", "main"]),
             let name = self.fetchMachineName(fromPath: machineDir),
             let externalVariables = self.parseExternalVariablesFromMachine(atPath: machineDir),
+            let packageDependencies = self.parsePackageDependenciesFromMachine(atPath: machineDir),
             let swiftIncludeSearchPaths = self.parseSwiftIncludeSearchPathsFromMachine(atPath: machineDir),
             let includeSearchPaths = self.parseIncludeSearchPathsFromMachine(atPath: machineDir),
             let libSearchPaths = self.parseLibSearchPathsFromMachine(atPath: machineDir),
@@ -122,6 +123,7 @@ public final class MachineParser: ErrorContainer {
             name: name,
             filePath: machineDir,
             externalVariables: externalVariables,
+            packageDependencies: packageDependencies,
             swiftIncludeSearchPaths: swiftIncludeSearchPaths,
             includeSearchPaths: includeSearchPaths,
             libSearchPaths: libSearchPaths,
@@ -193,6 +195,10 @@ public final class MachineParser: ErrorContainer {
             return nil
         }
         return externalVariables
+    }
+    
+    private func parsePackageDependenciesFromMachine(atPath path: URL) -> [PackageDependency]? {
+        return []
     }
 
     private func parseSwiftIncludeSearchPathsFromMachine(atPath path: URL) -> [String]? {

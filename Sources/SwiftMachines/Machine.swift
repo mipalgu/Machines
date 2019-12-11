@@ -65,6 +65,8 @@ public struct Machine {
     public var filePath: URL
 
     public var externalVariables: [ExternalVariables]
+    
+    public var packageDependencies: [PackageDependency]
 
     public var swiftIncludeSearchPaths: [String]
 
@@ -108,6 +110,7 @@ public struct Machine {
         name: String,
         filePath: URL,
         externalVariables: [ExternalVariables],
+        packageDependencies: [PackageDependency],
         swiftIncludeSearchPaths: [String],
         includeSearchPaths: [String],
         libSearchPaths: [String],
@@ -127,6 +130,7 @@ public struct Machine {
         self.name = name
         self.filePath = filePath
         self.externalVariables = externalVariables
+        self.packageDependencies = packageDependencies
         self.swiftIncludeSearchPaths = swiftIncludeSearchPaths
         self.includeSearchPaths = includeSearchPaths
         self.libSearchPaths = libSearchPaths
@@ -159,6 +163,7 @@ public func ==(lhs: Machine, rhs: Machine) -> Bool {
         lhs.name == rhs.name &&
         lhs.filePath == rhs.filePath &&
         lhs.externalVariables == rhs.externalVariables &&
+        lhs.packageDependencies == rhs.packageDependencies &&
         lhs.swiftIncludeSearchPaths == rhs.swiftIncludeSearchPaths &&
         lhs.includeSearchPaths == rhs.includeSearchPaths &&
         lhs.libSearchPaths == rhs.libSearchPaths &&

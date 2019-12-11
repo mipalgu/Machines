@@ -83,6 +83,7 @@ public class MachinesTestCase: XCTestCase {
         name: "PingPong",
         filePath: URL(fileURLWithPath: NSString(string: "machines/PingPong.machine").standardizingPath, isDirectory: true).resolvingSymlinksInPath(),
         externalVariables: [],
+        packageDependencies: [],
         swiftIncludeSearchPaths: [
             "/usr/local/include/swiftfsm"
         ],
@@ -181,6 +182,7 @@ public class MachinesTestCase: XCTestCase {
                     shouldNotifySubscribers: true
                 )
             ],
+            packageDependencies: [],
             swiftIncludeSearchPaths: [
                 "/usr/local/include/swiftfsm"
             ],
@@ -294,6 +296,7 @@ public class MachinesTestCase: XCTestCase {
         name: "Factorial",
         filePath: URL(fileURLWithPath: NSString(string: "machines/Factorial.machine").standardizingPath, isDirectory: true).resolvingSymlinksInPath(),
         externalVariables: [],
+        packageDependencies: [],
         swiftIncludeSearchPaths: [
             "/usr/local/include/swiftfsm"
         ],
@@ -377,6 +380,7 @@ public class MachinesTestCase: XCTestCase {
         name: "Sum",
         filePath: URL(fileURLWithPath: NSString(string: "machines/Sum.machine").standardizingPath, isDirectory: true).resolvingSymlinksInPath(),
         externalVariables: [],
+        packageDependencies: [],
         swiftIncludeSearchPaths: [
             "/usr/local/include/swiftfsm"
         ],
