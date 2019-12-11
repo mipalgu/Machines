@@ -237,7 +237,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             return nil
         }
         let dependencies = constructedDependencies.combine("") { $0 + ",\n        " + $1 }
-        let productList = Set(machine.packageDependencies.flatMap { "\"" + $0.products + "\"" }).sorted().combine("") { $0 + ", " + $1 }
+        let products = Set(machine.packageDependencies.lazy.flatMap { $0.products }.map { "\"" + $0 + "\"" })
+        let productList = products.sorted().combine("") { $0 + ", " + $1 }
         let str = """
             // swift-tools-version:5.1
             import PackageDescription
