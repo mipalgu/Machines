@@ -287,7 +287,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         let returnType = machine.returnType ?? "Void"
         let imports = self.makeImports(forMachine: machine).reduce("") { $0 + "\n" + $1 } + "\n"
         let str = """
-            import FSM\(imports)
+            import swiftfsm\(imports)
             public final class \(machine.name)Invoker: Invoker {
 
                 public typealias ReturnType: \(returnType)
@@ -324,7 +324,6 @@ public final class MachineAssembler: Assembler, ErrorContainer {
     private func makeFactory(forMachine machine: Machine, inDirectory path: URL) -> URL? {
         let factoryPath = path.appendingPathComponent("factory.swift", isDirectory: false)
         var str = """
-            import FSM
             import swiftfsm
             """
         str += "\n"
@@ -612,11 +611,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
     }
     
     private func makeVarsContent(forMachine machine: Machine, name: String, vars: [Variable], extraConformances: [String] = [], shouldIncludeDictionaryStringConvertible: Bool = false, shouldIncludeDictionaryConvertible: Bool = false) -> String {
-        var str = "import FSM\n"
-        str += "import swiftfsm\n"
-        str += "import ModelChecking\n"
-        str += "import KripkeStructure\n"
-        str += "import Utilities\n"
+        var str = "import swiftfsm\n"
         str += self.makeImports(forMachine: machine).reduce("") { $0 + $1 + "\n" }
         str += "\(machine.imports)"
         if (false == machine.imports.isEmpty) {
@@ -694,10 +689,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
     private func makeRinglet(forRinglet ringlet: Ringlet, inMachine machine: Machine, inDirectory path: URL) -> URL? {
         let ringletPath = path.appendingPathComponent("\(machine.name)Ringlet.swift")
         let stateType = machine.name + "State"
-        var str = "import FSM\n"
-        str += "import swiftfsm\n"
-        str += "import ModelChecking\n"
-        str += "import KripkeStructure\n"
+        var str = "import swiftfsm\n"
         str += self.makeImports(forMachine: machine).reduce("") { $0 + $1 + "\n" }
         str += ringlet.imports
         str += "\npublic final class \(machine.name)Ringlet: Ringlet, Cloneable, KripkeVariablesModifier {\n\n"
@@ -735,8 +727,6 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         let ringletPath = path.appendingPathComponent("\(machine)Ringlet.swift")
         let stateType = machine + "State"
         let str = """
-            import FSM
-            import ModelChecking
             import swiftfsm
 
             /**
@@ -828,7 +818,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
 
     private func makeState(_ state: State, forMachine machine: Machine, inDirectory path: URL) -> URL? {
         let statePath = path.appendingPathComponent("State_\(state.name).swift", isDirectory: false)
-        var str = "import FSM\nimport swiftfsm\nimport ExternalVariables\n"
+        var str = "import swiftfsm\n"
         if let _ = machine.includes {
             str += "import \(machine.name)MachineBridging\n"
         }
@@ -1078,10 +1068,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
     private func makeStateType(forMachine machine: String, fromModel model: Model, inDirectory path: URL) -> URL? {
         let stateTypePath = path.appendingPathComponent("\(machine)State.swift", isDirectory: false)
         let stateType = machine + "State"
-        var str = "import FSM\n"
+        var str = "import swiftfsm\n"
         str += "import swiftfsm\n"
-        str += "import ModelChecking\n"
-        str += "import KripkeStructure\n\n"
         str += "public class \(stateType):\n"
         str += "    StateType,\n"
         str += "    CloneableState,\n"
@@ -1120,8 +1108,6 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         let stateTypePath = path.appendingPathComponent("\(machine)State.swift", isDirectory: false)
         let stateType = machine + "State"
         let str = """
-            import FSM
-            import ModelChecking
             import swiftfsm
 
             /**
@@ -1208,7 +1194,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
     public func makeEmptyStateType(forMachine machine: String, withActions actions: [String], inDirectory path: URL) -> URL? {
         let emptyStateTypePath = path.appendingPathComponent("Empty\(machine)State.swift", isDirectory: false)
         let stateType = machine + "State"
-        var str = "import FSM\nimport swiftfsm\n\n"
+        var str = "import swiftfsm\n\n"
         str += "public final class Empty\(stateType): \(stateType) {\n\n"
         for action in actions {
             str += "    public override final func \(action)() {}\n\n"
@@ -1227,7 +1213,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
     public func makeCallbackStateType(forMachine machine: String, withActions actions: [String], inDirectory path: URL) -> URL? {
         let callbackStateTypePath = path.appendingPathComponent("Callback\(machine)State.swift", isDirectory: false)
         let stateType = machine + "State"
-        var str = "import FSM\nimport swiftfsm\n\n"
+        var str = "import swiftfsm\n\n"
         str += "public final class Callback\(stateType): \(stateType) {\n\n"
         for action in actions {
             str += "    private let _\(action): () -> Void\n\n"
@@ -1265,7 +1251,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
     public func makeFiniteStateMachine(fromMachine machine: Machine, inDirectory path: URL) -> URL? {
         let name = machine.name + "FiniteStateMachine"
         let fsmPath = path.appendingPathComponent(name + ".swift", isDirectory: false)
-        var str = "import FSM\nimport swiftfsm\n"
+        var str = "import swiftfsm\n"
         str += self.makeImports(forMachine: machine).reduce("") { $0 + $1 + "\n" } + "\n"
         let conformance = nil == machine.parameters ? "MachineProtocol" : "ParameterisedMachineProtocol"
         let stateType = machine.name + "State"
