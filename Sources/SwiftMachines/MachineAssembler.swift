@@ -318,6 +318,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             import FSM
             import swiftfsm
             """
+        str += "\n"
         if nil != machine.includes {
             str += "import \(machine.name)MachineBridging\n"
         }
