@@ -136,7 +136,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         guard
             let packageDir = self.packageInitializer.initialize(withName: "\(machine.name)Machine", inDirectory: buildDir),
-            let package = self.makePackage(forMachine: machine, inDirectory: packageDir, withDependencies: dependencies),
+            let package = self.makePackage(forMachine: machine, inDirectory: packageDir, withAddedDependencies: dependencies),
             let sourcesDir = self.helpers.overwriteSubDirectory("Sources", inDirectory: packageDir),
             let srcDir = self.helpers.overwriteSubDirectory(machine.name + "Machine", inDirectory: sourcesDir),
             let factoryPath = self.makeFactory(forMachine: machine, inDirectory: srcDir),
@@ -222,7 +222,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         return modulePath
     }
 
-    private func makePackage(forMachine machine: Machine, inDirectory path: URL, withDependencies dependencies: [(URL)]) -> URL? {
+    private func makePackage(forMachine machine: Machine, inDirectory path: URL, withAddedDependencies addedDependencies: [(URL)]) -> URL? {
         let packagePath = path.appendingPathComponent("Package.swift", isDirectory: false)
         guard
             let constructedDependencies: [String] = machine.packageDependencies.failMap({
@@ -236,7 +236,9 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         else {
             return nil
         }
-        let dependencies = constructedDependencies.isEmpty ? "" : "\n        " + constructedDependencies.combine("") { $0 + ",\n        " + $1 } + "\n    "
+        let addedDependencyList = addedDependencies.map { ".package(url: \"\($0.absoluteString)\", .branch(\"master\"))" }
+        let allConstructedDependencies = addedDependencyList + constructedDependencies
+        let dependencies = allConstructedDependencies.isEmpty ? "" : "\n        " + allConstructedDependencies.combine("") { $0 + ",\n        " + $1 } + "\n    "
         let products = Set(machine.packageDependencies.lazy.flatMap { $0.products }.map { "\"" + $0 + "\"" })
         let productList = products.sorted().combine("") { $0 + ", " + $1 }
         let str = """
