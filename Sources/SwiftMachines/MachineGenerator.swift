@@ -77,6 +77,7 @@ public final class MachineGenerator {
     public func generate(_ machine: Machine) -> (URL, [URL])? {
         guard
             let machineDir = self.helpers.overwriteDirectory(machine.filePath, ignoringSubFiles: [machine.filePath.appendingPathComponent("dependencies", isDirectory: true)]),
+            let packageDependenciesPath = self.makePackageDependencies(forMachine: machine),
             let swiftIncludePath = self.helpers.createFile(
                 "SwiftIncludePath",
                 inDirectory: machine.filePath,
@@ -111,7 +112,7 @@ public final class MachineGenerator {
         else {
             return nil
         }
-        var files = [swiftIncludePath, includePath, libPath, imports, vars, stateList, externalVariables, dependencies]
+        var files = [packageDependenciesPath, swiftIncludePath, includePath, libPath, imports, vars, stateList, externalVariables, dependencies]
         files.append(contentsOf: stateFiles)
         if let includes = machine.includes {
             guard let bridgingHeader = self.helpers.createFile(
@@ -162,6 +163,17 @@ public final class MachineGenerator {
             return ""
         }
         return list.dropFirst().reduce(first) { "\($0)" + separator + $1 }
+    }
+    
+    func makePackageDependencies(forMachine machine: Machine) -> URL? {
+        let filePath = machine.filePath.appendingPathComponent("packageDependencies.json", isDirectory: false)
+        do {
+            let data = try JSONEncoder().encode(machine.packageDependencies)
+            try data.write(to: filePath)
+        } catch {
+            return nil
+        }
+        return filePath
     }
 
     func makeStates(forMachine machine: Machine) -> [URL]? {
