@@ -198,7 +198,21 @@ public final class MachineParser: ErrorContainer {
     }
     
     private func parsePackageDependenciesFromMachine(atPath path: URL) -> [PackageDependency]? {
-        return []
+        let filePath = path.appendingPathComponent("packageDependencies.json", isDirectory: false)
+        let data: Data
+        do {
+            data = try Data(contentsOf: filePath)
+        } catch {
+            return []
+        }
+        let packageDependencies: [PackageDependency]
+        do {
+            packageDependencies = try JSONDecoder().decode([PackageDependency].self, from: data)
+        } catch let e {
+            self.errors.append("\(e)")
+            return nil
+        }
+        return packageDependencies
     }
 
     private func parseSwiftIncludeSearchPathsFromMachine(atPath path: URL) -> [String]? {
