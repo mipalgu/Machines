@@ -231,7 +231,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                     return nil
                 }
                 let qualifiers = $0.qualifiers.combine("") { $0 + ", " + $1 }
-                return ".package(url: \"\(url.absoluteString)\", \(qualifiers))"
+                return ".package(url: \"\(url.absoluteURL.standardized.absoluteString)\", \(qualifiers))"
             })
         else {
             return nil
