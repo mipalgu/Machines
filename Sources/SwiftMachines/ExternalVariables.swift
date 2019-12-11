@@ -88,13 +88,4 @@ public struct ExternalVariables {
 
 }
 
-extension ExternalVariables: Equatable {}
-
-public func == (lhs: ExternalVariables, rhs: ExternalVariables) -> Bool {
-    return
-        lhs.wbName == rhs.wbName &&
-        lhs.messageType == rhs.messageType &&
-        lhs.messageClass == rhs.messageClass &&
-        lhs.atomic == rhs.atomic &&
-        lhs.shouldNotifySubscribers == rhs.shouldNotifySubscribers
-}
+extension ExternalVariables: Equatable, Hashable {}

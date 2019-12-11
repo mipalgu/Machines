@@ -84,13 +84,4 @@ public struct State {
 
 }
 
-extension State: Equatable {}
-
-public func == (lhs: State, rhs: State) -> Bool {
-    return
-        lhs.name == rhs.name &&
-        lhs.imports == rhs.imports &&
-        lhs.vars == rhs.vars &&
-        lhs.actions == rhs.actions &&
-        lhs.transitions == rhs.transitions
-}
+extension State: Equatable, Hashable {}

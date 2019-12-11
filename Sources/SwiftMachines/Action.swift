@@ -84,10 +84,4 @@ public struct Action {
 
 }
 
-extension Action: Equatable {}
-
-public func == (lhs: Action, rhs: Action) -> Bool {
-    return
-        lhs.name == rhs.name &&
-        lhs.implementation == rhs.implementation
-}
+extension Action: Equatable, Hashable {}

@@ -72,11 +72,4 @@ public struct Ringlet {
 
 }
 
-extension Ringlet: Equatable {}
-
-public func == (lhs: Ringlet, rhs: Ringlet) -> Bool {
-    return
-        lhs.imports == rhs.imports &&
-        lhs.vars == rhs.vars &&
-        lhs.execute == rhs.execute
-}
+extension Ringlet: Equatable, Hashable {}

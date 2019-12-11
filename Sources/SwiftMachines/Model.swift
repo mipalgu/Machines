@@ -69,10 +69,4 @@ public struct Model {
 
 }
 
-extension Model: Equatable {}
-
-public func == (lhs: Model, rhs: Model) -> Bool {
-    return
-        lhs.actions == rhs.actions &&
-        lhs.ringlet == rhs.ringlet
-}
+extension Model: Equatable, Hashable {}

@@ -75,10 +75,4 @@ public struct Variable {
 
 }
 
-extension Variable: Equatable {}
-
-public func ==(lhs: Variable, rhs: Variable) -> Bool {
-    return lhs.label == rhs.label &&
-        lhs.type == rhs.type &&
-        lhs.initialValue == rhs.initialValue
-}
+extension Variable: Equatable, Hashable {}

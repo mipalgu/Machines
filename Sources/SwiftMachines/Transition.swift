@@ -69,10 +69,4 @@
 
  }
 
- extension Transition: Equatable {}
-
- public func == (lhs: Transition, rhs: Transition) -> Bool {
-     return
-        lhs.target == rhs.target &&
-        lhs.condition == rhs.condition
- }
+ extension Transition: Equatable, Hashable {}

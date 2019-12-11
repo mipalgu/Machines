@@ -75,6 +75,4 @@ public struct PackageDependency {
     
 }
 
-extension PackageDependency: Equatable {}
-
-extension PackageDependency: Codable {}
+extension PackageDependency: Codable, Equatable, Hashable {}

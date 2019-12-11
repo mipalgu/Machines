@@ -150,33 +150,4 @@ public struct Machine {
 
 }
 
-extension Machine: Hashable {
-
-    public var hashValue: Int {
-        return "\(self)".hashValue
-    }
-
-}
-
-public func ==(lhs: Machine, rhs: Machine) -> Bool {
-    return
-        lhs.name == rhs.name &&
-        lhs.filePath == rhs.filePath &&
-        lhs.externalVariables == rhs.externalVariables &&
-        lhs.packageDependencies == rhs.packageDependencies &&
-        lhs.swiftIncludeSearchPaths == rhs.swiftIncludeSearchPaths &&
-        lhs.includeSearchPaths == rhs.includeSearchPaths &&
-        lhs.libSearchPaths == rhs.libSearchPaths &&
-        lhs.includes == rhs.includes &&
-        lhs.imports == rhs.imports &&
-        lhs.vars == rhs.vars &&
-        lhs.model == rhs.model &&
-        lhs.parameters == rhs.parameters &&
-        lhs.returnType == rhs.returnType &&
-        lhs.initialState == rhs.initialState &&
-        lhs.suspendState == rhs.suspendState &&
-        lhs.states == rhs.states &&
-        lhs.submachines == rhs.submachines &&
-        lhs.callableMachines == rhs.callableMachines &&
-        lhs.invocableMachines == rhs.invocableMachines
-}
+extension Machine: Equatable, Hashable {}
