@@ -72,4 +72,4 @@ public struct Ringlet {
 
 }
 
-extension Ringlet: Equatable, Hashable {}
+extension Ringlet: Codable, Equatable, Hashable {}

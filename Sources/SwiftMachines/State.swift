@@ -84,4 +84,4 @@ public struct State {
 
 }
 
-extension State: Equatable, Hashable {}
+extension State: Codable, Equatable, Hashable {}

@@ -150,4 +150,4 @@ public struct Machine {
 
 }
 
-extension Machine: Equatable, Hashable {}
+extension Machine: Codable, Equatable, Hashable {}

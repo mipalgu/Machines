@@ -69,4 +69,4 @@
 
  }
 
- extension Transition: Equatable, Hashable {}
+ extension Transition: Codable, Equatable, Hashable {}

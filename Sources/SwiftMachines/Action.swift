@@ -84,4 +84,4 @@ public struct Action {
 
 }
 
-extension Action: Equatable, Hashable {}
+extension Action: Codable, Equatable, Hashable {}

@@ -69,4 +69,4 @@ public struct Model {
 
 }
 
-extension Model: Equatable, Hashable {}
+extension Model: Codable, Equatable, Hashable {}

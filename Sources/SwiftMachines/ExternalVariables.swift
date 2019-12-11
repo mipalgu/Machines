@@ -88,4 +88,4 @@ public struct ExternalVariables {
 
 }
 
-extension ExternalVariables: Equatable, Hashable {}
+extension ExternalVariables: Codable, Equatable, Hashable {}

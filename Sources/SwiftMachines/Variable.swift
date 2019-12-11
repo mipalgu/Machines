@@ -75,4 +75,4 @@ public struct Variable {
 
 }
 
-extension Variable: Equatable, Hashable {}
+extension Variable: Codable, Equatable, Hashable {}
