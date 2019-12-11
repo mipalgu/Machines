@@ -226,9 +226,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         let packagePath = path.appendingPathComponent("Package.swift", isDirectory: false)
         guard
             let constructedDependencies: [String] = machine.packageDependencies.failMap({
-                var path = $0.url
-                path = path.replacingOccurrences(of: "$MACHINE_DIR", with: machine.filePath.absoluteString)
-                guard let url = URL(string: path) else {
+                guard let url = URL(string: $0.url.replacingMachineVariables(forMachine: machine)) else {
                     self.errors.append("Malformed url in package dependency in machine \(machine.name): \($0.url)")
                     return nil
                 }
