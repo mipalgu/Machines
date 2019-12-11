@@ -830,7 +830,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         str += "\n"
         let stateType = machine.name + "State"
-        str += "public class State_\(state.name): \(stateType) {\n\n"
+        str += "public final class State_\(state.name): \(stateType) {\n\n"
         str += "    public override var validVars: [String: [Any]] {\n"
         str += "        return [\n"
         str += """
