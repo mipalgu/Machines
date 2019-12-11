@@ -224,12 +224,20 @@ public final class MachineAssembler: Assembler, ErrorContainer {
 
     private func makePackage(forMachine machine: Machine, inDirectory path: URL, withDependencies dependencies: [(URL)]) -> URL? {
         let packagePath = path.appendingPathComponent("Package.swift", isDirectory: false)
-        let dependencies = dependencies.map {
-            ".package(url: \"\($0.absoluteString)\", .branch(\"master\"))"
-        }.reduce(".package(url: \"ssh://git.mipal.net/git/CGUSimpleWhiteboard\", .branch(\"swift-4.2\")),\n        .package(url: \"ssh://git.mipal.net/git/swift_wb\", .branch(\"swift-4.2\"))") { $0 + ",\n        " + $1 }
-        let dependencyList: String
-        let defaults = "\"GUSimpleWhiteboard\""
-        dependencyList = "[" + defaults + "]"
+        guard
+            let constructedDependencies: [String] = machine.packageDependencies.failMap({
+                guard let url = URL(string: $0.url, relativeTo: machine.filePath) else {
+                    self.errors.append("Malformed url in package dependency in machine \(machine.name): \($0.url)")
+                    return nil
+                }
+                let qualifiers = $0.qualifiers.combine("") { $0 + ", " + $1 }
+                return ".package(url: \"\(url.absoluteString)\", \(qualifiers))"
+            })
+        else {
+            return nil
+        }
+        let dependencies = constructedDependencies.combine("") { $0 + ",\n        " + $1 }
+        let productList = Set(machine.packageDependencies.flatMap { $0.products }).sorted().combine("") { $0 + ", " + $1 }
         let str = """
             // swift-tools-version:5.1
             import PackageDescription
@@ -247,7 +255,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                     \(dependencies)
                 ],
                 targets: [
-                    .target(name: "\(machine.name)Machine", dependencies: \(dependencyList))
+                    .target(name: "\(machine.name)Machine", dependencies: [\(productList)])
                 ]
             )
 
