@@ -334,7 +334,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "import \(machine.name)MachineBridging\n"
         }
         if (false == machine.packageDependencies.isEmpty) {
-            let imports = self.makeImports(forMachine: machine).reduce("") { $0 + $1 + "\n" }
+            str += self.makeImports(forMachine: machine).reduce("") { $0 + $1 + "\n" }
         }
         str += "\n"
         str += self.makeFactoryFunction(forMachine: machine)
