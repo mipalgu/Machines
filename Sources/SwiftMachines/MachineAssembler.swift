@@ -358,8 +358,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         let type = nil == machine.parameters ? "controllableFSM" : "parameterisedFSM"
         return """
             @_silgen_name("make_\(machine.name)")
-            public func make_\(machine.name)(gateway: FSMGateway, clock: Timer, caller: FSM_ID) -> FSMType {
-                let fsm = \(fun)\(machine.name)(gateway: gateway, clock: clock, caller: caller)
+            let make_\(machine.name): (FSMGateway, Timer, FSM_ID) -> FSMType = {
+                let fsm = \(fun)\(machine.name)(gateway: %0, clock: $1, caller: $2)
                 return FSMType.\(type)(fsm)
             }
             """
