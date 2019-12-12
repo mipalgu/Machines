@@ -357,14 +357,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         let fun = nil == machine.parameters ? "make_submachine_" : "make_parameterised_"
         let type = nil == machine.parameters ? "controllableFSM" : "parameterisedFSM"
         return """
-            @_cdecl(\"make_\(machine.name)\")
-            public func _make_\(machine.name)(gateway _gateway: Any, clock _clock: Any, caller _caller: Any) -> Any {
-                let gateway = _gateway as! FSMGateway
-                let clock = _clock as! Timer
-                let caller = _caller as! FSM_ID
-                return make_\(machine.name)(gateway: gateway, clock: clock, caller: caller) as Any
-            }
-            
+            @_silgen_name(make_\(machine.name))
             public func make_\(machine.name)(gateway: FSMGateway, clock: Timer, caller: FSM_ID) -> FSMType {
                 let fsm = \(fun)\(machine.name)(gateway: gateway, clock: clock, caller: caller)
                 return FSMType.\(type)(fsm)
