@@ -1,0 +1,14 @@
+[
+    {
+        "products": ["CGUSimpleWhiteboard"],
+        "targets": ["CGUSimpleWhiteboard"],
+        "url": "file://$MACHINE_DIR/../../../gusimplewhiteboard/CGUSimpleWhiteboard/",
+        "qualifiers": [".branch(\"master\")"]
+    },
+    {
+        "products": ["GUSimpleWhiteboard"],
+        "targets": ["GUSimpleWhiteboard"],
+        "url": "file://$MACHINE_DIR/../../../gusimplewhiteboard/swift_wb/",
+        "qualifiers": [".branch(\"master\")"]
+    }
+]
