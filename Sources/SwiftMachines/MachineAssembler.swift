@@ -358,11 +358,13 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         let type = nil == machine.parameters ? "controllableFSM" : "parameterisedFSM"
         return """
             @_cdecl(\"make_\(machine.name)\")
-            public func _make_\(machine.name)(gateway _gateway: Any, clock _clock: Any, caller _caller: Any) -> Any {
-                let gateway = _gateway as! FSMGateway
-                let clock = _clock as! Timer
-                let caller = _caller as! FSM_ID
-                return make_\(machine.name)(gateway: gateway, clock: clock, caller: caller) as Any
+            public func _make_\(machine.name)(gateway _gateway: UnsafeMutableRawPointer, clock _clock: UnsafeMutableRawPointer, caller _caller: UnsafeMutableRawPointer, callback _callback: UnsafeMutableRawPointer) {
+                let gateway = _gateway.bindMemory(to: FSMGateway.self, capacity: 1).pointee
+                let clock = _clock.bindMemory(to: Timer.self, capacity: 1).pointee
+                let caller = _caller.bindMemory(to: FSM_ID.self, capacity: 1).pointee
+                let callback = _callback.bindMemory(to: ((FSMType) -> Void).self, capacity: 1).pointee
+                let fsm = make_\(machine.name)(gateway: gateway, clock: clock, caller: caller)
+                callback(fsm)
             }
             
             public func make_\(machine.name)(gateway: FSMGateway, clock: Timer, caller: FSM_ID) -> FSMType {
