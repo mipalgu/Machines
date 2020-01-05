@@ -104,7 +104,8 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
         _ machine: Machine,
         withCCompilerFlags cCompilerFlags: [String] = [],
         andLinkerFlags linkerFlags: [String] = [],
-        andSwiftCompilerFlags swiftCompilerFlags: [String] = []
+        andSwiftCompilerFlags swiftCompilerFlags: [String] = [],
+        andSwiftBuildFlags swiftBuildFlags: [String] = []
     ) -> String? {
         self.errors = []
         guard
@@ -112,7 +113,8 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
                     machine,
                     withCCompilerFlags: cCompilerFlags,
                     andLinkerFlags: linkerFlags,
-                    andSwiftCompilerFlags: swiftCompilerFlags
+                    andSwiftCompilerFlags: swiftCompilerFlags,
+                    andSwiftBuildFlags: swiftBuildFlags
                 )
         else {
             return nil
@@ -124,7 +126,8 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
         _ machine: Machine,
         withCCompilerFlags cCompilerFlags: [String] = [],
         andLinkerFlags linkerFlags: [String] = [],
-        andSwiftCompilerFlags swiftCompilerFlags: [String] = []
+        andSwiftCompilerFlags swiftCompilerFlags: [String] = [],
+        andSwiftBuildFlags swiftBuildFlags: [String] = []
     ) -> [String]? {
         self.errors = []
         guard
@@ -140,7 +143,8 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
                 machine,
                 withCCompilerFlags: cCompilerFlags,
                 andLinkerFlags: linkerFlags,
-                andSwiftCompilerFlags: swiftCompilerFlags
+                andSwiftCompilerFlags: swiftCompilerFlags,
+                andSwiftBuildFlags: swiftBuildFlags
             )
         else {
             return nil
@@ -152,7 +156,8 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
         _ machine: Machine,
         withCCompilerFlags cCompilerFlags: [String],
         andLinkerFlags linkerFlags: [String],
-        andSwiftCompilerFlags swiftCompilerFlags: [String]
+        andSwiftCompilerFlags swiftCompilerFlags: [String],
+        andSwiftBuildFlags swiftBuildFlags: [String]
     ) -> (URL, URL)? {
         print("Compile: \(machine.name)")
         guard let (buildPath, _) = self.assembler.assemble(machine) else {
@@ -171,7 +176,8 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
             forMachine: machine,
             withCCompilerFlags: cCompilerFlags,
             andLinkerFlags: linkerFlags,
-            andSwiftCompilerFlags: swiftCompilerFlags
+            andSwiftCompilerFlags: swiftCompilerFlags,
+            andSwiftBuildFlags: swiftBuildFlags
         )
         print(args.reduce("env") { "\($0) \($1)" })
         guard true == self.invoker.run("/usr/bin/env", withArguments: args) else {
