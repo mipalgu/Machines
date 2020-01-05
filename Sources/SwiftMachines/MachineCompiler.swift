@@ -103,6 +103,7 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
     public func compile(
         _ machine: Machine,
         withCCompilerFlags cCompilerFlags: [String] = [],
+        andCXXCompilerFlags cxxCompilerFlags: [String] = [],
         andLinkerFlags linkerFlags: [String] = [],
         andSwiftCompilerFlags swiftCompilerFlags: [String] = [],
         andSwiftBuildFlags swiftBuildFlags: [String] = []
@@ -112,6 +113,7 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
             let (_, outputPath) = self.compileMachine(
                     machine,
                     withCCompilerFlags: cCompilerFlags,
+                    andCXXCompilerFlags: cxxCompilerFlags,
                     andLinkerFlags: linkerFlags,
                     andSwiftCompilerFlags: swiftCompilerFlags,
                     andSwiftBuildFlags: swiftBuildFlags
@@ -125,6 +127,7 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
     public func compileTree(
         _ machine: Machine,
         withCCompilerFlags cCompilerFlags: [String] = [],
+        andCXXCompilerFlags cxxCompilerFlags: [String] = [],
         andLinkerFlags linkerFlags: [String] = [],
         andSwiftCompilerFlags swiftCompilerFlags: [String] = [],
         andSwiftBuildFlags swiftBuildFlags: [String] = []
@@ -135,13 +138,16 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
                 self.compileTree(
                     $0,
                     withCCompilerFlags: cCompilerFlags,
+                    andCXXCompilerFlags: cxxCompilerFlags,
                     andLinkerFlags: linkerFlags,
-                    andSwiftCompilerFlags: swiftCompilerFlags
+                    andSwiftCompilerFlags: swiftCompilerFlags,
+                    andSwiftBuildFlags: swiftBuildFlags
                 )
             }),
             let (_, outputPath) = self.compileMachine(
                 machine,
                 withCCompilerFlags: cCompilerFlags,
+                andCXXCompilerFlags: cxxCompilerFlags,
                 andLinkerFlags: linkerFlags,
                 andSwiftCompilerFlags: swiftCompilerFlags,
                 andSwiftBuildFlags: swiftBuildFlags
@@ -155,6 +161,7 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
     private func compileMachine(
         _ machine: Machine,
         withCCompilerFlags cCompilerFlags: [String],
+        andCXXCompilerFlags cxxCompilerFlags: [String],
         andLinkerFlags linkerFlags: [String],
         andSwiftCompilerFlags swiftCompilerFlags: [String],
         andSwiftBuildFlags swiftBuildFlags: [String]
@@ -175,6 +182,7 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
         let args = self.makeCompilerFlags(
             forMachine: machine,
             withCCompilerFlags: cCompilerFlags,
+            andCXXCompilerFlags: cxxCompilerFlags,
             andLinkerFlags: linkerFlags,
             andSwiftCompilerFlags: swiftCompilerFlags,
             andSwiftBuildFlags: swiftBuildFlags
@@ -192,6 +200,7 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
     private func makeCompilerFlags(
         forMachine machine: Machine,
         withCCompilerFlags cCompilerFlags: [String],
+        andCXXCompilerFlags cxxCompilerFlags: [String],
         andLinkerFlags linkerFlags: [String],
         andSwiftCompilerFlags swiftCompilerFlags: [String],
         andSwiftBuildFlags swiftBuildFlags: [String]
@@ -206,6 +215,7 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
         args.append(contentsOf: includeSearchPaths.flatMap { ["-Xcc", $0] })
         args.append(contentsOf: libSearchPaths.flatMap { ["-Xlinker", $0] })
         args.append(contentsOf: cCompilerFlags.flatMap { ["-Xcc", $0] })
+        args.append(contentsOf: cxxCompilerFlags.flatMap { ["-Xcxx", $0] })
         args.append(contentsOf: linkerFlags.flatMap { ["-Xlinker", $0] })
         args.append(contentsOf: swiftCompilerFlags.flatMap { ["-Xswiftc", $0] })
         args.append(contentsOf: swiftBuildFlags)
