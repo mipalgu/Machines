@@ -187,12 +187,13 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
         forMachine machine: Machine,
         withCCompilerFlags cCompilerFlags: [String],
         andLinkerFlags linkerFlags: [String],
-        andSwiftCompilerFlags swiftCompilerFlags: [String]
+        andSwiftCompilerFlags swiftCompilerFlags: [String],
+        andSwiftBuildFlags swiftBuildFlags: [String]
     ) -> [String] {
         let swiftIncludeSearchPaths = machine.swiftIncludeSearchPaths.map { "-I\(self.expand($0, withMachine: machine))" }
         let includeSearchPaths = machine.includeSearchPaths.map { "-I\(self.expand($0, withMachine: machine))" }
         let libSearchPaths = machine.libSearchPaths.map { "-L\(self.expand($0, withMachine: machine))" }
-        let mandatoryFlags = ["swift", "build", "-c", "release", "-Xlinker", "-lFSM"]
+        let mandatoryFlags = ["swift", "build", "-Xlinker", "-lFSM"]
         var args: [String] = []
         args.append(contentsOf: mandatoryFlags)
         args.append(contentsOf: swiftIncludeSearchPaths.flatMap { ["-Xswiftc", $0] })
@@ -201,6 +202,7 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
         args.append(contentsOf: cCompilerFlags.flatMap { ["-Xcc", $0] })
         args.append(contentsOf: linkerFlags.flatMap { ["-Xlinker", $0] })
         args.append(contentsOf: swiftCompilerFlags.flatMap { ["-Xswiftc", $0] })
+        args.append(contentsOf: swiftBuildFlags)
         return args
     }
 
