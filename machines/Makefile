@@ -5,7 +5,7 @@
 
 ALL_TARGETS=host-local
 
-SWIFT_MACHINES=PingPong
+SWIFT_MACHINES?=PingPong
 
 .include "../../../mk/fsm.mk"
 .include "../../../mk/mipal.mk"
