@@ -79,23 +79,24 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
         self.invoker = invoker
     }
 
-    public func outputPath(forMachine machine: Machine, builtInDirectory buildDir: URL) -> String {
+    public func outputPath(forMachine machine: Machine, builtInDirectory buildDir: String) -> String {
         return self.outputURL(forMachine: machine, builtInDirectory: buildDir).path
     }
     
-    public func outputURL(forMachine machine: Machine, builtInDirectory buildDir: URL) -> URL {
+    public func outputURL(forMachine machine: Machine, builtInDirectory buildDir: String) -> URL {
         #if os(macOS)
         let ext = ".dylib"
         #else
         let ext = ".so"
         #endif
-        return URL(fileURLWithPath: self.assembler.packagePath(forMachine: machine, builtInDirectory: buildDir), isDirectory: true)
+        let buildDirPath = machine.filePath.appendingPathComponent(buildDir, isDirectory: true)
+        return URL(fileURLWithPath: self.assembler.packagePath(forMachine: machine, builtInDirectory: buildDirPath), isDirectory: true)
             .appendingPathComponent(".build", isDirectory: true)
             .appendingPathComponent("release", isDirectory: true)
             .appendingPathComponent("lib" + machine.name + "Machine" + ext, isDirectory: false)
     }
 
-    public func shouldCompile(_ machine: Machine, inDirectory buildDir: URL) -> Bool {
+    public func shouldCompile(_ machine: Machine, inDirectory buildDir: String) -> Bool {
         let fm = FileManager.default
         return false == fm.fileExists(atPath: self.outputPath(forMachine: machine, builtInDirectory: buildDir))
     }
@@ -201,7 +202,7 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
         }
         let _ = fm.changeCurrentDirectoryPath(cwd)
         let compileDir = buildPath.appendingPathComponent(".build", isDirectory: true).appendingPathComponent("release", isDirectory: true)
-        return (compileDir, self.outputURL(forMachine: machine, builtInDirectory: buildDirPath))
+        return (compileDir, self.outputURL(forMachine: machine, builtInDirectory: buildDir))
     }
 
     private func makeCompilerFlags(
