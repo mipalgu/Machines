@@ -84,7 +84,8 @@ public class MachineAssemblerTests: MachinesTestCase {
     }
 
     public func testBuildsPingPong() {
-        guard let (_, paths) = self.assembler.assemble(super.pingPongMachine) else {
+        let buildDir = super.pingPongMachine.filePath.appendingPathComponent(".build", isDirectory: true)
+        guard let (_, paths) = self.assembler.assemble(super.pingPongMachine, inDirectory: buildDir) else {
             XCTFail("Cannot assemble PingPong.machine: \(self.assembler.lastError ?? "")")
             return
         }
@@ -92,7 +93,8 @@ public class MachineAssemblerTests: MachinesTestCase {
     }
 
     public func testBuildsController() {
-        guard let (_, paths) = self.assembler.assemble(super.controllerMachine) else {
+        let buildDir = super.controllerMachine.filePath.appendingPathComponent(".build", isDirectory: true)
+        guard let (_, paths) = self.assembler.assemble(super.controllerMachine, inDirectory: buildDir) else {
             XCTFail("Cannot assemble Controller.machine: \(self.assembler.lastError ?? "")")
             return
         }

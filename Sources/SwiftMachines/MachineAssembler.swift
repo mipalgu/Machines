@@ -97,21 +97,21 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         self.varParser = varParser
     }
 
-    public func packagePath(forMachine machine: Machine) -> String {
-        return machine.filePath.appendingPathComponent(".build", isDirectory: true)
+    public func packagePath(forMachine machine: Machine, builtInDirectory buildDir: URL) -> String {
+        return buildDir
             .appendingPathComponent(machine.name + "Machine", isDirectory: true)
             .path
     }
 
-    public func assemble(_ machine: Machine) -> (URL, [URL])? {
-        return self.assemble(machine, isSubMachine: false)
+    public func assemble(_ machine: Machine, inDirectory directory: URL) -> (URL, [URL])? {
+        return self.assemble(machine, inDirectory: directory, isSubMachine: false)
     }
 
-    private func assemble(_ machine: Machine, isSubMachine: Bool) -> (URL, [URL])? {
+    private func assemble(_ machine: Machine, inDirectory buildDir: URL, isSubMachine: Bool) -> (URL, [URL])? {
         let errorMsg = "Unable to assemble \(machine.filePath.path)"
         var dependencies: [URL] = []
         guard
-            let buildDir = self.helpers.overwriteSubDirectory(".build", inDirectory: machine.filePath)
+            let buildDir = self.helpers.overwriteDirectory(buildDir)
         else {
             self.errors.append(errorMsg)
             return nil

@@ -67,11 +67,11 @@ public class MockedAssembler: Assembler {
         self._assemble = f
     }
 
-    public func assemble(_ machine: Machine) -> (URL, [URL])? {
+    public func assemble(_ machine: Machine, inDirectory _: URL) -> (URL, [URL])? {
         return self._assemble(machine)
     }
 
-    public func packagePath(forMachine _: Machine) -> String {
+    public func packagePath(forMachine _: Machine, builtInDirectory _: URL) -> String {
         return ""
     }
 

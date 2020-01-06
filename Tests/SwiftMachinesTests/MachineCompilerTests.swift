@@ -100,6 +100,7 @@ public class MachineCompilerTests: MachinesTestCase {
     public func testCompilesPingPong() {
         guard nil != self.compiler.compile(
             super.pingPongMachine,
+            withBuildDir: ".build",
             andSwiftCompilerFlags: self.args
         )
         else {
@@ -111,6 +112,7 @@ public class MachineCompilerTests: MachinesTestCase {
     public func testCompilesController() {
         guard nil != self.compiler.compileTree(
                 super.controllerMachine,
+                withBuildDir: ".build",
                 andSwiftCompilerFlags: self.args
             )
         else {
