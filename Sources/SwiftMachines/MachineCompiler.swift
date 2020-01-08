@@ -288,7 +288,11 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
         }
         return outPaths.reduce(true) {
             let src = URL(fileURLWithPath: $1, isDirectory: false)
-            let name = String(src.lastPathComponent.dropFirst(3))
+            var components = String(src.lastPathComponent.dropFirst(3)).components(separatedBy: ".")
+            if components.count >= 2 && components[components.count - 2].hasSuffix("Machine") {
+                components[components.count - 2] = String(components[components.count - 2].dropLast(7))
+            }
+            let name = components.combine("") { $0 + "." + $1 }
             do {
                 try fm.copyItem(at: src, to: dependenciesDirectory.appendingPathComponent(name, isDirectory: false))
             } catch let e {
