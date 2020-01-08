@@ -362,21 +362,21 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                 let gateway = _gateway.bindMemory(to: FSMGateway.self, capacity: 1).pointee
                 let clock = _clock.bindMemory(to: Timer.self, capacity: 1).pointee
                 let caller = _caller.bindMemory(to: FSM_ID.self, capacity: 1).pointee
-                let callback = _callback.bindMemory(to: ((FSMType) -> Void).self, capacity: 1).pointee
-                let fsm = make_\(machine.name)(gateway: gateway, clock: clock, caller: caller)
-                callback(fsm)
+                let callback = _callback.bindMemory(to: ((FSMType, [ShallowDependency]) -> Void).self, capacity: 1).pointee
+                let (fsm, dependencies) = make_\(machine.name)(gateway: gateway, clock: clock, caller: caller)
+                callback(fsm, dependencies)
             }
             
-            public func make_\(machine.name)(gateway: FSMGateway, clock: Timer, caller: FSM_ID) -> FSMType {
-                let fsm = \(fun)\(machine.name)(gateway: gateway, clock: clock, caller: caller)
-                return FSMType.\(type)(fsm)
+            public func make_\(machine.name)(gateway: FSMGateway, clock: Timer, caller: FSM_ID) -> (FSMType, [ShallowDependency]) {
+                let (fsm, dependencies) = \(fun)\(machine.name)(gateway: gateway, clock: clock, caller: caller)
+                return (FSMType.\(type)(fsm), dependencies)
             }
             """
     }
 
     private func makeSubmachineFactoryFunction(forMachine machine: Machine) -> String? {
         //let nameParam = "name" + (machine.submachines.isEmpty && machine.parameterisedMachines.isEmpty ? " _" : "")
-        let fun = "public func make_submachine_\(machine.name)(gateway: FSMGateway, clock: Timer, caller: FSM_ID) -> AnyControllableFiniteStateMachine {\n"
+        let fun = "public func make_submachine_\(machine.name)(gateway: FSMGateway, clock: Timer, caller: FSM_ID) -> (AnyControllableFiniteStateMachine, [ShallowDependency]) {\n"
         guard let content = self.makeFactoryContent(forMachine: machine, createParameterisedMachine: false) else {
             return nil
         }
@@ -385,7 +385,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
     
     private func makeParameterisedFactoryFunction(forMachine machine: Machine) -> String? {
         //let nameParam = "name" + (machine.submachines.isEmpty && machine.parameterisedMachines.isEmpty ? " _" : "")
-        let fun = "public func make_parameterised_\(machine.name)(gateway: FSMGateway, clock: Timer, caller: FSM_ID) -> AnyParameterisedFiniteStateMachine {\n"
+        let fun = "public func make_parameterised_\(machine.name)(gateway: FSMGateway, clock: Timer, caller: FSM_ID) -> (AnyParameterisedFiniteStateMachine, [ShallowDependency]) {\n"
         guard let content = self.makeFactoryContent(forMachine: machine, createParameterisedMachine: true) else {
             return nil
         }
@@ -561,10 +561,14 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         for state in machine.states {
             str += "    state_\(state.name).Me = fsm\n"
         }
+        let callableDependencies = machine.callableMachines.map { ".callableMachine(\"" + $0.name + "\")" }
+        let invocableDependencies = machine.invocableMachines.map { ".invokableMachine(\"" + $0.name + "\")" }
+        let subDependencies = machine.submachines.map { ".submachine(\"" + $0.name + "\")" }
+        let dependencies = (callableDependencies + invocableDependencies + subDependencies).combine("") { $0 + ", " + $1 }
         if nil == machine.parameters {
-            str += "    return AnyControllableFiniteStateMachine(fsm)\n"
+            str += "    return (AnyControllableFiniteStateMachine(fsm), [" + dependencies + "])\n"
         } else {
-            str += "    return AnyParameterisedFiniteStateMachine(fsm)\n"
+            str += "    return (AnyParameterisedFiniteStateMachine(fsm), [" + dependencies + "])\n"
         }
         return str
     }
