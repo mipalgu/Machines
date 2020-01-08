@@ -73,6 +73,8 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
     private let assembler: A
 
     private let invoker: Invoker
+    
+    fileprivate var processedMachines: Set<String> = []
 
     public init(assembler: A, invoker: Invoker = Invoker()) {
         self.assembler = assembler
@@ -137,18 +139,41 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
         andSwiftBuildFlags swiftBuildFlags: [String] = []
     ) -> [String]? {
         self.errors = []
+        self.processedMachines = []
+        return self.compileTreeReal(
+            machine,
+            withBuildDir: buildDir,
+            withCCompilerFlags: cCompilerFlags,
+            andCXXCompilerFlags: cxxCompilerFlags,
+            andLinkerFlags: linkerFlags,
+            andSwiftCompilerFlags: swiftCompilerFlags,
+            andSwiftBuildFlags: swiftBuildFlags
+        )
+    }
+    
+    fileprivate func compileTreeReal(
+        _ machine: Machine,
+        withBuildDir buildDir: String,
+        withCCompilerFlags cCompilerFlags: [String] = [],
+        andCXXCompilerFlags cxxCompilerFlags: [String] = [],
+        andLinkerFlags linkerFlags: [String] = [],
+        andSwiftCompilerFlags swiftCompilerFlags: [String] = [],
+        andSwiftBuildFlags swiftBuildFlags: [String] = [],
+        subdirs: [String] = []
+    ) -> [String]? {
         guard
             let dependentMachines = machine.dependantMachines.failMap({
-                self.compileTree(
+                self.compileTreeReal(
                     $0,
                     withBuildDir: buildDir,
                     withCCompilerFlags: cCompilerFlags,
                     andCXXCompilerFlags: cxxCompilerFlags,
                     andLinkerFlags: linkerFlags,
                     andSwiftCompilerFlags: swiftCompilerFlags,
-                    andSwiftBuildFlags: swiftBuildFlags
+                    andSwiftBuildFlags: swiftBuildFlags,
+                    subdirs: subdirs + [$0.name]
                 )
-            }),
+            })?.flatMap({ $0 }),
             let (_, outputPath) = self.compileMachine(
                 machine,
                 withBuildDir: buildDir,
@@ -157,11 +182,12 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
                 andLinkerFlags: linkerFlags,
                 andSwiftCompilerFlags: swiftCompilerFlags,
                 andSwiftBuildFlags: swiftBuildFlags
-            )
+            ),
+            true == self.copyCompiledDependentMachines(machine, buildDir: buildDir, subdirs: subdirs, dependencies: dependentMachines)
         else {
             return nil
         }
-        return [outputPath.path] + dependentMachines.flatMap { $0 }
+        return [outputPath.path]
     }
 
     private func compileMachine(
@@ -232,13 +258,46 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
     }
 
     private func expand(_ path: String, withMachine machine: Machine) -> String {
-        guard let first = path.characters.first else {
+        guard let first = path.first else {
             return path
         }
         if (first == "/") {
             return path
         }
         return URL(fileURLWithPath: path, relativeTo: machine.filePath).path
+    }
+    
+    fileprivate func copyCompiledDependentMachines(_ machine: Machine, buildDir: String, subdirs: [String], dependencies: [String]) -> Bool {
+        let outPaths = dependencies.filter { false == self.processedMachines.contains($0) }
+        if true == outPaths.isEmpty {
+            return true
+        }
+        let dir = machine.filePath
+            .appendingPathComponent(buildDir, isDirectory: true)
+            .appendingPathComponent("dependencies", isDirectory: true)
+        let dependenciesDirectory = subdirs.reduce(dir) {
+            $0.appendingPathComponent($1, isDirectory: true)
+                .appendingPathComponent("dependencies", isDirectory: true)
+        }
+        let fm = FileManager.default
+        do {
+            try fm.createDirectory(at: dependenciesDirectory, withIntermediateDirectories: true)
+        } catch let e {
+            self.errors.append("\(e)")
+            return false
+        }
+        return outPaths.reduce(true) {
+            let src = URL(fileURLWithPath: $1, isDirectory: false)
+            let name = String(src.lastPathComponent.dropFirst(3))
+            do {
+                try fm.copyItem(at: src, to: dependenciesDirectory.appendingPathComponent(name, isDirectory: false))
+            } catch let e {
+                self.errors.append("\(e)")
+                return $0 && false
+            }
+            self.processedMachines.insert($1)
+            return $0 && true
+        }
     }
 
 }
