@@ -274,10 +274,10 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
         }
         let dir = machine.filePath
             .appendingPathComponent(buildDir, isDirectory: true)
-            .appendingPathComponent("dependencies", isDirectory: true)
+            .appendingPathComponent(machine.name + "Dependencies", isDirectory: true)
         let dependenciesDirectory = subdirs.reduce(dir) {
             $0.appendingPathComponent($1, isDirectory: true)
-                .appendingPathComponent("dependencies", isDirectory: true)
+                .appendingPathComponent($1 + "Dependencies", isDirectory: true)
         }
         let fm = FileManager.default
         do {
@@ -292,7 +292,7 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
             if components.count >= 2 && components[components.count - 2].hasSuffix("Machine") {
                 components[components.count - 2] = String(components[components.count - 2].dropLast(7))
             }
-            let name = components.combine("") { $0 + "." + $1 }
+            let name = components.combine("") { $0 + "." + $1 } + "Dependencies"
             do {
                 try fm.copyItem(at: src, to: dependenciesDirectory.appendingPathComponent(name, isDirectory: false))
             } catch let e {
