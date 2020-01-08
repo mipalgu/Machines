@@ -561,9 +561,9 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         for state in machine.states {
             str += "    state_\(state.name).Me = fsm\n"
         }
-        let callableDependencies = machine.callableMachines.map { ".callableMachine(\"" + $0.name + "\")" }
-        let invocableDependencies = machine.invocableMachines.map { ".invokableMachine(\"" + $0.name + "\")" }
-        let subDependencies = machine.submachines.map { ".submachine(\"" + $0.name + "\")" }
+        let callableDependencies = machine.callableMachines.map { ".callableMachine(name: \"" + $0.name + "\")" }
+        let invocableDependencies = machine.invocableMachines.map { ".invokableMachine(name: \"" + $0.name + "\")" }
+        let subDependencies = machine.submachines.map { ".submachine(name: \"" + $0.name + "\")" }
         let dependencies = (callableDependencies + invocableDependencies + subDependencies).combine("") { $0 + ", " + $1 }
         if nil == machine.parameters {
             str += "    return (AnyControllableFiniteStateMachine(fsm), [" + dependencies + "])\n"
