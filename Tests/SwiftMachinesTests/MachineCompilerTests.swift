@@ -88,6 +88,12 @@ public class MachineCompilerTests: MachinesTestCase {
         #endif
         return a
     }
+    
+    #if os(macOS)
+    fileprivate let ext = "dylib"
+    #else
+    fileprivate let ext = "so"
+    #endif
 
     private var compiler: MachineCompiler<MachineAssembler>!
     private let assembler = MachineAssembler()
@@ -101,6 +107,7 @@ public class MachineCompilerTests: MachinesTestCase {
         guard nil != self.compiler.compile(
             super.pingPongMachine,
             withBuildDir: ".build",
+            libExtension: self.ext,
             andSwiftCompilerFlags: self.args
         )
         else {
@@ -113,6 +120,7 @@ public class MachineCompilerTests: MachinesTestCase {
         guard nil != self.compiler.compileTree(
                 super.controllerMachine,
                 withBuildDir: ".build",
+                libExtension: self.ext,
                 andSwiftCompilerFlags: self.args
             )
         else {

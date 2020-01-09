@@ -81,31 +81,28 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
         self.invoker = invoker
     }
 
-    public func outputPath(forMachine machine: Machine, builtInDirectory buildDir: String) -> String {
-        return self.outputURL(forMachine: machine, builtInDirectory: buildDir).path
+    public func outputPath(forMachine machine: Machine, builtInDirectory buildDir: String, libExtension: String) -> String {
+        return self.outputURL(forMachine: machine, builtInDirectory: buildDir, libExtension: libExtension).path
     }
     
-    public func outputURL(forMachine machine: Machine, builtInDirectory buildDir: String) -> URL {
-        #if os(macOS)
-        let ext = ".dylib"
-        #else
-        let ext = ".so"
-        #endif
+    public func outputURL(forMachine machine: Machine, builtInDirectory buildDir: String, libExtension: String) -> URL {
+        let ext = libExtension
         let buildDirPath = machine.filePath.appendingPathComponent(buildDir, isDirectory: true)
         return URL(fileURLWithPath: self.assembler.packagePath(forMachine: machine, builtInDirectory: buildDirPath), isDirectory: true)
             .appendingPathComponent(".build", isDirectory: true)
             .appendingPathComponent("release", isDirectory: true)
-            .appendingPathComponent("lib" + machine.name + "Machine" + ext, isDirectory: false)
+            .appendingPathComponent("lib" + machine.name + "Machine." + ext, isDirectory: false)
     }
 
-    public func shouldCompile(_ machine: Machine, inDirectory buildDir: String) -> Bool {
+    public func shouldCompile(_ machine: Machine, inDirectory buildDir: String, libExtension: String) -> Bool {
         let fm = FileManager.default
-        return false == fm.fileExists(atPath: self.outputPath(forMachine: machine, builtInDirectory: buildDir))
+        return false == fm.fileExists(atPath: self.outputPath(forMachine: machine, builtInDirectory: buildDir, libExtension: libExtension))
     }
 
     public func compile(
         _ machine: Machine,
         withBuildDir buildDir: String,
+        libExtension: String,
         withCCompilerFlags cCompilerFlags: [String] = [],
         andCXXCompilerFlags cxxCompilerFlags: [String] = [],
         andLinkerFlags linkerFlags: [String] = [],
@@ -117,6 +114,7 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
             let (_, outputPath) = self.compileMachine(
                     machine,
                     withBuildDir: buildDir,
+                    libExtension: libExtension,
                     withCCompilerFlags: cCompilerFlags,
                     andCXXCompilerFlags: cxxCompilerFlags,
                     andLinkerFlags: linkerFlags,
@@ -132,6 +130,7 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
     public func compileTree(
         _ machine: Machine,
         withBuildDir buildDir: String,
+        libExtension: String,
         withCCompilerFlags cCompilerFlags: [String] = [],
         andCXXCompilerFlags cxxCompilerFlags: [String] = [],
         andLinkerFlags linkerFlags: [String] = [],
@@ -143,6 +142,7 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
         return self.compileTreeReal(
             machine,
             withBuildDir: buildDir,
+            libExtension: libExtension,
             withCCompilerFlags: cCompilerFlags,
             andCXXCompilerFlags: cxxCompilerFlags,
             andLinkerFlags: linkerFlags,
@@ -154,6 +154,7 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
     fileprivate func compileTreeReal(
         _ machine: Machine,
         withBuildDir buildDir: String,
+        libExtension: String,
         withCCompilerFlags cCompilerFlags: [String] = [],
         andCXXCompilerFlags cxxCompilerFlags: [String] = [],
         andLinkerFlags linkerFlags: [String] = [],
@@ -166,6 +167,7 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
                 self.compileTreeReal(
                     $0,
                     withBuildDir: buildDir,
+                    libExtension: libExtension,
                     withCCompilerFlags: cCompilerFlags,
                     andCXXCompilerFlags: cxxCompilerFlags,
                     andLinkerFlags: linkerFlags,
@@ -177,6 +179,7 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
             let (_, outputPath) = self.compileMachine(
                 machine,
                 withBuildDir: buildDir,
+                libExtension: libExtension,
                 withCCompilerFlags: cCompilerFlags,
                 andCXXCompilerFlags: cxxCompilerFlags,
                 andLinkerFlags: linkerFlags,
@@ -193,6 +196,7 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
     private func compileMachine(
         _ machine: Machine,
         withBuildDir buildDir: String,
+        libExtension: String,
         withCCompilerFlags cCompilerFlags: [String],
         andCXXCompilerFlags cxxCompilerFlags: [String],
         andLinkerFlags linkerFlags: [String],
@@ -228,7 +232,7 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
         }
         let _ = fm.changeCurrentDirectoryPath(cwd)
         let compileDir = buildPath.appendingPathComponent(".build", isDirectory: true).appendingPathComponent("release", isDirectory: true)
-        return (compileDir, self.outputURL(forMachine: machine, builtInDirectory: buildDir))
+        return (compileDir, self.outputURL(forMachine: machine, builtInDirectory: buildDir, libExtension: libExtension))
     }
 
     private func makeCompilerFlags(
