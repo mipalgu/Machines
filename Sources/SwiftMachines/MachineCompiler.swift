@@ -232,7 +232,15 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
         }
         let _ = fm.changeCurrentDirectoryPath(cwd)
         let compileDir = buildPath.appendingPathComponent(".build", isDirectory: true).appendingPathComponent("release", isDirectory: true)
-        return (compileDir, self.outputURL(forMachine: machine, builtInDirectory: buildDir, libExtension: libExtension))
+        let outputURL = self.outputURL(forMachine: machine, builtInDirectory: buildDir, libExtension: libExtension)
+        do {
+            _ = try self.copyOutPath(outputURL, toFolder: buildDirPath)
+        } catch let e {
+            self.errors.append("\(e)")
+            print(e)
+            return nil
+        }
+        return (compileDir, outputURL)
     }
 
     private func makeCompilerFlags(
@@ -271,13 +279,24 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
         return URL(fileURLWithPath: path, relativeTo: machine.filePath).path
     }
     
+    fileprivate func copyOutPath(_ outPath: URL, toFolder dir: URL) throws -> Bool {
+        let fm = FileManager.default
+        var components = String(outPath.lastPathComponent.dropFirst(3)).components(separatedBy: ".")
+        if components.count >= 2 && components[components.count - 2].hasSuffix("Machine") {
+            components[components.count - 2] = String(components[components.count - 2].dropLast(7))
+        }
+        let name = components.combine("") { $0 + "." + $1 }
+        try fm.copyItem(at: outPath, to: dir.appendingPathComponent(name, isDirectory: false))
+        return true
+    }
+    
     fileprivate func copyCompiledDependentMachines(_ machine: Machine, buildDir: String, subdirs: [String], dependencies: [String]) -> Bool {
         let outPaths = dependencies.filter { false == self.processedMachines.contains($0) }
         if true == outPaths.isEmpty {
             return true
         }
-        let dir = machine.filePath
-            .appendingPathComponent(buildDir, isDirectory: true)
+        let buildDirPath = machine.filePath.appendingPathComponent(buildDir, isDirectory: true)
+        let dir = buildDirPath
             .appendingPathComponent(machine.name + "Dependencies", isDirectory: true)
         let dependenciesDirectory = subdirs.reduce(dir) {
             $0.appendingPathComponent($1 + "Dependencies", isDirectory: true)
@@ -290,14 +309,9 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
             return false
         }
         return outPaths.reduce(true) {
-            let src = URL(fileURLWithPath: $1, isDirectory: false)
-            var components = String(src.lastPathComponent.dropFirst(3)).components(separatedBy: ".")
-            if components.count >= 2 && components[components.count - 2].hasSuffix("Machine") {
-                components[components.count - 2] = String(components[components.count - 2].dropLast(7))
-            }
-            let name = components.combine("") { $0 + "." + $1 }
             do {
-                try fm.copyItem(at: src, to: dependenciesDirectory.appendingPathComponent(name, isDirectory: false))
+                let src = URL(fileURLWithPath: $1, isDirectory: false)
+                _ = try copyOutPath(src, toFolder: dependenciesDirectory)
             } catch let e {
                 self.errors.append("\(e)")
                 return $0 && false
