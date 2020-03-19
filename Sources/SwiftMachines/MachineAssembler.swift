@@ -1335,7 +1335,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "            \"suspendedState\": [],\n"
         str += "            \"suspendState\": [],\n"
         if !machine.externalVariables.isEmpty {
-            let externals = machine.externalVariables.lazy.map { "\"\($0.label)\": []" }.combine("") { $0 + ",\n            " + $1 }
+            let externals = machine.externalVariables.lazy.map { "\"external_\($0.label)\": []" }.combine("") { $0 + ",\n            " + $1 }
             str += "            " + externals + ",\n"
         }
         str += "        ]\n"
