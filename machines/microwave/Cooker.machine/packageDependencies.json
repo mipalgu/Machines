@@ -1,0 +1,8 @@
+[
+    {
+        "products": ["SwiftfsmWBWrappers"],
+        "targets": ["SwiftfsmWBWrappers"],
+        "url": "ssh://git.mipal.net/git/SwiftfsmWBWrappers.git",
+        "qualifiers": [".branch(\"master\")"]
+    }
+]

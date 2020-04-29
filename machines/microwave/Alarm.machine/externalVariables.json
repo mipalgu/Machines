@@ -2,7 +2,7 @@
   "externalVariables" : {
     "microwave_status" : {
       "atomic" : false,
-      "class" : "wb_microwave_status",
+      "class" : "MicrowaveStatus",
       "shouldNotifySubscribers" : true,
       "type" : "kMicrowaveStatus_v",
       "wbName" : null
