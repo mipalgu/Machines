@@ -1,0 +1,58 @@
+@TIME_DOMAIN continuous
+
+MODULE main
+
+VAR sync: real;
+VAR c: clock;
+VAR m: clock;
+INVAR TRUE -> sync >= 0;
+INVAR TRUE -> c >= 0;
+INVAR TRUE -> c <= sync;
+INVAR TRUE -> m >= c;
+
+
+VAR pc : { "1-R", "1-W", "2-R", "2-W", "finish", "error" };
+
+INIT (m = 0 & c = 0 & sync = 0 & pc = "1-R");
+
+TRANS 
+case
+pc="1-R" & c = sync: next(m)=m & next(c)=0 & next(sync)=400 & next(pc)="1-W";
+pc="1-W" & c = sync: next(m)=0 & next(c)=0 & next(sync)=300 & next(pc)="2-R";
+pc="2-R" & c = sync: next(m)=m & next(c)=0 & next(sync)=200 & next(pc)="2-W";
+pc="2-W" & c = sync: next(m)=0 & next(c)=0 & next(sync)=100 & next(pc)="finish";
+pc="finish": next(pc)="finish";
+TRUE: next(m)=m & next(c)=c & next(sync)=sync & next(pc)=pc;
+esac
+
+LTLSPEC
+
+!(G pc != "finish");
+
+LTLSPEC
+
+!(G pc = "finish");
+
+LTLSPEC
+
+F pc = "finish";
+
+LTLSPEC
+
+G pc != "error";
+
+LTLSPEC
+
+(F pc = "finish") U (G pc = "finish");
+
+LTLSPEC
+
+(F pc = "2-W") U (G pc="finish");
+
+LTLSPEC
+
+(F pc = "1-R") U (X pc="finish");
+
+LTLSPEC
+
+(time_until (pc = "finish")) = 900
