@@ -1,0 +1,11 @@
+reset ;
+set default_trace_plugin 1;
+read_model -i Cooker.smv ;
+flatten_hierarchy;
+encode_variables;
+build_model;
+check_ltlspec;
+pick_state;
+simulate;
+show_traces -p 1;
+quit;

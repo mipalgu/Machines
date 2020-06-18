@@ -1,6 +1,6 @@
 reset ;
 set default_trace_plugin 1;
-read_model -i Timer.smv ;
+read_model -i Cooker.smv ;
 go_time ;
 timed_check_ltlspec;
 timed_pick_state;
