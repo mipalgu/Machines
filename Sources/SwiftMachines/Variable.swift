@@ -65,10 +65,6 @@ public struct Variable {
         case writeOnly = "sink"
         
     }
-    
-    public var constant: Bool {
-        return self.accessType == .readOnly
-    }
 
     public var accessType: AccessType
 

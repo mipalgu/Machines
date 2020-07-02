@@ -94,8 +94,9 @@ public final class VariableHelpers {
         } else {
             type = "Void!"
         }
-        let constantDeclaration = allowModifications ? "fileprivate(set) var" : "let"
-        return "\(true == variable.constant ? constantDeclaration : "var") \(variable.label): \(type)"
+        let constantDeclaration = allowModifications ? "private(set) var" : "let"
+        let declaration = variable.accessType == .writeOnly ? "@Sink var" : "var"
+        return "\(variable.accessType == .readOnly ? constantDeclaration : declaration) \(variable.label): \(type)"
     } 
 
     public func makeDeclarationAndAssignment(forVariable variable: Variable, _ defaultValue: ((Variable) -> String)? = nil) -> String {
@@ -110,7 +111,7 @@ public final class VariableHelpers {
     }
     
     public func makeDeclarationWithAvailableAssignment(forVariable variable: Variable, _ defaultValue: ((Variable) -> String)? = nil) -> String {
-        let declaration = (true == variable.constant ? "let " : "var ") + variable.label + ": " + variable.type
+        let declaration = (variable.accessType == .writeOnly ? "@Sink " : "") + (variable.accessType == .readOnly ? "let " : "var ") + variable.label + ": " + variable.type
         if let defaultFunc = defaultValue {
             return declaration + " = " + defaultFunc(variable)
         }
