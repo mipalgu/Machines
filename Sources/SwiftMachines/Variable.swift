@@ -57,8 +57,20 @@
  */
 
 public struct Variable {
+    
+    public enum AccessType: String, Equatable, Hashable, Codable {
+        
+        case readAndWrite = "var"
+        case readOnly = "let"
+        case writeOnly = "sink"
+        
+    }
+    
+    public var constant: Bool {
+        return self.accessType == .readOnly
+    }
 
-    public var constant: Bool
+    public var accessType: AccessType
 
     public var label: String
 
@@ -66,8 +78,8 @@ public struct Variable {
 
     public var initialValue: String?
 
-    public init(constant: Bool, label: String, type: String, initialValue: String?) {
-        self.constant = constant
+    public init(accessType: AccessType, label: String, type: String, initialValue: String?) {
+        self.accessType = accessType
         self.label = label
         self.type = type
         self.initialValue = initialValue

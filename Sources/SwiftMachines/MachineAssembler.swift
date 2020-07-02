@@ -598,7 +598,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         let str = self.makeVarsContent(
             forMachine: machine,
             name: "\(machine.name)ResultsContainer",
-            vars: [Variable(constant: false, label: "result", type: (machine.returnType ?? "Void") + "?", initialValue: "nil")],
+            vars: [Variable(accessType: .readAndWrite, label: "result", type: (machine.returnType ?? "Void") + "?", initialValue: "nil")],
             extraConformances: ["MutableResultContainer"]
         )
         guard true == self.helpers.createFile(atPath: machinePath, withContents: str) else {

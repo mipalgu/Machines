@@ -85,24 +85,23 @@ public final class VarParser {
             if tokens.count < 3 {
                 return nil
             }
-            if (tokens[0] != "let" && tokens[0] != "var" ) {
+            guard let accessType: Variable.AccessType = Variable.AccessType(rawValue: tokens[0]) else {
                 return nil
             }
-            let constant = tokens[0] == "let"
             let label = tokens[1]
             if let index = tokens.index(of: "=") {
                 if (index <= 2 || index + 1 >= tokens.count) {
                     return nil
                 }
                 return Variable(
-                    constant: constant,
+                    accessType: accessType,
                     label: label,
                     type: tokens.dropFirst().dropFirst().prefix(index - 2).reduce("") { $0 + $1 + " " }.trimmingCharacters(in: .whitespaces),
                     initialValue: tokens.suffix(from: index + 1).reduce("") { $0 + $1 + " " }.trimmingCharacters(in: .whitespaces)
                 )
             }
             return Variable(
-                constant: constant,
+                accessType: accessType,
                 label: label,
                 type: tokens.suffix(1).reduce("") { $0 + $1 + " " }.trimmingCharacters(in: .whitespaces),
                 initialValue: nil
