@@ -105,7 +105,7 @@ public class MachinesTestCase: XCTestCase {
                 imports: "",
                 vars: [
                     Variable(
-                        constant: false,
+                        accessType: .readAndWrite,
                         label: "previousState",
                         type: "PingPongState",
                         initialValue: "EmptyPingPongState(\"_previous\")"
@@ -173,13 +173,11 @@ public class MachinesTestCase: XCTestCase {
             name: "Controller",
             filePath: URL(fileURLWithPath: NSString(string: "machines/Controller.machine").standardizingPath, isDirectory: true).resolvingSymlinksInPath(),
             externalVariables: [
-                ExternalVariables(
+                Variable(
+                    accessType: .readOnly,
                     label: "wbcount",
-                    wbName: "privateWhiteboard",
-                    messageType: "kCount_v",
-                    messageClass: "wb_count",
-                    atomic: true,
-                    shouldNotifySubscribers: true
+                    type: "WhiteboardVariable<wb_count>",
+                    initialValue: "WhiteboardVariable<wb_count>(msgType: kCount_v)"
                 )
             ],
             packageDependencies: [],
@@ -205,7 +203,7 @@ public class MachinesTestCase: XCTestCase {
                 imports: "",
                 vars: [
                     Variable(
-                        constant: false,
+                        accessType: .readAndWrite,
                         label: "count",
                         type: "UInt8",
                         initialValue: "0"
@@ -225,7 +223,7 @@ public class MachinesTestCase: XCTestCase {
                     imports: "",
                     vars: [
                         Variable(
-                            constant: false,
+                            accessType: .readAndWrite,
                             label: "count",
                             type: "UInt8",
                             initialValue: "0"
@@ -243,7 +241,7 @@ public class MachinesTestCase: XCTestCase {
                     imports: "",
                     vars: [
                         Variable(
-                            constant: false,
+                            accessType: .readAndWrite,
                             label: "promise",
                             type: "Promise<Int>",
                             initialValue: nil
@@ -261,7 +259,7 @@ public class MachinesTestCase: XCTestCase {
                     imports: "",
                     vars: [
                         Variable(
-                            constant: false,
+                            accessType: .readAndWrite,
                             label: "promise",
                             type: "Promise<Int>",
                             initialValue: nil
@@ -311,9 +309,9 @@ public class MachinesTestCase: XCTestCase {
         ],
         imports: "",
         includes: "",
-        vars: [Variable(constant: false, label: "total", type: "UInt", initialValue: "1")],
+        vars: [Variable(accessType: .readAndWrite, label: "total", type: "UInt", initialValue: "1")],
         parameters: [
-            Variable(constant: true, label: "num", type: "UInt", initialValue: "1")
+            Variable(accessType: .readAndWrite, label: "num", type: "UInt", initialValue: "1")
         ],
         returnType: "UInt",
         initialState: State(
@@ -349,7 +347,7 @@ public class MachinesTestCase: XCTestCase {
             State(
                 name: "Recurse",
                 imports: "",
-                vars: [Variable(constant: false, label: "factorial", type: "Promise<UInt>", initialValue: nil)],
+                vars: [Variable(accessType: .readAndWrite, label: "factorial", type: "Promise<UInt>", initialValue: nil)],
                 actions: [
                     Action(name: "onEntry", implementation: "factorial = Factorial(num: num - 1)"),
                     Action(name: "main", implementation: ""),
@@ -397,8 +395,8 @@ public class MachinesTestCase: XCTestCase {
         includes: "",
         vars: [],
         parameters: [
-            Variable(constant: true, label: "a", type: "Int", initialValue: nil),
-            Variable(constant: true, label: "b", type: "Int", initialValue: nil)
+            Variable(accessType: .readOnly, label: "a", type: "Int", initialValue: nil),
+            Variable(accessType: .readOnly, label: "b", type: "Int", initialValue: nil)
         ],
         returnType: "Int",
         initialState: State(

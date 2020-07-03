@@ -64,16 +64,16 @@ public final class VarParser {
 
     func parse(fromString str: String) -> [Variable]? {
         let lines = str.components(separatedBy: CharacterSet.newlines)
-        let statements = lines.lazy.flatMap { $0.components(separatedBy: ";") }.lazy.map { $0.trimmingCharacters(in: .whitespaces) }
+        let statements = lines.lazy.flatMap { $0.components(separatedBy: ";") }.lazy.map { $0.trimmingCharacters(in: .whitespaces) }.filter { $0 != "" }
         return statements.failMap { (statement) -> Variable? in
-            let split = statement.components(separatedBy: "=")
+            let split = statement.components(separatedBy: "=").map { $0.trimmingCharacters(in: .whitespaces) }
             if split.count > 2 {
                 return nil
             }
             let definition = split[0]
             let initialValue = split.dropFirst().first
             let words = definition.components(separatedBy: .whitespaces)
-            let tokens = words.flatMap { $0.components(separatedBy: ":") }.map { $0.trimmingCharacters(in: .whitespaces) }
+            let tokens = words.flatMap { $0.components(separatedBy: ":") }.map { $0.trimmingCharacters(in: .whitespaces) }.filter { $0 != "" }
             if tokens.count < 3 {
                 return nil
             }

@@ -70,6 +70,8 @@ public class MachineParserTests: MachinesTestCase {
             ("testParsesMicrowaveTimerMachine", testParsesMicrowaveTimerMachine)
         ]
     }
+    
+    private let packageRootPath = URL(fileURLWithPath: #file).pathComponents.prefix(while: { $0 != "Tests" }).joined(separator: "/").dropFirst()
 
     private var parser: MachineParser!
 
@@ -79,7 +81,7 @@ public class MachineParserTests: MachinesTestCase {
    }
 
    public func testParsesPingPongMachine() {
-       let path = "./machines/PingPong.machine"
+       let path = "\(packageRootPath)/machines/PingPong.machine"
        guard let machine = self.parser.parseMachine(atPath: path) else {
            XCTFail("Unable to parse machine at path: \(path) - \(self.parser.errors)")
            return
@@ -87,20 +89,20 @@ public class MachineParserTests: MachinesTestCase {
        XCTAssertEqual(machine, super.pingPongMachine)
    }
 
-   public func testParsesControllerMachine() {
-       let path = "./machines/Controller.machine"
-       guard let machine = self.parser.parseMachine(atPath: path) else {
-           XCTFail("Unable to parse machine at path: \(path) - \(self.parser.errors)")
-           return
-       }
-       XCTAssertEqual(machine, super.controllerMachine)
-       if (false == self.parser.errors.isEmpty) {
+    public func testParsesControllerMachine() {
+        let path = "\(packageRootPath)/machines/Controller.machine"
+        guard let machine = self.parser.parseMachine(atPath: path) else {
+            XCTFail("Unable to parse machine at path: \(path) - \(self.parser.errors)")
+            return
+        }
+        XCTAssertEqual(machine, super.controllerMachine)
+        if (false == self.parser.errors.isEmpty) {
             print(self.parser.errors)
-       }
-   }
+        }
+    }
     
     public func testParsesSumMachine() {
-        let path = "./machines/Sum.machine"
+        let path = "\(packageRootPath)/machines/Sum.machine"
         guard let machine = self.parser.parseMachine(atPath: path) else {
             XCTFail("Unable to parse machine at path: \(path) - \(self.parser.errors)")
             return
@@ -112,7 +114,7 @@ public class MachineParserTests: MachinesTestCase {
     }
     
     public func testParsesMicrowaveTimerMachine() {
-        let path = "./machines/microwave/Timer.machine"
+        let path = "\(packageRootPath)/machines/microwave/Timer.machine"
         guard let machine = self.parser.parseMachine(atPath: path) else {
             XCTFail("Unable to parse machine at path: \(path) - \(self.parser.errors)")
             return
@@ -123,7 +125,7 @@ public class MachineParserTests: MachinesTestCase {
     }
 
    public func testFailsToParseRecursiveMachine() {
-       let path = "./machines/Recursive.machine"
+       let path = "\(packageRootPath)/machines/Recursive.machine"
        let machine = self.parser.parseMachine(atPath: path)
        XCTAssertNil(machine)
        XCTAssertFalse(self.parser.errors.isEmpty)
