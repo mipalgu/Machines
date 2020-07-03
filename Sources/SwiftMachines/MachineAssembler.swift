@@ -1289,12 +1289,12 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "    /**\n"
         str += "     * All external variables used by the machine.\n"
         str += "     */\n"
-        let externalsList = machine.externalVariables.lazy.map { "AnySnapshotController(self.external_\($0.label))" }.combine("") { $0 + ", " + $1 }
+        let externalsList = machine.environmentVariables.lazy.map { "AnySnapshotController(self.external_\($0.label))" }.combine("") { $0 + ", " + $1 }
         str += "    public var externalVariables: [AnySnapshotController] {\n"
         str += "        get {\n"
         str += "            return [" + externalsList + "]\n"
         str += "        } set {\n"
-        let externalsSwitch = machine.externalVariables.lazy.map { "                case self.external_\($0.label).name:\n                    self.external_\($0.label).val = external.val as! \($0.type).Class" }.combine("") { $0 + "\n" + $1 }
+        let externalsSwitch = machine.environmentVariables.lazy.map { "                case self.external_\($0.label).name:\n                    self.external_\($0.label).val = external.val as! \($0.type).Class" }.combine("") { $0 + "\n" + $1 }
         str += "            for external in newValue {\n"
         str += "                switch external.name {\n"
         if false == externalsSwitch.isEmpty {
@@ -1326,7 +1326,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         let actuatorsList = machine.actuators.lazy.map { "AnySnapshotController(self.external_\($0.label))" }.combine("") { $0 + ", " + $1 }
         str += "    public var actuators: [AnySnapshotController] {\n"
         str += "        get {\n"
-        str += "            return [" + sensorsList + "]\n"
+        str += "            return [" + actuatorsList + "]\n"
         str += "        } set {\n"
         let actuatorsSwitch = machine.actuators.lazy.map { "                case self.external_\($0.label).name:\n                    self.external_\($0.label).val = external.val as! \($0.type).Class" }.combine("") { $0 + "\n" + $1 }
         str += "            for external in newValue {\n"
@@ -1345,6 +1345,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "            \"currentState\": [],\n"
         str += "            \"exitState\": [],\n"
         str += "            \"externalVariables\": [],\n"
+        str += "            \"sensors\": [],\n"
+        str += "            \"actuators\": [],\n"
         str += "            \"fsmVars\": [],\n"
         str += "            \"initialPreviousState\": [],\n"
         str += "            \"initialState\": [],\n"
