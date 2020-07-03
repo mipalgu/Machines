@@ -1583,7 +1583,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += indent + "        \(reference) = newValue\n"
             str += indent + "    }\n"
         }
-        str += "\n"
+        str += indent + "}\n\n"
         return str
     }
 
