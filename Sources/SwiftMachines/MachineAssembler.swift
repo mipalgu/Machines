@@ -1049,17 +1049,17 @@ public final class MachineAssembler: Assembler, ErrorContainer {
     private func makeComputedVariables(forState state: State, inMachine machine: Machine, includeScope: Bool = true, indent: String = "") -> String {
         var str = ""
         // FSM variables.
-        str += self.createComputedProperty(accessType: .readAndWrite, withLabel: "fsmVars", andType: "\(machine.name)Vars", referencing: "Me.fsmVars.vars", includeScope: includeScope, indent: indent)
+        str += self.createComputedProperty(mutable: true, withLabel: "fsmVars", andType: "\(machine.name)Vars", referencing: "Me.fsmVars.vars", includeScope: includeScope, indent: indent)
         str += self.createComputedProperties(fromVars: machine.vars, withinContainer: "fsmVars", includeScope: includeScope, indent: indent)
         //Parameters
         if let parameters = machine.parameters {
-            str += self.createComputedProperty(accessType: .readAndWrite, withLabel: "parameters", andType: "\(machine.name)Parameters", referencing: "Me.parameters.vars", includeScope: includeScope, indent: indent)
+            str += self.createComputedProperty(mutable: true, withLabel: "parameters", andType: "\(machine.name)Parameters", referencing: "Me.parameters.vars", includeScope: includeScope, indent: indent)
             str += self.createComputedProperties(fromVars: parameters, withinContainer: "parameters", includeScope: includeScope, indent: indent)
-            str += self.createComputedProperty(accessType: .readAndWrite, withLabel: "result", andType: machine.returnType ?? "Void", referencing: "Me.results.vars.result", includeScope: includeScope, indent: indent, unwrap: true)
+            str += self.createComputedProperty(mutable: true, withLabel: "result", andType: machine.returnType ?? "Void", referencing: "Me.results.vars.result", includeScope: includeScope, indent: indent, unwrap: true)
         }
         // External variables.
         for external in machine.externalVariables {
-            str += self.createComputedProperty(accessType: external.accessType, withLabel: external.label, andType: external.type + ".Class", referencing: "Me.external_\(external.label).val", includeScope: includeScope, indent: indent)
+            str += self.createComputedProperty(mutable: true, withLabel: external.label, andType: external.type + ".Class", referencing: "_\(external.label).val", includeScope: includeScope, indent: indent)
             //str += self.createComputedProperties(fromVars: external.vars, withinContainer: "\(external.label)")
         }
         return str
@@ -1555,8 +1555,12 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                 return $0
             }
             takenVars.insert($1.label)
-            return $0 + self.createComputedProperty(accessType: $1.accessType, withLabel: $1.label, andType: $1.type, referencing: "\(container).\($1.label)", includeScope: includeScope, indent: indent)
+            return $0 + self.createComputedProperty(mutable: $1.accessType != .readOnly, withLabel: $1.label, andType: $1.type, referencing: "\(container).\($1.label)", includeScope: includeScope, indent: indent)
         }
+    }
+
+    private func createComputedProperty(mutable: Bool, withLabel label: String, andType type: String, referencing reference: String, includeScope: Bool = true, indent: String = "", unwrap: Bool = false) -> String {
+        return createComputedProperty(accessType: mutable ? .readAndWrite : .readOnly, withLabel: label, andType: type, referencing: reference, includeScope: includeScope, indent: indent, unwrap: unwrap)
     }
     
     private func createComputedProperty(accessType: Variable.AccessType, withLabel label: String, andType type: String, referencing reference: String, includeScope: Bool = true, indent: String = "", unwrap: Bool = false) -> String {
