@@ -1306,6 +1306,40 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "            }\n"
         str += "        }\n"
         str += "    }\n\n"
+        let sensorsList = machine.sensors.lazy.map { "AnySnapshotController(self.external_\($0.label))" }.combine("") { $0 + ", " + $1 }
+        str += "    public var sensors: [AnySnapshotController] {\n"
+        str += "        get {\n"
+        str += "            return [" + sensorsList + "]\n"
+        str += "        } set {\n"
+        let sensorsSwitch = machine.sensors.lazy.map { "                case self.external_\($0.label).name:\n                    self.external_\($0.label).val = external.val as! \($0.type).Class" }.combine("") { $0 + "\n" + $1 }
+        str += "            for external in newValue {\n"
+        str += "                switch external.name {\n"
+        if false == sensorsSwitch.isEmpty {
+            str += sensorsSwitch + "\n"
+        }
+        str += "                default:\n"
+        str += "                    continue\n"
+        str += "                }\n"
+        str += "            }\n"
+        str += "        }\n"
+        str += "    }\n\n"
+        let actuatorsList = machine.actuators.lazy.map { "AnySnapshotController(self.external_\($0.label))" }.combine("") { $0 + ", " + $1 }
+        str += "    public var actuators: [AnySnapshotController] {\n"
+        str += "        get {\n"
+        str += "            return [" + sensorsList + "]\n"
+        str += "        } set {\n"
+        let actuatorsSwitch = machine.actuators.lazy.map { "                case self.external_\($0.label).name:\n                    self.external_\($0.label).val = external.val as! \($0.type).Class" }.combine("") { $0 + "\n" + $1 }
+        str += "            for external in newValue {\n"
+        str += "                switch external.name {\n"
+        if false == actuatorsSwitch.isEmpty {
+            str += actuatorsSwitch + "\n"
+        }
+        str += "                default:\n"
+        str += "                    continue\n"
+        str += "                }\n"
+        str += "            }\n"
+        str += "        }\n"
+        str += "    }\n\n"
         str += "    public var validVars: [String: [Any]] {\n"
         str += "        return [\n"
         str += "            \"currentState\": [],\n"

@@ -66,6 +66,10 @@ public struct Machine {
 
     public var externalVariables: [Variable]
     
+    public var environmentVariables: [Variable] {
+        return externalVariables.filter { $0.accessType == .readAndWrite }
+    }
+    
     public var actuators: [Variable] {
         return externalVariables.filter { $0.accessType == .writeOnly }
     }
