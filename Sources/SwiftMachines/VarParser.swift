@@ -64,47 +64,27 @@ public final class VarParser {
 
     func parse(fromString str: String) -> [Variable]? {
         let lines = str.components(separatedBy: CharacterSet.newlines)
-        let statements = lines.lazy.flatMap { $0.components(separatedBy: ";") }
-        let trimmedStatements = statements.map { $0.trimmingCharacters(in: .whitespaces) }
-        let words = trimmedStatements.map { $0.components(separatedBy: CharacterSet.whitespaces) }
-        let tokens = words.map { $0.lazy.flatMap { $0.components(separatedBy: ":") } }
-        let trimmedTokens = tokens.flatMap { (tokens) -> [String]? in
-            let tokens = Array(tokens.flatMap { (token: String) -> String? in
-                let trimmed = token.trimmingCharacters(in: .whitespaces)
-                if true == trimmed.isEmpty {
-                    return nil
-                }
-                return trimmed
-            })
-            if true == tokens.isEmpty {
+        let statements = lines.lazy.flatMap { $0.components(separatedBy: ";") }.lazy.map { $0.trimmingCharacters(in: .whitespaces) }
+        return statements.failMap { (statement) -> Variable? in
+            let split = statement.components(separatedBy: "=")
+            if split.count > 2 {
                 return nil
             }
-            return tokens
-        }
-        return trimmedTokens.failMap { tokens in
+            let definition = split[0]
+            let initialValue = split.dropFirst().first
+            let words = definition.components(separatedBy: .whitespaces)
+            let tokens = words.flatMap { $0.components(separatedBy: ":") }.map { $0.trimmingCharacters(in: .whitespaces) }
             if tokens.count < 3 {
                 return nil
             }
             guard let accessType: Variable.AccessType = Variable.AccessType(rawValue: tokens[0]) else {
                 return nil
             }
-            let label = tokens[1]
-            if let index = tokens.index(of: "=") {
-                if (index <= 2 || index + 1 >= tokens.count) {
-                    return nil
-                }
-                return Variable(
-                    accessType: accessType,
-                    label: label,
-                    type: tokens.dropFirst().dropFirst().prefix(index - 2).reduce("") { $0 + $1 + " " }.trimmingCharacters(in: .whitespaces),
-                    initialValue: tokens.suffix(from: index + 1).reduce("") { $0 + $1 + " " }.trimmingCharacters(in: .whitespaces)
-                )
-            }
             return Variable(
                 accessType: accessType,
-                label: label,
-                type: tokens.suffix(1).reduce("") { $0 + $1 + " " }.trimmingCharacters(in: .whitespaces),
-                initialValue: nil
+                label: tokens[1],
+                type: tokens[2],
+                initialValue: initialValue
             )
         }
     }
