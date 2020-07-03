@@ -1059,7 +1059,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         // External variables.
         for external in machine.externalVariables {
-            str += self.createComputedProperty(mutable: true, withLabel: external.label, andType: external.type + ".Class", referencing: "Me.external_\(external.label).val", includeScope: includeScope, indent: indent)
+            str += self.createComputedProperty(mutable: external.accessType != .readOnly, withLabel: external.label, andType: external.type + ".Class", referencing: "Me.external_\(external.label).val", includeScope: includeScope, indent: indent)
             //str += self.createComputedProperties(fromVars: external.vars, withinContainer: "\(external.label)")
         }
         return str
