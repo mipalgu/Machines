@@ -1,0 +1,4 @@
+500, 30000, Timer.Timer
+40000, 30000, Alarm.Alarm
+70500, 30000, Cooker.Cooker
+110000, 30000, Light.Light
