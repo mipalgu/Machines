@@ -1,2 +1,0 @@
-
-var sound: Bool = false
