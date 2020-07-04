@@ -1,1 +1,1 @@
-state.clock.after(2)
+clock.after(2)
