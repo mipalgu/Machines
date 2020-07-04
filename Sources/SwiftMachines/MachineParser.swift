@@ -101,7 +101,7 @@ public final class MachineParser: ErrorContainer {
             let model = self.parseModelFromMachine(atPath: machineDir),
             let actions = model?.actions ?? .some(["onEntry", "onExit", "main"]),
             let name = self.fetchMachineName(fromPath: machineDir),
-            let externalVariables = self.parseExternalVariablesFromMachine(atPath: machineDir),
+            let externalVariables = self.parseExternalVariablesFromMachine(atPath: machineDir, withName: name),
             let packageDependencies = self.parsePackageDependenciesFromMachine(atPath: machineDir),
             let swiftIncludeSearchPaths = self.parseSwiftIncludeSearchPathsFromMachine(atPath: machineDir),
             let includeSearchPaths = self.parseIncludeSearchPathsFromMachine(atPath: machineDir),
@@ -153,48 +153,16 @@ public final class MachineParser: ErrorContainer {
         return lastComponent.components(separatedBy: ".machine").first
     }
 
-    private func parseExternalVariablesFromMachine(atPath path: URL) -> [ExternalVariables]? {
-        let externalVariablesPath = path.appendingPathComponent("externalVariables.json", isDirectory: false)
+    private func parseExternalVariablesFromMachine(atPath path: URL, withName name: String) -> [Variable]? {
+        let externalVariablesPath = path.appendingPathComponent("\(name)_ExternalVariables.swift", isDirectory: false)
         guard
-            let data = try? Data(contentsOf: externalVariablesPath),
-            let json = try? JSONSerialization.jsonObject(with: data),
-            let content = json as? [String: Any],
-            let arr = content["externalVariables"] as? [String: [String: Any]]
+            let str = self.read(externalVariablesPath),
+            let vars = self.varParser.parse(fromString: str)
         else {
             self.errors.append("Unable to read \(externalVariablesPath.path)")
             return nil
         }
-        var previous: Set<String> = []
-        let externalVariables: [ExternalVariables] = arr.flatMap({
-            let label = $0
-            if (previous.contains(label)) {
-                self.errors.append("\(label) is definined more than once in \(externalVariablesPath.path)")
-                return nil
-            }
-            previous.insert(label)
-            let wbName = $1["wbName"] as? String
-            let atomic = $1["atomic"] as? Bool
-            let shouldNotifySubscribers = $1["shouldNotifySubscribers"] as? Bool
-            guard
-                let messageType = $1["type"] as? String,
-                let messageClass = $1["class"] as? String
-            else {
-                return nil
-            }
-            return ExternalVariables(
-                label: label,
-                wbName: wbName,
-                messageType: messageType,
-                messageClass: messageClass,
-                atomic: atomic ?? true,
-                shouldNotifySubscribers: shouldNotifySubscribers ?? true 
-            )
-        })
-        if (externalVariables.count != arr.count) {
-            self.errors.append("Could not read all external variables within \(externalVariablesPath.path)")
-            return nil
-        }
-        return externalVariables
+        return vars
     }
     
     private func parsePackageDependenciesFromMachine(atPath path: URL) -> [PackageDependency]? {

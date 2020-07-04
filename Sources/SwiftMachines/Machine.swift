@@ -64,7 +64,19 @@ public struct Machine {
 
     public var filePath: URL
 
-    public var externalVariables: [ExternalVariables]
+    public var externalVariables: [Variable]
+    
+    public var environmentVariables: [Variable] {
+        return externalVariables.filter { $0.accessType == .readAndWrite }
+    }
+    
+    public var actuators: [Variable] {
+        return externalVariables.filter { $0.accessType == .writeOnly }
+    }
+    
+    public var sensors: [Variable] {
+        return externalVariables.filter { $0.accessType == .readOnly }
+    }
     
     public var packageDependencies: [PackageDependency]
 
@@ -109,7 +121,7 @@ public struct Machine {
     public init(
         name: String,
         filePath: URL,
-        externalVariables: [ExternalVariables],
+        externalVariables: [Variable],
         packageDependencies: [PackageDependency],
         swiftIncludeSearchPaths: [String],
         includeSearchPaths: [String],

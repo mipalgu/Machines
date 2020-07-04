@@ -255,26 +255,13 @@ public final class MachineGenerator {
     }
 
     func makeExternalVariables(forMachine machine: Machine) -> URL? {
-        let path = machine.filePath.appendingPathComponent("externalVariables.json", isDirectory: false)
-        var dict: [String: [String: Any]] = [:]
-        machine.externalVariables.forEach {
-            dict[$0.label] = [
-                "wbName": $0.wbName,
-                "atomic": $0.atomic,
-                "shouldNotifySubscribers": $0.shouldNotifySubscribers,
-                "type": $0.messageType,
-                "class": $0.messageClass
-            ]
-        }
-        let data = ["externalVariables": dict]
-        guard
-            let json = self.encode(json: data),
-            let str = String(data: json, encoding: .utf8),
-            true == self.helpers.createFile(atPath: path, withContents: str)
-        else {
-            return nil
-        }
-        return path
+        return self.helpers.createFile(
+            "\(machine.name)_ExternalVariables.swift",
+            inDirectory: machine.filePath,
+            withContents: machine.externalVariables.lazy.map {
+                self.varHelpers.makeDeclarationWithAvailableAssignment(forVariable: $0)
+            }.combine("") { $0 + "\n" + $1 }
+        )
     }
 
     func makeModelFile(forMachine machine: Machine, withModel model: Model) -> URL? {

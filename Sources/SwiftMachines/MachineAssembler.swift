@@ -401,17 +401,10 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "    // External Variables.\n"
         }
         for external in machine.externalVariables {
-            str += "    let external_\(external.label) = SnapshotCollectionController<GenericWhiteboard<\(external.messageClass)>>(\n"
-            str += "        \"\(external.wbName.map { $0 + "." } ?? "")\(external.messageType)\",\n"
-            str += "        collection: GenericWhiteboard<\(external.messageClass)>(\n"
-            str += "            msgType: \(external.messageType),\n"
-            if let wbName = external.wbName {
-                str += "            wbd: Whiteboard(wbd: gsw_new_whiteboard(\"\(wbName)\")),\n"
+            guard let value = external.initialValue else {
+                fatalError("Cannot assemble machine because external variable \(external.label) does not have an initial value.")
             }
-            str += "            atomic: \(external.atomic),\n"
-            str += "            shouldNotifySubscribers: \(external.shouldNotifySubscribers)\n"
-            str += "        )\n"
-            str += "    )\n"
+            str += "    let external_\(external.label): \(external.type) = \(value)\n"
         }
         if false == machine.submachines.isEmpty {
             str += "    // Submachines.\n"
@@ -598,7 +591,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         let str = self.makeVarsContent(
             forMachine: machine,
             name: "\(machine.name)ResultsContainer",
-            vars: [Variable(constant: false, label: "result", type: (machine.returnType ?? "Void") + "?", initialValue: "nil")],
+            vars: [Variable(accessType: .readAndWrite, label: "result", type: (machine.returnType ?? "Void") + "?", initialValue: "nil")],
             extraConformances: ["MutableResultContainer"]
         )
         guard true == self.helpers.createFile(atPath: machinePath, withContents: str) else {
@@ -1066,8 +1059,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         // External variables.
         for external in machine.externalVariables {
-            str += self.createComputedProperty(mutable: true, withLabel: "_\(external.label)", andType: "SnapshotCollectionController<GenericWhiteboard<\(external.messageClass)>>", referencing: "Me.external_\(external.label)", includeScope: includeScope, indent: indent)
-            str += self.createComputedProperty(mutable: true, withLabel: external.label, andType: external.messageClass, referencing: "_\(external.label).val", includeScope: includeScope, indent: indent)
+            str += self.createComputedProperty(mutable: external.accessType != .readOnly, withLabel: external.label, andType: external.type + ".Class", referencing: "Me.external_\(external.label).val", includeScope: includeScope, indent: indent)
             //str += self.createComputedProperties(fromVars: external.vars, withinContainer: "\(external.label)")
         }
         return str
@@ -1297,16 +1289,50 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "    /**\n"
         str += "     * All external variables used by the machine.\n"
         str += "     */\n"
-        let externalsList = machine.externalVariables.lazy.map { "AnySnapshotController(self.external_\($0.label))" }.combine("") { $0 + ", " + $1 }
+        let externalsList = machine.environmentVariables.lazy.map { "AnySnapshotController(self.external_\($0.label))" }.combine("") { $0 + ", " + $1 }
         str += "    public var externalVariables: [AnySnapshotController] {\n"
         str += "        get {\n"
         str += "            return [" + externalsList + "]\n"
         str += "        } set {\n"
-        let externalsSwitch = machine.externalVariables.lazy.map { "                case self.external_\($0.label).name:\n                    self.external_\($0.label).val = external.val as! \($0.messageClass)" }.combine("") { $0 + "\n" + $1 }
+        let externalsSwitch = machine.environmentVariables.lazy.map { "                case self.external_\($0.label).name:\n                    self.external_\($0.label).val = external.val as! \($0.type).Class" }.combine("") { $0 + "\n" + $1 }
         str += "            for external in newValue {\n"
         str += "                switch external.name {\n"
         if false == externalsSwitch.isEmpty {
             str += externalsSwitch + "\n"
+        }
+        str += "                default:\n"
+        str += "                    continue\n"
+        str += "                }\n"
+        str += "            }\n"
+        str += "        }\n"
+        str += "    }\n\n"
+        let sensorsList = machine.sensors.lazy.map { "AnySnapshotController(self.external_\($0.label))" }.combine("") { $0 + ", " + $1 }
+        str += "    public var sensors: [AnySnapshotController] {\n"
+        str += "        get {\n"
+        str += "            return [" + sensorsList + "]\n"
+        str += "        } set {\n"
+        let sensorsSwitch = machine.sensors.lazy.map { "                case self.external_\($0.label).name:\n                    self.external_\($0.label).val = external.val as! \($0.type).Class" }.combine("") { $0 + "\n" + $1 }
+        str += "            for external in newValue {\n"
+        str += "                switch external.name {\n"
+        if false == sensorsSwitch.isEmpty {
+            str += sensorsSwitch + "\n"
+        }
+        str += "                default:\n"
+        str += "                    continue\n"
+        str += "                }\n"
+        str += "            }\n"
+        str += "        }\n"
+        str += "    }\n\n"
+        let actuatorsList = machine.actuators.lazy.map { "AnySnapshotController(self.external_\($0.label))" }.combine("") { $0 + ", " + $1 }
+        str += "    public var actuators: [AnySnapshotController] {\n"
+        str += "        get {\n"
+        str += "            return [" + actuatorsList + "]\n"
+        str += "        } set {\n"
+        let actuatorsSwitch = machine.actuators.lazy.map { "                case self.external_\($0.label).name:\n                    self.external_\($0.label).val = external.val as! \($0.type).Class" }.combine("") { $0 + "\n" + $1 }
+        str += "            for external in newValue {\n"
+        str += "                switch external.name {\n"
+        if false == actuatorsSwitch.isEmpty {
+            str += actuatorsSwitch + "\n"
         }
         str += "                default:\n"
         str += "                    continue\n"
@@ -1319,6 +1345,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "            \"currentState\": [],\n"
         str += "            \"exitState\": [],\n"
         str += "            \"externalVariables\": [],\n"
+        str += "            \"sensors\": [],\n"
+        str += "            \"actuators\": [],\n"
         str += "            \"fsmVars\": [],\n"
         str += "            \"initialPreviousState\": [],\n"
         str += "            \"initialState\": [],\n"
@@ -1407,14 +1435,14 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "     */\n"
         str += "    public let suspendState: " + stateType + "\n\n"
         // External Variable Properties
-        let externalsMapped = machine.externalVariables.lazy.map { "    public var external_" + $0.label + ": SnapshotCollectionController<GenericWhiteboard<" + $0.messageClass + ">>" }
+        let externalsMapped = machine.externalVariables.lazy.map { "    public var external_" + $0.label + ": " + $0.type }
         str += externalsMapped.combine("") { $0 + "\n\n" + $1 }
         str += "\n\n"
         // Init
         str += "    internal init(\n"
         str += "        name: String,\n"
         str += "        initialState: " + stateType + ",\n"
-        let externalArgs = machine.externalVariables.lazy.map { "        external_\($0.label): SnapshotCollectionController<GenericWhiteboard<\($0.messageClass)>>" }.combine("") { $0 + ",\n" + $1 }
+        let externalArgs = machine.externalVariables.lazy.map { "        external_\($0.label): " + $0.type }.combine("") { $0 + ",\n" + $1 }
         if false == externalArgs.isEmpty {
             str += externalArgs + ",\n"
         }
@@ -1563,23 +1591,32 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                 return $0
             }
             takenVars.insert($1.label)
-            return $0 + self.createComputedProperty(mutable: !$1.constant, withLabel: $1.label, andType: $1.type, referencing: "\(container).\($1.label)", includeScope: includeScope, indent: indent)
+            return $0 + self.createComputedProperty(mutable: $1.accessType != .readOnly, withLabel: $1.label, andType: $1.type, referencing: "\(container).\($1.label)", includeScope: includeScope, indent: indent)
         }
     }
 
     private func createComputedProperty(mutable: Bool, withLabel label: String, andType type: String, referencing reference: String, includeScope: Bool = true, indent: String = "", unwrap: Bool = false) -> String {
+        return createComputedProperty(accessType: mutable ? .readAndWrite : .readOnly, withLabel: label, andType: type, referencing: reference, includeScope: includeScope, indent: indent, unwrap: unwrap)
+    }
+    
+    private func createComputedProperty(accessType: Variable.AccessType, withLabel label: String, andType type: String, referencing reference: String, includeScope: Bool = true, indent: String = "", unwrap: Bool = false) -> String {
         let getter = "return \(reference)\(unwrap ? "!" : "")"
-        let accessor = !includeScope ? "" : "public " + (mutable ? "internal(set) " : "")
+        let accessor = !includeScope ? "" : "public " + (accessType != .readOnly ? "internal(set) " : "")
         var str = ""
         str += indent + "\(accessor)var \(label): \(type) {\n"
-        if mutable {
+        if accessType != .writeOnly {
             str += indent + "    get {\n"
             str += indent + "        \(getter)\n"
-            str += indent + "    } set {\n"
-            str += indent + "        \(reference) = newValue\n"
             str += indent + "    }\n"
         } else {
-            str += indent + "    \(getter)\n"
+            str += indent + "    get {\n"
+            str += indent + "        fatalError(\"Attempting to retrieve value from sink \(reference)\")\n"
+            str += indent + "    }\n"
+        }
+        if accessType != .readOnly {
+            str += indent + "    set {\n"
+            str += indent + "        \(reference) = newValue\n"
+            str += indent + "    }\n"
         }
         str += indent + "}\n\n"
         return str
