@@ -111,7 +111,7 @@ public final class VariableHelpers {
     }
     
     public func makeDeclarationWithAvailableAssignment(forVariable variable: Variable, _ defaultValue: ((Variable) -> String)? = nil) -> String {
-        let declaration = (variable.accessType == .writeOnly ? "@Sink " : "") + (variable.accessType == .readOnly ? "let " : "var ") + variable.label + ": " + variable.type
+        let declaration = variable.accessType.rawValue + " " + variable.label + ": " + variable.type
         if let defaultFunc = defaultValue {
             return declaration + " = " + defaultFunc(variable)
         }
