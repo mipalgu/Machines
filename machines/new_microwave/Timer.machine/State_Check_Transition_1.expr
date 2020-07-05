@@ -1,1 +1,1 @@
-currentTime > 0 && !microwave_status.doorOpen && microwave_status.timeLeft && clock.after(60)
+currentTime > 0 && !doorOpen && timeLeft && clock.after(60)

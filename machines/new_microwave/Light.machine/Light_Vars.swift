@@ -1,2 +1,0 @@
-
-var light: Bool = false

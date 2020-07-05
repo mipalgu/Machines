@@ -1,1 +1,1 @@
-microwave_status.timeLeft = true
+timeLeft = true

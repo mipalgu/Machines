@@ -1,1 +1,1 @@
-microwave_status.doorOpen || !microwave_status.timeLeft
+doorOpen || !timeLeft
