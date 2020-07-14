@@ -837,6 +837,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                         \"transitions\": [],
                         \"gateway\": [],
                         \"clock\": [],
+                        \"snapshotSensors\": [],
+                        \"snapshotActuators\": [],
                         \"Me\": []
             """
         str += "\n        ]\n"
@@ -1101,6 +1103,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "        return [\n"
         str += "            \"name\": [],\n"
         str += "            \"transitions\": [],\n"
+        str += "            \"snapshotSensors\": [],\n"
+        str += "            \"snapshotActuators\": [],\n"
         str += "            \"Me\": []\n"
         str += "        ]\n"
         str += "    }\n\n"
@@ -1165,6 +1169,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                     return [
                         "name": [],
                         "transitions": [],
+                        "snapshotSensors": [],
+                        "snapshotActuators": [],
                         "Me": []
                     ]
                 }
@@ -1380,6 +1386,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "            \"externalVariables\": [],\n"
         str += "            \"sensors\": [],\n"
         str += "            \"actuators\": [],\n"
+        str += "            \"snapshotSensors\": [],\n"
+        str += "            \"snapshotActuators\": [],\n"
         str += "            \"fsmVars\": [],\n"
         str += "            \"initialPreviousState\": [],\n"
         str += "            \"initialState\": [],\n"
