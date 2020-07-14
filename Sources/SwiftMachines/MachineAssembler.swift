@@ -1210,7 +1210,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         var str = "import swiftfsm\n\n"
         str += "public final class Empty\(stateType): \(stateType) {\n\n"
         str += "    public init(_ name: String, transitions: [Transition<Empty\(stateType), \(stateType)>] = []) {\n"
-        str += "        super.init(name, transitions: transitions, _externals: [])\n"
+        str += "        super.init(name, transitions: cast(transitions: transitions), _externals: [])\n"
         str += "    }\n\n"
         for action in actions {
             str += "    public override final func \(action)() {}\n\n"
