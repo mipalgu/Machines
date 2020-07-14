@@ -61,6 +61,8 @@ public struct State {
     public var name: String
 
     public var imports: String
+    
+    public var externalVariables: [Variable]
 
     public var vars: [Variable]
 
@@ -71,12 +73,14 @@ public struct State {
     public init(
         name: String,
         imports: String,
+        externalVariables: [Variable],
         vars: [Variable],
         actions: [Action],
         transitions: [Transition]
     ) {
         self.name = name
         self.imports = imports
+        self.externalVariables = externalVariables
         self.vars = vars
         self.actions = actions
         self.transitions = transitions
