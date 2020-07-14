@@ -1209,7 +1209,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         let stateType = machine + "State"
         var str = "import swiftfsm\n\n"
         str += "public final class Empty\(stateType): \(stateType) {\n\n"
-        str += "    public init(_ name: String, transitions: [Transition<\(stateType), \(stateType)>] = []) {\n"
+        str += "    public init(_ name: String, transitions: [Transition<Empty\(stateType), \(stateType)>] = []) {\n"
         str += "        super.init(name, transitions: cast(transitions: transitions), _externals: [])\n"
         str += "    }\n\n"
         for action in actions {
@@ -1255,7 +1255,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "    }\n\n"
         }
         str += "    public override final func clone() -> Callback\(stateType) {\n"
-        str += "        return Callback\(stateType)(self.name, transitions: cast(transitions: self.transitions))\n"
+        str += "        return Callback\(stateType)(self.name, transitions: cast(transitions: self.transitions), _externals: self._externals)\n"
         str += "    }\n\n"
         str += "}\n"
         if (false == self.helpers.createFile(atPath: callbackStateTypePath, withContents: str)) {
