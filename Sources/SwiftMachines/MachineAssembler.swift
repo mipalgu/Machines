@@ -907,15 +907,22 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         for m in machine.invocableMachines {
             str += "        self._\(m.name)Machine = \(m.name)Machine\n"
         }
-        let externalsStr: String
+        let sensorsStr: String
+        let actuatorsStr: String
         if let stateExternals = state.externalVariables {
-            let labels = stateExternals.lazy.map { "\"" + $0.label + "\"" }
-            let list = labels.combine("") { $0 + ", " + $1 }
-            externalsStr = "[" + list + "]"
+            let sensors = stateExternals.lazy.filter { $0.accessType == .readOnly || $0.accessType == .readAndWrite }
+            let sensorlabels = sensors.map { "\"" + $0.label + "\"" }
+            let sensorlist = sensorlabels.combine("") { $0 + ", " + $1 }
+            sensorsStr = "[" + sensorlist + "]"
+            let actuators = stateExternals.lazy.filter { $0.accessType == .writeOnly || $0.accessType == .readAndWrite }
+            let actuatorLabels = actuators.map { "\"" + $0.label + "\"" }
+            let actuatorList = actuatorLabels.combine("") { $0 + ", " + $1 }
+            actuatorsStr = "[" + actuatorList + "]"
         } else {
-            externalsStr = "nil"
+            sensorsStr = "nil"
+            actuatorsStr = "nil"
         }
-        str += "        super.init(name, transitions: cast(transitions: transitions), _externals: \(externalsStr))\n"
+        str += "        super.init(name, transitions: cast(transitions: transitions), snapshotSensors: \(sensorsStr), snapshotActuators: \(actuatorsStr)\n"
         str += "    }\n\n"
         // Recursive machine.
         if nil != machine.parameters {
@@ -1082,11 +1089,13 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "    StateType,\n"
         str += "    CloneableState,\n"
         str += "    Transitionable,\n"
-        str += "    KripkeVariablesModifier\n"
+        str += "    KripkeVariablesModifier,\n"
+        str += "    SnapshotListContainer\n"
         str += "{\n\n"
         str += "    public let name: String\n\n"
         str += "    public var transitions: [Transition<\(stateType), \(stateType)>]\n\n"
-        str += "    public let _externals: Set<String>?"
+        str += "    public let snapshotSensors: Set<String>?\n\n"
+        str += "    public let snapshotActuators: Set<String>?\n\n"
         str += "    internal weak var Me: " + machine + "FiniteStateMachine!\n\n"
         str += "    public var validVars: [String: [Any]] {\n"
         str += "        return [\n"
@@ -1095,10 +1104,11 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "            \"Me\": []\n"
         str += "        ]\n"
         str += "    }\n\n"
-        str += "    public init(_ name: String, transitions: [Transition<\(stateType), \(stateType)>] = [], _externals: Set<String>?) {\n"
+        str += "    public init(_ name: String, transitions: [Transition<\(stateType), \(stateType)>] = [], snapshotSensors: Set<String>?, snapshotActuators: Set<String>?) {\n"
         str += "        self.name = name\n"
         str += "        self.transitions = transitions\n"
-        str += "        self._externals = _externals\n"
+        str += "        self.snapshotSensors = snapshotSensors\n"
+        str += "        self.snapshotActuators = snapshotActuators\n"
         str += "    }\n\n"
         for action in model.actions {
             str += "    public func \(action)() {}\n\n"
@@ -1128,7 +1138,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                 CloneableState,
                 MiPalActions,
                 Transitionable,
-                KripkeVariablesModifier
+                KripkeVariablesModifier,
+                SnapshotListContainer
             {
 
                 /**
@@ -1144,7 +1155,9 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                  */
                 public var transitions: [Transition<\(stateType), \(stateType)>]
                 
-                public let _externals: Set<String>?
+                public let snapshotSensors: Set<String>?
+                
+                public let snapshotActuators: Set<String>?
 
                 internal weak var Me: \(machine)FiniteStateMachine!
 
@@ -1163,10 +1176,11 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                  *
                  *  - transitions: All transitions to other states that this state can use.
                  */
-                public init(_ name: String, transitions: [Transition<\(stateType), \(stateType)>] = [], _externals: Set<String>?) {
+                public init(_ name: String, transitions: [Transition<\(stateType), \(stateType)>] = [], snapshotSensors: Set<String>?, snapshotActuators: Set<String>?) {
                     self.name = name
                     self.transitions = transitions
-                    self._externals = _externals
+                    self.snapshotSensors = snapshotSensors
+                    self.snapshotActuators = snapshotActuators
                 }
 
                 /**
@@ -1210,7 +1224,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         var str = "import swiftfsm\n\n"
         str += "public final class Empty\(stateType): \(stateType) {\n\n"
         str += "    public init(_ name: String, transitions: [Transition<Empty\(stateType), \(stateType)>] = []) {\n"
-        str += "        super.init(name, transitions: cast(transitions: transitions), _externals: [])\n"
+        str += "        super.init(name, transitions: cast(transitions: transitions), snapshotSensors: [], snapshotActuators: [])\n"
         str += "    }\n\n"
         for action in actions {
             str += "    public override final func \(action)() {}\n\n"
@@ -1237,7 +1251,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "    public init(\n"
         str += "        _ name: String,\n"
         str += "        transitions: [Transition<Callback\(stateType), \(stateType)>] = [],\n"
-        str += "        _externals: Set<String>?,"
+        str += "        snapshotSensors: Set<String>?,\n"
+        str += "        snapshotActuators: Set<String>?,"
         var actionsList = ""
         for action in actions {
             actionsList += "\n        \(action): @escaping () -> Void = {},"
@@ -1247,7 +1262,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         for action in actions {
             str += "        self._\(action) = \(action)\n"
         }
-        str += "        super.init(name, transitions: cast(transitions: transitions), _externals: _externals)\n"
+        str += "        super.init(name, transitions: cast(transitions: transitions), snapshotSensors: snapshotSensors, snapshotActuators: snapshotActuators)\n"
         str += "    }\n\n"
         for action in actions {
             str += "    public final override func \(action)() {\n"
@@ -1255,7 +1270,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "    }\n\n"
         }
         str += "    public override final func clone() -> Callback\(stateType) {\n"
-        str += "        return Callback\(stateType)(self.name, transitions: cast(transitions: self.transitions), _externals: self._externals)\n"
+        str += "        return Callback\(stateType)(self.name, transitions: cast(transitions: self.transitions), snapshotSensors: self.snapshotSensors, snapshotActuators: self.snapshotActuators)\n"
         str += "    }\n\n"
         str += "}\n"
         if (false == self.helpers.createFile(atPath: callbackStateTypePath, withContents: str)) {
@@ -1327,16 +1342,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         let sensorList = machine.sensors.lazy.map {"                case self.external_\($0.label).name:\n                    return AnySnapshotController(self.external_\($0.label))"}.combine("") { $0 + "\n" + $1 }
         str += "    public var sensors: [AnySnapshotController] {\n"
         str += "        get {\n"
-        str += "            guard let externals = self.currentState._externals else {\n"
-        str += "                return [\(snapshotControllerList)]"
-        str += "            }\n"
-        str += "            return externals.compactMap {\n"
-        str += "                switch $0 {\n"
-        str += sensorList
-        str += "                default:\n"
-        str += "                    return nil\n"
-        str += "                }\n"
-        str += "            }\n"
+        str += "            return [\(snapshotControllerList)]\n"
         str += "        } set {\n"
         let sensorsSwitch = machine.sensors.lazy.map { "                case self.external_\($0.label).name:\n                    self.external_\($0.label).val = external.val as! \($0.type).Class" }.combine("") { $0 + "\n" + $1 }
         str += "            for external in newValue {\n"
