@@ -391,7 +391,7 @@ public final class MachineParser: ErrorContainer {
         
         let extVars: [Variable]?
         if let externalVariablesRaw = self.read(externalVariablesPath) {
-            guard let externalVariables = externalVariablesRaw.components(separatedBy: .newlines).map({$0.trimmingCharacters(in: .whitespaces)}).filter({ $0 == "" }).failMap({ external in
+            guard let externalVariables = externalVariablesRaw.components(separatedBy: .newlines).map({$0.trimmingCharacters(in: .whitespaces)}).filter({ $0 != "" }).failMap({ external in
                 return self.attempt("Unable to location external variable \(external)", { externalVariables[external] })
             })
             else {
