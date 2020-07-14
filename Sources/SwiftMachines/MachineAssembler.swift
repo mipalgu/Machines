@@ -1209,6 +1209,9 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         let stateType = machine + "State"
         var str = "import swiftfsm\n\n"
         str += "public final class Empty\(stateType): \(stateType) {\n\n"
+        str += "    public init(_ name: String, transitions: [Transition<Empty\(stateType), \(stateType)>] = []) {\n"
+        str += "        super.init(name, transitions: transitions, _externals: [])\n"
+        str += "    }\n\n"
         for action in actions {
             str += "    public override final func \(action)() {}\n\n"
         }
@@ -1233,7 +1236,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         str += "    public init(\n"
         str += "        _ name: String,\n"
-        str += "        transitions: [Transition<Callback\(stateType), \(stateType)>] = [],"
+        str += "        transitions: [Transition<Callback\(stateType), \(stateType)>] = [],\n"
+        str += "        _externals: Set<String>?"
         var actionsList = ""
         for action in actions {
             actionsList += "\n        \(action): @escaping () -> Void = {},"
@@ -1243,7 +1247,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         for action in actions {
             str += "        self._\(action) = \(action)\n"
         }
-        str += "        super.init(name, transitions: cast(transitions: transitions))\n"
+        str += "        super.init(name, transitions: cast(transitions: transitions), _externals: _externals)\n"
         str += "    }\n\n"
         for action in actions {
             str += "    public final override func \(action)() {\n"
