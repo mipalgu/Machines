@@ -111,7 +111,7 @@ public final class MachineParser: ErrorContainer {
             let parameters = self.parseMachineParametersFromMachine(atPath: machineDir, withName: name),
             let returnType = self.parseMachineReturnTypeFromMachine(atPath: machineDir, withName: name),
             let (callableMachines, invocableMachines, submachines) = self.parseDependencies(forMachineNamed: name, atPath: machineDir),
-            let states = self.parseStatesFromMachine(atPath: machineDir, withActions: actions),
+            let states = self.parseStatesFromMachine(atPath: machineDir, withActions: actions, externalVariables: externalVariables),
             let initialState = states.first,
             let includes = self.parseMachineBridgingHeaderFromMachine(atPath: machineDir, withName: name)
         else {
@@ -155,11 +155,15 @@ public final class MachineParser: ErrorContainer {
 
     private func parseExternalVariablesFromMachine(atPath path: URL, withName name: String) -> [Variable]? {
         let externalVariablesPath = path.appendingPathComponent("\(name)_ExternalVariables.swift", isDirectory: false)
+        return self.parseExternalVariables(fromPath: externalVariablesPath)
+    }
+    
+    private func parseExternalVariables(fromPath path: URL) -> [Variable]? {
         guard
-            let str = self.read(externalVariablesPath),
+            let str = self.read(path),
             let vars = self.varParser.parse(fromString: str)
         else {
-            self.errors.append("Unable to read \(externalVariablesPath.path)")
+            self.errors.append("Unable to read \(path)")
             return nil
         }
         return vars
@@ -345,7 +349,8 @@ public final class MachineParser: ErrorContainer {
         return (callableMachines, invokableMachines, submachinesMachines)
     }
 
-    private func parseStatesFromMachine(atPath path: URL, withActions actions: [String]) -> [State]? {
+    private func parseStatesFromMachine(atPath path: URL, withActions actions: [String], externalVariables: [Variable]) -> [State]? {
+        let externalVariables: [String: Variable] = Dictionary(uniqueKeysWithValues: externalVariables.lazy.map { ($0.label, $0) })
         let statesPath = path.appendingPathComponent("States", isDirectory: false)
         guard
             let statesContents = self.read(statesPath)
@@ -362,18 +367,19 @@ public final class MachineParser: ErrorContainer {
             self.errors.append("States is empty")
             return nil
         }
-        let states = statesLines.flatMap {
-            self.parseStateFromMachine(atPath: path, withName: $0, andActions: actions)
-        }
-        if (states.count != statesLines.count) {
+        guard let states = statesLines.failMap({
+            self.parseStateFromMachine(atPath: path, withName: $0, andActions: actions, externalVariables: externalVariables)
+        })
+        else {
             return nil
         }
         return Array(states)
     }
 
-    private func parseStateFromMachine(atPath path: URL, withName name: String, andActions actionNames: [String]) -> State? {
+    private func parseStateFromMachine(atPath path: URL, withName name: String, andActions actionNames: [String], externalVariables: [String: Variable]) -> State? {
         let base = "State_\(name)"
         let importsPath = path.appendingPathComponent("\(base)_Imports.swift", isDirectory: false)
+        let externalVariablesPath = path.appendingPathComponent("\(base)_ExternalVariables.swift", isDirectory: false)
         let varsPath = path.appendingPathComponent("\(base)_Vars.swift", isDirectory: false)
         guard
             let imports = self.attempt("Unable to read \(importsPath)", { self.read(importsPath) }),
@@ -382,10 +388,23 @@ public final class MachineParser: ErrorContainer {
         else {
             return nil
         }
-        let actions = actionNames.flatMap {
-            self.parseActionFromMachine(atPath: path, forState: name, withName: $0)
+        
+        let extVars: [Variable]?
+        if let externalVariablesRaw = self.read(externalVariablesPath) {
+            guard let externalVariables = externalVariablesRaw.components(separatedBy: .newlines).map({$0.trimmingCharacters(in: .whitespaces)}).filter({ $0 != "" }).failMap({ external in
+                return self.attempt("Unable to location external variable \(external)", { externalVariables[external] })
+            })
+            else {
+                return nil
+            }
+            extVars = externalVariables
+        } else {
+            extVars = nil
         }
-        if (actions.count != actionNames.count) {
+        guard let actions = actionNames.failMap({
+            self.parseActionFromMachine(atPath: path, forState: name, withName: $0)
+        })
+        else {
             return nil
         }
         guard
@@ -396,6 +415,7 @@ public final class MachineParser: ErrorContainer {
         return State(
             name: name,
             imports: imports,
+            externalVariables: extVars,
             vars: vars,
             actions: actions,
             transitions: transitions
