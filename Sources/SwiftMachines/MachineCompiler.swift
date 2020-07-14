@@ -74,7 +74,7 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
 
     private let invoker: Invoker
     
-    fileprivate var processedMachines: Set<String> = []
+    private var compiledMachines: [String: String] = [:]
 
     public init(assembler: A, invoker: Invoker = Invoker()) {
         self.assembler = assembler
@@ -138,7 +138,7 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
         andSwiftBuildFlags swiftBuildFlags: [String] = []
     ) -> [String]? {
         self.errors = []
-        self.processedMachines = []
+        self.compiledMachines = [:]
         return self.compileTreeReal(
             machine,
             withBuildDir: buildDir,
@@ -162,6 +162,10 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
         andSwiftBuildFlags swiftBuildFlags: [String] = [],
         subdirs: [String] = []
     ) -> [String]? {
+        let absolutePath = machine.filePath.resolvingSymlinksInPath().absoluteString
+        if let outputPath = self.compiledMachines[absolutePath] {
+            return [outputPath]
+        }
         guard
             let dependentMachines = machine.dependantMachines.failMap({
                 self.compileTreeReal(
@@ -185,11 +189,11 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
                 andLinkerFlags: linkerFlags,
                 andSwiftCompilerFlags: swiftCompilerFlags,
                 andSwiftBuildFlags: swiftBuildFlags
-            ),
-            true == self.copyCompiledDependentMachines(machine, buildDir: buildDir, subdirs: subdirs, dependencies: dependentMachines)
+            )
         else {
             return nil
         }
+        self.compiledMachines[absolutePath] = outputPath.path
         return [outputPath.path]
     }
 
@@ -288,37 +292,6 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
         let name = components.combine("") { $0 + "." + $1 }
         try fm.copyItem(at: outPath, to: dir.appendingPathComponent(name, isDirectory: false))
         return true
-    }
-    
-    fileprivate func copyCompiledDependentMachines(_ machine: Machine, buildDir: String, subdirs: [String], dependencies: [String]) -> Bool {
-        let outPaths = dependencies.filter { false == self.processedMachines.contains($0) }
-        if true == outPaths.isEmpty {
-            return true
-        }
-        let buildDirPath = machine.filePath.appendingPathComponent(buildDir, isDirectory: true)
-        let dir = buildDirPath
-            .appendingPathComponent(machine.name + "Dependencies", isDirectory: true)
-        let dependenciesDirectory = subdirs.reduce(dir) {
-            $0.appendingPathComponent($1 + "Dependencies", isDirectory: true)
-        }
-        let fm = FileManager.default
-        do {
-            try fm.createDirectory(at: dependenciesDirectory, withIntermediateDirectories: true)
-        } catch let e {
-            self.errors.append("\(e)")
-            return false
-        }
-        return outPaths.reduce(true) {
-            do {
-                let src = URL(fileURLWithPath: $1, isDirectory: false)
-                _ = try copyOutPath(src, toFolder: dependenciesDirectory)
-            } catch let e {
-                self.errors.append("\(e)")
-                return $0 && false
-            }
-            self.processedMachines.insert($1)
-            return $0 && true
-        }
     }
 
 }
