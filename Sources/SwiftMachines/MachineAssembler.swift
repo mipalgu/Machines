@@ -915,7 +915,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         } else {
             externalsStr = "nil"
         }
-        str += "        super.init(name, transitions: cast(transitions: transitions), _externals: \(externalsStr)\n"
+        str += "        super.init(name, transitions: cast(transitions: transitions), _externals: \(externalsStr))\n"
         str += "    }\n\n"
         // Recursive machine.
         if nil != machine.parameters {
@@ -1209,14 +1209,14 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         let stateType = machine + "State"
         var str = "import swiftfsm\n\n"
         str += "public final class Empty\(stateType): \(stateType) {\n\n"
-        str += "    public init(_ name: String, transitions: [Transition<Empty\(stateType), \(stateType)>] = []) {\n"
+        str += "    public init(_ name: String, transitions: [Transition<\(stateType), \(stateType)>] = []) {\n"
         str += "        super.init(name, transitions: cast(transitions: transitions), _externals: [])\n"
         str += "    }\n\n"
         for action in actions {
             str += "    public override final func \(action)() {}\n\n"
         }
         str += "    public override final func clone() -> Empty\(stateType) {\n"
-        str += "        return Empty\(stateType)(self.name, transitions: self.transitions)\n"
+        str += "        return Empty\(stateType)(self.name, transitions: cast(self.transitions))\n"
         str += "    }\n\n"
         str += "}\n"
         if (false == self.helpers.createFile(atPath: emptyStateTypePath, withContents: str)) {
@@ -1237,7 +1237,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "    public init(\n"
         str += "        _ name: String,\n"
         str += "        transitions: [Transition<Callback\(stateType), \(stateType)>] = [],\n"
-        str += "        _externals: Set<String>?"
+        str += "        _externals: Set<String>?,"
         var actionsList = ""
         for action in actions {
             actionsList += "\n        \(action): @escaping () -> Void = {},"
@@ -1330,7 +1330,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "            guard let externals = self.currentState._externals else {\n"
         str += "                return [\(snapshotControllerList)]"
         str += "            }\n"
-        str += "            return self.currentState._externals.compactMap {\n"
+        str += "            return externals.compactMap {\n"
         str += "                switch $0 {\n"
         str += sensorList
         str += "                default:\n"
