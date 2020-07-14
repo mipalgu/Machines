@@ -201,7 +201,6 @@ public final class MachineGenerator {
             }),
             let transitionList = self.makeTransitionList(forState: state, inMachine: machine),
             let stateImports = self.helpers.createFile("State_\(state.name)_Imports.swift", inDirectory: machine.filePath, withContents: state.imports),
-            let stateExternalVariables = self.helpers.createFile("State_\(state.name)_ExternalVariables.swift", inDirectory: machine.filePath, withContents: state.externalVariables.lazy.map { $0.label }.combine("") { $0 + "\n" + $1 }),
             let stateVars = self.helpers.createFile(
                 "State_\(state.name)_Vars.swift",
                 inDirectory: machine.filePath,
@@ -212,7 +211,13 @@ public final class MachineGenerator {
         else {
             return nil
         }
-        var result: [URL] = [transitionList, stateImports, stateExternalVariables, stateVars]
+        var result: [URL] = [transitionList, stateImports, stateVars]
+        if let stateExternals = state.externalVariables {
+            guard let stateExternalVariables = self.helpers.createFile("State_\(state.name)_ExternalVariables.swift", inDirectory: machine.filePath, withContents: stateExternals.lazy.map { $0.label }.combine("") { $0 + "\n" + $1 }) else {
+                return nil
+            }
+            result.append(stateExternalVariables)
+        }
         result.reserveCapacity(result.count + actions.count + transitions.count)
         result.append(contentsOf: actions)
         result.append(contentsOf: transitions)

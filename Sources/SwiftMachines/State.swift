@@ -62,7 +62,7 @@ public struct State {
 
     public var imports: String
     
-    public var externalVariables: [Variable]
+    public var externalVariables: [Variable]?
 
     public var vars: [Variable]
 
@@ -73,7 +73,7 @@ public struct State {
     public init(
         name: String,
         imports: String,
-        externalVariables: [Variable],
+        externalVariables: [Variable]?,
         vars: [Variable],
         actions: [Action],
         transitions: [Transition]

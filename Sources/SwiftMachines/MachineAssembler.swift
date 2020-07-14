@@ -907,7 +907,15 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         for m in machine.invocableMachines {
             str += "        self._\(m.name)Machine = \(m.name)Machine\n"
         }
-        str += "        super.init(name, transitions: cast(transitions: transitions), _externals: [\(state.externalVariables.map { "\"" + $0.label + "\"" }.combine("") { $0 + ", " + $1 })])\n"
+        let externalsStr: String
+        if let stateExternals = state.externalVariables {
+            let labels = stateExternals.lazy.map { "\"" + $0.label + "\"" }
+            let list = labels.combine("") { $0 + ", " + $1 }
+            externalsStr = "[" + list + "]"
+        } else {
+            externalsStr = "nil"
+        }
+        str += "        super.init(name, transitions: cast(transitions: transitions), _externals: \(externalsStr)\n"
         str += "    }\n\n"
         // Recursive machine.
         if nil != machine.parameters {
@@ -1058,7 +1066,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += self.createComputedProperty(mutable: true, withLabel: "result", andType: machine.returnType ?? "Void", referencing: "Me.results.vars.result", includeScope: includeScope, indent: indent, unwrap: true)
         }
         // External variables.
-        for external in state.externalVariables {
+        for external in (state.externalVariables ?? machine.externalVariables) {
             str += self.createComputedProperty(mutable: external.accessType != .readOnly, withLabel: external.label, andType: external.type + ".Class", referencing: "Me.external_\(external.label).val", includeScope: includeScope, indent: indent)
             //str += self.createComputedProperties(fromVars: external.vars, withinContainer: "\(external.label)")
         }
@@ -1078,7 +1086,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "{\n\n"
         str += "    public let name: String\n\n"
         str += "    public var transitions: [Transition<\(stateType), \(stateType)>]\n\n"
-        str += "    public let _externals: Set<String>"
+        str += "    public let _externals: Set<String>?"
         str += "    internal weak var Me: " + machine + "FiniteStateMachine!\n\n"
         str += "    public var validVars: [String: [Any]] {\n"
         str += "        return [\n"
@@ -1087,7 +1095,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "            \"Me\": []\n"
         str += "        ]\n"
         str += "    }\n\n"
-        str += "    public init(_ name: String, transitions: [Transition<\(stateType), \(stateType)>] = [], _externals: Set<String>) {\n"
+        str += "    public init(_ name: String, transitions: [Transition<\(stateType), \(stateType)>] = [], _externals: Set<String>?) {\n"
         str += "        self.name = name\n"
         str += "        self.transitions = transitions\n"
         str += "        self._externals = _externals\n"
@@ -1136,7 +1144,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                  */
                 public var transitions: [Transition<\(stateType), \(stateType)>]
                 
-                public let _externals: Set<String>
+                public let _externals: Set<String>?
 
                 internal weak var Me: \(machine)FiniteStateMachine!
 
@@ -1155,7 +1163,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                  *
                  *  - transitions: All transitions to other states that this state can use.
                  */
-                public init(_ name: String, transitions: [Transition<\(stateType), \(stateType)>, _externals: Set<String>] = []) {
+                public init(_ name: String, transitions: [Transition<\(stateType), \(stateType)>] = [], _externals: Set<String>?) {
                     self.name = name
                     self.transitions = transitions
                     self._externals = _externals
@@ -1311,9 +1319,13 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "            }\n"
         str += "        }\n"
         str += "    }\n\n"
+        let snapshotControllerList = machine.sensors.lazy.map { "AnySnapshotController(self.external_\($0.label))" }.combine("") { $0 + ", " + $1 }
         let sensorList = machine.sensors.lazy.map {"                case self.external_\($0.label).name:\n                    return AnySnapshotController(self.external_\($0.label))"}.combine("") { $0 + "\n" + $1 }
         str += "    public var sensors: [AnySnapshotController] {\n"
         str += "        get {\n"
+        str += "            guard let externals = self.currentState._externals else {\n"
+        str += "                return [\(snapshotControllerList)]"
+        str += "            }\n"
         str += "            return self.currentState._externals.compactMap {\n"
         str += "                switch $0 {\n"
         str += sensorList

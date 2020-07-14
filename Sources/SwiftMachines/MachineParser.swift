@@ -383,14 +383,23 @@ public final class MachineParser: ErrorContainer {
         let varsPath = path.appendingPathComponent("\(base)_Vars.swift", isDirectory: false)
         guard
             let imports = self.attempt("Unable to read \(importsPath)", { self.read(importsPath) }),
-            let externalVariablesRaw = self.attempt("Unable to read \(externalVariablesPath)", { self.read(externalVariablesPath) }),
-            let externalVariables = externalVariablesRaw.components(separatedBy: .newlines).map({$0.trimmingCharacters(in: .whitespaces)}).filter({ $0 == "" }).failMap({ external in
-                return self.attempt("Unable to location external variable \(external)", { externalVariables[external] })
-            }),
             let varsRaw = self.attempt("Unable to read \(varsPath)", { self.read(varsPath) }),
             let vars = self.attempt("Unable to parse vars in \(varsPath)", { self.varParser.parse(fromString: varsRaw) })
         else {
             return nil
+        }
+        
+        let extVars: [Variable]?
+        if let externalVariablesRaw = self.read(externalVariablesPath) {
+            guard let externalVariables = externalVariablesRaw.components(separatedBy: .newlines).map({$0.trimmingCharacters(in: .whitespaces)}).filter({ $0 == "" }).failMap({ external in
+                return self.attempt("Unable to location external variable \(external)", { externalVariables[external] })
+            })
+            else {
+                return nil
+            }
+            extVars = externalVariables
+        } else {
+            extVars = nil
         }
         guard let actions = actionNames.failMap({
             self.parseActionFromMachine(atPath: path, forState: name, withName: $0)
@@ -406,7 +415,7 @@ public final class MachineParser: ErrorContainer {
         return State(
             name: name,
             imports: imports,
-            externalVariables: externalVariables,
+            externalVariables: extVars,
             vars: vars,
             actions: actions,
             transitions: transitions
