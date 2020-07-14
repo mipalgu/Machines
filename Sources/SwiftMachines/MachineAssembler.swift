@@ -1216,7 +1216,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "    public override final func \(action)() {}\n\n"
         }
         str += "    public override final func clone() -> Empty\(stateType) {\n"
-        str += "        return Empty\(stateType)(self.name, transitions: cast(self.transitions))\n"
+        str += "        return Empty\(stateType)(self.name, transitions: self.transitions.map(cast))\n"
         str += "    }\n\n"
         str += "}\n"
         if (false == self.helpers.createFile(atPath: emptyStateTypePath, withContents: str)) {
