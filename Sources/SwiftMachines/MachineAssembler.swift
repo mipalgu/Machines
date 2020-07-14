@@ -922,7 +922,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             sensorsStr = "nil"
             actuatorsStr = "nil"
         }
-        str += "        super.init(name, transitions: cast(transitions: transitions), snapshotSensors: \(sensorsStr), snapshotActuators: \(actuatorsStr)\n"
+        str += "        super.init(name, transitions: cast(transitions: transitions), snapshotSensors: \(sensorsStr), snapshotActuators: \(actuatorsStr))\n"
         str += "    }\n\n"
         // Recursive machine.
         if nil != machine.parameters {
