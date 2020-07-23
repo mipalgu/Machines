@@ -66,22 +66,19 @@ public final class Invoker {
         let process = Process()
         process.launchPath = bin
         process.arguments = args
-        if #available(macOS 10.12, *) {
-            let signals = [SIGINT, SIGQUIT, SIGTSTP, SIGKILL]
-            let sources = signals.map { signal in return DispatchSource.makeSignalSource(signal: signal) }
-            sources.forEach {
-                $0.setEventHandler {
-                    process.terminate()
-                }
+        let signals = [SIGINT, SIGQUIT, SIGTSTP, SIGKILL, SIGTERM, SIGABRT]
+        let sources = signals.map { signal in return DispatchSource.makeSignalSource(signal: signal) }
+        sources.forEach {
+            $0.setEventHandler {
+                process.terminate()
+            }
+            if #available(macOS 10.12, *) {
                 $0.activate()
             }
-            process.launch()
-            process.waitUntilExit()
-            sources.forEach { $0.cancel() }
-        } else {
-            process.launch()
-            process.waitUntilExit()
         }
+        process.launch()
+        process.waitUntilExit()
+        sources.forEach { $0.cancel() }
         return EXIT_SUCCESS == process.terminationStatus
     }
 
