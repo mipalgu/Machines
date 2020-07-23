@@ -63,9 +63,26 @@ public final class Invoker {
     public init() {}
 
     public func run(_ bin: String, withArguments args: [String]) -> Bool {
-        let p = Process.launchedProcess(launchPath: bin, arguments: args)
-        p.waitUntilExit()
-        return EXIT_SUCCESS == p.terminationStatus
+        let process = Process()
+        process.launchPath = bin
+        process.arguments = args
+        if #available(macOS 10.12, *) {
+            let signals = [SIGINT, SIGQUIT, SIGTSTP, SIGKILL]
+            let sources = signals.map { signal in return DispatchSource.makeSignalSource(signal: signal) }
+            sources.forEach {
+                $0.setEventHandler {
+                    process.terminate()
+                }
+                $0.activate()
+            }
+            process.launch()
+            process.waitUntilExit()
+            sources.forEach { $0.cancel() }
+        } else {
+            process.launch()
+            process.waitUntilExit()
+        }
+        return EXIT_SUCCESS == process.terminationStatus
     }
 
 }
