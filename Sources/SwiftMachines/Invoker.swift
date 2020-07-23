@@ -71,6 +71,7 @@ public final class Invoker {
         sources.forEach {
             $0.setEventHandler {
                 process.terminate()
+                process.waitUntilExit()
             }
             if #available(macOS 10.12, *) {
                 $0.activate()
