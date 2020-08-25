@@ -473,15 +473,16 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "\n    )\n"
         }
         str += "    // State Transitions.\n"
+        let transitionType = machine.name + "StateTransition"
         for state in machine.states {
             for transition in state.transitions {
                 guard let c = transition.condition else {
-                    str += "    state_\(state.name).addTransition(Transition(state_\(transition.target)) { _ in true })\n"
+                    str += "    state_\(state.name).addTransition(\(transitionType)(Transition(state_\(transition.target)) { _ in true }))\n"
                     continue
                 }
                 var conditionLines = c.components(separatedBy: CharacterSet.newlines)
                 if (true == conditionLines.isEmpty) {
-                    str += "    state_\(state.name).addTransition(Transition(state_\(transition.target)) { _ in true })\n"
+                    str += "    state_\(state.name).addTransition(\(transitionType)(Transition(state_\(transition.target)) { _ in true }))\n"
                     continue
                 }
                 var condition = "        let state = $0 as! State_\(state.name)\n"
@@ -505,7 +506,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                 } else {
                     condition += "        \(last)\n"
                 }
-                str += "    state_\(state.name).addTransition(Transition(state_\(transition.target)) {\n\(condition)    })\n"
+                str += "    state_\(state.name).addTransition(\(transitionType)(Transition(state_\(transition.target)) {\n\(condition)    }))\n"
             }
         }
         let externalsListMapped = machine.externalVariables.lazy.map { "        external_" + $0.label + ": external_" + $0.label }
@@ -956,7 +957,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         // Clone.
         str += "    public override final func clone() -> State_\(state.name) {\n"
-        str += "        let transitions: [Transition<State_\(state.name), \(stateType)>] = self.transitions.map { $0.cast() }\n"
+        str += "        let transitions: [Transition<State_\(state.name), \(stateType)>] = self.transitions.map { $0.cast(to: State_\(state.name).self) }\n"
         str += "        let state = State_\(state.name)(\n"
         str += "            \"\(state.name)\",\n"
         str += "            transitions: transitions,\n"
@@ -1242,7 +1243,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "    public override final func \(action)() {}\n\n"
         }
         str += "    public override final func clone() -> Empty\(stateType) {\n"
-        str += "        let transitions: [Transition<Empty\(stateType), \(stateType)>] = self.transitions.map { $0.cast() }\n"
+        str += "        let transitions: [Transition<Empty\(stateType), \(stateType)>] = self.transitions.map { $0.cast(to: Empty\(stateType)) }\n"
         str += "        return Empty\(stateType)(self.name, transitions: transitions)\n"
         str += "    }\n\n"
         str += "}\n"
@@ -1284,7 +1285,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "    }\n\n"
         }
         str += "    public override final func clone() -> Callback\(stateType) {\n"
-        str += "        let transitions: [Transition<Callback\(stateType), \(stateType)>] = self.transitions.map { $0.cast() }\n"
+        str += "        let transitions: [Transition<Callback\(stateType), \(stateType)>] = self.transitions.map { $0.cast(to: Callback\(stateType)) }\n"
         str += "        return Callback\(stateType)(self.name, transitions: transitions, snapshotSensors: self.snapshotSensors, snapshotActuators: self.snapshotActuators)\n"
         str += "    }\n\n"
         str += "}\n"
@@ -1696,13 +1697,13 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                     }
                 }
                 
-                internal init(baseCanTransition: Any, target: \(stateType), canTransition: (\(stateType)) -> Bool) {
+                internal init(baseCanTransition: Any, target: \(stateType), canTransition: @escaping (\(stateType)) -> Bool) {
                     self.baseCanTransition = baseCanTransition
                     self.target = target
                     self.canTransition = canTransition
                 }
                 
-                public func cast<S: \(stateType)>() -> Transition<S, \(stateType)> {
+                public func cast<S: \(stateType)>(to _: S.Type) -> Transition<S, \(stateType)> {
                     guard let canTransition = self.baseCanTransition as? (S) -> \(stateType) else {
                         fatalError("Unable to cast canTransition to (S) -> \(stateType)")
                     }
