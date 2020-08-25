@@ -1709,7 +1709,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                     guard let canTransition = self.baseCanTransition as? (S) -> \(stateType) else {
                         fatalError("Unable to cast canTransition to (S) -> \(stateType)")
                     }
-                    return Transition(self.target, canTransition)
+                    return Transition<S, \(stateType)>(self.target, canTransition)
                 }
                 
                 /**
@@ -1720,7 +1720,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                  *  - Returns: The new `Transition`.
                  */
                 public func map(_ f: (\(stateType)) -> \(stateType)) -> \(name) {
-                    return \(name)(baseTransition: self.baseTransition, target: f(self.target), canTransition: self.canTransition)
+                    return \(name)(baseCanTransition: self.baseTransition, target: f(self.target), canTransition: self.canTransition)
                 }
             }
             """
