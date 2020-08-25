@@ -1682,14 +1682,14 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             
             public struct \(name): TransitionType {
                 
-                private let baseCanTransition: Any
+                internal let base: Any
                 
                 public let target: \(stateType)
                 
                 public let canTransition: (\(stateType)) -> Bool
                 
-                public init<T: TransitionType>(_ base: T) where T.Source: \(stateType), T.Target == \(stateType) {
-                    self.baseCanTransition = base.canTransition as Any
+                public init<S: \(stateType)>(_ base: Transition<S, \(stateType)>) {
+                    self.base = base
                     self.target = base.target
                     self.canTransition = {
                         guard let state = $0 as? T.Source else {
@@ -1699,29 +1699,23 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                     }
                 }
                 
-                internal init(baseCanTransition: Any, target: \(stateType), canTransition: @escaping (\(stateType)) -> Bool) {
-                    self.baseCanTransition = baseCanTransition
+                internal init(base: Any, target: \(stateType), canTransition: @escaping (\(stateType)) -> Bool) {
+                    self.base = base
                     self.target = target
                     self.canTransition = canTransition
                 }
                 
-                public func cast<S: \(stateType)>(to _: S.Type) -> Transition<S, \(stateType)> {
-                    guard let canTransition = self.baseCanTransition as? (S) -> Bool else {
-                        fatalError("Unable to cast canTransition to (S) -> \(stateType)")
+                public func cast<S: \(stateType)>(to type: S.Type) -> Transition<S, \(stateType)> {
+                    guard let transition = self.base as? Transition<S, \(stateType)> else {
+                        fatalError("Unable to cast bast to Transition<\\(type), \(stateType)>")
                     }
-                    return Transition<S, \(stateType)>(self.target, canTransition)
+                    return transition
                 }
                 
-                /**
-                 *  Create a new `Transition` by applying `f` to `target`.
-                 *
-                 *  - Parameter _: The function that changes the target.
-                 *
-                 *  - Returns: The new `Transition`.
-                 */
                 public func map(_ f: (\(stateType)) -> \(stateType)) -> \(name) {
-                    return \(name)(baseCanTransition: self.baseCanTransition, target: f(self.target), canTransition: self.canTransition)
+                    return \(name)(base: base, target: f(self.target), canTransition: self.canTransition)
                 }
+                
             }
             """
         // Create the file.
