@@ -1678,6 +1678,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         let stateType = machine.name + "State"
         let filePath = dir.appendingPathComponent(name + ".swift", isDirectory: false)
         let str = """
+            import swiftfsm
+            
             public struct \(name): TransitionType {
                 
                 private let baseCanTransition: Any
