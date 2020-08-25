@@ -1692,8 +1692,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                     self.base = base
                     self.target = base.target
                     self.canTransition = {
-                        guard let state = $0 as? T.Source else {
-                            fatalError("Unable to cast source state in transition to \\(T.Source.self)")
+                        guard let state = $0 as? S else {
+                            fatalError("Unable to cast source state in transition to \\(S.self)")
                         }
                         return base.canTransition(state)
                     }
