@@ -1243,7 +1243,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "    public override final func \(action)() {}\n\n"
         }
         str += "    public override final func clone() -> Empty\(stateType) {\n"
-        str += "        let transitions: [Transition<Empty\(stateType), \(stateType)>] = self.transitions.map { $0.cast(to: Empty\(stateType)) }\n"
+        str += "        let transitions: [Transition<Empty\(stateType), \(stateType)>] = self.transitions.map { $0.cast(to: Empty\(stateType).self) }\n"
         str += "        return Empty\(stateType)(self.name, transitions: transitions)\n"
         str += "    }\n\n"
         str += "}\n"
@@ -1285,7 +1285,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "    }\n\n"
         }
         str += "    public override final func clone() -> Callback\(stateType) {\n"
-        str += "        let transitions: [Transition<Callback\(stateType), \(stateType)>] = self.transitions.map { $0.cast(to: Callback\(stateType)) }\n"
+        str += "        let transitions: [Transition<Callback\(stateType), \(stateType)>] = self.transitions.map { $0.cast(to: Callback\(stateType).self) }\n"
         str += "        return Callback\(stateType)(self.name, transitions: transitions, snapshotSensors: self.snapshotSensors, snapshotActuators: self.snapshotActuators)\n"
         str += "    }\n\n"
         str += "}\n"
