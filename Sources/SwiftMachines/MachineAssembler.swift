@@ -473,19 +473,20 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "\n    )\n"
         }
         str += "    // State Transitions.\n"
+        let stateType = machine.name + "State"
         let transitionType = machine.name + "StateTransition"
         for state in machine.states {
             for transition in state.transitions {
                 guard let c = transition.condition else {
-                    str += "    state_\(state.name).addTransition(\(transitionType)(Transition(state_\(transition.target)) { _ in true }))\n"
+                    str += "    state_\(state.name).addTransition(\(transitionType)(Transition<State_\(state.name), \(stateType)>(state_\(transition.target)) { _ in true }))\n"
                     continue
                 }
                 var conditionLines = c.components(separatedBy: CharacterSet.newlines)
                 if (true == conditionLines.isEmpty) {
-                    str += "    state_\(state.name).addTransition(\(transitionType)(Transition(state_\(transition.target)) { _ in true }))\n"
+                    str += "    state_\(state.name).addTransition(\(transitionType)(Transition<State_\(state.name), \(stateType)>(state_\(transition.target)) { _ in true }))\n"
                     continue
                 }
-                var condition = "        let state = $0 as! State_\(state.name)\n"
+                var condition = ""
                 condition += "        let Me = state.Me!\n"
                 condition += "        let clock: Timer = state.clock\n"
                 for submachine in machine.submachines {
@@ -506,7 +507,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                 } else {
                     condition += "        \(last)\n"
                 }
-                str += "    state_\(state.name).addTransition(\(transitionType)(Transition(state_\(transition.target)) {\n\(condition)    }))\n"
+                str += "    state_\(state.name).addTransition(\(transitionType)(Transition<State_\(state.name), \(stateType)>(state_\(transition.target)) { state in\n\(condition)    }))\n"
             }
         }
         let externalsListMapped = machine.externalVariables.lazy.map { "        external_" + $0.label + ": external_" + $0.label }
