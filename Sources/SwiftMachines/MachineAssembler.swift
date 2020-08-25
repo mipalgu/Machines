@@ -1720,7 +1720,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                  *  - Returns: The new `Transition`.
                  */
                 public func map(_ f: (\(stateType)) -> \(stateType)) -> \(name) {
-                    return \(name)(baseCanTransition: self.baseTransition, target: f(self.target), canTransition: self.canTransition)
+                    return \(name)(baseCanTransition: self.baseCanTransition, target: f(self.target), canTransition: self.canTransition)
                 }
             }
             """
