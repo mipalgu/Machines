@@ -1706,7 +1706,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                 }
                 
                 public func cast<S: \(stateType)>(to _: S.Type) -> Transition<S, \(stateType)> {
-                    guard let canTransition = self.baseCanTransition as? (S) -> \(stateType) else {
+                    guard let canTransition = self.baseCanTransition as? (S) -> Bool else {
                         fatalError("Unable to cast canTransition to (S) -> \(stateType)")
                     }
                     return Transition<S, \(stateType)>(self.target, canTransition)
