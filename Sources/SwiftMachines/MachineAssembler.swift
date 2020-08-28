@@ -452,26 +452,10 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "    let fsmVars = SimpleVariablesContainer(vars: \(machine.name)Vars())\n"
         str += "    // States.\n"
         for state in machine.states {
-            let sensorsStr: String
-            let actuatorsStr: String
-            if let stateExternals = state.externalVariables {
-                let sensors = stateExternals.lazy.filter { $0.accessType == .readOnly || $0.accessType == .readAndWrite }
-                let sensorlabels = sensors.map { "externals_" + $0.label + ".name" }
-                let sensorlist = sensorlabels.combine("") { $0 + ", " + $1 }
-                sensorsStr = "[" + sensorlist + "]"
-                let actuators = stateExternals.lazy.filter { $0.accessType == .writeOnly || $0.accessType == .readAndWrite }
-                let actuatorLabels = actuators.map { "externals_" + $0.label + ".name" }
-                let actuatorList = actuatorLabels.combine("") { $0 + ", " + $1 }
-                actuatorsStr = "[" + actuatorList + "]"
-            } else {
-                sensorsStr = "nil"
-                actuatorsStr = "nil"
-            }
             let v = true == state.transitions.isEmpty ? "let" : "var"
             str += "    \(v) state_\(state.name) = State_\(state.name)(\n"
             str += "        \"\(state.name)\",\n"
-            str += "        snapshotSensors: \(sensorsStr),\n"
-            str += "        snapshotActuators: \(actuatorsStr),\n"
+            str += "        gateway: gateway,\n"
             str += "        clock: clock,"
             if nil != machine.parameters {
                 str += "\n        \(machine.name): \(machine.name),"
@@ -854,6 +838,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += """
                         \"name\": [],
                         \"transitions\": [],
+                        \"gateway\": [],
                         \"clock\": [],
                         \"snapshotSensors\": [],
                         \"snapshotActuators\": [],
@@ -894,8 +879,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "    public init(\n"
         str += "        _ name: String,\n"
         str += "        transitions: [Transition<State_\(state.name), \(stateType)>] = [],\n"
-        str += "        snapshotSensors: Set<String>?,\n"
-        str += "        snapshotActuators: Set<String>?,\n"
+        str += "        gateway: FSMGateway\n,"
         str += "        clock: Timer,\n"
         if nil != machine.parameters {
             let parameterList = machine.parameters?.lazy.map { $0.type }.combine("") { $0 + ", " + $1 } ?? ""
@@ -914,6 +898,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         str = str.trimmingCharacters(in: CharacterSet(charactersIn: ",\n"))
         str += "\n    ) {\n"
+        str += "        self.gateway = gateway\n"
         str += "        self.clock = clock\n"
         if nil != machine.parameters {
             str += "        self._\(machine.name) = \(machine.name)\n"
@@ -927,8 +912,23 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         for m in machine.invocableMachines {
             str += "        self._\(m.name)Machine = \(m.name)Machine\n"
         }
+        let sensorsStr: String
+        let actuatorsStr: String
+        if let stateExternals = state.externalVariables {
+            let sensors = stateExternals.lazy.filter { $0.accessType == .readOnly || $0.accessType == .readAndWrite }
+            let sensorlabels = sensors.map { "\"" + $0.label + "\"" }
+            let sensorlist = sensorlabels.combine("") { $0 + ", " + $1 }
+            sensorsStr = "[" + sensorlist + "]"
+            let actuators = stateExternals.lazy.filter { $0.accessType == .writeOnly || $0.accessType == .readAndWrite }
+            let actuatorLabels = actuators.map { "\"" + $0.label + "\"" }
+            let actuatorList = actuatorLabels.combine("") { $0 + ", " + $1 }
+            actuatorsStr = "[" + actuatorList + "]"
+        } else {
+            sensorsStr = "nil"
+            actuatorsStr = "nil"
+        }
         let transitionType = machine.name + "StateTransition"
-        str += "        super.init(name, transitions: transitions.map { \(transitionType)($0) }, snapshotSensors: snapshotSensors, snapshotActuators: snapshotActuators)\n"
+        str += "        super.init(name, transitions: transitions.map { \(transitionType)($0) }, snapshotSensors: \(sensorsStr), snapshotActuators: \(actuatorsStr))\n"
         str += "    }\n\n"
         // Recursive machine.
         if nil != machine.parameters {
@@ -962,8 +962,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "        let state = State_\(state.name)(\n"
         str += "            \"\(state.name)\",\n"
         str += "            transitions: transitions,\n"
-        str += "            snapshotSensors: self.snapshotSensors,\n"
-        str += "            snapshotActuators: self.snapshotActuators,\n"
+        str += "            gateway: self.gateway\n,"
         str += "            clock: self.clock,\n"
         if nil != machine.parameters {
             str += "            \(machine.name): self._\(machine.name)\n"
