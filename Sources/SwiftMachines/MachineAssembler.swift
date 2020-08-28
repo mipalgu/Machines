@@ -1391,7 +1391,10 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "        }\n"
         str += "    }\n\n"
         str += "    public var snapshotSensors: [AnySnapshotController] {\n"
-        str += "        return self.currentState.snapshotSensors.map { (label: String) -> AnySnapshotController in\n"
+        str += "        guard let snapshotSensors = self.currentState.snapshotSensors else {\n"
+        str += "            return []\n"
+        str += "        }\n"
+        str += "        return snapshotSensors.map { (label: String) -> AnySnapshotController in\n"
         str += "            switch label {\n"
         for sensor in machine.externalVariables.lazy.filter({ $0.accessType == .readOnly || $0.accessType == .readAndWrite }) {
             str += "            case \"\(sensor.label)\":\n"
@@ -1403,7 +1406,10 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "        }\n"
         str += "    }\n\n"
         str += "    public var snapshotActuators: [AnySnapshotController] {\n"
-        str += "        return self.currentState.snapshotActuators.map { (label: String) -> AnySnapshotController in\n"
+        str += "        guard let snapshotActuators = self.currentState.snapshotActuators else {\n"
+        str += "            return []\n"
+        str += "        }\n"
+        str += "        return snapshotActuators.map { (label: String) -> AnySnapshotController in\n"
         str += "            switch label {\n"
         for actuator in machine.externalVariables.lazy.filter({ $0.accessType == .writeOnly || $0.accessType == .readAndWrite }) {
             str += "            case \"\(actuator.label)\":\n"
