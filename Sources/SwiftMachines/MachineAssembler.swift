@@ -1401,7 +1401,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "                return AnySnapshotController(self.external_\(sensor.label))\n"
         }
         str += "            default:\n"
-        str += "                fatalError(\"Unable to find sensor \\($0).\")\n"
+        str += "                fatalError(\"Unable to find sensor \\(label).\")\n"
         str += "            }\n"
         str += "        }\n"
         str += "    }\n\n"
@@ -1416,7 +1416,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "                return AnySnapshotController(self.external_\(actuator.label))\n"
         }
         str += "            default:\n"
-        str += "                fatalError(\"Unable to find actuator \\($0).\")\n"
+        str += "                fatalError(\"Unable to find actuator \\(label).\")\n"
         str += "            }\n"
         str += "        }\n"
         str += "    }\n\n"
