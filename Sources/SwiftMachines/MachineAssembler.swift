@@ -158,12 +158,13 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         guard
             let fsmVarsPath = self.makeFsmVars(forMachine: machine, inDirectory: srcDir),
-            let statePaths = self.makeStates(forMachine: machine, inDirectory: srcDir)
+            let statePaths = self.makeStates(forMachine: machine, inDirectory: srcDir),
+            let transitionTypePath = self.makeTransition(forMachine: machine, inDirectory: srcDir)
         else {
             self.errors.append(errorMsg)
             return nil
         }
-        files.append(contentsOf: [fsmVarsPath, package])
+        files.append(contentsOf: [fsmVarsPath, package, transitionTypePath])
         files.append(contentsOf: statePaths)
         guard
             let emptyStateTypePath = self.makeEmptyStateType(forMachine: machine.name, withActions: machine.model?.actions ?? ["onEntry", "onExit", "main"], inDirectory: srcDir),
@@ -472,18 +473,20 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "\n    )\n"
         }
         str += "    // State Transitions.\n"
+        let stateType = machine.name + "State"
+        let transitionType = machine.name + "StateTransition"
         for state in machine.states {
             for transition in state.transitions {
                 guard let c = transition.condition else {
-                    str += "    state_\(state.name).addTransition(Transition(state_\(transition.target)) { _ in true })\n"
+                    str += "    state_\(state.name).addTransition(\(transitionType)(Transition<State_\(state.name), \(stateType)>(state_\(transition.target)) { _ in true }))\n"
                     continue
                 }
                 var conditionLines = c.components(separatedBy: CharacterSet.newlines)
                 if (true == conditionLines.isEmpty) {
-                    str += "    state_\(state.name).addTransition(Transition(state_\(transition.target)) { _ in true })\n"
+                    str += "    state_\(state.name).addTransition(\(transitionType)(Transition<State_\(state.name), \(stateType)>(state_\(transition.target)) { _ in true }))\n"
                     continue
                 }
-                var condition = "        let state = $0 as! State_\(state.name)\n"
+                var condition = ""
                 condition += "        let Me = state.Me!\n"
                 condition += "        let clock: Timer = state.clock\n"
                 for submachine in machine.submachines {
@@ -504,7 +507,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                 } else {
                     condition += "        \(last)\n"
                 }
-                str += "    state_\(state.name).addTransition(Transition(state_\(transition.target)) {\n\(condition)    })\n"
+                str += "    state_\(state.name).addTransition(\(transitionType)(Transition<State_\(state.name), \(stateType)>(state_\(transition.target)) { state in\n\(condition)    }))\n"
             }
         }
         let externalsListMapped = machine.externalVariables.lazy.map { "        external_" + $0.label + ": external_" + $0.label }
@@ -924,7 +927,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             sensorsStr = "nil"
             actuatorsStr = "nil"
         }
-        str += "        super.init(name, transitions: cast(transitions: transitions), snapshotSensors: \(sensorsStr), snapshotActuators: \(actuatorsStr))\n"
+        let transitionType = machine.name + "StateTransition"
+        str += "        super.init(name, transitions: transitions.map { \(transitionType)($0) }, snapshotSensors: \(sensorsStr), snapshotActuators: \(actuatorsStr))\n"
         str += "    }\n\n"
         // Recursive machine.
         if nil != machine.parameters {
@@ -954,9 +958,10 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         // Clone.
         str += "    public override final func clone() -> State_\(state.name) {\n"
+        str += "        let transitions: [Transition<State_\(state.name), \(stateType)>] = self.transitions.map { $0.cast(to: State_\(state.name).self) }\n"
         str += "        let state = State_\(state.name)(\n"
         str += "            \"\(state.name)\",\n"
-        str += "            transitions: cast(transitions: self.transitions),\n"
+        str += "            transitions: transitions,\n"
         str += "            gateway: self.gateway\n,"
         str += "            clock: self.clock,\n"
         if nil != machine.parameters {
@@ -1085,6 +1090,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
     private func makeStateType(forMachine machine: String, fromModel model: Model, inDirectory path: URL) -> URL? {
         let stateTypePath = path.appendingPathComponent("\(machine)State.swift", isDirectory: false)
         let stateType = machine + "State"
+        let transitionType = machine + "StateTransition"
         var str = "import swiftfsm\n"
         str += "import swiftfsm\n"
         str += "public class \(stateType):\n"
@@ -1095,7 +1101,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "    SnapshotListContainer\n"
         str += "{\n\n"
         str += "    public let name: String\n\n"
-        str += "    public var transitions: [Transition<\(stateType), \(stateType)>]\n\n"
+        str += "    public var transitions: [\(transitionType)]\n\n"
         str += "    public let snapshotSensors: Set<String>?\n\n"
         str += "    public let snapshotActuators: Set<String>?\n\n"
         str += "    internal weak var Me: " + machine + "FiniteStateMachine!\n\n"
@@ -1108,7 +1114,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "            \"Me\": []\n"
         str += "        ]\n"
         str += "    }\n\n"
-        str += "    public init(_ name: String, transitions: [Transition<\(stateType), \(stateType)>] = [], snapshotSensors: Set<String>?, snapshotActuators: Set<String>?) {\n"
+        str += "    public init(_ name: String, transitions: [\(transitionType)] = [], snapshotSensors: Set<String>?, snapshotActuators: Set<String>?) {\n"
         str += "        self.name = name\n"
         str += "        self.transitions = transitions\n"
         str += "        self.snapshotSensors = snapshotSensors\n"
@@ -1131,6 +1137,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
     private func makeMiPalStateType(forMachine machine: String, inDirectory path: URL) -> URL? {
         let stateTypePath = path.appendingPathComponent("\(machine)State.swift", isDirectory: false)
         let stateType = machine + "State"
+        let transitionType = machine + "StateTransition"
         let str = """
             import swiftfsm
 
@@ -1157,7 +1164,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                  *  An array of transitions that this state may use to move to another
                  *  state.
                  */
-                public var transitions: [Transition<\(stateType), \(stateType)>]
+                public var transitions: [\(transitionType)]
                 
                 public let snapshotSensors: Set<String>?
                 
@@ -1182,7 +1189,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                  *
                  *  - transitions: All transitions to other states that this state can use.
                  */
-                public init(_ name: String, transitions: [Transition<\(stateType), \(stateType)>] = [], snapshotSensors: Set<String>?, snapshotActuators: Set<String>?) {
+                public init(_ name: String, transitions: [\(transitionType)] = [], snapshotSensors: Set<String>?, snapshotActuators: Set<String>?) {
                     self.name = name
                     self.transitions = transitions
                     self.snapshotSensors = snapshotSensors
@@ -1227,16 +1234,18 @@ public final class MachineAssembler: Assembler, ErrorContainer {
     public func makeEmptyStateType(forMachine machine: String, withActions actions: [String], inDirectory path: URL) -> URL? {
         let emptyStateTypePath = path.appendingPathComponent("Empty\(machine)State.swift", isDirectory: false)
         let stateType = machine + "State"
+        let transitionType = machine + "StateTransition"
         var str = "import swiftfsm\n\n"
         str += "public final class Empty\(stateType): \(stateType) {\n\n"
         str += "    public init(_ name: String, transitions: [Transition<Empty\(stateType), \(stateType)>] = []) {\n"
-        str += "        super.init(name, transitions: cast(transitions: transitions), snapshotSensors: [], snapshotActuators: [])\n"
+        str += "        super.init(name, transitions: transitions.map { \(transitionType)($0) }, snapshotSensors: [], snapshotActuators: [])\n"
         str += "    }\n\n"
         for action in actions {
             str += "    public override final func \(action)() {}\n\n"
         }
         str += "    public override final func clone() -> Empty\(stateType) {\n"
-        str += "        return Empty\(stateType)(self.name, transitions: self.transitions.map(cast))\n"
+        str += "        let transitions: [Transition<Empty\(stateType), \(stateType)>] = self.transitions.map { $0.cast(to: Empty\(stateType).self) }\n"
+        str += "        return Empty\(stateType)(self.name, transitions: transitions)\n"
         str += "    }\n\n"
         str += "}\n"
         if (false == self.helpers.createFile(atPath: emptyStateTypePath, withContents: str)) {
@@ -1249,6 +1258,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
     public func makeCallbackStateType(forMachine machine: String, withActions actions: [String], inDirectory path: URL) -> URL? {
         let callbackStateTypePath = path.appendingPathComponent("Callback\(machine)State.swift", isDirectory: false)
         let stateType = machine + "State"
+        let transitionType = machine + "StateTransition"
         var str = "import swiftfsm\n\n"
         str += "public final class Callback\(stateType): \(stateType) {\n\n"
         for action in actions {
@@ -1268,7 +1278,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         for action in actions {
             str += "        self._\(action) = \(action)\n"
         }
-        str += "        super.init(name, transitions: cast(transitions: transitions), snapshotSensors: snapshotSensors, snapshotActuators: snapshotActuators)\n"
+        str += "        super.init(name, transitions: transitions.map { \(transitionType)($0) }, snapshotSensors: snapshotSensors, snapshotActuators: snapshotActuators)\n"
         str += "    }\n\n"
         for action in actions {
             str += "    public final override func \(action)() {\n"
@@ -1276,7 +1286,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "    }\n\n"
         }
         str += "    public override final func clone() -> Callback\(stateType) {\n"
-        str += "        return Callback\(stateType)(self.name, transitions: cast(transitions: self.transitions), snapshotSensors: self.snapshotSensors, snapshotActuators: self.snapshotActuators)\n"
+        str += "        let transitions: [Transition<Callback\(stateType), \(stateType)>] = self.transitions.map { $0.cast(to: Callback\(stateType).self) }\n"
+        str += "        return Callback\(stateType)(self.name, transitions: transitions, snapshotSensors: self.snapshotSensors, snapshotActuators: self.snapshotActuators)\n"
         str += "    }\n\n"
         str += "}\n"
         if (false == self.helpers.createFile(atPath: callbackStateTypePath, withContents: str)) {
@@ -1376,6 +1387,36 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "                default:\n"
         str += "                    continue\n"
         str += "                }\n"
+        str += "            }\n"
+        str += "        }\n"
+        str += "    }\n\n"
+        str += "    public var snapshotSensors: [AnySnapshotController] {\n"
+        str += "        guard let snapshotSensors = self.currentState.snapshotSensors else {\n"
+        str += "            return []\n"
+        str += "        }\n"
+        str += "        return snapshotSensors.map { (label: String) -> AnySnapshotController in\n"
+        str += "            switch label {\n"
+        for sensor in machine.externalVariables.lazy.filter({ $0.accessType == .readOnly || $0.accessType == .readAndWrite }) {
+            str += "            case \"\(sensor.label)\":\n"
+            str += "                return AnySnapshotController(self.external_\(sensor.label))\n"
+        }
+        str += "            default:\n"
+        str += "                fatalError(\"Unable to find sensor \\(label).\")\n"
+        str += "            }\n"
+        str += "        }\n"
+        str += "    }\n\n"
+        str += "    public var snapshotActuators: [AnySnapshotController] {\n"
+        str += "        guard let snapshotActuators = self.currentState.snapshotActuators else {\n"
+        str += "            return []\n"
+        str += "        }\n"
+        str += "        return snapshotActuators.map { (label: String) -> AnySnapshotController in\n"
+        str += "            switch label {\n"
+        for actuator in machine.externalVariables.lazy.filter({ $0.accessType == .writeOnly || $0.accessType == .readAndWrite }) {
+            str += "            case \"\(actuator.label)\":\n"
+            str += "                return AnySnapshotController(self.external_\(actuator.label))\n"
+        }
+        str += "            default:\n"
+        str += "                fatalError(\"Unable to find actuator \\(label).\")\n"
         str += "            }\n"
         str += "        }\n"
         str += "    }\n\n"
@@ -1661,6 +1702,59 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         str += indent + "}\n\n"
         return str
+    }
+    
+    private func makeTransition(forMachine machine: Machine, inDirectory dir: URL) -> URL? {
+        let name = machine.name + "StateTransition"
+        let stateType = machine.name + "State"
+        let filePath = dir.appendingPathComponent(name + ".swift", isDirectory: false)
+        let str = """
+            import swiftfsm
+            
+            public struct \(name): TransitionType {
+                
+                internal let base: Any
+                
+                public let target: \(stateType)
+                
+                public let canTransition: (\(stateType)) -> Bool
+                
+                public init<S: \(stateType)>(_ base: Transition<S, \(stateType)>) {
+                    self.base = base
+                    self.target = base.target
+                    self.canTransition = {
+                        guard let state = $0 as? S else {
+                            fatalError("Unable to cast source state in transition to \\(S.self)")
+                        }
+                        return base.canTransition(state)
+                    }
+                }
+                
+                internal init(base: Any, target: \(stateType), canTransition: @escaping (\(stateType)) -> Bool) {
+                    self.base = base
+                    self.target = target
+                    self.canTransition = canTransition
+                }
+                
+                public func cast<S: \(stateType)>(to type: S.Type) -> Transition<S, \(stateType)> {
+                    guard let transition = self.base as? Transition<S, \(stateType)> else {
+                        fatalError("Unable to cast bast to Transition<\\(type), \(stateType)>")
+                    }
+                    return transition
+                }
+                
+                public func map(_ f: (\(stateType)) -> \(stateType)) -> \(name) {
+                    return \(name)(base: base, target: f(self.target), canTransition: self.canTransition)
+                }
+                
+            }
+            """
+        // Create the file.
+        if (false == self.helpers.createFile(atPath: filePath, withContents: str)) {
+            self.errors.append("Unable to create \(name) at \(filePath.path)")
+            return nil
+        }
+        return filePath
     }
 
 }
