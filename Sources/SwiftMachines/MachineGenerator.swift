@@ -168,6 +168,7 @@ public final class MachineGenerator {
     func makePackageDependencies(forMachine machine: Machine) -> URL? {
         let filePath = machine.filePath.appendingPathComponent("packageDependencies.json", isDirectory: false)
         let encoder = JSONEncoder()
+        #if os(macOS)
         if #available(macOS 10.15, *) {
             encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
         } else if #available(macOS 10.13, *) {
@@ -175,6 +176,9 @@ public final class MachineGenerator {
         } else {
             encoder.outputFormatting = [.prettyPrinted]
         }
+        #else
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        #endif
         do {
             let data = try encoder.encode(machine.packageDependencies)
             try data.write(to: filePath)
