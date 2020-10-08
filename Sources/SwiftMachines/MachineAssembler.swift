@@ -965,7 +965,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "            gateway: self.gateway\n,"
         str += "            clock: self.clock,\n"
         if nil != machine.parameters {
-            str += "            \(machine.name): self._\(machine.name)\n"
+            str += "            \(machine.name): self._\(machine.name),\n"
         }
         for submachine in machine.submachines {
             str += "            \(submachine.name)Machine: self._\(submachine.name)Machine,\n"
