@@ -1606,7 +1606,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "        }\n"
         str += "        fsm.initialState = apply(fsm.initialState)\n"
         str += "        fsm.initialPreviousState = apply(fsm.initialPreviousState)\n"
-        str += "        fsm.suspendedState = fsm.suspendedState.map { $0.apply() }\n"
+        str += "        fsm.suspendedState = fsm.suspendedState.map { apply($0) }\n"
         str += "        fsm.suspendState = apply(fsm.suspendState)\n"
         str += "        fsm.exitState = apply(fsm.exitState)\n"
         str += "        fsm.currentState = apply(self.currentState.clone())\n"
