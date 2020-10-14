@@ -66,41 +66,21 @@ public final class MachineArrangmentAssembler: ErrorContainer {
 
     private let helpers: FileHelpers
 
-    private let invoker: Invoker
-
     private let packageInitializer: PackageInitializer
 
     public var lastError: String? {
         return self.errors.last
     }
 
-    private var takenVars: Set<String> = []
-
-    private let varHelpers: VariableHelpers
-
-    private let varParser: VarParser
-
     public init(
         helpers: FileHelpers = FileHelpers(),
-        invoker: Invoker = Invoker(),
-        packageInitializer: PackageInitializer = PackageInitializer(),
-        varHelpers: VariableHelpers = VariableHelpers(),
-        varParser: VarParser = VarParser()
+        packageInitializer: PackageInitializer = PackageInitializer()
     ) {
         self.helpers = helpers
-        self.invoker = invoker
         self.packageInitializer = packageInitializer
-        self.varHelpers = varHelpers
-        self.varParser = varParser
     }
 
-    public func packagePath(forMachine machine: Machine, builtInDirectory buildDir: URL) -> String {
-        return buildDir
-            .appendingPathComponent(machine.name + "Machine", isDirectory: true)
-            .path
-    }
-
-    public func assemble(_ machines: [Machine], inDirectory buildDir: URL) -> (URL, [URL])? {
+    public func assemble(_ machines: [Machine], inDirectory buildDir: URL, name: String) -> (URL, [URL])? {
         let errorMsg = "Unable to assemble arrangement"
         var files: [URL] = []
         guard
@@ -119,6 +99,59 @@ public final class MachineArrangmentAssembler: ErrorContainer {
         }
         files.append(contentsOf: [main])
         return (packageDir, files)
+    }
+    
+    private func makePackage(forExecutable executable: String, forMachines machines: [Machine], inDirectory path: URL, withAddedDependencies addedDependencies: [(URL)]) -> URL? {
+        let packagePath = path.appendingPathComponent("Package.swift", isDirectory: false)
+        let mandatoryDependencies: [String] = [
+            ".package(url: \"ssh://git.mipal.net/git/swiftfsm.git\", .branch(\"master\"))"
+        ]
+        guard
+            let machineDependencies: [String] = machines.failMap({
+                return ".package(path: \"" + $0.filePath.resolvingSymlinksInPath().absoluteString + "\")"
+            }),
+            let packageDependencies: [String] = machines.failMap({ machine in
+                machine.packageDependencies.failMap {
+                    guard let url = URL(string: $0.url.replacingMachineVariables(forMachine: machine)) else {
+                        self.errors.append("Malformed url in package dependency in machine \(machine.name): \($0.url)")
+                        return nil
+                    }
+                    let qualifiers = $0.qualifiers.combine("") { $0 + ", " + $1 }
+                    return ".package(url: \"\(url.absoluteURL.standardized.absoluteString)\", \(qualifiers))"
+                }
+            })?.flatMap({ $0 })
+        else {
+            return nil
+        }
+        let addedDependencyList = addedDependencies.map { ".package(url: \"\($0.absoluteString)\", .branch(\"master\"))" }
+        let allConstructedDependencies = Set(addedDependencyList + mandatoryDependencies + machineDependencies + packageDependencies).sorted()
+        let dependencies = allConstructedDependencies.isEmpty ? "" : "\n        " + allConstructedDependencies.combine("") { $0 + ",\n        " + $1 } + "\n    "
+        let products = Set((machines.flatMap { $0.packageDependencies.flatMap { $0.products } } + machines.map { $0.name + "Machine" }).map { "\"" + $0 + "\"" }).sorted()
+        let productList = products.combine("") { $0 + ", " + $1 }
+        let str = """
+            // swift-tools-version:5.1
+            import PackageDescription
+
+            let package = Package(
+                name: "Arrangement",
+                products: [
+                    .executable(
+                        name: "\(executable)",
+                        targets: ["Arrangment"]
+                    )
+                ],
+                dependencies: [\(dependencies)],
+                targets: [
+                    .target(name: "Arrangment", dependencies: [\(productList)])
+                ]
+            )
+
+            """
+        guard true == self.helpers.createFile(atPath: packagePath, withContents: str) else {
+            self.errors.append("Unable to create Package.swift at \(packagePath.path)")
+            return nil
+        }
+        return packagePath
     }
     
     private func makeMain(forMachines machines: [Machine], inDirectory dir: URL) -> URL? {
