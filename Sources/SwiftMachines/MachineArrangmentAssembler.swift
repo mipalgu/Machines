@@ -80,17 +80,19 @@ public final class MachineArrangmentAssembler: ErrorContainer {
         self.packageInitializer = packageInitializer
     }
 
-    public func assemble(_ machines: [Machine], inDirectory buildDir: URL, name: String) -> (URL, [URL])? {
+    public func assemble(_ machines: [Machine], inDirectory buildDir: URL, name: String, machineBuildDir: String) -> (URL, [URL])? {
         let errorMsg = "Unable to assemble arrangement"
         var files: [URL] = []
         guard
             let buildDir = self.helpers.overwriteDirectory(buildDir),
-            let packageDir = self.packageInitializer.initialize(withName: "Arrangement", andType: .Executable, inDirectory: buildDir)
+            let packageDir = self.packageInitializer.initialize(withName: "Arrangement", andType: .Executable, inDirectory: buildDir),
+            let packageSwift = self.makePackage(forExecutable: name, forMachines: machines, inDirectory: packageDir, machineBuildDir: machineBuildDir)
         else {
             self.errors.append(errorMsg)
             return nil
         }
-        let sourceDir = packageDir.appendingPathComponent("Sources/Arrangment", isDirectory: true)
+        files.append(packageSwift)
+        let sourceDir = packageDir.appendingPathComponent("Sources/Arrangement", isDirectory: true)
         guard
             let main = self.makeMain(forMachines: machines, inDirectory: sourceDir)
         else {
@@ -101,14 +103,16 @@ public final class MachineArrangmentAssembler: ErrorContainer {
         return (packageDir, files)
     }
     
-    private func makePackage(forExecutable executable: String, forMachines machines: [Machine], inDirectory path: URL, withAddedDependencies addedDependencies: [(URL)]) -> URL? {
+    private func makePackage(forExecutable executable: String, forMachines machines: [Machine], inDirectory path: URL, machineBuildDir: String, withAddedDependencies addedDependencies: [(URL)] = []) -> URL? {
         let packagePath = path.appendingPathComponent("Package.swift", isDirectory: false)
         let mandatoryDependencies: [String] = [
             ".package(url: \"ssh://git.mipal.net/git/swiftfsm.git\", .branch(\"master\"))"
         ]
         guard
             let machineDependencies: [String] = machines.failMap({
-                return ".package(path: \"" + $0.filePath.resolvingSymlinksInPath().absoluteString + "\")"
+                let urlString = $0.filePath.resolvingSymlinksInPath().appendingPathComponent(machineBuildDir + "/" + $0.name + "Machine").absoluteString
+                let url = urlString.prefix(7) == "file://" ? String(urlString.dropFirst(7)) : urlString
+                return ".package(path: \"" + url  + "\")"
             }),
             let packageDependencies: [String] = machines.failMap({ machine in
                 machine.packageDependencies.failMap {
@@ -126,7 +130,7 @@ public final class MachineArrangmentAssembler: ErrorContainer {
         let addedDependencyList = addedDependencies.map { ".package(url: \"\($0.absoluteString)\", .branch(\"master\"))" }
         let allConstructedDependencies = Set(addedDependencyList + mandatoryDependencies + machineDependencies + packageDependencies).sorted()
         let dependencies = allConstructedDependencies.isEmpty ? "" : "\n        " + allConstructedDependencies.combine("") { $0 + ",\n        " + $1 } + "\n    "
-        let products = Set((machines.flatMap { $0.packageDependencies.flatMap { $0.products } } + machines.map { $0.name + "Machine" }).map { "\"" + $0 + "\"" }).sorted()
+        let products = Set((machines.flatMap { $0.packageDependencies.flatMap { $0.products } } + machines.map { $0.name + "Machine" } + ["swiftfsm_binaries"]).map { "\"" + $0 + "\"" }).sorted()
         let productList = products.combine("") { $0 + ", " + $1 }
         let str = """
             // swift-tools-version:5.1
@@ -137,12 +141,12 @@ public final class MachineArrangmentAssembler: ErrorContainer {
                 products: [
                     .executable(
                         name: "\(executable)",
-                        targets: ["Arrangment"]
+                        targets: ["Arrangement"]
                     )
                 ],
                 dependencies: [\(dependencies)],
                 targets: [
-                    .target(name: "Arrangment", dependencies: [\(productList)])
+                    .target(name: "Arrangement", dependencies: [\(productList)])
                 ]
             )
 
@@ -223,10 +227,10 @@ public final class MachineArrangmentAssembler: ErrorContainer {
         }
         let factoriesDict = "let factories = [\n" + keys.joined(separator: ", ") + "\n]"
         let declarations = uniqueNameSet.sorted().map {
-            return "let " + $0 + "Machine = Swiftfsm.makeMachine(name: \"" + $0 + "\", factories: factories)"
+            return "let " + $0 + "Machine_instance = Swiftfsm.makeMachine(name: \"" + $0 + "\", factories: factories)"
         }
-        let machinesArr = "[" + uniqueNameSet.sorted().map { $0 + "Machine" }.joined(separator: ", ") + "]"
-        let runStatement = "Swiftfsm.run(machine: machines)"
+        let machinesArr = "let machines = [" + uniqueNameSet.sorted().map { $0 + "Machine_instance" }.joined(separator: ", ") + "]"
+        let runStatement = "Swiftfsm.run(machines: machines)"
         let str = imports + "\n"
             + dependencyImports + "\n\n"
             + factoriesDict + "\n\n"
