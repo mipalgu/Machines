@@ -225,7 +225,7 @@ public final class MachineArrangmentAssembler: ErrorContainer {
         let keys: [String] = dependencies.map {
             return "    \"" + $0.label + "\": " + $0.name + "Machine.make_" + $0.name
         }
-        let factoriesDict = "let factories = [\n" + keys.joined(separator: ", ") + "\n]"
+        let factoriesDict = "let factories = [\n" + keys.joined(separator: ",\n") + "\n]"
         let declarations = uniqueNameSet.sorted().map {
             return "let " + $0 + "Machine_instance = Swiftfsm.makeMachine(name: \"" + $0 + "\", factories: factories)"
         }
