@@ -72,15 +72,15 @@ public final class MachineArrangementCompiler {
         self.invoker = invoker
     }
     
-    public func outputPath(forArrangementBuiltInDirectory buildDir: URL, executableName: String) -> String {
-        return self.outputURL(forArrangementBuiltInDirectory: buildDir, executableName: executableName).path
+    public func outputPath(forArrangementBuiltInDirectory buildDir: URL, executableName: String, swiftBuildConfig: SwiftBuildConfig) -> String {
+        return self.outputURL(forArrangementBuiltInDirectory: buildDir, executableName: executableName, swiftBuildConfig: swiftBuildConfig).path
     }
     
-    public func outputURL(forArrangementBuiltInDirectory buildDir: URL, executableName: String) -> URL {
+    public func outputURL(forArrangementBuiltInDirectory buildDir: URL, executableName: String, swiftBuildConfig: SwiftBuildConfig) -> URL {
         let buildDirPath = buildDir.appendingPathComponent("Arrangement", isDirectory: true)
         return buildDirPath
             .appendingPathComponent(".build", isDirectory: true)
-            .appendingPathComponent("release", isDirectory: true)
+            .appendingPathComponent(swiftBuildConfig.rawValue, isDirectory: true)
             .appendingPathComponent(executableName, isDirectory: false)
     }
     
@@ -89,6 +89,7 @@ public final class MachineArrangementCompiler {
         executableName: String,
         withBuildDir buildDir: URL,
         machineBuildDir: String,
+        swiftBuildConfig: SwiftBuildConfig = .debug,
         withCCompilerFlags cCompilerFlags: [String] = [],
         andCXXCompilerFlags cxxCompilerFlags: [String] = [],
         andLinkerFlags linkerFlags: [String] = [],
@@ -124,8 +125,8 @@ public final class MachineArrangementCompiler {
             return nil
         }
         let _ = fm.changeCurrentDirectoryPath(cwd)
-        let compileDir = buildPath.appendingPathComponent(".build", isDirectory: true).appendingPathComponent("release", isDirectory: true)
-        let outputURL = self.outputURL(forArrangementBuiltInDirectory: buildDir, executableName: executableName)
+        let compileDir = buildPath.appendingPathComponent(".build", isDirectory: true).appendingPathComponent(swiftBuildConfig.rawValue, isDirectory: true)
+        let outputURL = self.outputURL(forArrangementBuiltInDirectory: buildDir, executableName: executableName, swiftBuildConfig: swiftBuildConfig)
         do {
             _ = try self.copyOutPath(outputURL, toFolder: compileDir)
         } catch let e {
@@ -140,13 +141,11 @@ public final class MachineArrangementCompiler {
         let swiftIncludeSearchPaths = machine.swiftIncludeSearchPaths.map { "-I\(self.expand($0, withMachine: machine))" }
         let includeSearchPaths = machine.includeSearchPaths.map { "-I\(self.expand($0, withMachine: machine))" }
         let libSearchPaths = machine.libSearchPaths.map { "-L\(self.expand($0, withMachine: machine))" }
-        let mandatoryFlags = ["-Xlinker", "-lFSM"]
-        var args: [String] = ["swift", "build"]
+        var args: [String] = []
         args.append(contentsOf: swiftIncludeSearchPaths.flatMap { ["-Xswiftc", $0] })
         args.append(contentsOf: includeSearchPaths.flatMap { ["-Xcc", $0] })
         args.append(contentsOf: includeSearchPaths.flatMap { ["-Xcxx", $0] })
         args.append(contentsOf: libSearchPaths.flatMap { ["-Xlinker", $0] })
-        args.append(contentsOf: mandatoryFlags)
         return args
     }
     
@@ -157,14 +156,12 @@ public final class MachineArrangementCompiler {
         andSwiftCompilerFlags swiftCompilerFlags: [String],
         andSwiftBuildFlags swiftBuildFlags: [String]
     ) -> [String] {
-        let mandatoryFlags = ["-Xlinker", "-lFSM"]
         var args: [String] = ["swift", "build"]
         args.append(contentsOf: swiftBuildFlags)
         args.append(contentsOf: swiftCompilerFlags.flatMap { ["-Xswiftc", $0] })
         args.append(contentsOf: cCompilerFlags.flatMap { ["-Xcc", $0] })
         args.append(contentsOf: cxxCompilerFlags.flatMap { ["-Xcxx", $0] })
         args.append(contentsOf: linkerFlags.flatMap { ["-Xlinker", $0] })
-        args.append(contentsOf: mandatoryFlags)
         return args
     }
     
