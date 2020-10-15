@@ -216,12 +216,24 @@ public final class MachineArrangmentAssembler: ErrorContainer {
                     return false
                 }
                 dependentMachines[name] = url
+                dependencyList[name] = dependency.dependantMachines.map { $0.name }
+                if machine.callableMachines.contains(dependency) {
+                    if nil == callableList[caller] {
+                        callableList[caller] = [dependency.name]
+                    } else {
+                        callableList[caller]!.append(dependency.name)
+                    }
+                }
+                if machine.invocableMachines.contains(dependency) {
+                    if nil == invocableList[caller] {
+                        invocableList[caller] = [dependency.name]
+                    } else {
+                        invocableList[caller]!.append(dependency.name)
+                    }
+                }
                 if false == generateDependentMachines(dependency, caller: name) {
                     return false
                 }
-                dependencyList[name] = dependency.dependantMachines.map { $0.name }
-                callableList[name] = dependency.callableMachines.map { $0.name }
-                invocableList[name] = dependency.invocableMachines.map { $0.name }
             }
             return true
         }
@@ -233,7 +245,7 @@ public final class MachineArrangmentAssembler: ErrorContainer {
                 self.errors.append("Cannot determine name of machine with key '\($0.key)'")
                 return nil
             }
-            return (label: $0.key.replacingOccurrences(of: ".", with: "-"), name: name, url: $0.value)
+            return (label: $0.key, name: name, url: $0.value)
         }) else {
             return nil
         }
@@ -244,7 +256,7 @@ public final class MachineArrangmentAssembler: ErrorContainer {
         let factoriesDict = "let factories = [\n" + keys.joined(separator: ",\n") + "\n]"
         func createDict(label: String, dict: [String: [String]]) -> String {
             let declaration = "let " + label + ": [String: [String]] = ["
-            let body = dependencyList.map { "    \"" + $0.key + "\": [" + $0.value.joined(separator: ", ") + "]" }.joined(separator: ",\n")
+            let body = dependencyList.map { "    \"" + $0.key + "\": [" + $0.value.map { "\"\($0)\"" }.joined(separator: ", ") + "]" }.joined(separator: ",\n")
             let end = "]"
             return declaration + "\n" + body + "\n" + end
         }
