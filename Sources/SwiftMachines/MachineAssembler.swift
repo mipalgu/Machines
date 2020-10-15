@@ -110,6 +110,13 @@ public final class MachineAssembler: Assembler, ErrorContainer {
     private func assemble(_ machine: Machine, inDirectory buildDir: URL, isSubMachine: Bool) -> (URL, [URL])? {
         let errorMsg = "Unable to assemble \(machine.filePath.path)"
         var dependencies: [URL] = []
+        if
+            let data = try? Data(contentsOf: buildDir.appendingPathComponent("machine.json", isDirectory: false)),
+            let previousMachine = try? JSONDecoder().decode(MachineToken<Machine>.self, from: data),
+            previousMachine == MachineToken(data: machine)
+        {
+            return (buildDir.appendingPathComponent(machine.name + "Machine", isDirectory: true), [])
+        }
         guard
             let buildDir = self.helpers.overwriteDirectory(buildDir)
         else {
@@ -196,6 +203,9 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         guard true == self.createAndTagGitRepo(inDirectory: packageDir) else {
             self.errors.append(errorMsg)
             return nil
+        }
+        if let data = try? JSONEncoder().encode(MachineToken(data: machine)) {
+            _ = try? data.write(to: buildDir.appendingPathComponent("machine.json", isDirectory: true))
         }
         return (packageDir, files)
     }

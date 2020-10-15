@@ -87,11 +87,19 @@ public final class MachineArrangmentAssembler: ErrorContainer {
     public func assemble(_ machines: [Machine], inDirectory buildDir: URL, name: String, machineBuildDir: String) -> (URL, [URL])? {
         let errorMsg = "Unable to assemble arrangement"
         var files: [URL] = []
-        guard nil != self.flattenedMachines(machines).failMap({
+        let flattenedMachines = self.flattenedMachines(machines)
+        guard nil != flattenedMachines.failMap({
             self.assembler.assemble($0, inDirectory: $0.filePath.appendingPathComponent(machineBuildDir, isDirectory: true))
         }) else {
             self.errors.append(contentsOf: self.assembler.errors)
             return nil
+        }
+        if
+            let data = try? Data(contentsOf: buildDir.appendingPathComponent("arrangement.json", isDirectory: false)),
+            let token = try? JSONDecoder().decode(MachineToken<[Machine]>.self, from: data),
+            token == MachineToken(data: flattenedMachines)
+        {
+            return (buildDir.appendingPathComponent("Arrangement", isDirectory: false), [])
         }
         guard
             let buildDir = self.helpers.overwriteDirectory(buildDir),
@@ -108,6 +116,9 @@ public final class MachineArrangmentAssembler: ErrorContainer {
         else {
             self.errors.append(errorMsg)
             return nil
+        }
+        if let data = try? JSONEncoder().encode(MachineToken(data: flattenedMachines)) {
+            try? data.write(to: buildDir.appendingPathComponent("arrangement.json", isDirectory: false))
         }
         files.append(contentsOf: [main])
         return (packageDir, files)
