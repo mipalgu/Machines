@@ -280,7 +280,7 @@ public final class MachineArrangmentAssembler: ErrorContainer {
         return _process(machines)
     }
     
-    private func flattenedMachines(_ machines: [Machine]) -> [Machine] {
+    public func flattenedMachines(_ machines: [Machine]) -> [Machine] {
         var urls = Set<URL>()
         func _process(_ machines: [Machine]) -> [Machine] {
             return machines.flatMap { (machine) -> [Machine] in
