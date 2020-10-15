@@ -192,10 +192,10 @@ public final class MachineArrangmentAssembler: ErrorContainer {
         }
         var machineNames: Set<String> = Set(machines.map { $0.name })
         var urls: [URL: String] = Dictionary(uniqueKeysWithValues: uniqueURLMachines.map { ($0.filePath.resolvingSymlinksInPath().absoluteURL, $0.name) })
-        var dependentMachines: [String: URL] = Dictionary(uniqueKeysWithValues: uniqueNameMachines.map { ($0.name, $0.filePath.resolvingSymlinksInPath().absoluteURL) })
-        var dependencyList: [String: [String]] = Dictionary(uniqueKeysWithValues: uniqueNameMachines.map { ($0.name, $0.dependantMachines.map { $0.name }) })
-        var callableList: [String: [String]] = Dictionary(uniqueKeysWithValues: uniqueNameMachines.map { ($0.name, $0.callableMachines.map { $0.name }) })
-        var invocableList: [String: [String]] = Dictionary(uniqueKeysWithValues: uniqueNameMachines.map { ($0.name, $0.invocableMachines.map { $0.name }) })
+        var dependentMachines: [String: URL] = Dictionary(uniqueKeysWithValues: uniqueNameMachines.map { ($0.name + "." + $0.name, $0.filePath.resolvingSymlinksInPath().absoluteURL) })
+        var dependencyList: [String: [String]] = Dictionary(uniqueKeysWithValues: uniqueNameMachines.map { ($0.name + "." + $0.name, $0.dependantMachines.map { $0.name }) })
+        var callableList: [String: [String]] = Dictionary(uniqueKeysWithValues: uniqueNameMachines.map { ($0.name + "." + $0.name, $0.callableMachines.map { $0.name }) })
+        var invocableList: [String: [String]] = Dictionary(uniqueKeysWithValues: uniqueNameMachines.map { ($0.name + "." + $0.name, $0.invocableMachines.map { $0.name }) })
         var processedMachines: Set<String> = uniqueNameSet
         func generateDependentMachines(_ machine: Machine, caller: String) -> Bool {
             for dependency in machine.dependantMachines {
@@ -237,7 +237,7 @@ public final class MachineArrangmentAssembler: ErrorContainer {
             }
             return true
         }
-        if nil == uniqueNameMachines.failMap({ generateDependentMachines($0, caller: $0.name) }) {
+        if nil == uniqueNameMachines.failMap({ generateDependentMachines($0, caller: $0.name + "." + $0.name) }) {
             return nil
         }
         guard let dependencies: [(label: String, name: String, url: URL)] = dependentMachines.sorted(by: { $0.key < $1.key }).failMap({
