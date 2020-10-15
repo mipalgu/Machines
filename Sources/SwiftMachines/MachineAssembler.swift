@@ -1,6 +1,6 @@
 /*
- * MachineAssembler.swift 
- * Machines 
+ * MachineAssembler.swift
+ * Machines
  *
  * Created by Callum McColl on 20/02/2017.
  * Copyright © 2017 Callum McColl. All rights reserved.
@@ -197,7 +197,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             self.errors.append(errorMsg)
             return nil
         }
-        return (packageDir, files) 
+        return (packageDir, files)
     }
 
     public func makeBridgingHeader(forMachine machine: Machine, inDirectory path: URL) -> URL? {
@@ -225,6 +225,10 @@ public final class MachineAssembler: Assembler, ErrorContainer {
 
     private func makePackage(forMachine machine: Machine, inDirectory path: URL, withAddedDependencies addedDependencies: [(URL)]) -> URL? {
         let packagePath = path.appendingPathComponent("Package.swift", isDirectory: false)
+        let mandatoryPackages = [
+            ".package(url: \"ssh://git.mipal.net/git/swiftfsm_FSM.git\", .branch(\"binaries\"))"
+        ]
+        let mandatoryProducts = ["FSM"]
         guard
             let constructedDependencies: [String] = machine.packageDependencies.failMap({
                 guard let url = URL(string: $0.url.replacingMachineVariables(forMachine: machine)) else {
@@ -232,15 +236,17 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                     return nil
                 }
                 let qualifiers = $0.qualifiers.combine("") { $0 + ", " + $1 }
-                return ".package(url: \"\(url.absoluteURL.standardized.absoluteString)\", \(qualifiers))"
+                return ".package(url: \"\(String(url.absoluteURL.standardized.absoluteString.reversed().drop(while: { $0 == "/" }).reversed()))\", \(qualifiers))"
             })
         else {
             return nil
         }
-        let addedDependencyList = addedDependencies.map { ".package(url: \"\($0.absoluteString)\", .branch(\"master\"))" }
-        let allConstructedDependencies = addedDependencyList + constructedDependencies
+        let addedDependencyList = addedDependencies.map {
+            ".package(url: \"\(String($0.absoluteString.reversed().drop(while: { $0 == "/" }).reversed()))\", .branch(\"master\"))"
+        }
+        let allConstructedDependencies = addedDependencyList + constructedDependencies + mandatoryPackages
         let dependencies = allConstructedDependencies.isEmpty ? "" : "\n        " + allConstructedDependencies.combine("") { $0 + ",\n        " + $1 } + "\n    "
-        let products = Set(machine.packageDependencies.lazy.flatMap { $0.products }.map { "\"" + $0 + "\"" })
+        let products = Set((machine.packageDependencies.flatMap { $0.products } + mandatoryProducts) .map { "\"" + $0 + "\"" })
         let productList = products.sorted().combine("") { $0 + ", " + $1 }
         let str = """
             // swift-tools-version:5.1
@@ -251,7 +257,6 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                 products: [
                     .library(
                         name: "\(machine.name)Machine",
-                        type: .dynamic,
                         targets: ["\(machine.name)Machine"]
                     )
                 ],
@@ -1092,7 +1097,6 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         let stateType = machine + "State"
         let transitionType = machine + "StateTransition"
         var str = "import swiftfsm\n"
-        str += "import swiftfsm\n"
         str += "public class \(stateType):\n"
         str += "    StateType,\n"
         str += "    CloneableState,\n"

@@ -106,31 +106,24 @@ public final class MachineArrangmentAssembler: ErrorContainer {
     private func makePackage(forExecutable executable: String, forMachines machines: [Machine], inDirectory path: URL, machineBuildDir: String, withAddedDependencies addedDependencies: [(URL)] = []) -> URL? {
         let packagePath = path.appendingPathComponent("Package.swift", isDirectory: false)
         let mandatoryDependencies: [String] = [
-            ".package(url: \"ssh://git.mipal.net/git/swiftfsm.git\", .branch(\"master\"))"
+            ".package(url: \"ssh://git.mipal.net/git/swiftfsm.git\", .branch(\"binaries\"))"
         ]
         guard
             let machineDependencies: [String] = machines.failMap({
                 let urlString = $0.filePath.resolvingSymlinksInPath().appendingPathComponent(machineBuildDir + "/" + $0.name + "Machine").absoluteString
-                let url = urlString.prefix(7) == "file://" ? String(urlString.dropFirst(7)) : urlString
-                return ".package(path: \"" + url  + "\")"
-            }),
-            let packageDependencies: [String] = machines.failMap({ machine in
-                machine.packageDependencies.failMap {
-                    guard let url = URL(string: $0.url.replacingMachineVariables(forMachine: machine)) else {
-                        self.errors.append("Malformed url in package dependency in machine \(machine.name): \($0.url)")
-                        return nil
-                    }
-                    let qualifiers = $0.qualifiers.combine("") { $0 + ", " + $1 }
-                    return ".package(url: \"\(url.absoluteURL.standardized.absoluteString)\", \(qualifiers))"
-                }
-            })?.flatMap({ $0 })
+                let url = String(urlString.reversed().drop(while: { $0 == "/" }).reversed())
+                return ".package(url: \"" + url  + "\", .branch(\"master\"))"
+            })
         else {
             return nil
         }
-        let addedDependencyList = addedDependencies.map { ".package(url: \"\($0.absoluteString)\", .branch(\"master\"))" }
-        let allConstructedDependencies = Set(addedDependencyList + mandatoryDependencies + machineDependencies + packageDependencies).sorted()
+        let addedDependencyList: [String] = addedDependencies.map {
+            let url = String($0.resolvingSymlinksInPath().absoluteString.reversed().drop(while: { $0 == "/" }).reversed())
+            return ".package(url: \"\(url)\", .branch(\"master\"))"
+        }
+        let allConstructedDependencies = Set(addedDependencyList + mandatoryDependencies + machineDependencies).sorted()
         let dependencies = allConstructedDependencies.isEmpty ? "" : "\n        " + allConstructedDependencies.combine("") { $0 + ",\n        " + $1 } + "\n    "
-        let products = Set((machines.flatMap { $0.packageDependencies.flatMap { $0.products } } + machines.map { $0.name + "Machine" } + ["swiftfsm_binaries"]).map { "\"" + $0 + "\"" }).sorted()
+        let products = Set((machines.map { $0.name + "Machine" } + ["swiftfsm_binaries"]).map { "\"" + $0 + "\"" }).sorted()
         let productList = products.combine("") { $0 + ", " + $1 }
         let str = """
             // swift-tools-version:5.1
