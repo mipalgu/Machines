@@ -193,10 +193,13 @@ public final class MachineArrangmentAssembler: ErrorContainer {
         var machineNames: Set<String> = Set(machines.map { $0.name })
         var urls: [URL: String] = Dictionary(uniqueKeysWithValues: uniqueURLMachines.map { ($0.filePath.resolvingSymlinksInPath().absoluteURL, $0.name) })
         var dependentMachines: [String: URL] = Dictionary(uniqueKeysWithValues: uniqueNameMachines.map { ($0.name, $0.filePath.resolvingSymlinksInPath().absoluteURL) })
+        var dependencyList: [String: [String]] = Dictionary(uniqueKeysWithValues: uniqueNameMachines.map { ($0.name, $0.dependantMachines.map { $0.name }) })
+        var callableList: [String: [String]] = Dictionary(uniqueKeysWithValues: uniqueNameMachines.map { ($0.name, $0.callableMachines.map { $0.name }) })
+        var invocableList: [String: [String]] = Dictionary(uniqueKeysWithValues: uniqueNameMachines.map { ($0.name, $0.invocableMachines.map { $0.name }) })
         var processedMachines: Set<String> = uniqueNameSet
         func generateDependentMachines(_ machine: Machine, caller: String) -> Bool {
             for dependency in machine.dependantMachines {
-                let name = caller + "_" + dependency.name
+                let name = caller + "." + dependency.name
                 if processedMachines.contains(name) {
                     continue
                 }
@@ -216,6 +219,9 @@ public final class MachineArrangmentAssembler: ErrorContainer {
                 if false == generateDependentMachines(dependency, caller: name) {
                     return false
                 }
+                dependencyList[name] = dependency.dependantMachines.map { $0.name }
+                callableList[name] = dependency.callableMachines.map { $0.name }
+                invocableList[name] = dependency.invocableMachines.map { $0.name }
             }
             return true
         }
@@ -224,10 +230,10 @@ public final class MachineArrangmentAssembler: ErrorContainer {
         }
         guard let dependencies: [(label: String, name: String, url: URL)] = dependentMachines.sorted(by: { $0.key < $1.key }).failMap({
             guard let name = urls[$0.value] else {
-                self.errors.append("Cannot determine name of machine with label '\($0.key)'")
+                self.errors.append("Cannot determine name of machine with key '\($0.key)'")
                 return nil
             }
-            return (label: $0.key, name: name, url: $0.value)
+            return (label: $0.key.replacingOccurrences(of: ".", with: "-"), name: name, url: $0.value)
         }) else {
             return nil
         }
@@ -236,14 +242,28 @@ public final class MachineArrangmentAssembler: ErrorContainer {
             return "    \"" + $0.label + "\": " + $0.name + "Machine.make_" + $0.name
         }
         let factoriesDict = "let factories = [\n" + keys.joined(separator: ",\n") + "\n]"
+        func createDict(label: String, dict: [String: [String]]) -> String {
+            let declaration = "let " + label + ": [String: [String]] = ["
+            let body = dependencyList.map { "    \"" + $0.key + "\": [" + $0.value.joined(separator: ", ") + "]" }.joined(separator: ",\n")
+            let end = "]"
+            return declaration + "\n" + body + "\n" + end
+        }
+        let dependantMachines = createDict(label: "dependantMachines", dict: dependencyList)
+        let callableMachines = createDict(label: "callableMachines", dict: callableList)
+        let invocableMachines = createDict(label: "invocableMachines", dict: invocableList)
+        let swiftfsm = "let swiftfsm = Swiftfsm()"
         let declarations = uniqueNameSet.sorted().map {
-            return "let " + $0 + "Machine_instance = Swiftfsm.makeMachine(name: \"" + $0 + "\", factories: factories)"
+            return "let " + $0 + "Machine_instance = swiftfsm.makeMachine(name: \"" + $0 + "\", dependantMachines: dependantMachines, callableMachines: callableMachines, invocableMachines: invocableMachines, factories: factories)"
         }
         let machinesArr = "let machines = [" + uniqueNameSet.sorted().map { $0 + "Machine_instance" }.joined(separator: ", ") + "]"
-        let runStatement = "Swiftfsm.run(machines: machines)"
+        let runStatement = "swiftfsm.run(machines: machines)"
         let str = imports + "\n"
             + dependencyImports + "\n\n"
+            + dependantMachines + "\n\n"
+            + callableMachines + "\n\n"
+            + invocableMachines + "\n\n"
             + factoriesDict + "\n\n"
+            + swiftfsm + "\n\n"
             + declarations.joined(separator: "\n") + "\n"
             + machinesArr + "\n"
             + runStatement
