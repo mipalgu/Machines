@@ -63,6 +63,8 @@ import swift_helpers
 public final class MachineArrangmentAssembler: ErrorContainer {
 
     public private(set) var errors: [String] = []
+    
+    private let assembler: MachineAssembler
 
     private let helpers: FileHelpers
 
@@ -73,9 +75,11 @@ public final class MachineArrangmentAssembler: ErrorContainer {
     }
 
     public init(
+        assembler: MachineAssembler = MachineAssembler(),
         helpers: FileHelpers = FileHelpers(),
         packageInitializer: PackageInitializer = PackageInitializer()
     ) {
+        self.assembler = assembler
         self.helpers = helpers
         self.packageInitializer = packageInitializer
     }
@@ -83,6 +87,12 @@ public final class MachineArrangmentAssembler: ErrorContainer {
     public func assemble(_ machines: [Machine], inDirectory buildDir: URL, name: String, machineBuildDir: String) -> (URL, [URL])? {
         let errorMsg = "Unable to assemble arrangement"
         var files: [URL] = []
+        guard nil != self.flattenedMachines(machines).failMap({
+            self.assembler.assemble($0, inDirectory: $0.filePath.appendingPathComponent(machineBuildDir, isDirectory: true))
+        }) else {
+            self.errors.append(contentsOf: self.assembler.errors)
+            return nil
+        }
         guard
             let buildDir = self.helpers.overwriteDirectory(buildDir),
             let packageDir = self.packageInitializer.initialize(withName: "Arrangement", andType: .Executable, inDirectory: buildDir),
@@ -108,22 +118,18 @@ public final class MachineArrangmentAssembler: ErrorContainer {
         let mandatoryDependencies: [String] = [
             ".package(url: \"ssh://git.mipal.net/git/swiftfsm.git\", .branch(\"binaries\"))"
         ]
-        guard
-            let machineDependencies: [String] = machines.failMap({
-                let urlString = $0.filePath.resolvingSymlinksInPath().appendingPathComponent(machineBuildDir + "/" + $0.name + "Machine").absoluteString
-                let url = String(urlString.reversed().drop(while: { $0 == "/" }).reversed())
-                return ".package(url: \"" + url  + "\", .branch(\"master\"))"
-            })
-        else {
-            return nil
+        let machinePackages: [String] = self.machinePackageURLs(machines).map { (machine, url) in
+            let url = String(url.appendingPathComponent(machineBuildDir + "/" + machine.name + "Machine").absoluteString.reversed().drop(while: { $0 == "/" }).reversed())
+            return ".package(url: \"\(url)\", .branch(\"master\"))"
         }
+        let machineProducts = self.machinePackageProducts(machines).map { $1 }
         let addedDependencyList: [String] = addedDependencies.map {
             let url = String($0.resolvingSymlinksInPath().absoluteString.reversed().drop(while: { $0 == "/" }).reversed())
             return ".package(url: \"\(url)\", .branch(\"master\"))"
         }
-        let allConstructedDependencies = Set(addedDependencyList + mandatoryDependencies + machineDependencies).sorted()
+        let allConstructedDependencies = Set(addedDependencyList + mandatoryDependencies + machinePackages).sorted()
         let dependencies = allConstructedDependencies.isEmpty ? "" : "\n        " + allConstructedDependencies.combine("") { $0 + ",\n        " + $1 } + "\n    "
-        let products = Set((machines.map { $0.name + "Machine" } + ["swiftfsm_binaries"]).map { "\"" + $0 + "\"" }).sorted()
+        let products = Set((machineProducts + ["swiftfsm_binaries"]).map { "\"" + $0 + "\"" }).sorted()
         let productList = products.combine("") { $0 + ", " + $1 }
         let str = """
             // swift-tools-version:5.1
@@ -236,6 +242,46 @@ public final class MachineArrangmentAssembler: ErrorContainer {
             return nil
         }
         return filePath
+    }
+    
+    private func machinePackageURLs(_ machines: [Machine]) -> [(Machine, URL)] {
+        return self.process(machines) {
+            return $0.filePath.resolvingSymlinksInPath().absoluteURL
+        }
+    }
+    
+    private func machinePackageProducts(_ machines: [Machine]) -> [(Machine, String)] {
+        return self.process(machines) { $0.name + "Machine" }
+    }
+    
+    private func process<T>(_ machines: [Machine], _ transform: (Machine) -> T) -> [(Machine, T)] {
+        var urls = Set<URL>()
+        func _process(_ machines: [Machine]) -> [(Machine, T)] {
+            return machines.flatMap { (machine) -> [(Machine, T)] in
+                let machineUrl = machine.filePath.resolvingSymlinksInPath().absoluteURL
+                if urls.contains(machineUrl) {
+                    return []
+                }
+                urls.insert(machineUrl)
+                return [(machine, transform(machine))] + _process(machine.dependantMachines)
+            }
+        }
+        return _process(machines)
+    }
+    
+    private func flattenedMachines(_ machines: [Machine]) -> [Machine] {
+        var urls = Set<URL>()
+        func _process(_ machines: [Machine]) -> [Machine] {
+            return machines.flatMap { (machine) -> [Machine] in
+                let machineUrl = machine.filePath.resolvingSymlinksInPath().absoluteURL
+                if urls.contains(machineUrl) {
+                    return []
+                }
+                urls.insert(machineUrl)
+                return [machine] + _process(machine.dependantMachines)
+            }
+        }
+        return _process(machines)
     }
 
 }
