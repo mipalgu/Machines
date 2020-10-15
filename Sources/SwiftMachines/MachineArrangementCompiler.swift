@@ -58,6 +58,8 @@
 
 import Foundation
 
+import IO
+
 @available(macOS 10.11, *)
 public final class MachineArrangementCompiler {
     
@@ -65,10 +67,13 @@ public final class MachineArrangementCompiler {
     
     private let assembler: MachineArrangmentAssembler
     
+    private let helpers: FileHelpers
+    
     private let invoker: Invoker
     
-    public init(assembler: MachineArrangmentAssembler = MachineArrangmentAssembler(), invoker: Invoker = Invoker()) {
+    public init(assembler: MachineArrangmentAssembler = MachineArrangmentAssembler(), helpers: FileHelpers = FileHelpers(), invoker: Invoker = Invoker()) {
         self.assembler = assembler
+        self.helpers = helpers
         self.invoker = invoker
     }
     
@@ -125,10 +130,14 @@ public final class MachineArrangementCompiler {
             return nil
         }
         let _ = fm.changeCurrentDirectoryPath(cwd)
-        let compileDir = buildPath.appendingPathComponent(".build", isDirectory: true).appendingPathComponent(swiftBuildConfig.rawValue, isDirectory: true)
+        let compileDir = buildDir.appendingPathComponent(swiftBuildConfig.rawValue, isDirectory: true)
+        if nil == self.helpers.overwriteDirectory(compileDir) {
+            self.errors.append("Unable to create build directory: \(compileDir.path)")
+            return nil
+        }
         let outputURL = self.outputURL(forArrangementBuiltInDirectory: buildDir, executableName: executableName, swiftBuildConfig: swiftBuildConfig)
         do {
-            _ = try self.copyOutPath(outputURL, toFolder: compileDir)
+            _ = try self.copyOutPath(outputURL, toFolder: compileDir, executableName: executableName)
         } catch let e {
             self.errors.append("\(e)")
             print(e)
@@ -175,13 +184,8 @@ public final class MachineArrangementCompiler {
         return URL(fileURLWithPath: path, relativeTo: machine.filePath).path
     }
     
-    fileprivate func copyOutPath(_ outPath: URL, toFolder dir: URL) throws -> Bool {
+    fileprivate func copyOutPath(_ outPath: URL, toFolder dir: URL, executableName name: String) throws -> Bool {
         let fm = FileManager.default
-        var components = String(outPath.lastPathComponent.dropFirst(3)).components(separatedBy: ".")
-        if components.count >= 2 && components[components.count - 2].hasSuffix("Machine") {
-            components[components.count - 2] = String(components[components.count - 2].dropLast(7))
-        }
-        let name = components.combine("") { $0 + "." + $1 }
         try fm.copyItem(at: outPath, to: dir.appendingPathComponent(name, isDirectory: false))
         return true
     }
