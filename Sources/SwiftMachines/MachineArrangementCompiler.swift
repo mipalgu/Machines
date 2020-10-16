@@ -114,6 +114,7 @@ public final class MachineArrangementCompiler {
         }
         print("Compiling at path: \(buildPath.path)")
         let arrangementArgs = self.makeCompilerFlags(
+            forConfig: swiftBuildConfig,
             withCCompilerFlags: cCompilerFlags,
             andCXXCompilerFlags: cxxCompilerFlags,
             andLinkerFlags: linkerFlags,
@@ -159,6 +160,7 @@ public final class MachineArrangementCompiler {
     }
     
     private func makeCompilerFlags(
+        forConfig swiftBuildConfig: SwiftBuildConfig,
         withCCompilerFlags cCompilerFlags: [String],
         andCXXCompilerFlags cxxCompilerFlags: [String],
         andLinkerFlags linkerFlags: [String],
@@ -166,6 +168,7 @@ public final class MachineArrangementCompiler {
         andSwiftBuildFlags swiftBuildFlags: [String]
     ) -> [String] {
         var args: [String] = ["swift", "build"]
+        args.append(contentsOf: ["-c", swiftBuildConfig.rawValue])
         args.append(contentsOf: swiftBuildFlags)
         args.append(contentsOf: swiftCompilerFlags.flatMap { ["-Xswiftc", $0] })
         args.append(contentsOf: cCompilerFlags.flatMap { ["-Xcc", $0] })
