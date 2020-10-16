@@ -94,10 +94,11 @@ public final class MachineArrangmentAssembler: ErrorContainer {
             self.errors.append(contentsOf: self.assembler.errors)
             return nil
         }
+        let arrangementToken = MachineToken(data: Set(flattenedMachines.map { $0.filePath.resolvingSymlinksInPath().absoluteString }).sorted())
         if
             let data = try? Data(contentsOf: buildDir.appendingPathComponent("arrangement.json", isDirectory: false)),
-            let token = try? JSONDecoder().decode(MachineToken<[Machine]>.self, from: data),
-            token == MachineToken(data: flattenedMachines)
+            let token = try? JSONDecoder().decode(MachineToken<[String]>.self, from: data),
+            token == arrangementToken
         {
             return (buildDir.appendingPathComponent("Arrangement", isDirectory: false), [])
         }
@@ -117,7 +118,7 @@ public final class MachineArrangmentAssembler: ErrorContainer {
             self.errors.append(errorMsg)
             return nil
         }
-        if let data = try? JSONEncoder().encode(MachineToken(data: flattenedMachines)) {
+        if let data = try? JSONEncoder().encode(arrangementToken) {
             try? data.write(to: buildDir.appendingPathComponent("arrangement.json", isDirectory: false))
         }
         files.append(contentsOf: [main])
