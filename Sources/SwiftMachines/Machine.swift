@@ -1,6 +1,6 @@
 /*
- * Machine.swift 
- * Machines 
+ * Machine.swift
+ * Machines
  *
  * Created by Callum McColl on 19/02/2017.
  * Copyright © 2017 Callum McColl. All rights reserved.
@@ -74,7 +74,8 @@ public struct Machine {
         
         public var machine: Machine {
             let parser = MachineParser()
-            guard let machine = parser.parseMachine(atPath: filePath.absoluteString) else {
+            let path: String = self.filePath.path.hasPrefix("file://") ? String(filePath.path.dropFirst(7)) : self.filePath.path
+            guard let machine = parser.parseMachine(atPath: path) else {
                 parser.errors.forEach {
                     print($0, stderr)
                 }
