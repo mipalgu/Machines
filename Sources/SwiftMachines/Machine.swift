@@ -59,6 +59,30 @@
 import Foundation
 
 public struct Machine {
+    
+    public struct Dependency: Hashable, Codable {
+        
+        public var name: String?
+        
+        public var filePath: URL
+        
+        public var machine: Machine {
+            let parser = MachineParser()
+            guard let machine = parser.parseMachine(atPath: filePath.absoluteString) else {
+                parser.errors.forEach {
+                    print($0, stderr)
+                }
+                exit(EXIT_FAILURE)
+            }
+            return machine
+        }
+        
+        public init(name: String?, filePath: URL) {
+            self.name = name
+            self.filePath = filePath
+        }
+        
+    }
 
     public var name: String
 
@@ -103,12 +127,24 @@ public struct Machine {
     public var suspendState: State?
 
     public var states: [State]
+    
+    public var callables: [Dependency]
+    
+    public var invocables: [Dependency]
+    
+    public var subs: [Dependency]
 
-    public var submachines: [Machine]
+    public var submachines: [Machine] {
+        self.subs.map { $0.machine }
+    }
     
-    public var callableMachines: [Machine]
+    public var callableMachines: [Machine] {
+        self.callables.map { $0.machine }
+    }
     
-    public var invocableMachines: [Machine]
+    public var invocableMachines: [Machine] {
+        self.invocables.map { $0.machine }
+    }
     
     public var dependantMachines: [Machine] {
         return self.submachines + self.parameterisedMachines
@@ -135,9 +171,9 @@ public struct Machine {
         initialState: State,
         suspendState: State?,
         states: [State],
-        submachines: [Machine],
-        callableMachines: [Machine],
-        invocableMachines: [Machine]
+        submachines: [Dependency],
+        callableMachines: [Dependency],
+        invocableMachines: [Dependency]
     ) {
         self.name = name
         self.filePath = filePath
@@ -155,9 +191,9 @@ public struct Machine {
         self.initialState = initialState
         self.suspendState = suspendState
         self.states = states
-        self.submachines = submachines
-        self.callableMachines = callableMachines
-        self.invocableMachines = invocableMachines
+        self.subs = submachines
+        self.callables = callableMachines
+        self.invocables = invocableMachines
     }
 
 }
