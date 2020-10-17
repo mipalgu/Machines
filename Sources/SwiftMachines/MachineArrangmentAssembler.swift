@@ -194,45 +194,45 @@ public final class MachineArrangmentAssembler: ErrorContainer {
         var machineNames: Set<String> = Set(machines.map { $0.name })
         var urls: [URL: String] = Dictionary(uniqueKeysWithValues: uniqueURLMachines.map { ($0.filePath.resolvingSymlinksInPath().absoluteURL, $0.name) })
         var dependentMachines: [String: URL] = Dictionary(uniqueKeysWithValues: uniqueNameMachines.map { ($0.name + "." + $0.name, $0.filePath.resolvingSymlinksInPath().absoluteURL) })
-        var dependencyList: [String: [String]] = Dictionary(uniqueKeysWithValues: uniqueNameMachines.map { ($0.name + "." + $0.name, $0.dependantMachines.map { $0.name }) })
-        var callableList: [String: [String]] = Dictionary(uniqueKeysWithValues: uniqueNameMachines.map { ($0.name + "." + $0.name, $0.callableMachines.map { $0.name }) })
-        var invocableList: [String: [String]] = Dictionary(uniqueKeysWithValues: uniqueNameMachines.map { ($0.name + "." + $0.name, $0.invocableMachines.map { $0.name }) })
+        var dependencyList: [String: [String]] = Dictionary(uniqueKeysWithValues: uniqueNameMachines.map { ($0.name + "." + $0.name, $0.dependencies.map { $0.callName }) })
+        var callableList: [String: [String]] = Dictionary(uniqueKeysWithValues: uniqueNameMachines.map { ($0.name + "." + $0.name, $0.dependencies.map { $0.callName }) })
+        var invocableList: [String: [String]] = Dictionary(uniqueKeysWithValues: uniqueNameMachines.map { ($0.name + "." + $0.name, $0.dependencies.map { $0.callName }) })
         var processedMachines: Set<String> = uniqueNameSet
         func generateDependentMachines(_ machine: Machine, caller: String) -> Bool {
-            for dependency in machine.dependantMachines {
-                let name = caller + "." + dependency.name
+            for dependency in machine.dependencies {
+                let name = caller + "." + dependency.callName
                 if processedMachines.contains(name) {
                     continue
                 }
-                machineNames.insert(dependency.name)
+                machineNames.insert(dependency.callName)
                 processedMachines.insert(name)
                 let url = dependency.filePath.resolvingSymlinksInPath().absoluteURL
-                if let previousName = urls[url], previousName != dependency.name {
-                    self.errors.append("Found two machines with the same url '\(url)': \(previousName), \(dependency.name)")
+                if let previousName = urls[url], previousName != dependency.callName {
+                    self.errors.append("Found two machines with the same url '\(url)': \(previousName), \(dependency.callName)")
                     return false
                 }
-                urls[url] = dependency.name
+                urls[url] = dependency.callName
                 if let previousURL = dependentMachines[name], previousURL != url {
                     self.errors.append("Machines must have unique names, found two machines with the same name '\(name)':\n    \(previousURL.path),\n    \(url.path)")
                     return false
                 }
                 dependentMachines[name] = url
-                dependencyList[name] = dependency.dependantMachines.map { $0.name }
-                if machine.callableMachines.contains(dependency) {
+                dependencyList[name] = dependency.machine.dependencies.map { $0.callName }
+                if machine.callables.contains(dependency) {
                     if nil == callableList[caller] {
-                        callableList[caller] = [dependency.name]
+                        callableList[caller] = [dependency.callName]
                     } else {
-                        callableList[caller]!.append(dependency.name)
+                        callableList[caller]!.append(dependency.callName)
                     }
                 }
-                if machine.invocableMachines.contains(dependency) {
+                if machine.invocables.contains(dependency) {
                     if nil == invocableList[caller] {
-                        invocableList[caller] = [dependency.name]
+                        invocableList[caller] = [dependency.callName]
                     } else {
-                        invocableList[caller]!.append(dependency.name)
+                        invocableList[caller]!.append(dependency.callName)
                     }
                 }
-                if false == generateDependentMachines(dependency, caller: name) {
+                if false == generateDependentMachines(dependency.machine, caller: name) {
                     return false
                 }
             }
@@ -307,7 +307,7 @@ public final class MachineArrangmentAssembler: ErrorContainer {
                     return []
                 }
                 urls.insert(machineUrl)
-                return [(machine, transform(machine))] + _process(machine.dependantMachines)
+                return [(machine, transform(machine))] + _process(machine.dependencies.map { $0.machine })
             }
         }
         return _process(machines)
@@ -322,7 +322,7 @@ public final class MachineArrangmentAssembler: ErrorContainer {
                     return []
                 }
                 urls.insert(machineUrl)
-                return [machine] + _process(machine.dependantMachines)
+                return [machine] + _process(machine.dependencies.map { $0.machine } )
             }
         }
         return _process(machines)

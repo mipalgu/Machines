@@ -64,7 +64,13 @@ public struct Machine {
         
         public var name: String?
         
+        public var machineName: String
+        
         public var filePath: URL
+        
+        public var callName: String {
+            return self.name ?? self.machineName
+        }
         
         public var machine: Machine {
             let parser = MachineParser()
@@ -77,8 +83,9 @@ public struct Machine {
             return machine
         }
         
-        public init(name: String?, filePath: URL) {
+        public init(name: String?, machineName: String, filePath: URL) {
             self.name = name
+            self.machineName = machineName
             self.filePath = filePath
         }
         
@@ -133,26 +140,34 @@ public struct Machine {
     public var invocables: [Dependency]
     
     public var subs: [Dependency]
+    
+    public var dependencies: [Dependency] {
+        return self.parameterisedDependencies + self.subs
+    }
+    
+    public var parameterisedDependencies: [Dependency] {
+        return self.callables + self.invocables
+    }
 
-    public var submachines: [Machine] {
+    /*public var submachines: [(String, Machine)] {
         self.subs.map { $0.machine }
     }
     
-    public var callableMachines: [Machine] {
+    public var callableMachines: [(String, Machine)] {
         self.callables.map { $0.machine }
     }
     
-    public var invocableMachines: [Machine] {
+    public var invocableMachines: [(String, Machine)] {
         self.invocables.map { $0.machine }
     }
     
-    public var dependantMachines: [Machine] {
+    public var dependantMachines: [(String, Machine)] {
         return self.submachines + self.parameterisedMachines
     }
     
-    public var parameterisedMachines: [Machine] {
+    public var parameterisedMachines: [(String, Machine)] {
         return self.callableMachines + self.invocableMachines
-    }
+    }*/
 
     public init(
         name: String,

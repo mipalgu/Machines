@@ -332,14 +332,23 @@ public final class MachineParser: ErrorContainer {
         let lines = str.components(separatedBy: .newlines).lazy.map { $0.trimmingCharacters(in: .whitespaces)}.filter { $0 != "" }
         guard let dependencies: [Machine.Dependency] = lines.failMap({
             let components = $0.components(separatedBy: "->")
-            guard let name = components.first else {
+            guard let first = components.first else {
                 return nil
             }
+            let name: String?
+            let filePath: URL
             if components.count == 1 {
-                return Machine.Dependency(name: nil, filePath: URL(fileURLWithPath: $0.trimmingCharacters(in: .whitespaces), isDirectory: true))
+                name = nil
+                filePath = URL(fileURLWithPath: $0.trimmingCharacters(in: .whitespaces), isDirectory: true)
+            } else {
+                name = first
+                filePath = URL(fileURLWithPath: components.dropFirst().joined(separator: "->").trimmingCharacters(in: .whitespaces), isDirectory: true)
             }
-            let filePath = components.dropFirst().joined(separator: "->")
-            return Machine.Dependency(name: name.trimmingCharacters(in: .whitespaces), filePath: URL(fileURLWithPath: filePath.trimmingCharacters(in: .whitespaces), isDirectory: true))
+            guard let machineName = filePath.lastPathComponent.components(separatedBy: ".").first else {
+                self.errors.append("Unable to parse machine name from file path \(filePath.path)")
+                return nil
+            }
+            return Machine.Dependency(name: name?.trimmingCharacters(in: .whitespaces), machineName: machineName.trimmingCharacters(in: .whitespaces), filePath: filePath)
         }) else {
             return nil
         }
