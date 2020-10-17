@@ -194,7 +194,7 @@ public final class MachineArrangmentAssembler: ErrorContainer {
                 if processedMachines.contains(name) {
                     continue
                 }
-                machineNames.insert(dependency.callName)
+                machineNames.insert(dependency.machineName)
                 processedMachines.insert(name)
                 let url = dependency.filePath.resolvingSymlinksInPath().absoluteURL
                 if let (previousMachineName, previousURL) = dependentMachines[name], previousMachineName != dependency.machineName || previousURL != url {
@@ -202,20 +202,23 @@ public final class MachineArrangmentAssembler: ErrorContainer {
                     return false
                 }
                 dependentMachines[name] = (dependency.machineName, url)
-                dependencyList[name] = dependency.machine.dependencies.map { $0.callName }
+                if nil == dependencyList[name] {
+                    dependencyList[name] = []
+                }
+                if machine.dependencies.contains(dependency) {
+                    dependencyList[caller]!.append(dependency.callName)
+                }
+                if nil == callableList[name] {
+                    callableList[name] = []
+                }
                 if machine.callables.contains(dependency) {
-                    if nil == callableList[caller] {
-                        callableList[caller] = [dependency.callName]
-                    } else {
-                        callableList[caller]!.append(dependency.callName)
-                    }
+                    callableList[caller]!.append(dependency.callName)
+                }
+                if nil == invocableList[name] {
+                    invocableList[name] = []
                 }
                 if machine.invocables.contains(dependency) {
-                    if nil == invocableList[caller] {
-                        invocableList[caller] = [dependency.callName]
-                    } else {
-                        invocableList[caller]!.append(dependency.callName)
-                    }
+                    invocableList[caller]!.append(dependency.callName)
                 }
                 if false == generateDependentMachines(dependency.machine, caller: name) {
                     return false
