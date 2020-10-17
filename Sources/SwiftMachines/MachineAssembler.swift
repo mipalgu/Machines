@@ -458,7 +458,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             let (parameterList, _) = self.makeParametersList(forMachine: machine)
             let params = machine.parameters?.map { "\"" + $0.label + "\": " + $0.label } ?? []
             let dictionary = params.isEmpty ? "[:]" : "[" + params.combine("") { $0 + ", " + $1 } + "]"
-            str += "    let \(machine.name)MachineID = gateway.id(of: \"\(machine.name)\")\n"
+            str += "    let \(machine.name)MachineID = gateway.id(of: machineName)\n"
             str += "    func \(machine.name)(\(parameterList)) -> Promise<\(machine.returnType ?? "Void")> {\n"
             str += "        return gateway.call(\(machine.name)MachineID, withParameters: \(dictionary), caller: caller)\n"
             str += "    }\n"
