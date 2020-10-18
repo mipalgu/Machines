@@ -303,7 +303,7 @@ public final class MachineGenerator {
         let path = machine.filePath.appendingPathComponent(name, isDirectory: false)
         let str: String = dependencies.map {
             let relative = $0.filePath.relativePath
-            ($0.name.map { $0 + " -> " } ?? "") + (relative.isEmpty ? $0.filePath.path : relative)
+            return ($0.name.map { $0 + " -> " } ?? "") + (relative.isEmpty ? $0.filePath.path : relative)
         }.joined(separator: "\n")
         guard self.helpers.createFile(atPath: path, withContents: str) else {
             return nil
