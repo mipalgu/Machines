@@ -302,7 +302,8 @@ public final class MachineGenerator {
     func makeDependenciesFile(named name: String, forMachine machine: Machine, dependencies: [Machine.Dependency]) -> URL? {
         let path = machine.filePath.appendingPathComponent(name, isDirectory: false)
         let str: String = dependencies.map {
-            ($0.name.map { $0 + " -> " } ?? "") + $0.filePath.resolvingSymlinksInPath().absoluteString
+            let relative = $0.filePath.relativePath
+            ($0.name.map { $0 + " -> " } ?? "") + (relative.isEmpty ? $0.filePath.path : relative)
         }.joined(separator: "\n")
         guard self.helpers.createFile(atPath: path, withContents: str) else {
             return nil
