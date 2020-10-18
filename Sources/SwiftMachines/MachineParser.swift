@@ -110,7 +110,7 @@ public final class MachineParser: ErrorContainer {
             let vars = self.parseMachineVarsFromMachine(atPath: machineDir, withName: name),
             let parameters = self.parseMachineParametersFromMachine(atPath: machineDir, withName: name),
             let returnType = self.parseMachineReturnTypeFromMachine(atPath: machineDir, withName: name),
-            let (callableMachines, invocableMachines, submachines) = self.parseDependencies(forMachineNamed: name, atPath: machineDir),
+            let (callableMachines, invocableMachines, submachines) = self.parseAllDependencies(forMachineAtPath: machineDir, atPath: machineDir),
             let states = self.parseStatesFromMachine(atPath: machineDir, withActions: actions, externalVariables: externalVariables),
             let initialState = states.first,
             let includes = self.parseMachineBridgingHeaderFromMachine(atPath: machineDir, withName: name)
@@ -309,44 +309,56 @@ public final class MachineParser: ErrorContainer {
         ))
     }
 
-    private func parseDependencies(forMachineNamed name: String, atPath path: URL) -> ([Machine], [Machine], [Machine])? {
-        let dependenciesPath = path.appendingPathComponent("dependencies.json", isDirectory: false)
+    private func parseAllDependencies(forMachineAtPath machineDir: URL, atPath path: URL) -> ([Machine.Dependency], [Machine.Dependency], [Machine.Dependency])? {
+        let callablesPath = path.appendingPathComponent("SyncMachines", isDirectory: false)
+        let invocablesPath = path.appendingPathComponent("AsyncMachines", isDirectory: false)
+        let submachinesPath = path.appendingPathComponent("SubMachines", isDirectory: false)
         guard
-            let data = try? Data(contentsOf: dependenciesPath)
+            let callables = self.parseDependencies(forMachineAtPath: machineDir, atPath: callablesPath),
+            let invocables = self.parseDependencies(forMachineAtPath: machineDir, atPath: invocablesPath),
+            let submachines = self.parseDependencies(forMachineAtPath: machineDir, atPath: submachinesPath)
         else {
-            return ([], [], [])
-        }
-        guard
-            let temp = try? JSONSerialization.jsonObject(with: data),
-            let json = temp as? [String: Any],
-            let callable = json["callable"] as? [String],
-            let invokable = json["parameterised"] as? [String],
-            let submachines = json["submachines"] as? [String]
-        else {
-            self.errors.append("Unable to read \(dependenciesPath.path)")
+            self.errors.append("Unable to parse dependencies.")
             return nil
         }
-        let dependenciesDir = path.appendingPathComponent("dependencies/", isDirectory: true)
-        func loadDependency(machineName: String) -> Machine? {
-            let machinePath = dependenciesDir.appendingPathComponent("\(machineName).machine", isDirectory: true)
-            guard let machine = self.parseMachine(atPath: machinePath.path) else {
-                self.errors.append("Unable to load machine at: \(machinePath.path)")
-                return nil
-            }
-            guard machine.name != name else {
-                self.errors.append("You cannot have a dependent machine \(machine.filePath.path) having the same name as the parent machine.")
-                return nil
-            }
-            return machine
-        }
-        guard
-            let callableMachines = callable.failMap(loadDependency),
-            let invokableMachines = invokable.failMap(loadDependency),
-            let submachinesMachines = submachines.failMap(loadDependency)
-        else {
+        return (callables, invocables, submachines)
+    }
+    
+    private func parseDependencies(forMachineAtPath machineDir: URL, atPath path: URL) -> [Machine.Dependency]? {
+        guard let str = try? String(contentsOf: path) else {
+            self.errors.append("Unable to read file at path \(path)")
             return nil
         }
-        return (callableMachines, invokableMachines, submachinesMachines)
+        let lines = str.components(separatedBy: .newlines).lazy.map { $0.trimmingCharacters(in: .whitespaces)}.filter { $0 != "" }
+        guard let dependencies: [Machine.Dependency] = lines.failMap({
+            let components = $0.components(separatedBy: "->")
+            guard let first = components.first else {
+                return nil
+            }
+            let name: String?
+            let filePath: String
+            if components.count == 1 {
+                name = nil
+                filePath = $0
+            } else {
+                name = first
+                filePath = components.dropFirst().joined(separator: "->")
+            }
+            let fileURL: URL
+            if #available(OSX 10.11, *) {
+                fileURL = URL(fileURLWithPath: filePath.trimmingCharacters(in: .whitespaces), isDirectory: false, relativeTo: machineDir)
+            } else {
+                fileURL = URL(fileURLWithPath: filePath.trimmingCharacters(in: .whitespaces), isDirectory: false)
+            }
+            guard let machineName = fileURL.lastPathComponent.components(separatedBy: ".").first else {
+                self.errors.append("Unable to parse machine name from file path \(fileURL.path)")
+                return nil
+            }
+            return Machine.Dependency(name: name?.trimmingCharacters(in: .whitespaces), machineName: machineName.trimmingCharacters(in: .whitespaces), filePath: fileURL)
+        }) else {
+            return nil
+        }
+        return dependencies
     }
 
     private func parseStatesFromMachine(atPath path: URL, withActions actions: [String], externalVariables: [Variable]) -> [State]? {

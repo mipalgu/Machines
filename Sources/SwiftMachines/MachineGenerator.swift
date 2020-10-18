@@ -108,11 +108,13 @@ public final class MachineGenerator {
             let stateFiles = self.makeStates(forMachine: machine),
             let stateList = self.makeStateList(forMachine: machine),
             let externalVariables = self.makeExternalVariables(forMachine: machine),
-            let dependencies = self.makeDependenciesFile(forMachine: machine)
+            let callables = self.makeDependenciesFile(named: "SyncMachines", forMachine: machine, dependencies: machine.callables),
+            let invocables = self.makeDependenciesFile(named: "ASyncMachines", forMachine: machine, dependencies: machine.invocables),
+            let subs = self.makeDependenciesFile(named: "SubMachines", forMachine: machine, dependencies: machine.subs)
         else {
             return nil
         }
-        var files = [packageDependenciesPath, swiftIncludePath, includePath, libPath, imports, vars, stateList, externalVariables, dependencies]
+        var files = [packageDependenciesPath, swiftIncludePath, includePath, libPath, imports, vars, stateList, externalVariables, callables, invocables, subs]
         files.append(contentsOf: stateFiles)
         if let includes = machine.includes {
             guard let bridgingHeader = self.helpers.createFile(
@@ -297,21 +299,12 @@ public final class MachineGenerator {
         return path
     }
 
-    func makeDependenciesFile(forMachine machine: Machine) -> URL? {
-        let path = machine.filePath.appendingPathComponent("dependencies.json", isDirectory: false)
-        let submachines: [String] = machine.submachines.map { $0.name }
-        let callableMachines: [String] = machine.callableMachines.map { $0.name }
-        let invokableMachines: [String] = machine.invocableMachines.map { $0.name }
-        let dict: [String: Any] = [
-            "submachines": submachines,
-            "callable": callableMachines,
-            "parameterised": invokableMachines
-        ]
-        guard
-            let json = self.encode(json: dict),
-            let str = String(data: json, encoding: .utf8),
-            true == self.helpers.createFile(atPath: path, withContents: str)
-        else {
+    func makeDependenciesFile(named name: String, forMachine machine: Machine, dependencies: [Machine.Dependency]) -> URL? {
+        let path = machine.filePath.appendingPathComponent(name, isDirectory: false)
+        let str: String = dependencies.map {
+            ($0.name.map { $0 + " -> " } ?? "") + $0.filePath.resolvingSymlinksInPath().absoluteString
+        }.joined(separator: "\n")
+        guard self.helpers.createFile(atPath: path, withContents: str) else {
             return nil
         }
         return path

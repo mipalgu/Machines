@@ -1,6 +1,6 @@
 /*
- * Machine.swift 
- * Machines 
+ * Machine.swift
+ * Machines
  *
  * Created by Callum McColl on 19/02/2017.
  * Copyright © 2017 Callum McColl. All rights reserved.
@@ -59,6 +59,38 @@
 import Foundation
 
 public struct Machine {
+    
+    public struct Dependency: Hashable, Codable {
+        
+        public var name: String?
+        
+        public var machineName: String
+        
+        public var filePath: URL
+        
+        public var callName: String {
+            return self.name ?? self.machineName
+        }
+        
+        public var machine: Machine {
+            let parser = MachineParser()
+            let path: String = self.filePath.path.hasPrefix("file://") ? String(filePath.path.dropFirst(7)) : self.filePath.path
+            guard let machine = parser.parseMachine(atPath: path) else {
+                parser.errors.forEach {
+                    print($0, stderr)
+                }
+                exit(EXIT_FAILURE)
+            }
+            return machine
+        }
+        
+        public init(name: String?, machineName: String, filePath: URL) {
+            self.name = name
+            self.machineName = machineName
+            self.filePath = filePath
+        }
+        
+    }
 
     public var name: String
 
@@ -103,20 +135,40 @@ public struct Machine {
     public var suspendState: State?
 
     public var states: [State]
+    
+    public var callables: [Dependency]
+    
+    public var invocables: [Dependency]
+    
+    public var subs: [Dependency]
+    
+    public var dependencies: [Dependency] {
+        return self.parameterisedDependencies + self.subs
+    }
+    
+    public var parameterisedDependencies: [Dependency] {
+        return self.callables + self.invocables
+    }
 
-    public var submachines: [Machine]
+    /*public var submachines: [(String, Machine)] {
+        self.subs.map { $0.machine }
+    }
     
-    public var callableMachines: [Machine]
+    public var callableMachines: [(String, Machine)] {
+        self.callables.map { $0.machine }
+    }
     
-    public var invocableMachines: [Machine]
+    public var invocableMachines: [(String, Machine)] {
+        self.invocables.map { $0.machine }
+    }
     
-    public var dependantMachines: [Machine] {
+    public var dependantMachines: [(String, Machine)] {
         return self.submachines + self.parameterisedMachines
     }
     
-    public var parameterisedMachines: [Machine] {
+    public var parameterisedMachines: [(String, Machine)] {
         return self.callableMachines + self.invocableMachines
-    }
+    }*/
 
     public init(
         name: String,
@@ -135,9 +187,9 @@ public struct Machine {
         initialState: State,
         suspendState: State?,
         states: [State],
-        submachines: [Machine],
-        callableMachines: [Machine],
-        invocableMachines: [Machine]
+        submachines: [Dependency],
+        callableMachines: [Dependency],
+        invocableMachines: [Dependency]
     ) {
         self.name = name
         self.filePath = filePath
@@ -155,9 +207,9 @@ public struct Machine {
         self.initialState = initialState
         self.suspendState = suspendState
         self.states = states
-        self.submachines = submachines
-        self.callableMachines = callableMachines
-        self.invocableMachines = invocableMachines
+        self.subs = submachines
+        self.callables = callableMachines
+        self.invocables = invocableMachines
     }
 
 }

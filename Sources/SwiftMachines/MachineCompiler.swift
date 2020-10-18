@@ -167,7 +167,7 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
             return [outputPath]
         }
         guard
-            let dependentMachines = machine.dependantMachines.failMap({
+            let dependentMachines = machine.dependencies.map { $0.machine }.failMap({
                 self.compileTreeReal(
                     $0,
                     withBuildDir: buildDir,
