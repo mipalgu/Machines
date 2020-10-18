@@ -392,7 +392,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
 
     private func makeSubmachineFactoryFunction(forMachine machine: Machine) -> String? {
         //let nameParam = "name" + (machine.submachines.isEmpty && machine.parameterisedMachines.isEmpty ? " _" : "")
-        let fun = "public func make_submachine_\(machine.name)(name: String, gateway: FSMGateway, clock: Timer, caller: FSM_ID) -> (AnyControllableFiniteStateMachine, [ShallowDependency]) {\n"
+        let fun = "public func make_submachine_\(machine.name)(name machineName: String, gateway: FSMGateway, clock: Timer, caller: FSM_ID) -> (AnyControllableFiniteStateMachine, [ShallowDependency]) {\n"
         guard let content = self.makeFactoryContent(forMachine: machine, createParameterisedMachine: false) else {
             return nil
         }
