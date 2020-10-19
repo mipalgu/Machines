@@ -236,7 +236,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
     private func makePackage(forMachine machine: Machine, inDirectory path: URL, withAddedDependencies addedDependencies: [(URL)]) -> URL? {
         let packagePath = path.appendingPathComponent("Package.swift", isDirectory: false)
         let mandatoryPackages = [
-            ".package(url: \"ssh://git.mipal.net/git/swiftfsm_FSM.git\", .branch(\"binaries\"))"
+            ".package(url: \"ssh://git.mipal.net/git/swiftfsm_FSM.git\", .branch(\"master\"))"
         ]
         let mandatoryProducts = ["FSM"]
         guard
