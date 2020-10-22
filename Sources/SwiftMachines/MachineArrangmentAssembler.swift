@@ -94,16 +94,23 @@ public final class MachineArrangmentAssembler: ErrorContainer {
             self.errors.append(contentsOf: self.assembler.errors)
             return nil
         }
+        let fm = FileManager.default
+        let buildDir = arrangement.filePath.appendingPathComponent(".build", isDirectory: true)
+        if !fm.fileExists(atPath: buildDir.path) {
+            guard nil != self.helpers.overwriteDirectory(buildDir) else {
+                self.errors.append("Unable to create .build directory")
+                return nil
+            }
+        }
         let arrangementToken = MachineToken(data: Set(flattenedMachines.map { $0.filePath.resolvingSymlinksInPath().absoluteString }).sorted())
         if
-            let data = try? Data(contentsOf: arrangement.filePath.appendingPathComponent("arrangement.json", isDirectory: false)),
+            let data = try? Data(contentsOf: buildDir.appendingPathComponent("arrangement.json", isDirectory: false)),
             let token = try? JSONDecoder().decode(MachineToken<[String]>.self, from: data),
             token == arrangementToken
         {
             return (arrangement.filePath.appendingPathComponent("Arrangement", isDirectory: false), [])
         }
         guard
-            let buildDir = self.helpers.overwriteDirectory(arrangement.filePath),
             let packageDir = self.packageInitializer.initialize(withName: "Arrangement", andType: .Executable, inDirectory: buildDir),
             let packageSwift = self.makePackage(forExecutable: arrangement.name, forMachines: arrangement.machines, inDirectory: packageDir, machineBuildDir: machineBuildDir)
         else {

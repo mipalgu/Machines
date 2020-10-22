@@ -90,7 +90,7 @@ public final class MachineArrangementCompiler {
     }
     
     public func compileArrangement(
-        arrangement: [Machine],
+        _ arrangement: Arrangement,
         executableName: String,
         withBuildDir buildDir: URL,
         machineBuildDir: String,
@@ -101,7 +101,7 @@ public final class MachineArrangementCompiler {
         andSwiftCompilerFlags swiftCompilerFlags: [String] = [],
         andSwiftBuildFlags swiftBuildFlags: [String] = []
     ) -> URL? {
-        guard let (buildPath, _) = self.assembler.assemble(arrangement, inDirectory: buildDir, name: executableName, machineBuildDir: machineBuildDir) else {
+        guard let (buildPath, _) = self.assembler.assemble(arrangement, machineBuildDir: machineBuildDir) else {
             self.errors = self.assembler.errors
             return nil
         }
@@ -121,7 +121,7 @@ public final class MachineArrangementCompiler {
             andSwiftCompilerFlags: swiftCompilerFlags,
             andSwiftBuildFlags: swiftBuildFlags
         )
-        let machineArgs = self.assembler.flattenedMachines(arrangement).flatMap {
+        let machineArgs = arrangement.flattenedMachines.flatMap {
             self.makeCompilerFlags(forMachine: $0)
         }
         let args = arrangementArgs + machineArgs
