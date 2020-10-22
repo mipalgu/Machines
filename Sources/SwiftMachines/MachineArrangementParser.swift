@@ -62,6 +62,8 @@ public final class MachineArrangementParser {
     
     public private(set) var errors: [String] = []
     
+    public init() {}
+    
     public func parseArrangement(atDirectory url: URL) -> Arrangement? {
         self.errors = []
         let machinesFile = url.appendingPathComponent("Machines", isDirectory: false)
