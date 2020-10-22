@@ -83,11 +83,6 @@ public final class MachineArrangementGenerator {
     
     public func generateArrangement(_ arrangement: Arrangement) -> URL? {
         self.errors = []
-        let fm = FileManager.default
-        if fm.fileExists(atPath: arrangement.filePath.path) {
-            self.errors.append("File already exists at path " + arrangement.filePath.path)
-            return nil
-        }
         guard nil != self.helpers.overwriteDirectory(arrangement.filePath) else {
             self.errors.append("Unable to create arrangement directory")
             return nil
