@@ -91,8 +91,6 @@ public final class MachineArrangementCompiler {
     
     public func compileArrangement(
         _ arrangement: Arrangement,
-        executableName: String,
-        withBuildDir buildDir: URL,
         machineBuildDir: String,
         swiftBuildConfig: SwiftBuildConfig = .debug,
         withCCompilerFlags cCompilerFlags: [String] = [],
@@ -132,14 +130,15 @@ public final class MachineArrangementCompiler {
             return nil
         }
         let _ = fm.changeCurrentDirectoryPath(cwd)
+        let buildDir = arrangement.filePath.appendingPathComponent(".build", isDirectory: true)
         let compileDir = buildDir.appendingPathComponent(swiftBuildConfig.rawValue, isDirectory: true)
         if nil == self.helpers.overwriteDirectory(compileDir) {
             self.errors.append("Unable to create build directory: \(compileDir.path)")
             return nil
         }
-        let outputURL = self.outputURL(forArrangementBuiltInDirectory: buildDir, executableName: executableName, swiftBuildConfig: swiftBuildConfig)
+        let outputURL = self.outputURL(forArrangementBuiltInDirectory: buildDir, executableName: arrangement.name, swiftBuildConfig: swiftBuildConfig)
         do {
-            _ = try self.copyOutPath(outputURL, toFolder: compileDir, executableName: executableName)
+            _ = try self.copyOutPath(outputURL, toFolder: compileDir, executableName: arrangement.name)
         } catch let e {
             self.errors.append("\(e)")
             print(e)
