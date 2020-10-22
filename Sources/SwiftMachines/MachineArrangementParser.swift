@@ -109,7 +109,7 @@ public final class MachineArrangementParser {
             }
             let fileURL: URL
             if #available(OSX 10.11, *) {
-                fileURL = URL(fileURLWithPath: filePath.trimmingCharacters(in: .whitespaces), isDirectory: false, relativeTo: arrangementDir)
+                fileURL = URL(fileURLWithPath: filePath.trimmingCharacters(in: .whitespaces), isDirectory: false, relativeTo: arrangementDir).absoluteURL
             } else {
                 fileURL = URL(fileURLWithPath: filePath.trimmingCharacters(in: .whitespaces), isDirectory: false)
             }
