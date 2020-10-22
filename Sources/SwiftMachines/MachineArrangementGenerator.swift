@@ -97,7 +97,7 @@ public final class MachineArrangementGenerator {
         let str = dependencies.map {
             let relativeURL = $0.filePath.relativeTo(url)
             if let name = $0.name {
-                return name + " -> " + relativeURL.path
+                return name + " -> " + relativeURL.relativePath
             }
             return relativeURL.path
         }.joined(separator: "\n")
