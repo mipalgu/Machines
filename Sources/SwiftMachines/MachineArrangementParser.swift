@@ -67,11 +67,11 @@ public final class MachineArrangementParser {
         let machinesFile = url.appendingPathComponent("Machines", isDirectory: false)
         guard
             let name = self.parseArrangementName(fromURL: url),
-            let machines = self.parseMachines(inArrangement: url, fromFile: machinesFile)
+            let dependencies = self.parseMachines(inArrangement: url, fromFile: machinesFile)
         else {
             return nil
         }
-        return Arrangement(name: name, filePath: url, machines: machines)
+        return Arrangement(name: name, filePath: url, dependencies: dependencies)
     }
     
     private func parseArrangementName(fromURL url: URL) -> String? {

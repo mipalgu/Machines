@@ -64,12 +64,31 @@ public struct Arrangement {
     
     public var filePath: URL
     
-    public var machines: [Machine.Dependency]
+    public var dependencies: [Machine.Dependency]
     
-    public init(name: String, filePath: URL, machines: [Machine.Dependency]) {
+    public var machines: [Machine] {
+        return self.dependencies.map { $0.machine }
+    }
+    
+    public var flattenedMachines: [Machine] {
+        var urls = Set<URL>()
+        func _process(_ machines: [Machine]) -> [Machine] {
+            return machines.flatMap { (machine) -> [Machine] in
+                let machineUrl = machine.filePath.resolvingSymlinksInPath().absoluteURL
+                if urls.contains(machineUrl) {
+                    return []
+                }
+                urls.insert(machineUrl)
+                return [machine] + _process(machine.dependencies.map { $0.machine } )
+            }
+        }
+        return _process(self.machines)
+    }
+    
+    public init(name: String, filePath: URL, dependencies: [Machine.Dependency]) {
         self.name = name
         self.filePath = filePath
-        self.machines = machines
+        self.dependencies = dependencies
     }
     
 }

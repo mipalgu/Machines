@@ -84,10 +84,10 @@ public final class MachineArrangmentAssembler: ErrorContainer {
         self.packageInitializer = packageInitializer
     }
 
-    public func assemble(_ machines: [Machine], inDirectory buildDir: URL, name: String, machineBuildDir: String) -> (URL, [URL])? {
+    public func assemble(_ arrangement: Arrangement, machineBuildDir: String) -> (URL, [URL])? {
         let errorMsg = "Unable to assemble arrangement"
         var files: [URL] = []
-        let flattenedMachines = self.flattenedMachines(machines)
+        let flattenedMachines = arrangement.flattenedMachines
         guard nil != flattenedMachines.failMap({
             self.assembler.assemble($0, inDirectory: $0.filePath.appendingPathComponent(machineBuildDir, isDirectory: true))
         }) else {
@@ -96,16 +96,16 @@ public final class MachineArrangmentAssembler: ErrorContainer {
         }
         let arrangementToken = MachineToken(data: Set(flattenedMachines.map { $0.filePath.resolvingSymlinksInPath().absoluteString }).sorted())
         if
-            let data = try? Data(contentsOf: buildDir.appendingPathComponent("arrangement.json", isDirectory: false)),
+            let data = try? Data(contentsOf: arrangement.filePath.appendingPathComponent("arrangement.json", isDirectory: false)),
             let token = try? JSONDecoder().decode(MachineToken<[String]>.self, from: data),
             token == arrangementToken
         {
-            return (buildDir.appendingPathComponent("Arrangement", isDirectory: false), [])
+            return (arrangement.filePath.appendingPathComponent("Arrangement", isDirectory: false), [])
         }
         guard
-            let buildDir = self.helpers.overwriteDirectory(buildDir),
+            let buildDir = self.helpers.overwriteDirectory(arrangement.filePath),
             let packageDir = self.packageInitializer.initialize(withName: "Arrangement", andType: .Executable, inDirectory: buildDir),
-            let packageSwift = self.makePackage(forExecutable: name, forMachines: machines, inDirectory: packageDir, machineBuildDir: machineBuildDir)
+            let packageSwift = self.makePackage(forExecutable: arrangement.name, forMachines: arrangement.machines, inDirectory: packageDir, machineBuildDir: machineBuildDir)
         else {
             self.errors.append(errorMsg)
             return nil
@@ -113,7 +113,7 @@ public final class MachineArrangmentAssembler: ErrorContainer {
         files.append(packageSwift)
         let sourceDir = packageDir.appendingPathComponent("Sources/Arrangement", isDirectory: true)
         guard
-            let main = self.makeMain(forMachines: machines, inDirectory: sourceDir)
+            let main = self.makeMain(forMachines: arrangement.machines, inDirectory: sourceDir)
         else {
             self.errors.append(errorMsg)
             return nil
@@ -290,21 +290,6 @@ public final class MachineArrangmentAssembler: ErrorContainer {
                 }
                 urls.insert(machineUrl)
                 return [(machine, transform(machine))] + _process(machine.dependencies.map { $0.machine })
-            }
-        }
-        return _process(machines)
-    }
-    
-    public func flattenedMachines(_ machines: [Machine]) -> [Machine] {
-        var urls = Set<URL>()
-        func _process(_ machines: [Machine]) -> [Machine] {
-            return machines.flatMap { (machine) -> [Machine] in
-                let machineUrl = machine.filePath.resolvingSymlinksInPath().absoluteURL
-                if urls.contains(machineUrl) {
-                    return []
-                }
-                urls.insert(machineUrl)
-                return [machine] + _process(machine.dependencies.map { $0.machine } )
             }
         }
         return _process(machines)
