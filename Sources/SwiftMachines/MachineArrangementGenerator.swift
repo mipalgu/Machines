@@ -61,12 +61,12 @@ import IO
 
 extension URL {
     
-    public func relativeTo(_ base: URL) -> URL {
+    public func relativePathString(relativeto base: URL) -> String {
         let baseDir = base.isFileURL ? base.standardized.deletingLastPathComponent() : base.standardized
         let target = self.standardized
         let components = zip(baseDir.pathComponents, target.pathComponents).drop { $0 == $1 }.map { _ in ".." }
         let path = (components + target.pathComponents.dropFirst(baseDir.pathComponents.count - components.count)).joined(separator: "/")
-        return URL(fileURLWithPath: path, isDirectory: !target.isFileURL)
+        return path
     }
     
 }
@@ -95,11 +95,11 @@ public final class MachineArrangementGenerator {
     
     private func createDependencies(_ dependencies: [Machine.Dependency], atPath url: URL) -> URL? {
         let str = dependencies.map {
-            let relativeURL = $0.filePath.relativeTo(url)
+            let relativePath = $0.filePath.relativePathString(relativeto: url)
             if let name = $0.name {
-                return name + " -> " + relativeURL.relativePath
+                return name + " -> " + relativePath
             }
-            return relativeURL.path
+            return relativePath
         }.joined(separator: "\n")
         guard true == self.helpers.createFile(atPath: url, withContents: str) else {
             self.errors.append("Unable to create file \(url.path)")
