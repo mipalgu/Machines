@@ -85,6 +85,7 @@ public final class MachineArrangmentAssembler: ErrorContainer {
     }
 
     public func assemble(_ arrangement: Arrangement, machineBuildDir: String) -> (URL, [URL])? {
+        self.errors = []
         let errorMsg = "Unable to assemble arrangement"
         var files: [URL] = []
         let flattenedMachines = arrangement.flattenedMachines

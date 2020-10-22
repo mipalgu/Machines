@@ -101,6 +101,7 @@ public final class MachineArrangementCompiler {
         andSwiftCompilerFlags swiftCompilerFlags: [String] = [],
         andSwiftBuildFlags swiftBuildFlags: [String] = []
     ) -> URL? {
+        self.errors = []
         guard let (buildPath, _) = self.assembler.assemble(arrangement, machineBuildDir: machineBuildDir) else {
             self.errors = self.assembler.errors
             return nil
