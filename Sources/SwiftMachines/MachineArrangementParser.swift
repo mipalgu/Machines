@@ -62,16 +62,18 @@ public final class MachineArrangementParser {
     
     public private(set) var errors: [String] = []
     
+    public init() {}
+    
     public func parseArrangement(atDirectory url: URL) -> Arrangement? {
         self.errors = []
         let machinesFile = url.appendingPathComponent("Machines", isDirectory: false)
         guard
             let name = self.parseArrangementName(fromURL: url),
-            let machines = self.parseMachines(inArrangement: url, fromFile: machinesFile)
+            let dependencies = self.parseMachines(inArrangement: url, fromFile: machinesFile)
         else {
             return nil
         }
-        return Arrangement(name: name, filePath: url, machines: machines)
+        return Arrangement(name: name, filePath: url, dependencies: dependencies)
     }
     
     private func parseArrangementName(fromURL url: URL) -> String? {
@@ -107,7 +109,7 @@ public final class MachineArrangementParser {
             }
             let fileURL: URL
             if #available(OSX 10.11, *) {
-                fileURL = URL(fileURLWithPath: filePath.trimmingCharacters(in: .whitespaces), isDirectory: false, relativeTo: arrangementDir)
+                fileURL = URL(fileURLWithPath: filePath.trimmingCharacters(in: .whitespaces), isDirectory: false, relativeTo: arrangementDir).absoluteURL
             } else {
                 fileURL = URL(fileURLWithPath: filePath.trimmingCharacters(in: .whitespaces), isDirectory: false)
             }

@@ -90,9 +90,7 @@ public final class MachineArrangementCompiler {
     }
     
     public func compileArrangement(
-        arrangement: [Machine],
-        executableName: String,
-        withBuildDir buildDir: URL,
+        _ arrangement: Arrangement,
         machineBuildDir: String,
         swiftBuildConfig: SwiftBuildConfig = .debug,
         withCCompilerFlags cCompilerFlags: [String] = [],
@@ -101,7 +99,8 @@ public final class MachineArrangementCompiler {
         andSwiftCompilerFlags swiftCompilerFlags: [String] = [],
         andSwiftBuildFlags swiftBuildFlags: [String] = []
     ) -> URL? {
-        guard let (buildPath, _) = self.assembler.assemble(arrangement, inDirectory: buildDir, name: executableName, machineBuildDir: machineBuildDir) else {
+        self.errors = []
+        guard let (buildPath, _) = self.assembler.assemble(arrangement, machineBuildDir: machineBuildDir) else {
             self.errors = self.assembler.errors
             return nil
         }
@@ -121,7 +120,7 @@ public final class MachineArrangementCompiler {
             andSwiftCompilerFlags: swiftCompilerFlags,
             andSwiftBuildFlags: swiftBuildFlags
         )
-        let machineArgs = self.assembler.flattenedMachines(arrangement).flatMap {
+        let machineArgs = arrangement.flattenedMachines.flatMap {
             self.makeCompilerFlags(forMachine: $0)
         }
         let args = arrangementArgs + machineArgs
@@ -131,14 +130,15 @@ public final class MachineArrangementCompiler {
             return nil
         }
         let _ = fm.changeCurrentDirectoryPath(cwd)
+        let buildDir = arrangement.filePath.appendingPathComponent(".build", isDirectory: true)
         let compileDir = buildDir.appendingPathComponent(swiftBuildConfig.rawValue, isDirectory: true)
         if nil == self.helpers.overwriteDirectory(compileDir) {
             self.errors.append("Unable to create build directory: \(compileDir.path)")
             return nil
         }
-        let outputURL = self.outputURL(forArrangementBuiltInDirectory: buildDir, executableName: executableName, swiftBuildConfig: swiftBuildConfig)
+        let outputURL = self.outputURL(forArrangementBuiltInDirectory: buildDir, executableName: arrangement.name, swiftBuildConfig: swiftBuildConfig)
         do {
-            _ = try self.copyOutPath(outputURL, toFolder: compileDir, executableName: executableName)
+            _ = try self.copyOutPath(outputURL, toFolder: compileDir, executableName: arrangement.name)
         } catch let e {
             self.errors.append("\(e)")
             print(e)

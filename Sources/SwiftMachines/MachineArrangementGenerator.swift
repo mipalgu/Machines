@@ -1,5 +1,5 @@
 /*
- * Arrangement.swift
+ * MachineArrangementGenerator.swift
  * SwiftMachines
  *
  * Created by Callum McColl on 23/10/20.
@@ -57,38 +57,55 @@
  */
 
 import Foundation
+import IO
 
-public struct Arrangement {
+extension URL {
     
-    public var name: String
-    
-    public var filePath: URL
-    
-    public var dependencies: [Machine.Dependency]
-    
-    public var machines: [Machine] {
-        return self.dependencies.map { $0.machine }
+    public func relativePathString(relativeto base: URL) -> String {
+        let baseDir = base.isFileURL ? base.standardized.deletingLastPathComponent() : base.standardized
+        let target = self.standardized
+        let components = zip(baseDir.pathComponents, target.pathComponents).drop { $0 == $1 }.map { _ in ".." }
+        let path = (components + target.pathComponents.dropFirst(baseDir.pathComponents.count - components.count)).joined(separator: "/")
+        return path
     }
     
-    public var flattenedMachines: [Machine] {
-        var urls = Set<URL>()
-        func _process(_ machines: [Machine]) -> [Machine] {
-            return machines.flatMap { (machine) -> [Machine] in
-                let machineUrl = machine.filePath.resolvingSymlinksInPath().absoluteURL
-                if urls.contains(machineUrl) {
-                    return []
-                }
-                urls.insert(machineUrl)
-                return [machine] + _process(machine.dependencies.map { $0.machine } )
-            }
+}
+
+public final class MachineArrangementGenerator {
+    
+    public private(set) var errors: [String] = []
+    
+    private let helpers: FileHelpers
+    
+    public init(helpers: FileHelpers = FileHelpers()) {
+        self.helpers = helpers
+    }
+    
+    public func generateArrangement(_ arrangement: Arrangement) -> URL? {
+        self.errors = []
+        guard nil != self.helpers.overwriteDirectory(arrangement.filePath) else {
+            self.errors.append("Unable to create arrangement directory")
+            return nil
         }
-        return _process(self.machines)
+        guard let deps = self.createDependencies(arrangement.dependencies, atPath: arrangement.filePath.appendingPathComponent("Machines", isDirectory: false)) else {
+            return nil
+        }
+        return deps
     }
     
-    public init(name: String, filePath: URL, dependencies: [Machine.Dependency]) {
-        self.name = name
-        self.filePath = filePath
-        self.dependencies = dependencies
+    private func createDependencies(_ dependencies: [Machine.Dependency], atPath url: URL) -> URL? {
+        let str = dependencies.map {
+            let relativePath = $0.filePath.relativePathString(relativeto: url)
+            if let name = $0.name {
+                return name + " -> " + relativePath
+            }
+            return relativePath
+        }.joined(separator: "\n")
+        guard true == self.helpers.createFile(atPath: url, withContents: str) else {
+            self.errors.append("Unable to create file \(url.path)")
+            return nil
+        }
+        return url
     }
     
 }

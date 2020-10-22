@@ -90,6 +90,16 @@ public struct Machine {
             self.filePath = filePath
         }
         
+        public init?(name: String?, filePath: URL) {
+            guard let machineName = filePath.lastPathComponent.components(separatedBy: ".").first?.trimmingCharacters(in: .whitespaces) else {
+                return nil
+            }
+            if machineName.isEmpty {
+                return nil
+            }
+            self.init(name: name, machineName: machineName, filePath: filePath)
+        }
+        
     }
 
     public var name: String
