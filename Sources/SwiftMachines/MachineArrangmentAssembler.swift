@@ -109,7 +109,10 @@ public final class MachineArrangmentAssembler: ErrorContainer {
             let token = try? JSONDecoder().decode(MachineToken<[String]>.self, from: data),
             token == arrangementToken
         {
-            return (arrangement.filePath.appendingPathComponent("Arrangement", isDirectory: false), [])
+            let buildDir = arrangement.filePath
+                .appendingPathComponent(".build", isDirectory: true)
+                .appendingPathComponent("Arrangement", isDirectory: true)
+            return (buildDir, [])
         }
         guard
             let packageDir = self.packageInitializer.initialize(withName: "Arrangement", andType: .Executable, inDirectory: buildDir),

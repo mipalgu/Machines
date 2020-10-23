@@ -77,12 +77,12 @@ public final class MachineArrangementCompiler {
         self.invoker = invoker
     }
     
-    public func outputPath(forArrangementBuiltInDirectory buildDir: URL, executableName: String, swiftBuildConfig: SwiftBuildConfig) -> String {
-        return self.outputURL(forArrangementBuiltInDirectory: buildDir, executableName: executableName, swiftBuildConfig: swiftBuildConfig).path
+    public func outputPath(forArrangement arrangementDir: URL, executableName: String, swiftBuildConfig: SwiftBuildConfig) -> String {
+        return self.outputURL(forArrangement: arrangementDir, executableName: executableName, swiftBuildConfig: swiftBuildConfig).path
     }
     
-    public func outputURL(forArrangementBuiltInDirectory buildDir: URL, executableName: String, swiftBuildConfig: SwiftBuildConfig) -> URL {
-        let buildDirPath = buildDir
+    public func outputURL(forArrangement arrangementDir: URL, executableName: String, swiftBuildConfig: SwiftBuildConfig) -> URL {
+        let buildDirPath = arrangementDir
             .appendingPathComponent(".build", isDirectory: true)
             .appendingPathComponent("Arrangement", isDirectory: true)
         return buildDirPath
@@ -138,7 +138,8 @@ public final class MachineArrangementCompiler {
             self.errors.append("Unable to create build directory: \(compileDir.path)")
             return nil
         }
-        let outputURL = self.outputURL(forArrangementBuiltInDirectory: buildDir, executableName: arrangement.name, swiftBuildConfig: swiftBuildConfig)
+        let outputURL = self.outputURL(forArrangement: arrangement.filePath, executableName: arrangement.name, swiftBuildConfig: swiftBuildConfig)
+        print(outputURL.path)
         do {
             _ = try self.copyOutPath(outputURL, toFolder: compileDir, executableName: arrangement.name)
         } catch let e {
