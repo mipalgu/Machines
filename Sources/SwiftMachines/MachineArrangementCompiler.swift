@@ -82,7 +82,9 @@ public final class MachineArrangementCompiler {
     }
     
     public func outputURL(forArrangementBuiltInDirectory buildDir: URL, executableName: String, swiftBuildConfig: SwiftBuildConfig) -> URL {
-        let buildDirPath = buildDir.appendingPathComponent("Arrangement", isDirectory: true)
+        let buildDirPath = buildDir
+            .appendingPathComponent(".build", isDirectory: true)
+            .appendingPathComponent("Arrangement", isDirectory: true)
         return buildDirPath
             .appendingPathComponent(".build", isDirectory: true)
             .appendingPathComponent(swiftBuildConfig.rawValue, isDirectory: true)
