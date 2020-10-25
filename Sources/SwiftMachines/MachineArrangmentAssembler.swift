@@ -124,6 +124,7 @@ public final class MachineArrangmentAssembler: ErrorContainer {
         files.append(packageSwift)
         let sourceDir = packageDir.appendingPathComponent("Sources/Arrangement", isDirectory: true)
         guard
+            let factory = self.makeFactory(arrangementName: arrangement.name, forMachines: arrangement.machines, inDirectory: sourceDir),
             let main = self.makeMain(forMachines: arrangement.machines, inDirectory: sourceDir)
         else {
             self.errors.append(errorMsg)
@@ -132,7 +133,7 @@ public final class MachineArrangmentAssembler: ErrorContainer {
         if let data = try? JSONEncoder().encode(arrangementToken) {
             try? data.write(to: buildDir.appendingPathComponent("arrangement.json", isDirectory: false))
         }
-        files.append(contentsOf: [main])
+        files.append(contentsOf: [factory, main])
         return (packageDir, files)
     }
     
