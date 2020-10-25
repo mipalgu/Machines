@@ -139,9 +139,7 @@ public final class MachineArrangmentAssembler: ErrorContainer {
     
     private func makePackage(forExecutable executable: String, forMachines machines: [Machine], inDirectory path: URL, machineBuildDir: String, withAddedDependencies addedDependencies: [(URL)] = []) -> URL? {
         let packagePath = path.appendingPathComponent("Package.swift", isDirectory: false)
-        let mandatoryDependencies: [String] = [
-            ".package(url: \"ssh://git.mipal.net/git/swiftfsm.git\", .branch(\"master\"))"
-        ]
+        let mandatoryDependencies: [String] = []
         let machinePackages: [String] = self.machinePackageURLs(machines).map { (machine, url) in
             let url = String(url.appendingPathComponent(machineBuildDir + "/" + machine.name + "Machine").absoluteString.reversed().drop(while: { $0 == "/" }).reversed())
             return ".package(url: \"\(url)\", .branch(\"master\"))"
@@ -169,7 +167,7 @@ public final class MachineArrangmentAssembler: ErrorContainer {
                 ],
                 dependencies: [\(dependencies)],
                 targets: [
-                    .target(name: "Arrangement", dependencies: [\(productList)])
+                    .target(name: "Arrangement", dependencies: [\(productList)], linkerSettings: [.linkedLibrary("FSM")])
                 ]
             )
 
