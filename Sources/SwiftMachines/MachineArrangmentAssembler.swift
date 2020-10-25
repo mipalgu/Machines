@@ -159,7 +159,7 @@ public final class MachineArrangmentAssembler: ErrorContainer {
             let package = Package(
                 name: "Arrangement",
                 products: [
-                    .executable(
+                    .library(
                         name: "\(executable)",
                         targets: ["Arrangement"]
                     )
