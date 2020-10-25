@@ -221,11 +221,18 @@ public final class MachineArrangmentAssembler: ErrorContainer {
                 )
             """
         let factory = """
-            public func make_Arrangement() -> FlattenedMetaArrangement {
-                return \(arrangement)
+            public func make_\(arrangementName)(_ callback: (FlattenedMetaArrangement) -> Void) {
+                callback(\(arrangement))
             }
             """
-        let str = imports + "\n\n" + factory
+        let cFactory = """
+            @_cdecl("make_Arrangement")
+            public func make_Arrangement(_ pointer: UnsafeRawPointer) {
+                let callback = pointer.assumingMemoryBound(to: ((FlattenedMetaArrangement) -> Void).self).pointee
+                make_\(arrangementName)(callback)
+            }
+            """
+        let str = imports + "\n\n" + cFactory + "\n\n" + factory
         // Create the file.
         if (false == self.helpers.createFile(atPath: filePath, withContents: str)) {
             self.errors.append("Unable to create Arrangement.swift at \(filePath.path)")
