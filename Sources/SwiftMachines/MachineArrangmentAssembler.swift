@@ -161,6 +161,7 @@ public final class MachineArrangmentAssembler: ErrorContainer {
                 products: [
                     .library(
                         name: "\(executable)",
+                        type: .dynamic,
                         targets: ["Arrangement"]
                     )
                 ],
