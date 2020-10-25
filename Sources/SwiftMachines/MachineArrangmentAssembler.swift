@@ -183,7 +183,7 @@ public final class MachineArrangmentAssembler: ErrorContainer {
     
     private func makeFactory(arrangementName: String, forMachines machines: [Machine], inDirectory dir: URL) -> URL? {
         let filePath = dir.appendingPathComponent("factory.swift", isDirectory: false)
-        let imports = (["import swiftfsm_binaries"] + machines.map { $0.name}.sorted().map { "import " + $0 + "Machine" }).joined(separator: "\n")
+        let imports = (["import swiftfsm"] + machines.map { $0.name}.sorted().map { "import " + $0 + "Machine" }).joined(separator: "\n")
         var processedMachines: Set<String> = []
         func makeDependency(type: String, prefix: String, ancestors: [URL: String]) -> (Machine.Dependency) -> String {
             return {
@@ -213,14 +213,14 @@ public final class MachineArrangmentAssembler: ErrorContainer {
             return process(machine, prefix: "", ancestors: &dict)
         }
         let name = "\"" + arrangementName + "\""
-        let fsms = entries.joined(separator: "\n    ")
-        let rootFsms = machines.map { "\"" + $0.name + "\"" }
+        let fsms = "[" + entries.joined(separator: ",\n    ") + "]"
+        let rootFsms = "[" + machines.map { "\"" + $0.name + "\"" }.joined(separator: ", ") + "]"
         let arrangement = """
             FlattenedMetaArrangement(
-                name: \(name),
-                fsms: \(fsms),
-                rootFSMs: \(rootFsms)
-            )
+                    name: \(name),
+                    fsms: \(fsms),
+                    rootFSMs: \(rootFsms)
+                )
             """
         let factory = """
             public func make_Arrangement() -> FlattenedMetaArrangement {
