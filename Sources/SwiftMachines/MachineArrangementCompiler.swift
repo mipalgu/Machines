@@ -77,23 +77,24 @@ public final class MachineArrangementCompiler {
         self.invoker = invoker
     }
     
-    public func outputPath(forArrangement arrangementDir: URL, executableName: String, swiftBuildConfig: SwiftBuildConfig) -> String {
-        return self.outputURL(forArrangement: arrangementDir, executableName: executableName, swiftBuildConfig: swiftBuildConfig).path
+    public func outputPath(forArrangement arrangementDir: URL, executableName: String, swiftBuildConfig: SwiftBuildConfig, libExtension: String) -> String {
+        return self.outputURL(forArrangement: arrangementDir, executableName: executableName, swiftBuildConfig: swiftBuildConfig, libExtension: libExtension).path
     }
     
-    public func outputURL(forArrangement arrangementDir: URL, executableName: String, swiftBuildConfig: SwiftBuildConfig) -> URL {
+    public func outputURL(forArrangement arrangementDir: URL, executableName: String, swiftBuildConfig: SwiftBuildConfig, libExtension: String) -> URL {
         let buildDirPath = arrangementDir
             .appendingPathComponent(".build", isDirectory: true)
             .appendingPathComponent("Arrangement", isDirectory: true)
         return buildDirPath
             .appendingPathComponent(".build", isDirectory: true)
             .appendingPathComponent(swiftBuildConfig.rawValue, isDirectory: true)
-            .appendingPathComponent(executableName, isDirectory: false)
+            .appendingPathComponent("lib" + executableName + "." + libExtension, isDirectory: false)
     }
     
     public func compileArrangement(
         _ arrangement: Arrangement,
         machineBuildDir: String,
+        libExtension: String,
         swiftBuildConfig: SwiftBuildConfig = .debug,
         withCCompilerFlags cCompilerFlags: [String] = [],
         andCXXCompilerFlags cxxCompilerFlags: [String] = [],
@@ -138,7 +139,7 @@ public final class MachineArrangementCompiler {
             self.errors.append("Unable to create build directory: \(compileDir.path)")
             return nil
         }
-        let outputURL = self.outputURL(forArrangement: arrangement.filePath, executableName: arrangement.name, swiftBuildConfig: swiftBuildConfig)
+        let outputURL = self.outputURL(forArrangement: arrangement.filePath, executableName: arrangement.name, swiftBuildConfig: swiftBuildConfig, libExtension: libExtension)
         print(outputURL.path)
         do {
             _ = try self.copyOutPath(outputURL, toFolder: compileDir, executableName: arrangement.name)
