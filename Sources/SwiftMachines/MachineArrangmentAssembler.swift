@@ -124,7 +124,7 @@ public final class MachineArrangmentAssembler: ErrorContainer {
         files.append(packageSwift)
         let sourceDir = packageDir.appendingPathComponent("Sources/Arrangement", isDirectory: true)
         guard
-            let factory = self.makeFactory(arrangementName: arrangement.name, forMachines: arrangement.machines, inDirectory: sourceDir)
+            let factory = self.makeFactory(arrangementName: arrangement.name, forDependencies: arrangement.dependencies, inDirectory: sourceDir)
         else {
             self.errors.append(errorMsg)
             return nil
@@ -179,9 +179,9 @@ public final class MachineArrangmentAssembler: ErrorContainer {
         return packagePath
     }
     
-    private func makeFactory(arrangementName: String, forMachines machines: [Machine], inDirectory dir: URL) -> URL? {
+    private func makeFactory(arrangementName: String, forDependencies dependencies: [Machine.Dependency], inDirectory dir: URL) -> URL? {
         let filePath = dir.appendingPathComponent("Arrangement.swift", isDirectory: false)
-        let imports = (["import swiftfsm"] + Set(machines.flatMap(self.importStrings)).sorted()).joined(separator: "\n")
+        let imports = (["import swiftfsm"] + Set(dependencies.flatMap(self.importStrings)).sorted()).joined(separator: "\n")
         var processedMachines: Set<String> = []
         func makeDependency(type: String, prefix: String, ancestors: [URL: String]) -> (Machine.Dependency) -> String {
             return {
@@ -191,28 +191,29 @@ public final class MachineArrangmentAssembler: ErrorContainer {
                 return "." + type + "(prefixedName: \"" + prefix + $0.callName + "\", name: \"" + $0.callName + "\")"
             }
         }
-        func process(_ machine: Machine, prefix: String, ancestors: inout [URL: String]) -> [String] {
-            let prefixedName = prefix + machine.name
+        func process(_ dependency: Machine.Dependency, prefixedName: String, ancestors: [URL: String]) -> [String] {
             if processedMachines.contains(prefixedName) {
                 return []
             }
             processedMachines.insert(prefixedName)
-            ancestors[machine.filePath] = prefixedName
+            var ancestors = ancestors
+            ancestors[dependency.filePath] = prefixedName
             let depPrefix = prefixedName + "."
-            let callables = machine.callables.map(makeDependency(type: "callable", prefix: depPrefix, ancestors: ancestors))
-            let invocables = machine.invocables.map(makeDependency(type: "invocable", prefix: depPrefix, ancestors: ancestors))
-            let subs = machine.subs.map(makeDependency(type: "controllable", prefix: depPrefix, ancestors: ancestors))
+            let callables = dependency.machine.callables.map(makeDependency(type: "callable", prefix: depPrefix, ancestors: ancestors))
+            let invocables = dependency.machine.invocables.map(makeDependency(type: "invocable", prefix: depPrefix, ancestors: ancestors))
+            let subs = dependency.machine.subs.map(makeDependency(type: "controllable", prefix: depPrefix, ancestors: ancestors))
             let dependencies = "[" + (callables + invocables + subs).joined(separator: ", ") + "]"
-            let entry = "\"" + prefixedName + "\": FlattenedMetaFSM(name: \"" + prefixedName + "\", factory: " + machine.name + "Machine.make_" + machine.name + ", dependencies: " + dependencies + ")"
-            return [entry] + machine.dependencies.flatMap { process($0.machine, prefix: depPrefix, ancestors: &ancestors) }
+            let entry = "\"" + prefixedName + "\": FlattenedMetaFSM(name: \"" + prefixedName + "\", factory: " + dependency.machineName + "Machine.make_" + dependency.machineName + ", dependencies: " + dependencies + ")"
+            return [entry] + dependency.machine.dependencies.flatMap {
+                process($0, prefixedName: ancestors[$0.filePath] ?? (depPrefix + $0.callName), ancestors: ancestors)
+            }
         }
-        let entries = machines.flatMap { (machine: Machine) -> [String] in
-            var dict: [URL: String] = [:]
-            return process(machine, prefix: "", ancestors: &dict)
+        let entries = dependencies.flatMap { (dependency: Machine.Dependency) -> [String] in
+            process(dependency, prefixedName: dependency.callName, ancestors: [:])
         }
         let name = "\"" + arrangementName + "\""
         let fsms = "[" + entries.joined(separator: ",\n               ") + "]"
-        let rootFsms = "[" + machines.map { "\"" + $0.name + "\"" }.joined(separator: ", ") + "]"
+        let rootFsms = "[" + dependencies.map { "\"" + $0.callName + "\"" }.joined(separator: ", ") + "]"
         let arrangement = """
             FlattenedMetaArrangement(
                     name: \(name),
@@ -241,13 +242,13 @@ public final class MachineArrangmentAssembler: ErrorContainer {
         return filePath
     }
     
-    private func importStrings(forMachine machine: Machine) -> [String] {
+    private func importStrings(forDependencies dependency: Machine.Dependency) -> [String] {
         var set: Set<String> = []
-        func _process(_ machine: Machine) {
-            set.insert("import " + machine.name + "Machine")
-            machine.dependencies.forEach { _process($0.machine) }
+        func _process(_ dependency: Machine.Dependency) {
+            set.insert("import " + dependency.machineName + "Machine")
+            dependency.machine.dependencies.forEach(_process)
         }
-        _process(machine)
+        _process(dependency)
         return Array(set)
     }
     
