@@ -181,7 +181,7 @@ public final class MachineArrangmentAssembler: ErrorContainer {
     
     private func makeFactory(arrangementName: String, forMachines machines: [Machine], inDirectory dir: URL) -> URL? {
         let filePath = dir.appendingPathComponent("Arrangement.swift", isDirectory: false)
-        let imports = (["import swiftfsm"] + machines.map { $0.name}.sorted().map { "import " + $0 + "Machine" }).joined(separator: "\n")
+        let imports = (["import swiftfsm"] + Set(machines.flatMap(self.importStrings)).sorted()).joined(separator: "\n")
         var processedMachines: Set<String> = []
         func makeDependency(type: String, prefix: String, ancestors: [URL: String]) -> (Machine.Dependency) -> String {
             return {
@@ -239,6 +239,15 @@ public final class MachineArrangmentAssembler: ErrorContainer {
             return nil
         }
         return filePath
+    }
+    
+    private func importStrings(forMachine machine: Machine) -> [String] {
+        var set: Set<String> = []
+        func _process(_ machine: Machine) {
+            set.insert("import " + machine.name + "Machine")
+            machine.dependencies.forEach { _process($0.machine) }
+        }
+        return Array(set)
     }
     
     private func machinePackageURLs(_ machines: [Machine]) -> [(Machine, URL)] {
