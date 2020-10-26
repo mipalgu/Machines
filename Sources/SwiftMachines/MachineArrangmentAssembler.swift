@@ -115,7 +115,7 @@ public final class MachineArrangmentAssembler: ErrorContainer {
             return (buildDir, [])
         }
         guard
-            let packageDir = self.packageInitializer.initialize(withName: "Arrangement", andType: .Executable, inDirectory: buildDir),
+            let packageDir = self.packageInitializer.initialize(withName: "Arrangement", andType: .Library, inDirectory: buildDir),
             let packageSwift = self.makePackage(forExecutable: arrangement.name, forMachines: arrangement.machines, inDirectory: packageDir, machineBuildDir: machineBuildDir)
         else {
             self.errors.append(errorMsg)
@@ -124,7 +124,7 @@ public final class MachineArrangmentAssembler: ErrorContainer {
         files.append(packageSwift)
         let sourceDir = packageDir.appendingPathComponent("Sources/Arrangement", isDirectory: true)
         guard
-            let main = self.makeMain(forMachines: arrangement.machines, inDirectory: sourceDir)
+            let factory = self.makeFactory(arrangementName: arrangement.name, forDependencies: arrangement.dependencies, inDirectory: sourceDir)
         else {
             self.errors.append(errorMsg)
             return nil
@@ -132,15 +132,13 @@ public final class MachineArrangmentAssembler: ErrorContainer {
         if let data = try? JSONEncoder().encode(arrangementToken) {
             try? data.write(to: buildDir.appendingPathComponent("arrangement.json", isDirectory: false))
         }
-        files.append(contentsOf: [main])
+        files.append(contentsOf: [factory])
         return (packageDir, files)
     }
     
     private func makePackage(forExecutable executable: String, forMachines machines: [Machine], inDirectory path: URL, machineBuildDir: String, withAddedDependencies addedDependencies: [(URL)] = []) -> URL? {
         let packagePath = path.appendingPathComponent("Package.swift", isDirectory: false)
-        let mandatoryDependencies: [String] = [
-            ".package(url: \"ssh://git.mipal.net/git/swiftfsm.git\", .branch(\"master\"))"
-        ]
+        let mandatoryDependencies: [String] = []
         let machinePackages: [String] = self.machinePackageURLs(machines).map { (machine, url) in
             let url = String(url.appendingPathComponent(machineBuildDir + "/" + machine.name + "Machine").absoluteString.reversed().drop(while: { $0 == "/" }).reversed())
             return ".package(url: \"\(url)\", .branch(\"master\"))"
@@ -152,7 +150,7 @@ public final class MachineArrangmentAssembler: ErrorContainer {
         }
         let allConstructedDependencies = Set(addedDependencyList + mandatoryDependencies + machinePackages).sorted()
         let dependencies = allConstructedDependencies.isEmpty ? "" : "\n        " + allConstructedDependencies.combine("") { $0 + ",\n        " + $1 } + "\n    "
-        let products = Set((machineProducts + ["swiftfsm_binaries"]).map { "\"" + $0 + "\"" }).sorted()
+        let products = Set((machineProducts).map { "\"" + $0 + "\"" }).sorted()
         let productList = products.combine("") { $0 + ", " + $1 }
         let str = """
             // swift-tools-version:5.1
@@ -161,14 +159,15 @@ public final class MachineArrangmentAssembler: ErrorContainer {
             let package = Package(
                 name: "Arrangement",
                 products: [
-                    .executable(
+                    .library(
                         name: "\(executable)",
+                        type: .dynamic,
                         targets: ["Arrangement"]
                     )
                 ],
                 dependencies: [\(dependencies)],
                 targets: [
-                    .target(name: "Arrangement", dependencies: [\(productList)])
+                    .target(name: "Arrangement", dependencies: [\(productList)], linkerSettings: [.linkedLibrary("FSM")])
                 ]
             )
 
@@ -180,105 +179,77 @@ public final class MachineArrangmentAssembler: ErrorContainer {
         return packagePath
     }
     
-    private func makeMain(forMachines machines: [Machine], inDirectory dir: URL) -> URL? {
-        let filePath = dir.appendingPathComponent("main.swift", isDirectory: false)
-        let imports = """
-            import swiftfsm_binaries
+    private func makeFactory(arrangementName: String, forDependencies dependencies: [Machine.Dependency], inDirectory dir: URL) -> URL? {
+        let filePath = dir.appendingPathComponent("Arrangement.swift", isDirectory: false)
+        let imports = (["import swiftfsm"] + Set(dependencies.flatMap(self.importStrings)).sorted()).joined(separator: "\n")
+        var processedMachines: Set<String> = []
+        func makeDependency(type: String, prefix: String, ancestors: [URL: String]) -> (Machine.Dependency) -> String {
+            return {
+                if let prefixedName = ancestors[$0.machine.filePath] {
+                    return "." + type + "(prefixedName: \"" + prefixedName + "\", name: \"" + $0.callName + "\")"
+                }
+                return "." + type + "(prefixedName: \"" + prefix + $0.callName + "\", name: \"" + $0.callName + "\")"
+            }
+        }
+        func process(_ dependency: Machine.Dependency, prefixedName: String, ancestors: [URL: String]) -> [String] {
+            if processedMachines.contains(prefixedName) {
+                return []
+            }
+            processedMachines.insert(prefixedName)
+            var ancestors = ancestors
+            ancestors[dependency.filePath] = prefixedName
+            let depPrefix = prefixedName + "."
+            let callables = dependency.machine.callables.map(makeDependency(type: "callable", prefix: depPrefix, ancestors: ancestors))
+            let invocables = dependency.machine.invocables.map(makeDependency(type: "invocable", prefix: depPrefix, ancestors: ancestors))
+            let subs = dependency.machine.subs.map(makeDependency(type: "controllable", prefix: depPrefix, ancestors: ancestors))
+            let dependencies = "[" + (callables + invocables + subs).joined(separator: ", ") + "]"
+            let entry = "\"" + prefixedName + "\": FlattenedMetaFSM(name: \"" + prefixedName + "\", factory: " + dependency.machineName + "Machine.make_" + dependency.machineName + ", dependencies: " + dependencies + ")"
+            return [entry] + dependency.machine.dependencies.flatMap {
+                process($0, prefixedName: ancestors[$0.filePath] ?? (depPrefix + $0.callName), ancestors: ancestors)
+            }
+        }
+        let entries = dependencies.flatMap { (dependency: Machine.Dependency) -> [String] in
+            process(dependency, prefixedName: dependency.callName, ancestors: [:])
+        }
+        let name = "\"" + arrangementName + "\""
+        let fsms = "[" + entries.joined(separator: ",\n               ") + "]"
+        let rootFsms = "[" + dependencies.map { "\"" + $0.callName + "\"" }.joined(separator: ", ") + "]"
+        let arrangement = """
+            FlattenedMetaArrangement(
+                    name: \(name),
+                    fsms: \(fsms),
+                    rootFSMs: \(rootFsms)
+                )
             """
-        var uniqueNameSet = Set<String>()
-        let uniqueNameMachines: [Machine] = machines.compactMap {
-            if uniqueNameSet.contains($0.name) {
-                return nil
+        let factory = """
+            public func make_\(arrangementName)(_ callback: (FlattenedMetaArrangement) -> Void) {
+                callback(\(arrangement))
             }
-            uniqueNameSet.insert($0.name)
-            return $0
-        }
-        var machineNames: Set<String> = Set(machines.map { $0.name })
-        var dependentMachines: [String: (String, URL)] = Dictionary(uniqueKeysWithValues: uniqueNameMachines.map { ($0.name, ($0.name, $0.filePath.resolvingSymlinksInPath().absoluteURL)) })
-        var dependencyList: [String: [String]] = Dictionary(uniqueKeysWithValues: uniqueNameMachines.map { ($0.name, []) })
-        var callableList: [String: [String]] = Dictionary(uniqueKeysWithValues: uniqueNameMachines.map { ($0.name, []) })
-        var invocableList: [String: [String]] = Dictionary(uniqueKeysWithValues: uniqueNameMachines.map { ($0.name, []) })
-        var processedMachines: Set<String> = uniqueNameSet
-        func generateDependentMachines(_ machine: Machine, caller: String) -> Bool {
-            for dependency in machine.dependencies {
-                let name = caller + "." + dependency.callName
-                if processedMachines.contains(name) {
-                    continue
-                }
-                machineNames.insert(dependency.machineName)
-                processedMachines.insert(name)
-                let url = dependency.filePath.resolvingSymlinksInPath().absoluteURL
-                if let (previousMachineName, previousURL) = dependentMachines[name], previousMachineName != dependency.machineName || previousURL != url {
-                    self.errors.append("Machines must have unique names, found two machines with the same name '\(name)':\n    \(previousURL.path),\n    \(url.path)")
-                    return false
-                }
-                dependentMachines[name] = (dependency.machineName, url)
-                if nil == dependencyList[name] {
-                    dependencyList[name] = []
-                }
-                if machine.dependencies.contains(dependency) {
-                    dependencyList[caller]!.append(dependency.callName)
-                }
-                if nil == callableList[name] {
-                    callableList[name] = []
-                }
-                if machine.callables.contains(dependency) {
-                    callableList[caller]!.append(dependency.callName)
-                }
-                if nil == invocableList[name] {
-                    invocableList[name] = []
-                }
-                if machine.invocables.contains(dependency) {
-                    invocableList[caller]!.append(dependency.callName)
-                }
-                if false == generateDependentMachines(dependency.machine, caller: name) {
-                    return false
-                }
+            """
+        let cFactory = """
+            @_cdecl("make_Arrangement")
+            public func make_Arrangement(_ pointer: UnsafeRawPointer) {
+                let callback = pointer.assumingMemoryBound(to: ((FlattenedMetaArrangement) -> Void).self).pointee
+                make_\(arrangementName)(callback)
             }
-            return true
-        }
-        if nil == uniqueNameMachines.failMap({ generateDependentMachines($0, caller: $0.name) }) {
-            return nil
-        }
-        let dependencies: [(label: String, name: String, url: URL)] = dependentMachines.sorted(by: { $0.key < $1.key }).map {
-            return (label: $0.key, name: $0.value.0, url: $0.value.1)
-        }
-        let dependencyImports = machineNames.sorted().map { "import " + $0 + "Machine" }.joined(separator: "\n")
-        let keys: [String] = dependencies.map {
-            return "    \"" + $0.label + "\": " + $0.name + "Machine.make_" + $0.name
-        }
-        let factoriesDict = "let factories = [\n" + keys.joined(separator: ",\n") + "\n]"
-        func createDict(label: String, dict: [String: [String]]) -> String {
-            let declaration = "let " + label + ": [String: [String]] = ["
-            let body = dict.map { "    \"" + $0.key + "\": [" + $0.value.map { "\"\($0)\"" }.joined(separator: ", ") + "]" }.joined(separator: ",\n")
-            let end = "]"
-            return declaration + "\n" + body + "\n" + end
-        }
-        let dependantMachines = createDict(label: "dependantMachines", dict: dependencyList)
-        let callableMachines = createDict(label: "callableMachines", dict: callableList)
-        let invocableMachines = createDict(label: "invocableMachines", dict: invocableList)
-        let swiftfsm = "let swiftfsm = Swiftfsm()"
-        let declarations = uniqueNameSet.sorted().map {
-            return "let " + $0 + "Machine_instance = swiftfsm.makeMachine(name: \"" + $0 + "\", dependantMachines: dependantMachines, callableMachines: callableMachines, invocableMachines: invocableMachines, factories: factories)"
-        }
-        let machinesArr = "let machines = [" + uniqueNameSet.sorted().map { $0 + "Machine_instance" }.joined(separator: ", ") + "]"
-        let runStatement = "swiftfsm.run(machines: machines)"
-        let str = imports + "\n"
-            + dependencyImports + "\n\n"
-            + dependantMachines + "\n\n"
-            + callableMachines + "\n\n"
-            + invocableMachines + "\n\n"
-            + factoriesDict + "\n\n"
-            + swiftfsm + "\n\n"
-            + declarations.joined(separator: "\n") + "\n"
-            + machinesArr + "\n"
-            + runStatement
+            """
+        let str = imports + "\n\n" + cFactory + "\n\n" + factory
         // Create the file.
         if (false == self.helpers.createFile(atPath: filePath, withContents: str)) {
-            self.errors.append("Unable to create main.swift at \(filePath.path)")
+            self.errors.append("Unable to create Arrangement.swift at \(filePath.path)")
             return nil
         }
         return filePath
+    }
+    
+    private func importStrings(forDependencies dependency: Machine.Dependency) -> [String] {
+        var set: Set<String> = []
+        func _process(_ dependency: Machine.Dependency) {
+            set.insert("import " + dependency.machineName + "Machine")
+            dependency.machine.dependencies.forEach(_process)
+        }
+        _process(dependency)
+        return Array(set)
     }
     
     private func machinePackageURLs(_ machines: [Machine]) -> [(Machine, URL)] {
