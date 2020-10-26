@@ -211,7 +211,7 @@ public final class MachineArrangmentAssembler: ErrorContainer {
             return process(machine, prefix: "", ancestors: &dict)
         }
         let name = "\"" + arrangementName + "\""
-        let fsms = "[" + entries.joined(separator: ",\n             ") + "]"
+        let fsms = "[" + entries.joined(separator: ",\n               ") + "]"
         let rootFsms = "[" + machines.map { "\"" + $0.name + "\"" }.joined(separator: ", ") + "]"
         let arrangement = """
             FlattenedMetaArrangement(
