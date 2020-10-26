@@ -247,6 +247,7 @@ public final class MachineArrangmentAssembler: ErrorContainer {
             set.insert("import " + machine.name + "Machine")
             machine.dependencies.forEach { _process($0.machine) }
         }
+        _process(machine)
         return Array(set)
     }
     
