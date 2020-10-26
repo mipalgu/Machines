@@ -186,9 +186,9 @@ public final class MachineArrangmentAssembler: ErrorContainer {
         func makeDependency(type: String, prefix: String, ancestors: [URL: String]) -> (Machine.Dependency) -> String {
             return {
                 if let prefixedName = ancestors[$0.machine.filePath] {
-                    return type + "(prefixedName: " + prefixedName + ", name: " + $0.callName + ")"
+                    return "." + type + "(prefixedName: \"" + prefixedName + "\", name: \"" + $0.callName + "\")"
                 }
-                return type + "(prefixedName: " + prefix + $0.callName + ", name: " + $0.callName + ")"
+                return "." + type + "(prefixedName: \"" + prefix + $0.callName + "\", name: \"" + $0.callName + "\")"
             }
         }
         func process(_ machine: Machine, prefix: String, ancestors: inout [URL: String]) -> [String] {
