@@ -1,9 +1,9 @@
 /*
- * Variable.swift 
- * Sources 
+ * Code.swift
+ * Machines
  *
- * Created by Callum McColl on 20/04/2017.
- * Copyright © 2017 Callum McColl. All rights reserved.
+ * Created by Callum McColl on 29/10/20.
+ * Copyright © 2020 Callum McColl. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -56,31 +56,8 @@
  *
  */
 
-public struct Variable {
-    
-    public enum AccessType: String, Equatable, Hashable, Codable, CaseIterable {
-        
-        case readAndWrite = "var"
-        case readOnly = "let"
-        case writeOnly = "sink"
-        
-    }
+public typealias StateName = String
 
-    public var accessType: AccessType
+public typealias Code = String
 
-    public var label: String
-
-    public var type: String
-
-    public var initialValue: String?
-
-    public init(accessType: AccessType, label: String, type: String, initialValue: String?) {
-        self.accessType = accessType
-        self.label = label
-        self.type = type
-        self.initialValue = initialValue
-    }
-
-}
-
-extension Variable: Codable, Equatable, Hashable {}
+public typealias Expression = String

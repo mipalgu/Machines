@@ -58,9 +58,95 @@
 
 import SwiftMachines
 
-public enum Machine {
+public struct Machine: SwiftMachinesConvertible {
     
-    case cxxMachine
-    case swiftMachine(SwiftMachines.Machine)
+    
+    public struct TransferError: Error {
+        
+        public var message: String
+        
+    }
+    
+    public enum Semantics: String, Hashable, Codable {
+        case other
+        case swiftfsm
+        case clfsm
+    }
+    
+    public var semantics: Semantics
+    
+    public var initialState: StateName
+    
+    public var suspendState: StateName
+    
+    public var acceptingStates: [StateName]
+    
+    public var states: [State]
+    
+    public var transitions: [Transition]
+    
+    public var attributes: [AttributeGroup]
+    
+    public init(semantics: Semantics, initialState: StateName, suspendState: StateName, acceptingStates: [StateName] = [], states: [State], transitions: [Transition] = [], attributes: [AttributeGroup]) {
+        self.semantics = semantics
+        self.initialState = initialState
+        self.suspendState = suspendState
+        self.acceptingStates = acceptingStates
+        self.states = states
+        self.transitions = transitions
+        self.attributes = attributes
+    }
+    
+    public init(from swiftMachine: SwiftMachines.Machine) {
+        fatalError("Not Yet Implemented")
+        var attributes: [AttributeGroup] = []
+        let actions: [String]
+        if let model = swiftMachine.model {
+            actions = model.actions
+            let group = AttributeGroup(
+                name: "Ringlet",
+                attributes: [
+                    "imports": .code(model.ringlet.imports),
+                    "variables": .collection(model.ringlet.vars.map {
+                        Attribute.complex([
+                            "access_type": .enumerated($0.accessType.rawValue, validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue })),
+                            "label": .line($0.label),
+                            "type": .line($0.type),
+                            "initial_value": .line($0.initialValue ?? "")
+                        ])
+                    }),
+                    "execute": .code(model.ringlet.execute)
+                ]
+            )
+            attributes.append(group)
+        } else {
+            actions = ["onEntry", "main", "onExit"]
+        }
+        let states = swiftMachine.states.map {
+            State(
+                name: $0.name,
+                actions: Dictionary(uniqueKeysWithValues: $0.actions.map { ($0.name, $0.implementation) }),
+                attributes: [
+                    "variables": .collection($0.vars.map {
+                        Attribute.complex([
+                            "access_type": .enumerated($0.accessType.rawValue, validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue })),
+                            "label": .line($0.label),
+                            "type": .line($0.type),
+                            "initial_value": .line($0.initialValue ?? "")
+                        ])
+                    }),
+                    "external_variables": .enumerableCollection(Set($0.externalVariables?.map { $0.label } ?? []), validValues: Set(swiftMachine.externalVariables.map { $0.label })),
+                    "imports": .text($0.imports)
+                ]
+            )
+        }
+    }
+    
+    public func swiftMachine() throws -> SwiftMachines.Machine {
+        guard self.semantics == .swiftfsm else {
+            throw TransferError(message: "Machine does not follow the semantics of swiftfsm")
+        }
+        throw TransferError(message: "Not Yet Implemented")
+    }
     
 }

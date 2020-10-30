@@ -75,15 +75,25 @@ public final class MachineGenerator {
     
     public func generate(_ machine: Machine) -> (URL, [URL])? {
         self.errors = []
-        switch machine {
-        case .swiftMachine(let machine):
-            guard let results = self.swiftGenerator.generate(machine) else {
+        switch machine.semantics {
+        case .swiftfsm:
+            let swiftMachine: SwiftMachines.Machine
+            do {
+                swiftMachine = try machine.swiftMachine()
+            } catch let e as Machine.TransferError {
+                self.errors.append(e.message)
+                return nil
+            } catch let e {
+                self.errors.append("\(e)")
+                return nil
+            }
+            guard let results = self.swiftGenerator.generate(swiftMachine) else {
                 self.errors = []
                 return nil
             }
             return results
         default:
-            self.errors.append("C++ Machines are currently not supported")
+            self.errors.append("\(machine.semantics) Machines are currently not supported")
             return nil
         }
     }

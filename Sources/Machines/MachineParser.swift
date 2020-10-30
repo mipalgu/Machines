@@ -79,14 +79,14 @@ public final class MachineParser {
         let swiftFile = machineDir.appendingPathComponent("SwiftIncludePath", isDirectory: false)
         let exists = (try? swiftFile.checkResourceIsReachable()) ?? false
         if false == exists {
-            self.errors.append("C++ Machines are currently not supported.")
+            self.errors.append("Machine at path \(path) is using an unsupported semantics.")
             return nil
         }
         guard let swiftMachine = self.swiftParser.parseMachine(atPath: path) else {
             self.errors = self.swiftParser.errors
             return nil
         }
-        return .swiftMachine(swiftMachine)
+        return Machine(from: swiftMachine)
     }
     
 }
