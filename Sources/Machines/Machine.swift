@@ -58,10 +58,27 @@
 
 import SwiftMachines
 
-public struct Machine: SwiftMachinesConvertible {
+/// A general meta model machine.
+///
+/// This type is responsible for representing all possible supported semantics
+/// provided by an LLFSM scheduler (swiftfsm, clfsm for example). Because the
+/// meta model needs to be able to represent a wide array of semantics, this
+/// data structures --- as well as other general data structures this type
+/// depends on --- take a minimalistic view of LLFSM semantics. The idea here
+/// is to establish a semantics within the meta model which all schedulers
+/// share. Any additional data that is required for custom semantics of a
+/// particular scheduler is enabled through the use of `Attribute`s and
+/// `AttributeGroup`s which provide a type agnostic interface for specifying
+/// such data.
+///
+/// Importantly, the meta model needs to be convertible to the underlying data
+/// structures for specific concrete implementations --- `SwiftMachines.Machine`
+/// for swiftfsm machines for example.
+///
+/// - SeeAlso: `SwiftMachinesConvertible`.
+public struct Machine: Hashable, Codable {
     
-    
-    public struct TransferError: Error {
+    public struct TransferError: Error, Hashable, Codable {
         
         public var message: String
         
@@ -73,30 +90,102 @@ public struct Machine: SwiftMachinesConvertible {
         case clfsm
     }
     
+    /// The underlying semantics which this meta machine follows.
     public var semantics: Semantics
     
+    /// The name of the initial state.
+    ///
+    /// The name should represent the name of a state within the `states` array.
     public var initialState: StateName
     
+    /// The name of the suspendState.
+    ///
+    /// The suspend state is the state that, when it is the current state,
+    /// denotes that the machine is suspended. The name of the suspendState
+    /// should represent the name of a state within the `states` array.
     public var suspendState: StateName
     
-    public var acceptingStates: [StateName]
+    /// The accepting states of the machine.
+    ///
+    /// An accepting state is a state without any transitions.
+    ///
+    /// - Complexity: O(n * m) where n is the length of the `states` array and
+    /// m is the length of the `transitions` array.
+    public var acceptingStates: [State] {
+        return self.states.filter { state in
+            nil != self.transitions.first { $0.source == state.name }
+        }
+    }
     
+    /// All states within the machine.
     public var states: [State]
     
+    /// All transitions within the machine --- attached or unattached to states.
     public var transitions: [Transition]
     
+    /// A list of attributes specifying additional fields that can change.
+    ///
+    /// The attribute list usually details extra fields necessary for additional
+    /// semantics not covered in the general meta machine model. The meta
+    /// machine model takes a minimalistic point of view where the meta model
+    /// represents the common semantics between different schedulers
+    /// (swiftfsm, clfsm for example). Obviously each scheduler has a different
+    /// feature set. The features which are not common between schedulers
+    /// should be facilitated through this attributes field.
     public var attributes: [AttributeGroup]
     
-    public init(semantics: Semantics, initialState: StateName, suspendState: StateName, acceptingStates: [StateName] = [], states: [State], transitions: [Transition] = [], attributes: [AttributeGroup]) {
+    /// A list of attributes specifying additional fields that do not change.
+    ///
+    /// This metaData property is similar to the `attributes` property, however;
+    /// the values within this field are under the control of the parsers and
+    /// generators for the specific scheduler. This allows the parsers and
+    /// generators to parse/generate machines which require data that the user
+    /// doesn't necessarily need to know about. These fields are therefore
+    /// hidden.
+    ///
+    /// - Attention: If you were to make a GUI using the meta model machines,
+    /// then you should simply keep these values the same between modifications.
+    public var metaData: [AttributeGroup]
+    
+    /// Create a new `Machine`.
+    ///
+    /// Creates a new meta machine model.
+    ///
+    /// - Parameter semantics: The semantics this meta machine model implements.
+    ///
+    /// - Parameter initialState: The name of the starting state of the machine
+    /// within the `states` array.
+    ///
+    /// - Parameter suspendState: The name of the state which denots that the
+    /// machine is suspended representing a state within the `states` array.
+    ///
+    /// - Parameter states: All states within the machine.
+    ///
+    /// - Parameter transitions: All transitions within the machine, even those
+    /// that aren't attached to states.
+    ///
+    /// - Parameter attributes: All attributes of the meta machine that detail
+    /// additional fields for custom semantics provided by a particular
+    /// scheduler.
+    ///
+    /// - Parameter metaData: Attributes which should be hidden from the user,
+    /// but detail additional field for custom semantics provided by a
+    /// particular scheduler.
+    public init(semantics: Semantics, initialState: StateName, suspendState: StateName, states: [State], transitions: [Transition] = [], attributes: [AttributeGroup], metaData: [AttributeGroup]) {
         self.semantics = semantics
         self.initialState = initialState
         self.suspendState = suspendState
-        self.acceptingStates = acceptingStates
         self.states = states
         self.transitions = transitions
         self.attributes = attributes
+        self.metaData = metaData
     }
     
+}
+
+extension Machine: SwiftMachinesConvertible {
+    
+    /// Convert a `SwiftMachines.Machine` to a `Machine`.
     public init(from swiftMachine: SwiftMachines.Machine) {
         fatalError("Not Yet Implemented")
         var attributes: [AttributeGroup] = []
@@ -142,6 +231,7 @@ public struct Machine: SwiftMachinesConvertible {
         }
     }
     
+    /// Convert the meta model machine to a `SwiftMachines.Machine`.
     public func swiftMachine() throws -> SwiftMachines.Machine {
         guard self.semantics == .swiftfsm else {
             throw TransferError(message: "Machine does not follow the semantics of swiftfsm")
