@@ -60,11 +60,20 @@ public struct VariableList: Hashable, Codable {
     
     public var name: String
     
+    public var enabled: Bool
+    
     public var variables: [Variable]
     
-    public init(name: String, variables: [Variable]) {
+    public var attributes: [String: Attribute]
+    
+    public var metaData: [String: Attribute]
+    
+    public init(name: String, enabled: Bool, variables: [Variable], attributes: [String: Attribute] = [:], metaData: [String: Attribute] = [:]) {
         self.name = name
+        self.enabled = enabled
         self.variables = variables
+        self.attributes = attributes
+        self.metaData = metaData
     }
     
 }

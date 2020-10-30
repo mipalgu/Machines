@@ -123,6 +123,14 @@ public struct Machine: Hashable, Codable {
     /// All transitions within the machine --- attached or unattached to states.
     public var transitions: [Transition]
     
+    /// A list of variables denotes by unique names.
+    ///
+    /// This list is used to represent different types of variables that are
+    /// accessed at the machine level --- accessible from any state within the
+    /// machine. This includes, for example, external variables, fsm variables
+    /// and parameters.
+    public var variables: [VariableList]
+    
     /// A list of attributes specifying additional fields that can change.
     ///
     /// The attribute list usually details extra fields necessary for additional
@@ -132,7 +140,7 @@ public struct Machine: Hashable, Codable {
     /// (swiftfsm, clfsm for example). Obviously each scheduler has a different
     /// feature set. The features which are not common between schedulers
     /// should be facilitated through this attributes field.
-    public var attributes: [AttributeGroup]
+    public fileprivate(set) var attributes: [AttributeGroup]
     
     /// A list of attributes specifying additional fields that do not change.
     ///
@@ -145,7 +153,7 @@ public struct Machine: Hashable, Codable {
     ///
     /// - Attention: If you were to make a GUI using the meta model machines,
     /// then you should simply keep these values the same between modifications.
-    public var metaData: [AttributeGroup]
+    public fileprivate(set) var metaData: [AttributeGroup]
     
     /// Create a new `Machine`.
     ///
@@ -164,6 +172,8 @@ public struct Machine: Hashable, Codable {
     /// - Parameter transitions: All transitions within the machine, even those
     /// that aren't attached to states.
     ///
+    /// - Parameter variables: A list of variables denoted by a unique names.
+    ///
     /// - Parameter attributes: All attributes of the meta machine that detail
     /// additional fields for custom semantics provided by a particular
     /// scheduler.
@@ -171,12 +181,22 @@ public struct Machine: Hashable, Codable {
     /// - Parameter metaData: Attributes which should be hidden from the user,
     /// but detail additional field for custom semantics provided by a
     /// particular scheduler.
-    public init(semantics: Semantics, initialState: StateName, suspendState: StateName, states: [State], transitions: [Transition] = [], attributes: [AttributeGroup], metaData: [AttributeGroup]) {
+    public init(
+        semantics: Semantics,
+        initialState: StateName,
+        suspendState: StateName,
+        states: [State] = [],
+        transitions: [Transition] = [],
+        variables: [VariableList],
+        attributes: [AttributeGroup],
+        metaData: [AttributeGroup]
+    ) {
         self.semantics = semantics
         self.initialState = initialState
         self.suspendState = suspendState
         self.states = states
         self.transitions = transitions
+        self.variables = variables
         self.attributes = attributes
         self.metaData = metaData
     }
@@ -187,48 +207,123 @@ extension Machine: SwiftMachinesConvertible {
     
     /// Convert a `SwiftMachines.Machine` to a `Machine`.
     public init(from swiftMachine: SwiftMachines.Machine) {
-        fatalError("Not Yet Implemented")
-        var attributes: [AttributeGroup] = []
-        let actions: [String]
+        let attributes: [AttributeGroup]
         if let model = swiftMachine.model {
-            actions = model.actions
-            let group = AttributeGroup(
+            attributes = [AttributeGroup(
                 name: "Ringlet",
+                variables: VariableList(
+                    name: "ringlet_variables",
+                    enabled: true,
+                    variables: model.ringlet.vars.map {
+                        Variable(
+                            accessTypeValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue }),
+                            accessType: $0.accessType.rawValue,
+                            label: $0.label,
+                            type: $0.type,
+                            initialValue: $0.initialValue ?? ""
+                        )
+                    }
+                ),
                 attributes: [
+                    "use_custom_ringlet": .bool(true),
+                    "actions": .collection(model.actions.map { Attribute.line($0) }),
                     "imports": .code(model.ringlet.imports),
-                    "variables": .collection(model.ringlet.vars.map {
-                        Attribute.complex([
-                            "access_type": .enumerated($0.accessType.rawValue, validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue })),
-                            "label": .line($0.label),
-                            "type": .line($0.type),
-                            "initial_value": .line($0.initialValue ?? "")
-                        ])
-                    }),
                     "execute": .code(model.ringlet.execute)
                 ]
-            )
-            attributes.append(group)
+            )]
         } else {
-            actions = ["onEntry", "main", "onExit"]
+            attributes = [AttributeGroup(
+                name: "Ringlet",
+                variables: nil,
+                attributes: [
+                    "use_custom_ringlet": .bool(false)
+                ]
+            )]
         }
         let states = swiftMachine.states.map {
             State(
                 name: $0.name,
                 actions: Dictionary(uniqueKeysWithValues: $0.actions.map { ($0.name, $0.implementation) }),
+                variables: [
+                    VariableList(
+                        name: "state_variables",
+                        enabled: $0.externalVariables != nil,
+                        variables: $0.vars.map {
+                            Variable(
+                                accessTypeValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue }),
+                                accessType: $0.accessType.rawValue,
+                                label: $0.label,
+                                type: $0.type,
+                                initialValue: $0.initialValue ?? ""
+                            )
+                        }
+                    )
+                ],
                 attributes: [
-                    "variables": .collection($0.vars.map {
-                        Attribute.complex([
-                            "access_type": .enumerated($0.accessType.rawValue, validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue })),
-                            "label": .line($0.label),
-                            "type": .line($0.type),
-                            "initial_value": .line($0.initialValue ?? "")
-                        ])
-                    }),
                     "external_variables": .enumerableCollection(Set($0.externalVariables?.map { $0.label } ?? []), validValues: Set(swiftMachine.externalVariables.map { $0.label })),
                     "imports": .text($0.imports)
                 ]
             )
         }
+        let transitions = swiftMachine.states.flatMap { state in
+            state.transitions.map {
+                Transition(condition: $0.condition, source: state.name, target: $0.target)
+            }
+        }
+        let variables = [
+            VariableList(
+                name: "external_variables",
+                enabled: true,
+                variables: swiftMachine.externalVariables.map {
+                    Variable(
+                        accessTypeValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue }),
+                        accessType: $0.accessType.rawValue,
+                        label: $0.label,
+                        type: $0.type,
+                        initialValue: $0.initialValue ?? ""
+                    )
+                }
+            ),
+            VariableList(
+                name: "parameters",
+                enabled: swiftMachine.parameters != nil,
+                variables: (swiftMachine.parameters ?? []).map {
+                    Variable(
+                        accessTypeValues: [SwiftMachines.Variable.AccessType.readOnly.rawValue],
+                        accessType: SwiftMachines.Variable.AccessType.readOnly.rawValue,
+                        label: $0.label,
+                        type: $0.type,
+                        initialValue: $0.initialValue ?? ""
+                    )
+                },
+                attributes: [
+                    "result_type": .expression(swiftMachine.returnType ?? "")
+                ]
+            ),
+            VariableList(
+                name: "fsm_variables",
+                enabled: true,
+                variables: swiftMachine.vars.map {
+                    Variable(
+                        accessTypeValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue }),
+                        accessType: $0.accessType.rawValue,
+                        label: $0.label,
+                        type: $0.type,
+                        initialValue: $0.initialValue ?? ""
+                    )
+                }
+            )
+        ]
+        self.init(
+            semantics: .swiftfsm,
+            initialState: swiftMachine.initialState.name,
+            suspendState: swiftMachine.suspendState?.name ?? swiftMachine.initialState.name,
+            states: states,
+            transitions: transitions,
+            variables: variables,
+            attributes: attributes,
+            metaData: []
+        )
     }
     
     /// Convert the meta model machine to a `SwiftMachines.Machine`.
