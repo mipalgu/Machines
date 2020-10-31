@@ -91,7 +91,7 @@ public struct Machine: Hashable, Codable {
     }
     
     /// The underlying semantics which this meta machine follows.
-    public var semantics: Semantics
+    public private(set) var semantics: Semantics
     
     /// The name of the initial state.
     ///
