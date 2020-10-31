@@ -56,14 +56,59 @@
  *
  */
 
-public enum BlockAttributeType: String, Hashable, Codable {
+public enum BlockAttributeType: Hashable, Codable {
+    
+    public enum CodingKeys: CodingKey {
+        case type
+        case value
+    }
     
     case code
     case text
     case collection
     case complex
     case group
-    case enumerated
-    case enumerableCollection
+    case enumerableCollection(validValues: Set<String>)
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let type = try container.decode(String.self, forKey: .type)
+        switch type {
+        case "code":
+            self = .code
+        case "text":
+            self = .text
+        case "collection":
+            self = .collection
+        case "complex":
+            self = .complex
+        case "group":
+            self = .group
+        case "enumerableCollection":
+            let cases = try container.decode(Set<String>.self, forKey: .value)
+            self = .enumerableCollection(validValues: cases)
+        default:
+            throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: [CodingKeys.type], debugDescription: "Invalid value \(type)"))
+        }
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        switch self {
+        case .code:
+            try container.encode("code", forKey: .type)
+        case .text:
+            try container.encode("text", forKey: .type)
+        case .collection:
+            try container.encode("collection", forKey: .type)
+        case .complex:
+            try container.encode("complex", forKey: .type)
+        case .group:
+            try container.encode("group", forKey: .type)
+        case .enumerableCollection(let cases):
+            try container.encode("enumerableCollection", forKey: .type)
+            try container.encode(cases, forKey: .value)
+        }
+    }
     
 }

@@ -56,7 +56,12 @@
  *
  */
 
-public enum AttributeType: String, Hashable, Codable {
+public enum AttributeType: Hashable, Codable {
+    
+    public enum CodingKeys: CodingKey {
+        case type
+        case value
+    }
     
     case bool
     case integer
@@ -68,8 +73,75 @@ public enum AttributeType: String, Hashable, Codable {
     case collection
     case complex
     case group
-    case enumerated
-    case enumerableCollection
+    case enumerated(validValues: Set<String>)
+    case enumerableCollection(validValues: Set<String>)
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let type = try container.decode(String.self, forKey: .type)
+        switch type {
+        case "bool":
+            self = .bool
+        case "integer":
+            self = .integer
+        case "float":
+            self = .float
+        case "expression":
+            self = .expression
+        case "enumerated":
+            let value = try container.decode(Set<String>.self, forKey: .value)
+            self = .enumerated(validValues: value)
+        case "line":
+            self = .line
+        case "code":
+            self = .code
+        case "text":
+            self = .text
+        case "collection":
+            self = .collection
+        case "complex":
+            self = .complex
+        case "group":
+            self = .group
+        case "enumerableCollection":
+            let cases = try container.decode(Set<String>.self, forKey: .value)
+            self = .enumerableCollection(validValues: cases)
+        default:
+            throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: [CodingKeys.type], debugDescription: "Invalid value \(type)"))
+        }
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        switch self {
+        case .bool:
+            try container.encode("bool", forKey: .type)
+        case .integer:
+            try container.encode("integer", forKey: .type)
+        case .float:
+            try container.encode("float", forKey: .type)
+        case .expression:
+            try container.encode("expression", forKey: .type)
+        case .enumerated(let value):
+            try container.encode("enumerated", forKey: .type)
+            try container.encode(value, forKey: .value)
+        case .line:
+            try container.encode("line", forKey: .type)
+        case .code:
+            try container.encode("code", forKey: .type)
+        case .text:
+            try container.encode("text", forKey: .type)
+        case .collection:
+            try container.encode("collection", forKey: .type)
+        case .complex:
+            try container.encode("complex", forKey: .type)
+        case .group:
+            try container.encode("group", forKey: .type)
+        case .enumerableCollection(let cases):
+            try container.encode("enumerableCollection", forKey: .type)
+            try container.encode(cases, forKey: .value)
+        }
+    }
     
 }
 
@@ -86,15 +158,35 @@ public enum Attribute: Hashable, Codable {
     public var type: AttributeType {
         switch self {
         case .line(let attribute):
-            guard let type = AttributeType(rawValue: attribute.type.rawValue) else {
-                fatalError("LineAttributeType \(attribute.type.rawValue)/AttributeType raw value mismatch.")
+            switch attribute {
+            case .bool:
+                return .bool
+            case .integer:
+                return .integer
+            case .float:
+                return .float
+            case .expression:
+                return .expression
+            case .enumerated(_, let validValues):
+                return .enumerated(validValues: validValues)
+            case .line:
+                return .line
             }
-            return type
         case .block(let attribute):
-            guard let type = AttributeType(rawValue: attribute.type.rawValue) else {
-                fatalError("BlockAttributeType \(attribute.type.rawValue)/AttributeType raw value mismatch.")
+            switch attribute {
+            case .code:
+                return .code
+            case .text:
+                return .text
+            case .collection:
+                return .collection
+            case .complex:
+                return .complex
+            case .group:
+                return .group
+            case .enumerableCollection(_, let validValues):
+                return .enumerableCollection(validValues: validValues)
             }
-            return type
         }
     }
     
@@ -174,7 +266,7 @@ public enum Attribute: Hashable, Codable {
     }
     
     public static func enumerated(_ value: String, validValues: Set<String>) -> Attribute {
-        return .block(.enumerated(value, validValues: validValues))
+        return .line(.enumerated(value, validValues: validValues))
     }
     
     public static func enumerableCollection(_ value: Set<String>, validValues: Set<String>) -> Attribute {

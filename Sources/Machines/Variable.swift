@@ -58,22 +58,16 @@
 
 public struct Variable: Hashable, Codable {
     
-    public var accessTypeValues: Set<String>
-    
-    public var accessType: String
-    
     public var label: String
     
     public var type: String
     
-    public var initialValue: String
+    public var extraFields: [String: LineAttribute]
     
-    public init(accessTypeValues: Set<String>, accessType: String, label: String, type: String, initialValue: String) {
-        self.accessTypeValues = accessTypeValues
-        self.accessType = accessType
+    public init(label: String, type: String, extraFields: [String: LineAttribute] = [:]) {
         self.label = label
         self.type = type
-        self.initialValue = initialValue
+        self.extraFields = extraFields
     }
     
 }

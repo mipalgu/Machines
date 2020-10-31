@@ -67,6 +67,7 @@ public enum LineAttribute: Hashable, Codable {
     case integer(Int)
     case float(Double)
     case expression(Expression)
+    case enumerated(String, validValues: Set<String>)
     case line(String)
     
     public var type: LineAttributeType {
@@ -79,6 +80,8 @@ public enum LineAttribute: Hashable, Codable {
             return .float
         case .expression:
             return .expression
+        case .enumerated(_, let validValues):
+            return .enumerated(validValues: validValues)
         case .line:
             return .line
         }
@@ -103,6 +106,11 @@ public enum LineAttribute: Hashable, Codable {
             self = .float(value)
         case .expression:
             self = .expression(Expression(value))
+        case .enumerated(let validValues):
+            if !validValues.contains(value) {
+                return nil
+            }
+            self = .enumerated(value, validValues: validValues)
         case .line:
             self = .line(value)
         }
@@ -124,6 +132,9 @@ public enum LineAttribute: Hashable, Codable {
         case "expression":
             let value = try container.decode(String.self, forKey: .value)
             self = .expression(value)
+        case "enumerated":
+            let pair = try container.decode(EnumPair.self, forKey: .value)
+            self = .enumerated(pair.value, validValues: pair.cases)
         case "line":
             let value = try container.decode(String.self, forKey: .value)
             self = .line(value)
@@ -147,10 +158,27 @@ public enum LineAttribute: Hashable, Codable {
         case .expression(let value):
             try container.encode("expression", forKey: .type)
             try container.encode(value, forKey: .value)
+        case .enumerated(let value, let cases):
+            try container.encode("enumerated", forKey: .type)
+            var pair = container.nestedUnkeyedContainer(forKey: .value)
+            try pair.encode(EnumPair(cases: cases, value: value))
         case .line(let value):
             try container.encode("line", forKey: .type)
             try container.encode(value, forKey: .value)
         }
+    }
+    
+    private struct EnumPair: Hashable, Codable {
+        
+        var cases: Set<String>
+        
+        var value: String
+        
+        init(cases: Set<String>, value: String) {
+            self.cases = cases
+            self.value = value
+        }
+        
     }
     
 }

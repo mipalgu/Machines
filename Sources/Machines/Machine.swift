@@ -216,13 +216,18 @@ extension Machine: SwiftMachinesConvertible {
                     enabled: true,
                     variables: model.ringlet.vars.map {
                         Variable(
-                            accessTypeValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue }),
-                            accessType: $0.accessType.rawValue,
                             label: $0.label,
                             type: $0.type,
-                            initialValue: $0.initialValue ?? ""
+                            extraFields: [
+                                "access_type": .enumerated($0.accessType.rawValue, validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue })),
+                                "initial_value": .expression($0.initialValue ?? "")
+                            ]
                         )
-                    }
+                    },
+                    extraFields: [
+                        "access_type": .enumerated(validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue })),
+                        "initial_value": .expression
+                    ]
                 ),
                 attributes: [
                     "use_custom_ringlet": .bool(true),
@@ -250,13 +255,18 @@ extension Machine: SwiftMachinesConvertible {
                         enabled: $0.externalVariables != nil,
                         variables: $0.vars.map {
                             Variable(
-                                accessTypeValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue }),
-                                accessType: $0.accessType.rawValue,
                                 label: $0.label,
                                 type: $0.type,
-                                initialValue: $0.initialValue ?? ""
+                                extraFields: [
+                                    "access_type": .enumerated($0.accessType.rawValue, validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue })),
+                                    "initial_value": .expression($0.initialValue ?? "")
+                                ]
                             )
-                        }
+                        },
+                        extraFields: [
+                            "access_type": .enumerated(validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue })),
+                            "initial_value": .expression
+                        ]
                     )
                 ],
                 attributes: [
@@ -276,26 +286,34 @@ extension Machine: SwiftMachinesConvertible {
                 enabled: true,
                 variables: swiftMachine.externalVariables.map {
                     Variable(
-                        accessTypeValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue }),
-                        accessType: $0.accessType.rawValue,
                         label: $0.label,
                         type: $0.type,
-                        initialValue: $0.initialValue ?? ""
+                        extraFields: [
+                            "access_type": .enumerated($0.accessType.rawValue, validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue })),
+                            "value": .expression($0.initialValue ?? "")
+                        ]
                     )
-                }
+                },
+                extraFields: [
+                    "access_type": .enumerated(validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue })),
+                    "value": .expression
+                ]
             ),
             VariableList(
                 name: "parameters",
                 enabled: swiftMachine.parameters != nil,
                 variables: (swiftMachine.parameters ?? []).map {
                     Variable(
-                        accessTypeValues: [SwiftMachines.Variable.AccessType.readOnly.rawValue],
-                        accessType: SwiftMachines.Variable.AccessType.readOnly.rawValue,
                         label: $0.label,
                         type: $0.type,
-                        initialValue: $0.initialValue ?? ""
+                        extraFields: [
+                            "default_value": .expression($0.initialValue ?? "")
+                        ]
                     )
                 },
+                extraFields: [
+                    "default_value": .expression
+                ],
                 attributes: [
                     "result_type": .expression(swiftMachine.returnType ?? "")
                 ]
@@ -305,13 +323,18 @@ extension Machine: SwiftMachinesConvertible {
                 enabled: true,
                 variables: swiftMachine.vars.map {
                     Variable(
-                        accessTypeValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue }),
-                        accessType: $0.accessType.rawValue,
                         label: $0.label,
                         type: $0.type,
-                        initialValue: $0.initialValue ?? ""
+                        extraFields: [
+                            "access_type": .enumerated($0.accessType.rawValue, validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue })),
+                            "initial_value": .expression($0.initialValue ?? "")
+                        ]
                     )
-                }
+                },
+                extraFields: [
+                    "access_type": .enumerated(validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue })),
+                    "initial_value": .expression
+                ]
             )
         ]
         self.init(

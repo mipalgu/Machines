@@ -64,14 +64,17 @@ public struct VariableList: Hashable, Codable {
     
     public var variables: [Variable]
     
+    public var extraFields: [String: LineAttributeType]
+    
     public var attributes: [String: Attribute]
     
     public var metaData: [String: Attribute]
     
-    public init(name: String, enabled: Bool, variables: [Variable], attributes: [String: Attribute] = [:], metaData: [String: Attribute] = [:]) {
+    public init(name: String, enabled: Bool, variables: [Variable], extraFields: [String: LineAttributeType] = [:], attributes: [String: Attribute] = [:], metaData: [String: Attribute] = [:]) {
         self.name = name
         self.enabled = enabled
         self.variables = variables
+        self.extraFields = extraFields
         self.attributes = attributes
         self.metaData = metaData
     }

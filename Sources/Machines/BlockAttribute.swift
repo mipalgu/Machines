@@ -73,8 +73,6 @@ public enum BlockAttribute: Hashable, Codable {
     
     indirect case group(_ group: AttributeGroup)
     
-    case enumerated(_ value: String, validValues: Set<String>)
-    
     case enumerableCollection(_ values: Set<String>, validValues: Set<String>)
     
     public var type: BlockAttributeType {
@@ -89,10 +87,8 @@ public enum BlockAttribute: Hashable, Codable {
             return .complex
         case .group:
             return .group
-        case .enumerated:
-            return .enumerated
-        case .enumerableCollection:
-            return .enumerableCollection
+        case .enumerableCollection(_, let validValues):
+            return .enumerableCollection(validValues: validValues)
         }
     }
     
@@ -115,9 +111,6 @@ public enum BlockAttribute: Hashable, Codable {
         case "group":
             let group = try container.decode(AttributeGroup.self, forKey: .value)
             self = .group(group)
-        case "enumerated":
-            let pair = try container.decode(EnumPair.self, forKey: .value)
-            self = .enumerated(pair.value, validValues: pair.cases)
         case "enumerableCollection":
             let pair = try container.decode(EnumCollection.self, forKey: .value)
             self = .enumerableCollection(pair.values, validValues: pair.cases)
@@ -147,10 +140,6 @@ public enum BlockAttribute: Hashable, Codable {
             try container.encode("group", forKey: .type)
             var group = container.nestedUnkeyedContainer(forKey: .value)
             try group.encode(value)
-        case .enumerated(let value, let cases):
-            try container.encode("enumerated", forKey: .type)
-            var pair = container.nestedUnkeyedContainer(forKey: .value)
-            try pair.encode(EnumPair(cases: cases, value: value))
         case .enumerableCollection(let values, let cases):
             try container.encode("enumerableCollection", forKey: .type)
             var pair = container.nestedUnkeyedContainer(forKey: .value)
@@ -166,19 +155,6 @@ public enum BlockAttribute: Hashable, Codable {
         
         init(key: String, value: Attribute) {
             self.key = key
-            self.value = value
-        }
-        
-    }
-    
-    private struct EnumPair: Hashable, Codable {
-        
-        var cases: Set<String>
-        
-        var value: String
-        
-        init(cases: Set<String>, value: String) {
-            self.cases = cases
             self.value = value
         }
         

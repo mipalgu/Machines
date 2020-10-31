@@ -56,12 +56,59 @@
  *
  */
 
-public enum LineAttributeType: String, Hashable, Codable {
+public enum LineAttributeType: Hashable, Codable {
+    
+    public enum CodingKeys: CodingKey {
+        case type
+        case value
+    }
     
     case bool
     case integer
     case float
     case expression
+    case enumerated(validValues: Set<String>)
     case line
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let type = try container.decode(String.self, forKey: .type)
+        switch type {
+        case "bool":
+            self = .bool
+        case "integer":
+            self = .integer
+        case "float":
+            self = .float
+        case "expression":
+            self = .expression
+        case "enumerated":
+            let value = try container.decode(Set<String>.self, forKey: .value)
+            self = .enumerated(validValues: value)
+        case "line":
+            self = .line
+        default:
+            throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: [CodingKeys.type], debugDescription: "Invalid value \(type)"))
+        }
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        switch self {
+        case .bool:
+            try container.encode("bool", forKey: .type)
+        case .integer:
+            try container.encode("integer", forKey: .type)
+        case .float:
+            try container.encode("float", forKey: .type)
+        case .expression:
+            try container.encode("expression", forKey: .type)
+        case .enumerated(let value):
+            try container.encode("enumerated", forKey: .type)
+            try container.encode(value, forKey: .value)
+        case .line:
+            try container.encode("line", forKey: .type)
+        }
+    }
     
 }
