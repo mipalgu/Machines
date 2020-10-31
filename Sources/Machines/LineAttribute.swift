@@ -1,8 +1,8 @@
 /*
- * Attribute.swift
+ * LineAttribute.swift
  * Machines
  *
- * Created by Callum McColl on 29/10/20.
+ * Created by Callum McColl on 31/10/20.
  * Copyright © 2020 Callum McColl. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,66 +56,77 @@
  *
  */
 
-public enum AttributeType: String, Hashable, Codable {
-    
-    case bool
-    case integer
-    case float
-    case expression
-    case line
-    case code
-    case text
-    case collection
-    case complex
-    case group
-    case enumerated
-    case enumerableCollection
-    
-}
-
-public enum Attribute: Hashable, Codable {
+public enum LineAttribute: Hashable, Codable {
     
     public enum CodingKeys: CodingKey {
         case type
         case value
     }
     
-    case line(LineAttribute)
-    case block(BlockAttribute)
+    case bool(Bool)
+    case integer(Int)
+    case float(Double)
+    case expression(Expression)
+    case line(String)
     
-    public var type: AttributeType {
+    public var type: LineAttributeType {
         switch self {
-        case .line(let attribute):
-            guard let type = AttributeType(rawValue: attribute.type.rawValue) else {
-                fatalError("LineAttributeType \(attribute.type.rawValue)/AttributeType raw value mismatch.")
-            }
-            return type
-        case .block(let attribute):
-            guard let type = AttributeType(rawValue: attribute.type.rawValue) else {
-                fatalError("BlockAttributeType \(attribute.type.rawValue)/AttributeType raw value mismatch.")
-            }
-            return type
+        case .bool:
+            return .bool
+        case .integer:
+            return .integer
+        case .float:
+            return .float
+        case .expression:
+            return .expression
+        case .line:
+            return .line
         }
     }
     
-    public init(lineAttribute: LineAttribute) {
-        self = .line(lineAttribute)
-    }
-    
-    public init(blockAttribute: BlockAttribute) {
-        self = .block(blockAttribute)
+    public init?(type: LineAttributeType, value: String) {
+        switch type {
+        case .bool:
+            guard let value = Bool(value) else {
+                return nil
+            }
+            self = .bool(value)
+        case .integer:
+            guard let value = Int(value) else {
+                return nil
+            }
+            self = .integer(value)
+        case .float:
+            guard let value = Double(value) else {
+                return nil
+            }
+            self = .float(value)
+        case .expression:
+            self = .expression(Expression(value))
+        case .line:
+            self = .line(value)
+        }
     }
     
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let type = try container.decode(String.self, forKey: .type)
         switch type {
+        case "bool":
+            let value = try container.decode(Bool.self, forKey: .value)
+            self = .bool(value)
+        case "integer":
+            let value = try container.decode(Int.self, forKey: .value)
+            self = .integer(value)
+        case "float":
+            let value = try container.decode(Double.self, forKey: .value)
+            self = .float(value)
+        case "expression":
+            let value = try container.decode(String.self, forKey: .value)
+            self = .expression(value)
         case "line":
-            let value = try container.decode(LineAttribute.self, forKey: .value)
+            let value = try container.decode(String.self, forKey: .value)
             self = .line(value)
-        case "block":
-            let value = try container.decode(BlockAttribute.self, forKey: .value)
-            self = .block(value)
         default:
             throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: [CodingKeys.type], debugDescription: "Invalid value \(type)"))
         }
@@ -124,61 +135,22 @@ public enum Attribute: Hashable, Codable {
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         switch self {
-        case .line(let lineValue):
+        case .bool(let value):
+            try container.encode("bool", forKey: .type)
+            try container.encode(value, forKey: .value)
+        case .integer(let value):
+            try container.encode("integer", forKey: .type)
+            try container.encode(value, forKey: .value)
+        case .float(let value):
+            try container.encode("float", forKey: .type)
+            try container.encode(value, forKey: .value)
+        case .expression(let value):
+            try container.encode("expression", forKey: .type)
+            try container.encode(value, forKey: .value)
+        case .line(let value):
             try container.encode("line", forKey: .type)
-            try container.encode(lineValue, forKey: .value)
-        case .block(let blockValue):
-            try container.encode("block", forKey: .type)
-            try container.encode(blockValue, forKey: .value)
+            try container.encode(value, forKey: .value)
         }
-    }
-    
-    public static func bool(_ value: Bool) -> Attribute {
-        return .line(.bool(value))
-    }
-    
-    public static func integer(_ value: Int) -> Attribute {
-        return .line(.integer(value))
-    }
-    
-    public static func float(_ value: Double) -> Attribute {
-        return .line(.float(value))
-    }
-    
-    public static func expression(_ value: Expression) -> Attribute {
-        return .line(.expression(value))
-    }
-    
-    public static func line(_ value: String) -> Attribute {
-        return .line(.line(value))
-    }
-    
-    public static func code(_ value: String) -> Attribute {
-        return .block(.code(value))
-    }
-    
-    public static func text(_ value: String) -> Attribute {
-        return .block(.text(value))
-    }
-    
-    public static func collection(_ value: [Attribute]) -> Attribute {
-        return .block(.collection(value))
-    }
-    
-    public static func complex(_ value: [String: Attribute]) -> Attribute {
-        return .block(.complex(value))
-    }
-    
-    public static func group(_ value: AttributeGroup) -> Attribute {
-        return .block(.group(value))
-    }
-    
-    public static func enumerated(_ value: String, validValues: Set<String>) -> Attribute {
-        return .block(.enumerated(value, validValues: validValues))
-    }
-    
-    public static func enumerableCollection(_ value: Set<String>, validValues: Set<String>) -> Attribute {
-        return .block(.enumerableCollection(value, validValues: validValues))
     }
     
 }
