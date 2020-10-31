@@ -62,13 +62,16 @@ public struct AttributeGroup: Hashable, Codable {
     
     public var variables: VariableList?
     
+    public var fields: [String: AttributeType]
+    
     public var attributes: [String: Attribute]
     
     public var metaData: [String: Attribute]
     
-    public init(name: String, variables: VariableList? = nil, attributes: [String: Attribute] = [:], metaData: [String: Attribute] = [:]) {
+    public init(name: String, variables: VariableList? = nil, fields: [String: AttributeType] = [:], attributes: [String: Attribute] = [:], metaData: [String: Attribute] = [:]) {
         self.name = name
         self.variables = variables
+        self.fields = fields
         self.attributes = attributes
         self.metaData = metaData
     }

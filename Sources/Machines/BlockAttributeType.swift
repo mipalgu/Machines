@@ -65,8 +65,8 @@ public enum BlockAttributeType: Hashable, Codable {
     
     case code
     case text
-    case collection
-    case complex
+    indirect case collection(type: AttributeType)
+    indirect case complex(layout: [String: AttributeType])
     case enumerableCollection(validValues: Set<String>)
     
     public init(from decoder: Decoder) throws {
@@ -78,9 +78,11 @@ public enum BlockAttributeType: Hashable, Codable {
         case "text":
             self = .text
         case "collection":
-            self = .collection
+            let value = try container.decode(AttributeType.self, forKey: .value)
+            self = .collection(type: value)
         case "complex":
-            self = .complex
+            let value = try container.decode([String: AttributeType].self, forKey: .value)
+            self = .complex(layout: value)
         case "enumerableCollection":
             let cases = try container.decode(Set<String>.self, forKey: .value)
             self = .enumerableCollection(validValues: cases)
@@ -96,10 +98,12 @@ public enum BlockAttributeType: Hashable, Codable {
             try container.encode("code", forKey: .type)
         case .text:
             try container.encode("text", forKey: .type)
-        case .collection:
+        case .collection(let values):
             try container.encode("collection", forKey: .type)
-        case .complex:
+            try container.encode(values, forKey: .value)
+        case .complex(let values):
             try container.encode("complex", forKey: .type)
+            try container.encode(values, forKey: .value)
         case .enumerableCollection(let cases):
             try container.encode("enumerableCollection", forKey: .type)
             try container.encode(cases, forKey: .value)

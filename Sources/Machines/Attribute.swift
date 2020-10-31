@@ -89,10 +89,10 @@ public enum Attribute: Hashable, Codable {
                 return .code
             case .text:
                 return .text
-            case .collection:
-                return .collection
-            case .complex:
-                return .complex
+            case .collection(_, let type):
+                return .collection(type: type)
+            case .complex(let values):
+                return .complex(layout: values.mapValues { $0.type })
             case .enumerableCollection(_, let validValues):
                 return .enumerableCollection(validValues: validValues)
             }
@@ -162,8 +162,52 @@ public enum Attribute: Hashable, Codable {
         return .block(.text(value))
     }
     
-    public static func collection(_ value: [Attribute]) -> Attribute {
-        return .block(.collection(value))
+    public static func collection(bools: [Bool]) -> Attribute {
+        return .block(.collection(bools.map { Attribute.bool($0) }, type: .bool))
+    }
+    
+    public static func collection(integers: [Int]) -> Attribute {
+        return .block(.collection(integers.map { Attribute.integer($0) }, type: .integer))
+    }
+    
+    public static func collection(floats: [Double]) -> Attribute {
+        return .block(.collection(floats.map { Attribute.float($0) }, type: .float))
+    }
+    
+    public static func collection(expressions: [Expression]) -> Attribute {
+        return .block(.collection(expressions.map { Attribute.expression($0) }, type: .expression))
+    }
+    
+    public static func collection(lines: [String]) -> Attribute {
+        return .block(.collection(lines.map { Attribute.line($0) }, type: .line))
+    }
+    
+    public static func collection(code: [String]) -> Attribute {
+        return .block(.collection(code.map { Attribute.code($0) }, type: .code))
+    }
+    
+    public static func collection(text: [String]) -> Attribute {
+        return .block(.collection(text.map { Attribute.text($0) }, type: .text))
+    }
+    
+    public static func collection(complex: [[String: Attribute]], layout: [String: AttributeType]) -> Attribute {
+        return .block(.collection(complex.map { Attribute.complex($0) }, type: .complex(layout: layout)))
+    }
+    
+    public static func collection(enumerated: [String], validValues: Set<String>) -> Attribute {
+        return .block(.collection(enumerated.map { Attribute.enumerated($0, validValues: validValues) }, type: .enumerated(validValues: validValues)))
+    }
+    
+    public static func collection(enumerables: [Set<String>], validValues: Set<String>) -> Attribute {
+        return .block(.collection(enumerables.map { Attribute.enumerableCollection($0, validValues: validValues) }, type: .enumerableCollection(validValues: validValues)))
+    }
+    
+    public static func collection(collection: [[Attribute]], type: AttributeType) -> Attribute {
+        return .block(.collection(collection.map { Attribute.collection($0, type: type) }, type: type))
+    }
+    
+    public static func collection(_ values: [Attribute], type: AttributeType) -> Attribute {
+        return .block(.collection(values, type: type))
     }
     
     public static func complex(_ value: [String: Attribute]) -> Attribute {

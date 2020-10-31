@@ -67,7 +67,7 @@ public enum BlockAttribute: Hashable, Codable {
     
     case text(_ value: String)
     
-    indirect case collection(_ values: [Attribute])
+    indirect case collection(_ values: [Attribute], type: AttributeType)
     
     indirect case complex(_ data: [String: Attribute])
     
@@ -79,10 +79,10 @@ public enum BlockAttribute: Hashable, Codable {
             return .code
         case .text:
             return .text
-        case .collection:
-            return .collection
-        case .complex:
-            return .complex
+        case .collection(_, let type):
+            return .collection(type: type)
+        case .complex(let values):
+            return .complex(layout: values.mapValues { $0.type })
         case .enumerableCollection(_, let validValues):
             return .enumerableCollection(validValues: validValues)
         }
@@ -99,10 +99,10 @@ public enum BlockAttribute: Hashable, Codable {
             let value = try container.decode(String.self, forKey: .value)
             self = .text(value)
         case "collection":
-            let attributes = try container.decode([Attribute].self, forKey: .value)
-            self = .collection(attributes)
+            let attributes = try container.decode(TypeValuesPair.self, forKey: .value)
+            self = .collection(attributes.values, type: attributes.type)
         case "complex":
-            let attributes = try Dictionary(uniqueKeysWithValues: container.decode([KeyValuePair].self, forKey: .value).map { ($0.key, $0.value) })
+            let attributes = try container.decode([String: Attribute].self, forKey: .value)
             self = .complex(attributes)
         case "enumerableCollection":
             let pair = try container.decode(EnumCollection.self, forKey: .value)
@@ -121,19 +121,24 @@ public enum BlockAttribute: Hashable, Codable {
         case .text(let value):
             try container.encode("text", forKey: .type)
             try container.encode(value, forKey: .value)
-        case .collection(let values):
+        case .collection(let values, let type):
             try container.encode("collection", forKey: .type)
-            var arr = container.nestedUnkeyedContainer(forKey: .value)
-            try arr.encode(contentsOf: values)
+            try container.encode(TypeValuesPair(type: type, values: values), forKey: .value)
         case .complex(let values):
             try container.encode("complex", forKey: .type)
-            var dict = container.nestedUnkeyedContainer(forKey: .value)
-            try dict.encode(contentsOf: values.map { KeyValuePair(key: $0, value: $1) })
+            try container.encode(values, forKey: .value)
         case .enumerableCollection(let values, let cases):
             try container.encode("enumerableCollection", forKey: .type)
-            var pair = container.nestedUnkeyedContainer(forKey: .value)
-            try pair.encode(EnumCollection(cases: cases, values: values))
+            try container.encode(EnumCollection(cases: cases, values: values), forKey: .value)
         }
+    }
+    
+    private struct TypeValuesPair: Hashable, Codable {
+        
+        var type: AttributeType
+        
+        var values: [Attribute]
+        
     }
     
     private struct KeyValuePair: Hashable, Codable {

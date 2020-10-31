@@ -160,8 +160,7 @@ public enum LineAttribute: Hashable, Codable {
             try container.encode(value, forKey: .value)
         case .enumerated(let value, let cases):
             try container.encode("enumerated", forKey: .type)
-            var pair = container.nestedUnkeyedContainer(forKey: .value)
-            try pair.encode(EnumPair(cases: cases, value: value))
+            try container.encode(EnumPair(cases: cases, value: value), forKey: .value)
         case .line(let value):
             try container.encode("line", forKey: .type)
             try container.encode(value, forKey: .value)

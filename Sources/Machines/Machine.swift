@@ -207,9 +207,9 @@ extension Machine: SwiftMachinesConvertible {
     
     /// Convert a `SwiftMachines.Machine` to a `Machine`.
     public init(from swiftMachine: SwiftMachines.Machine) {
-        let attributes: [AttributeGroup]
+        var attributes: [AttributeGroup] = []
         if let model = swiftMachine.model {
-            attributes = [AttributeGroup(
+            let group = AttributeGroup(
                 name: "ringlet",
                 variables: VariableList(
                     name: "ringlet_variables",
@@ -229,21 +229,32 @@ extension Machine: SwiftMachinesConvertible {
                         "initial_value": .expression
                     ]
                 ),
+                fields: [
+                    "use_custom_ringlet": .bool,
+                    "actions": .collection(type: .line),
+                    "imports": .code,
+                    "execute": .code
+                ],
                 attributes: [
                     "use_custom_ringlet": .bool(true),
-                    "actions": .collection(model.actions.map { Attribute.line($0) }),
+                    "actions": .collection(lines: model.actions),
                     "imports": .code(model.ringlet.imports),
                     "execute": .code(model.ringlet.execute)
                 ]
-            )]
+            )
+            attributes.append(group)
         } else {
-            attributes = [AttributeGroup(
+            let group = AttributeGroup(
                 name: "ringlet",
                 variables: nil,
+                fields: [
+                    "use_custom_ringlet": .bool
+                ],
                 attributes: [
                     "use_custom_ringlet": .bool(false)
                 ]
-            )]
+            )
+            attributes.append(group)
         }
         let states = swiftMachine.states.map {
             State(
@@ -272,6 +283,10 @@ extension Machine: SwiftMachinesConvertible {
                 attributes: [
                     AttributeGroup(
                         name: "settings",
+                        fields: [
+                            "external_variables": .enumerableCollection(validValues: Set(swiftMachine.externalVariables.map { $0.label })),
+                            "imports": .text
+                        ],
                         attributes: [
                             "external_variables": .enumerableCollection(Set($0.externalVariables?.map { $0.label } ?? []), validValues: Set(swiftMachine.externalVariables.map { $0.label })),
                             "imports": .text($0.imports)
