@@ -210,7 +210,7 @@ extension Machine: SwiftMachinesConvertible {
         let attributes: [AttributeGroup]
         if let model = swiftMachine.model {
             attributes = [AttributeGroup(
-                name: "Ringlet",
+                name: "ringlet",
                 variables: VariableList(
                     name: "ringlet_variables",
                     enabled: true,
@@ -238,7 +238,7 @@ extension Machine: SwiftMachinesConvertible {
             )]
         } else {
             attributes = [AttributeGroup(
-                name: "Ringlet",
+                name: "ringlet",
                 variables: nil,
                 attributes: [
                     "use_custom_ringlet": .bool(false)
@@ -270,8 +270,13 @@ extension Machine: SwiftMachinesConvertible {
                     )
                 ],
                 attributes: [
-                    "external_variables": .enumerableCollection(Set($0.externalVariables?.map { $0.label } ?? []), validValues: Set(swiftMachine.externalVariables.map { $0.label })),
-                    "imports": .text($0.imports)
+                    AttributeGroup(
+                        name: "settings",
+                        attributes: [
+                            "external_variables": .enumerableCollection(Set($0.externalVariables?.map { $0.label } ?? []), validValues: Set(swiftMachine.externalVariables.map { $0.label })),
+                            "imports": .text($0.imports)
+                        ]
+                    )
                 ]
             )
         }

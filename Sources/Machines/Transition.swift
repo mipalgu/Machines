@@ -64,11 +64,11 @@ public struct Transition: Hashable, Codable {
     
     public var target: String?
     
-    public var attributes: [String: Attribute]
+    public var attributes: [AttributeGroup]
     
-    public var metaData: [String: Attribute]
+    public var metaData: [AttributeGroup]
     
-    public init(condition: Code? = nil, source: String? = nil, target: String? = nil, attributes: [String: Attribute] = [:], metaData: [String: Attribute] = [:]) {
+    public init(condition: Code? = nil, source: String? = nil, target: String? = nil, attributes: [AttributeGroup] = [], metaData: [AttributeGroup] = []) {
         self.condition = condition
         self.source = source
         self.target = target

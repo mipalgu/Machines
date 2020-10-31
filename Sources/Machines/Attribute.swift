@@ -93,8 +93,6 @@ public enum Attribute: Hashable, Codable {
                 return .collection
             case .complex:
                 return .complex
-            case .group:
-                return .group
             case .enumerableCollection(_, let validValues):
                 return .enumerableCollection(validValues: validValues)
             }
@@ -170,10 +168,6 @@ public enum Attribute: Hashable, Codable {
     
     public static func complex(_ value: [String: Attribute]) -> Attribute {
         return .block(.complex(value))
-    }
-    
-    public static func group(_ value: AttributeGroup) -> Attribute {
-        return .block(.group(value))
     }
     
     public static func enumerated(_ value: String, validValues: Set<String>) -> Attribute {

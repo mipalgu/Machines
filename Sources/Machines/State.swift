@@ -64,13 +64,16 @@ public struct State: Hashable, Codable {
     
     public var variables: [VariableList]
     
-    public var attributes: [String: Attribute]
+    public var attributes: [AttributeGroup]
     
-    public init(name: String, actions: [String: Code], variables: [VariableList], attributes: [String: Attribute] = [:]) {
+    public var metaData: [AttributeGroup]
+    
+    public init(name: String, actions: [String: Code], variables: [VariableList], attributes: [AttributeGroup] = [], metaData: [AttributeGroup] = []) {
         self.name = name
         self.actions = actions
         self.variables = variables
         self.attributes = attributes
+        self.metaData = metaData
     }
     
 }

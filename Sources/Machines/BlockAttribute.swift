@@ -71,8 +71,6 @@ public enum BlockAttribute: Hashable, Codable {
     
     indirect case complex(_ data: [String: Attribute])
     
-    indirect case group(_ group: AttributeGroup)
-    
     case enumerableCollection(_ values: Set<String>, validValues: Set<String>)
     
     public var type: BlockAttributeType {
@@ -85,8 +83,6 @@ public enum BlockAttribute: Hashable, Codable {
             return .collection
         case .complex:
             return .complex
-        case .group:
-            return .group
         case .enumerableCollection(_, let validValues):
             return .enumerableCollection(validValues: validValues)
         }
@@ -108,9 +104,6 @@ public enum BlockAttribute: Hashable, Codable {
         case "complex":
             let attributes = try Dictionary(uniqueKeysWithValues: container.decode([KeyValuePair].self, forKey: .value).map { ($0.key, $0.value) })
             self = .complex(attributes)
-        case "group":
-            let group = try container.decode(AttributeGroup.self, forKey: .value)
-            self = .group(group)
         case "enumerableCollection":
             let pair = try container.decode(EnumCollection.self, forKey: .value)
             self = .enumerableCollection(pair.values, validValues: pair.cases)
@@ -136,10 +129,6 @@ public enum BlockAttribute: Hashable, Codable {
             try container.encode("complex", forKey: .type)
             var dict = container.nestedUnkeyedContainer(forKey: .value)
             try dict.encode(contentsOf: values.map { KeyValuePair(key: $0, value: $1) })
-        case .group(let value):
-            try container.encode("group", forKey: .type)
-            var group = container.nestedUnkeyedContainer(forKey: .value)
-            try group.encode(value)
         case .enumerableCollection(let values, let cases):
             try container.encode("enumerableCollection", forKey: .type)
             var pair = container.nestedUnkeyedContainer(forKey: .value)
