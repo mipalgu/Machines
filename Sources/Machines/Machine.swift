@@ -57,6 +57,7 @@
  */
 
 import SwiftMachines
+import Foundation
 
 /// A general meta model machine.
 ///
@@ -92,6 +93,12 @@ public struct Machine: Hashable, Codable {
     
     /// The underlying semantics which this meta machine follows.
     public private(set) var semantics: Semantics
+    
+    /// The name of the machine.
+    public var name: String
+    
+    /// The path to the .machine directory on the file system.
+    public var filePath: URL
     
     /// The name of the initial state.
     ///
@@ -183,6 +190,8 @@ public struct Machine: Hashable, Codable {
     /// particular scheduler.
     public init(
         semantics: Semantics,
+        name: String,
+        filePath: URL,
         initialState: StateName,
         suspendState: StateName,
         states: [State] = [],
@@ -192,6 +201,8 @@ public struct Machine: Hashable, Codable {
         metaData: [AttributeGroup]
     ) {
         self.semantics = semantics
+        self.name = name
+        self.filePath = filePath
         self.initialState = initialState
         self.suspendState = suspendState
         self.states = states
@@ -399,6 +410,8 @@ extension Machine: SwiftMachinesConvertible {
         ]
         self.init(
             semantics: .swiftfsm,
+            name: swiftMachine.name,
+            filePath: swiftMachine.filePath,
             initialState: swiftMachine.initialState.name,
             suspendState: swiftMachine.suspendState?.name ?? swiftMachine.initialState.name,
             states: states,
@@ -415,6 +428,62 @@ extension Machine: SwiftMachinesConvertible {
             throw TransferError(message: "Machine does not follow the semantics of swiftfsm")
         }
         throw TransferError(message: "Not Yet Implemented")
+    }
+    
+    public static func createSwiftMachine(_ name: String, atPath url: URL) -> Machine {
+        let swiftMachine = SwiftMachines.Machine(
+            name: name,
+            filePath: url,
+            externalVariables: [],
+            packageDependencies: [],
+            swiftIncludeSearchPaths: [],
+            includeSearchPaths: [],
+            libSearchPaths: [],
+            imports: "",
+            includes: nil,
+            vars: [],
+            model: nil,
+            parameters: nil,
+            returnType: nil,
+            initialState: SwiftMachines.State(
+                name: "Initial",
+                imports: "",
+                externalVariables: nil,
+                vars: [],
+                actions: [Action(name: "onEntry", implementation: ""), Action(name: "onExit", implementation: ""), Action(name: "main", implementation: "")],
+                transitions: []
+            ),
+            suspendState: SwiftMachines.State(
+                name: "Suspend",
+                imports: "",
+                externalVariables: nil,
+                vars: [],
+                actions: [Action(name: "onEntry", implementation: ""), Action(name: "onExit", implementation: ""), Action(name: "main", implementation: "")],
+                transitions: []
+            ),
+            states: [
+                SwiftMachines.State(
+                    name: "Initial",
+                    imports: "",
+                    externalVariables: nil,
+                    vars: [],
+                    actions: [Action(name: "onEntry", implementation: ""), Action(name: "onExit", implementation: ""), Action(name: "main", implementation: "")],
+                    transitions: []
+                ),
+                SwiftMachines.State(
+                    name: "Suspend",
+                    imports: "",
+                    externalVariables: nil,
+                    vars: [],
+                    actions: [Action(name: "onEntry", implementation: ""), Action(name: "onExit", implementation: ""), Action(name: "main", implementation: "")],
+                    transitions: []
+                )
+            ],
+            submachines: [],
+            callableMachines: [],
+            invocableMachines: []
+        )
+        return Machine(from: swiftMachine)
     }
     
 }
