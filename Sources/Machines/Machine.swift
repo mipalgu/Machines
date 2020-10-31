@@ -256,6 +256,46 @@ extension Machine: SwiftMachinesConvertible {
             )
             attributes.append(group)
         }
+        let moduleDependencies = AttributeGroup(
+            name: "module_dependencies",
+            fields: [
+                "package_dependencies": .collection(type: .complex(layout: [
+                    "products": .collection(type: .line),
+                    "qualifiers": .collection(type: .line),
+                    "targets_to_import": .collection(type: .line),
+                    "url": .line
+                ])),
+                "imports": .code,
+                "includes": .code,
+                "swift_search_paths": .collection(type: .line),
+                "c_header_search_paths": .collection(type: .line),
+                "linker_search_paths": .collection(type: .line)
+            ],
+            attributes: [
+                "packageDependencies": .collection(
+                    complex: swiftMachine.packageDependencies.map {
+                        [
+                            "products": .collection(lines: $0.products),
+                            "qualifiers": .collection(lines: $0.qualifiers),
+                            "targets_to_import": .collection(lines: $0.targets),
+                            "url": .line($0.url)
+                        ]
+                    },
+                    layout: [
+                        "products": .collection(type: .line),
+                        "qualifiers": .collection(type: .line),
+                        "targets_to_import": .collection(type: .line),
+                        "url": .line
+                    ]
+                ),
+                "imports": .code(swiftMachine.imports),
+                "includes": .code(swiftMachine.includes ?? ""),
+                "swift_search_paths": .collection(lines: swiftMachine.swiftIncludeSearchPaths),
+                "c_header_search_paths": .collection(lines: swiftMachine.includeSearchPaths),
+                "linker_search_paths": .collection(lines: swiftMachine.libSearchPaths)
+            ]
+        )
+        attributes.append(moduleDependencies)
         let states = swiftMachine.states.map {
             State(
                 name: $0.name,
