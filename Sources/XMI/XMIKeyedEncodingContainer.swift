@@ -64,16 +64,16 @@ final class XMIKeyedEncodingContainer<Key: CodingKey>: KeyedEncodingContainerPro
     
     var codingPath: [CodingKey]
     
-    var combined: String {
-        return self.data.sorted { $0.key < $1.key }.lazy.map { $1 }.joined(separator: "")
-    }
-    
     init(codingPath: [CodingKey]) {
         self.codingPath = codingPath
     }
     
+    func combined(separator: String) -> String {
+        return self.data.sorted { $0.key < $1.key }.lazy.map { $1 }.joined(separator: separator)
+    }
+    
     private func addtoData(_ value: String, key: Key, type: String) throws {
-        let str = "<" + key.stringValue + " type=\"" + type + "\">" + value + "<" + key.stringValue + ">"
+        let str = "<" + key.stringValue + " type=\"" + type + "\">\n" + value + "\n</" + key.stringValue + ">"
         data[key.stringValue] = str
     }
     

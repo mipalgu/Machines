@@ -77,13 +77,13 @@ public final class XMIEncoder: Encoder {
     
     public func container<Key>(keyedBy type: Key.Type) -> KeyedEncodingContainer<Key> where Key : CodingKey {
         let encoder = XMIKeyedEncodingContainer<Key>(codingPath: self.codingPath)
-        self.lastData = { encoder.combined }
+        self.lastData = { encoder.combined(separator: "\n") }
         return KeyedEncodingContainer(encoder)
     }
     
     public func unkeyedContainer() -> UnkeyedEncodingContainer {
         let encoder = XMIUnkeyedEncodingContainer(codingPath: self.codingPath)
-        self.lastData = { encoder.combined }
+        self.lastData = { encoder.combined(separator: "\n") }
         return encoder
     }
     
@@ -94,9 +94,17 @@ public final class XMIEncoder: Encoder {
     }
     
     public func encode<T : Encodable>(_ value: T) throws -> Data {
-        let str: String = try self.encode(value)
-        guard let result = str.data(using: .utf8) else {
-            throw EncodingError.invalidValue(str, EncodingError.Context(codingPath: [], debugDescription: "Unable to convert string to Data using utf8 encoding"))
+        let body: String = try self.encode(value)
+        let head = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <xmi:XMI xmi:version="2.0">
+            """
+        let tail = """
+            </xmi:XMI>
+            """
+        let document = [head, body, tail].joined(separator: "\n")
+        guard let result = document.data(using: .utf8) else {
+            throw EncodingError.invalidValue(document, EncodingError.Context(codingPath: [], debugDescription: "Unable to convert string to Data using utf8 encoding"))
         }
         return result
     }
@@ -105,14 +113,7 @@ public final class XMIEncoder: Encoder {
         self.lastData = nil
         try value.encode(to: self)
         let body = self.lastData()
-        let head = """
-            <?xml version="1.0" encoding="UTF-8"?>
-            <xmi:XMI xmi:version="2.0">
-            """
-        let tail = """
-            </xmi:XMI>
-            """
-        return head + body + tail
+        return body
     }
     
 }

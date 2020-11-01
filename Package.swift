@@ -38,6 +38,9 @@ let package = Package(
         .testTarget(
             name: "SwiftMachinesTests",
             dependencies: ["SwiftMachines"]
+        ),
+        .testTarget(name: "MachinesTests",
+            dependencies: ["Machines", "XMI"]
         )
     ]
 )

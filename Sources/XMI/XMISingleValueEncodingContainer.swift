@@ -69,7 +69,7 @@ final class XMISingleValueEncodingContainer: SingleValueEncodingContainer {
     }
     
     private func replaceData(_ value: String, type: String) throws {
-        let str = "<" + type + " type=\"" + type + "\">" + value + "<" + type + "/>"
+        let str = "<" + type + " type=\"" + type + "\">\n" + value + "\n</" + type + ">"
         data = str
     }
     

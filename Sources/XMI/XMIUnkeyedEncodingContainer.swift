@@ -87,10 +87,6 @@ final class XMIUnkeyedEncodingContainer: UnkeyedEncodingContainer {
     
     var data: [String] = []
     
-    var combined: String {
-        return data.joined(separator: "")
-    }
-    
     private var nextIndex: IndexCodingKey {
         get {
             return IndexCodingKey(intValue: self.count)!
@@ -101,9 +97,13 @@ final class XMIUnkeyedEncodingContainer: UnkeyedEncodingContainer {
         self.codingPath = codingPath
     }
     
+    func combined(separator: String) -> String {
+        return data.joined(separator: separator)
+    }
+    
     func addToData(_ value: String, type: String) throws {
         defer { self.count += 1 }
-        let str = "<" + type + " index=\"" + String(describing: self.nextIndex) + "\" type=\"" + type + "\">" + value + "<" + type + "/>"
+        let str = "<" + type + " index=\"" + String(describing: self.nextIndex.intValue!) + "\" type=\"" + type + "\">\n" + value + "\n</" + type + ">"
         data.append(str)
     }
     
