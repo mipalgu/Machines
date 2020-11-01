@@ -425,9 +425,15 @@ extension Machine: SwiftMachinesConvertible {
     /// Convert the meta model machine to a `SwiftMachines.Machine`.
     public func swiftMachine() throws -> SwiftMachines.Machine {
         guard self.semantics == .swiftfsm else {
-            throw TransferError(message: "Machine does not follow the semantics of swiftfsm")
+            throw ConversionError(message: "Machine does not follow the semantics of swiftfsm")
         }
-        throw TransferError(message: "Not Yet Implemented")
+        guard let ringletGroup = self.attributes.first(where: { $0.name == "ringlet" }) else {
+            throw ConversionError(message: "Missing ringlet group in attributes")
+        }
+        let actions = Set(ringletGroup.attributes["actions"]?.collectionLines ?? ["onEntry", "onExit", "main"]).sorted().filter {
+            $0.trimmingCharacters(in: .whitespacesAndNewlines) != ""
+        }
+        throw ConversionError(message: "Not Yet Implemented")
     }
     
     public static func createSwiftMachine(_ name: String, atPath url: URL) -> Machine {
