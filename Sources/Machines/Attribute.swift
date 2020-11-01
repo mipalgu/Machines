@@ -76,8 +76,8 @@ public enum Attribute: Hashable, Codable {
                 return .integer
             case .float:
                 return .float
-            case .expression:
-                return .expression
+            case .expression(_, let language):
+                return .expression(language: language)
             case .enumerated(_, let validValues):
                 return .enumerated(validValues: validValues)
             case .line:
@@ -85,8 +85,8 @@ public enum Attribute: Hashable, Codable {
             }
         case .block(let attribute):
             switch attribute {
-            case .code:
-                return .code
+            case .code(_, let language):
+                return .code(language: language)
             case .text:
                 return .text
             case .collection(_, let type):
@@ -364,7 +364,7 @@ public enum Attribute: Hashable, Codable {
     }
     
     public static func collection(expressions: [Expression], language: Language) -> Attribute {
-        return .block(.collection(expressions.map { Attribute.expression($0, language: language) }, type: .expression))
+        return .block(.collection(expressions.map { Attribute.expression($0, language: language) }, type: .expression(language: language)))
     }
     
     public static func collection(lines: [String]) -> Attribute {
@@ -372,7 +372,7 @@ public enum Attribute: Hashable, Codable {
     }
     
     public static func collection(code: [String], language: Language) -> Attribute {
-        return .block(.collection(code.map { Attribute.code($0, language: language) }, type: .code))
+        return .block(.collection(code.map { Attribute.code($0, language: language) }, type: .code(language: language)))
     }
     
     public static func collection(text: [String]) -> Attribute {

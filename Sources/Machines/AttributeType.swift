@@ -66,9 +66,9 @@ public enum AttributeType: Hashable, Codable {
     case bool
     case integer
     case float
-    case expression
+    case expression(language: Language)
     case line
-    case code
+    case code(language: Language)
     case text
     indirect case collection(type: AttributeType)
     indirect case complex(layout: [String: AttributeType])
@@ -86,14 +86,16 @@ public enum AttributeType: Hashable, Codable {
         case "float":
             self = .float
         case "expression":
-            self = .expression
+            let language = try container.decode(Language.self, forKey: .value)
+            self = .expression(language: language)
         case "enumerated":
             let value = try container.decode(Set<String>.self, forKey: .value)
             self = .enumerated(validValues: value)
         case "line":
             self = .line
         case "code":
-            self = .code
+            let language = try container.decode(Language.self, forKey: .value)
+            self = .code(language: language)
         case "text":
             self = .text
         case "collection":
@@ -119,15 +121,17 @@ public enum AttributeType: Hashable, Codable {
             try container.encode("integer", forKey: .type)
         case .float:
             try container.encode("float", forKey: .type)
-        case .expression:
+        case .expression(let language):
             try container.encode("expression", forKey: .type)
+            try container.encode(language, forKey: .value)
         case .enumerated(let value):
             try container.encode("enumerated", forKey: .type)
             try container.encode(value, forKey: .value)
         case .line:
             try container.encode("line", forKey: .type)
-        case .code:
+        case .code(let language):
             try container.encode("code", forKey: .type)
+            try container.encode(language, forKey: .value)
         case .text:
             try container.encode("text", forKey: .type)
         case .collection(let values):

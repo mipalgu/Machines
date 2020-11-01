@@ -243,8 +243,8 @@ extension Machine: SwiftMachinesConvertible {
                 fields: [
                     "use_custom_ringlet": .bool,
                     "actions": .collection(type: .line),
-                    "imports": .code,
-                    "execute": .code
+                    "imports": .code(language: .swift),
+                    "execute": .code(language: .swift)
                 ],
                 attributes: [
                     "use_custom_ringlet": .bool(true),
@@ -270,20 +270,20 @@ extension Machine: SwiftMachinesConvertible {
         let moduleDependencies = AttributeGroup(
             name: "module_dependencies",
             fields: [
-                "package_dependencies": .collection(type: .complex(layout: [
+                "packages": .collection(type: .complex(layout: [
                     "products": .collection(type: .line),
                     "qualifiers": .collection(type: .line),
                     "targets_to_import": .collection(type: .line),
                     "url": .line
                 ])),
-                "imports": .code,
-                "includes": .code,
+                "system_imports": .code(language: .swift),
+                "system_includes": .code(language: .c),
                 "swift_search_paths": .collection(type: .line),
                 "c_header_search_paths": .collection(type: .line),
                 "linker_search_paths": .collection(type: .line)
             ],
             attributes: [
-                "packageDependencies": .collection(
+                "packages": .collection(
                     complex: swiftMachine.packageDependencies.map {
                         [
                             "products": .collection(lines: $0.products),
@@ -299,8 +299,8 @@ extension Machine: SwiftMachinesConvertible {
                         "url": .line
                     ]
                 ),
-                "imports": .code(swiftMachine.imports, language: .swift),
-                "includes": .code(swiftMachine.includes ?? "", language: .c),
+                "system_imports": .code(swiftMachine.imports, language: .swift),
+                "system_includes": .code(swiftMachine.includes ?? "", language: .c),
                 "swift_search_paths": .collection(lines: swiftMachine.swiftIncludeSearchPaths),
                 "c_header_search_paths": .collection(lines: swiftMachine.includeSearchPaths),
                 "linker_search_paths": .collection(lines: swiftMachine.libSearchPaths)
