@@ -79,7 +79,7 @@ import Foundation
 /// - SeeAlso: `SwiftMachinesConvertible`.
 public struct Machine: Hashable, Codable {
     
-    public struct TransferError: Error, Hashable, Codable {
+    public struct ConversionError: Error, Hashable, Codable {
         
         public var message: String
         
