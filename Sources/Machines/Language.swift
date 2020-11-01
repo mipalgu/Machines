@@ -1,8 +1,8 @@
 /*
- * BlockAttributeType.swift
+ * Language.swift
  * Machines
  *
- * Created by Callum McColl on 31/10/20.
+ * Created by Callum McColl on 2/11/20.
  * Copyright © 2020 Callum McColl. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,60 +56,11 @@
  *
  */
 
-public enum BlockAttributeType: Hashable, Codable {
+public enum Language: String, Hashable, Codable {
     
-    public enum CodingKeys: CodingKey {
-        case type
-        case value
-    }
-    
-    case code(language: Language)
-    case text
-    indirect case collection(type: AttributeType)
-    indirect case complex(layout: [String: AttributeType])
-    case enumerableCollection(validValues: Set<String>)
-    
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        let type = try container.decode(String.self, forKey: .type)
-        switch type {
-        case "code":
-            let language = try container.decode(Language.self, forKey: .value)
-            self = .code(language: language)
-        case "text":
-            self = .text
-        case "collection":
-            let value = try container.decode(AttributeType.self, forKey: .value)
-            self = .collection(type: value)
-        case "complex":
-            let value = try container.decode([String: AttributeType].self, forKey: .value)
-            self = .complex(layout: value)
-        case "enumerableCollection":
-            let cases = try container.decode(Set<String>.self, forKey: .value)
-            self = .enumerableCollection(validValues: cases)
-        default:
-            throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: [CodingKeys.type], debugDescription: "Invalid value \(type)"))
-        }
-    }
-    
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        switch self {
-        case .code(let language):
-            try container.encode("code", forKey: .type)
-            try container.encode(language, forKey: .value)
-        case .text:
-            try container.encode("text", forKey: .type)
-        case .collection(let values):
-            try container.encode("collection", forKey: .type)
-            try container.encode(values, forKey: .value)
-        case .complex(let values):
-            try container.encode("complex", forKey: .type)
-            try container.encode(values, forKey: .value)
-        case .enumerableCollection(let cases):
-            try container.encode("enumerableCollection", forKey: .type)
-            try container.encode(cases, forKey: .value)
-        }
-    }
+    case c
+    case cxx
+    case swift
+    case other
     
 }

@@ -65,7 +65,7 @@ public enum BlockAttribute: Hashable, Codable {
         case value
     }
     
-    case code(_ value: String)
+    case code(_ value: String, language: Language)
     
     case text(_ value: String)
     
@@ -77,8 +77,8 @@ public enum BlockAttribute: Hashable, Codable {
     
     public var type: BlockAttributeType {
         switch self {
-        case .code:
-            return .code
+        case .code(_, let language):
+            return .code(language: language)
         case .text:
             return .text
         case .collection(_, let type):
@@ -92,7 +92,7 @@ public enum BlockAttribute: Hashable, Codable {
     
     public var codeValue: String? {
         switch self {
-        case .code(let value):
+        case .code(let value, _):
             return value
         default:
             return nil
@@ -304,8 +304,8 @@ public enum BlockAttribute: Hashable, Codable {
         let type = try container.decode(String.self, forKey: .type)
         switch type {
         case "code":
-            let value = try container.decode(String.self, forKey: .value)
-            self = .code(value)
+            let attributes = try container.decode(LanguageValuePair.self, forKey: .value)
+            self = .code(attributes.value, language: attributes.language)
         case "text":
             let value = try container.decode(String.self, forKey: .value)
             self = .text(value)
@@ -326,9 +326,9 @@ public enum BlockAttribute: Hashable, Codable {
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         switch self {
-        case .code(let value):
+        case .code(let value, let language):
             try container.encode("code", forKey: .type)
-            try container.encode(value, forKey: .value)
+            try container.encode(LanguageValuePair(value: value, language: language), forKey: .value)
         case .text(let value):
             try container.encode("text", forKey: .type)
             try container.encode(value, forKey: .value)
@@ -342,6 +342,14 @@ public enum BlockAttribute: Hashable, Codable {
             try container.encode("enumerableCollection", forKey: .type)
             try container.encode(EnumCollection(cases: cases, values: values), forKey: .value)
         }
+    }
+    
+    private struct LanguageValuePair: Hashable, Codable {
+        
+        var value: String
+        
+        var language: Language
+        
     }
     
     private struct TypeValuesPair: Hashable, Codable {

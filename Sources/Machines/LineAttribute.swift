@@ -66,7 +66,7 @@ public enum LineAttribute: Hashable, Codable {
     case bool(Bool)
     case integer(Int)
     case float(Double)
-    case expression(Expression)
+    case expression(Expression, language: Language)
     case enumerated(String, validValues: Set<String>)
     case line(String)
     
@@ -78,8 +78,8 @@ public enum LineAttribute: Hashable, Codable {
             return .integer
         case .float:
             return .float
-        case .expression:
-            return .expression
+        case .expression(_, let language):
+            return .expression(language: language)
         case .enumerated(_, let validValues):
             return .enumerated(validValues: validValues)
         case .line:
@@ -116,7 +116,7 @@ public enum LineAttribute: Hashable, Codable {
     
     public var expressionValue: Expression? {
         switch self {
-        case .expression(let value):
+        case .expression(let value, _):
             return value
         default:
             return nil
@@ -158,8 +158,8 @@ public enum LineAttribute: Hashable, Codable {
                 return nil
             }
             self = .float(value)
-        case .expression:
-            self = .expression(Expression(value))
+        case .expression(let language):
+            self = .expression(Expression(value), language: language)
         case .enumerated(let validValues):
             if !validValues.contains(value) {
                 return nil
@@ -184,8 +184,8 @@ public enum LineAttribute: Hashable, Codable {
             let value = try container.decode(Double.self, forKey: .value)
             self = .float(value)
         case "expression":
-            let value = try container.decode(String.self, forKey: .value)
-            self = .expression(value)
+            let attributes = try container.decode(LanguageValuePair.self, forKey: .value)
+            self = .expression(attributes.value, language: attributes.language)
         case "enumerated":
             let pair = try container.decode(EnumPair.self, forKey: .value)
             self = .enumerated(pair.value, validValues: pair.cases)
@@ -209,9 +209,9 @@ public enum LineAttribute: Hashable, Codable {
         case .float(let value):
             try container.encode("float", forKey: .type)
             try container.encode(value, forKey: .value)
-        case .expression(let value):
+        case .expression(let value, let language):
             try container.encode("expression", forKey: .type)
-            try container.encode(value, forKey: .value)
+            try container.encode(LanguageValuePair(value: value, language: language), forKey: .value)
         case .enumerated(let value, let cases):
             try container.encode("enumerated", forKey: .type)
             try container.encode(EnumPair(cases: cases, value: value), forKey: .value)
@@ -221,16 +221,19 @@ public enum LineAttribute: Hashable, Codable {
         }
     }
     
+    private struct LanguageValuePair: Hashable, Codable {
+        
+        var value: Expression
+        
+        var language: Language
+        
+    }
+    
     private struct EnumPair: Hashable, Codable {
         
         var cases: Set<String>
         
         var value: String
-        
-        init(cases: Set<String>, value: String) {
-            self.cases = cases
-            self.value = value
-        }
         
     }
     

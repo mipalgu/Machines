@@ -335,16 +335,16 @@ public enum Attribute: Hashable, Codable {
         return .line(.float(value))
     }
     
-    public static func expression(_ value: Expression) -> Attribute {
-        return .line(.expression(value))
+    public static func expression(_ value: Expression, language: Language) -> Attribute {
+        return .line(.expression(value, language: language))
     }
     
     public static func line(_ value: String) -> Attribute {
         return .line(.line(value))
     }
     
-    public static func code(_ value: String) -> Attribute {
-        return .block(.code(value))
+    public static func code(_ value: String, language: Language) -> Attribute {
+        return .block(.code(value, language: language))
     }
     
     public static func text(_ value: String) -> Attribute {
@@ -363,16 +363,16 @@ public enum Attribute: Hashable, Codable {
         return .block(.collection(floats.map { Attribute.float($0) }, type: .float))
     }
     
-    public static func collection(expressions: [Expression]) -> Attribute {
-        return .block(.collection(expressions.map { Attribute.expression($0) }, type: .expression))
+    public static func collection(expressions: [Expression], language: Language) -> Attribute {
+        return .block(.collection(expressions.map { Attribute.expression($0, language: language) }, type: .expression))
     }
     
     public static func collection(lines: [String]) -> Attribute {
         return .block(.collection(lines.map { Attribute.line($0) }, type: .line))
     }
     
-    public static func collection(code: [String]) -> Attribute {
-        return .block(.collection(code.map { Attribute.code($0) }, type: .code))
+    public static func collection(code: [String], language: Language) -> Attribute {
+        return .block(.collection(code.map { Attribute.code($0, language: language) }, type: .code))
     }
     
     public static func collection(text: [String]) -> Attribute {

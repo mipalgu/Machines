@@ -231,13 +231,13 @@ extension Machine: SwiftMachinesConvertible {
                             type: $0.type,
                             extraFields: [
                                 "access_type": .enumerated($0.accessType.rawValue, validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue })),
-                                "initial_value": .expression($0.initialValue ?? "")
+                                "initial_value": .expression($0.initialValue ?? "", language: .swift)
                             ]
                         )
                     },
                     extraFields: [
                         "access_type": .enumerated(validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue })),
-                        "initial_value": .expression
+                        "initial_value": .expression(language: .swift)
                     ]
                 ),
                 fields: [
@@ -249,8 +249,8 @@ extension Machine: SwiftMachinesConvertible {
                 attributes: [
                     "use_custom_ringlet": .bool(true),
                     "actions": .collection(lines: model.actions),
-                    "imports": .code(model.ringlet.imports),
-                    "execute": .code(model.ringlet.execute)
+                    "imports": .code(model.ringlet.imports, language: .swift),
+                    "execute": .code(model.ringlet.execute, language: .swift)
                 ]
             )
             attributes.append(group)
@@ -299,8 +299,8 @@ extension Machine: SwiftMachinesConvertible {
                         "url": .line
                     ]
                 ),
-                "imports": .code(swiftMachine.imports),
-                "includes": .code(swiftMachine.includes ?? ""),
+                "imports": .code(swiftMachine.imports, language: .swift),
+                "includes": .code(swiftMachine.includes ?? "", language: .c),
                 "swift_search_paths": .collection(lines: swiftMachine.swiftIncludeSearchPaths),
                 "c_header_search_paths": .collection(lines: swiftMachine.includeSearchPaths),
                 "linker_search_paths": .collection(lines: swiftMachine.libSearchPaths)
@@ -321,13 +321,13 @@ extension Machine: SwiftMachinesConvertible {
                                 type: $0.type,
                                 extraFields: [
                                     "access_type": .enumerated($0.accessType.rawValue, validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue })),
-                                    "initial_value": .expression($0.initialValue ?? "")
+                                    "initial_value": .expression($0.initialValue ?? "", language: .swift)
                                 ]
                             )
                         },
                         extraFields: [
                             "access_type": .enumerated(validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue })),
-                            "initial_value": .expression
+                            "initial_value": .expression(language: .swift)
                         ]
                     )
                 ],
@@ -361,13 +361,13 @@ extension Machine: SwiftMachinesConvertible {
                         type: $0.type,
                         extraFields: [
                             "access_type": .enumerated($0.accessType.rawValue, validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue })),
-                            "value": .expression($0.initialValue ?? "")
+                            "value": .expression($0.initialValue ?? "", language: .swift)
                         ]
                     )
                 },
                 extraFields: [
                     "access_type": .enumerated(validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue })),
-                    "value": .expression
+                    "value": .expression(language: .swift)
                 ]
             ),
             VariableList(
@@ -378,15 +378,15 @@ extension Machine: SwiftMachinesConvertible {
                         label: $0.label,
                         type: $0.type,
                         extraFields: [
-                            "default_value": .expression($0.initialValue ?? "")
+                            "default_value": .expression($0.initialValue ?? "", language: .swift)
                         ]
                     )
                 },
                 extraFields: [
-                    "default_value": .expression
+                    "default_value": .expression(language: .swift)
                 ],
                 attributes: [
-                    "result_type": .expression(swiftMachine.returnType ?? "")
+                    "result_type": .expression(swiftMachine.returnType ?? "", language: .swift)
                 ]
             ),
             VariableList(
@@ -398,13 +398,13 @@ extension Machine: SwiftMachinesConvertible {
                         type: $0.type,
                         extraFields: [
                             "access_type": .enumerated($0.accessType.rawValue, validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue })),
-                            "initial_value": .expression($0.initialValue ?? "")
+                            "initial_value": .expression($0.initialValue ?? "", language: .swift)
                         ]
                     )
                 },
                 extraFields: [
                     "access_type": .enumerated(validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue })),
-                    "initial_value": .expression
+                    "initial_value": .expression(language: .swift)
                 ]
             )
         ]

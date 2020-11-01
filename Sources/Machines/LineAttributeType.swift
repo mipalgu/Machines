@@ -66,7 +66,7 @@ public enum LineAttributeType: Hashable, Codable {
     case bool
     case integer
     case float
-    case expression
+    case expression(language: Language)
     case enumerated(validValues: Set<String>)
     case line
     
@@ -81,7 +81,8 @@ public enum LineAttributeType: Hashable, Codable {
         case "float":
             self = .float
         case "expression":
-            self = .expression
+            let language = try container.decode(Language.self, forKey: .value)
+            self = .expression(language: language)
         case "enumerated":
             let value = try container.decode(Set<String>.self, forKey: .value)
             self = .enumerated(validValues: value)
@@ -101,8 +102,9 @@ public enum LineAttributeType: Hashable, Codable {
             try container.encode("integer", forKey: .type)
         case .float:
             try container.encode("float", forKey: .type)
-        case .expression:
+        case .expression(let language):
             try container.encode("expression", forKey: .type)
+            try container.encode(language, forKey: .value)
         case .enumerated(let value):
             try container.encode("enumerated", forKey: .type)
             try container.encode(value, forKey: .value)
