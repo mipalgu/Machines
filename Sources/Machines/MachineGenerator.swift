@@ -80,7 +80,7 @@ public final class MachineGenerator {
             let swiftMachine: SwiftMachines.Machine
             do {
                 swiftMachine = try machine.swiftMachine()
-            } catch let e as Machine.TransferError {
+            } catch let e as Machine.ConversionError {
                 self.errors.append(e.message)
                 return nil
             } catch let e {

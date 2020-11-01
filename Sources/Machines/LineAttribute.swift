@@ -87,6 +87,60 @@ public enum LineAttribute: Hashable, Codable {
         }
     }
     
+    public var boolValue: Bool? {
+        switch self {
+        case .bool(let value):
+            return value
+        default:
+            return nil
+        }
+    }
+    
+    public var integerValue: Int? {
+        switch self {
+        case .integer(let value):
+            return value
+        default:
+            return nil
+        }
+    }
+    
+    public var floatValue: Double? {
+        switch self {
+        case .float(let value):
+            return value
+        default:
+            return nil
+        }
+    }
+    
+    public var expressionValue: Expression? {
+        switch self {
+        case .expression(let value):
+            return value
+        default:
+            return nil
+        }
+    }
+    
+    public var enumeratedValue: (String, validValues: Set<String>)? {
+        switch self {
+        case .enumerated(let value, validValues: let validValues):
+            return (value, validValues)
+        default:
+            return nil
+        }
+    }
+    
+    public var lineValue: String? {
+        switch self {
+        case .line(let value):
+            return value
+        default:
+            return nil
+        }
+    }
+    
     public init?(type: LineAttributeType, value: String) {
         switch type {
         case .bool:

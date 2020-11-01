@@ -56,6 +56,8 @@
  *
  */
 
+import swift_helpers
+
 public enum BlockAttribute: Hashable, Codable {
     
     public enum CodingKeys: CodingKey {
@@ -69,7 +71,7 @@ public enum BlockAttribute: Hashable, Codable {
     
     indirect case collection(_ values: [Attribute], type: AttributeType)
     
-    indirect case complex(_ data: [String: Attribute])
+    indirect case complex(_ data: [String: Attribute], layout: [String: AttributeType])
     
     case enumerableCollection(_ values: Set<String>, validValues: Set<String>)
     
@@ -81,10 +83,219 @@ public enum BlockAttribute: Hashable, Codable {
             return .text
         case .collection(_, let type):
             return .collection(type: type)
-        case .complex(let values):
-            return .complex(layout: values.mapValues { $0.type })
+        case .complex(_, let layout):
+            return .complex(layout: layout)
         case .enumerableCollection(_, let validValues):
             return .enumerableCollection(validValues: validValues)
+        }
+    }
+    
+    public var codeValue: String? {
+        switch self {
+        case .code(let value):
+            return value
+        default:
+            return nil
+        }
+    }
+    
+    public var textValue: String? {
+        switch self {
+        case .text(let value):
+            return value
+        default:
+            return nil
+        }
+    }
+    
+    public var collectionValue: ([Attribute], type: AttributeType)? {
+        switch self {
+        case .collection(let value, let type):
+            return (value, type)
+        default:
+            return nil
+        }
+    }
+    
+    public var complexValue: ([String: Attribute], layout: [String: AttributeType])? {
+        switch self {
+        case .complex(let values, let layout):
+            return (values, layout)
+        default:
+            return nil
+        }
+    }
+    
+    public var enumerableCollectionValue: (Set<String>, validValues: Set<String>)? {
+        switch self {
+        case .enumerableCollection(let values, let validValues):
+            return (values, validValues)
+        default:
+            return nil
+        }
+    }
+    
+    public var collectionBools: [Bool]? {
+        switch self {
+        case .collection(let values, type: let type):
+            switch type {
+            case .bool:
+                return values.failMap { $0.boolValue }
+            default:
+                return nil
+            }
+        default:
+            return nil
+        }
+    }
+    
+    public var collectionIntegers: [Int]? {
+        switch self {
+        case .collection(let values, type: let type):
+            switch type {
+            case .integer:
+                return values.failMap { $0.integerValue }
+            default:
+                return nil
+            }
+        default:
+            return nil
+        }
+    }
+    
+    public var collectionFloats: [Double]? {
+        switch self {
+        case .collection(let values, type: let type):
+            switch type {
+            case .float:
+                return values.failMap { $0.floatValue }
+            default:
+                return nil
+            }
+        default:
+            return nil
+        }
+    }
+    
+    public var collectionExpressions: [Expression]? {
+        switch self {
+        case .collection(let values, type: let type):
+            switch type {
+            case .expression:
+                return values.failMap { $0.expressionValue }
+            default:
+                return nil
+            }
+        default:
+            return nil
+        }
+    }
+    
+    public var collectionEnumerated: ([String], validValues: Set<String>)? {
+        switch self {
+        case .collection(let values, type: let type):
+            switch type {
+            case .enumerated(let validValues):
+                guard let values: [String] = values.failMap({
+                    guard let (elementValue, elementValidValues) = $0.enumeratedValue, elementValidValues == validValues else {
+                        return nil
+                    }
+                    return elementValue
+                }) else {
+                    return nil
+                }
+                return (values, validValues)
+            default:
+                return nil
+            }
+        default:
+            return nil
+        }
+    }
+    
+    public var collectionLines: [String]? {
+        switch self {
+        case .collection(let values, type: let type):
+            switch type {
+            case .line:
+                return values.failMap { $0.lineValue }
+            default:
+                return nil
+            }
+        default:
+            return nil
+        }
+    }
+    
+    public var collectionCode: [String]? {
+        switch self {
+        case .collection(let values, type: let type):
+            switch type {
+            case .code:
+                return values.failMap { $0.codeValue }
+            default:
+                return nil
+            }
+        default:
+            return nil
+        }
+    }
+    
+    public var collectionText: [String]? {
+        switch self {
+        case .collection(let values, type: let type):
+            switch type {
+            case .text:
+                return values.failMap { $0.textValue }
+            default:
+                return nil
+            }
+        default:
+            return nil
+        }
+    }
+    
+    public var collectionComplex: ([[String: Attribute]], layout: [String: AttributeType])? {
+        switch self {
+        case .collection(let values, type: let type):
+            switch type {
+            case .complex(let layout):
+                guard let values: [[String: Attribute]] = values.failMap({
+                    guard let (elementValues, elementLayout) = $0.complexValue, elementLayout == layout else {
+                        return nil
+                    }
+                    return elementValues
+                }) else {
+                    return nil
+                }
+                return (values, layout)
+            default:
+                return nil
+            }
+        default:
+            return nil
+        }
+    }
+    
+    public var collectionEnumerableCollection: ([Set<String>], validValues: Set<String>)? {
+        switch self {
+        case .collection(let values, type: let type):
+            switch type {
+            case .enumerableCollection(let validValues):
+                guard let values: [Set<String>] = values.failMap({
+                    guard let (elementValues, elementValidValues) = $0.enumerableCollectionValue, elementValidValues == validValues else {
+                        return nil
+                    }
+                    return elementValues
+                }) else {
+                    return nil
+                }
+                return (values, validValues)
+            default:
+                return nil
+            }
+        default:
+            return nil
         }
     }
     
@@ -102,8 +313,8 @@ public enum BlockAttribute: Hashable, Codable {
             let attributes = try container.decode(TypeValuesPair.self, forKey: .value)
             self = .collection(attributes.values, type: attributes.type)
         case "complex":
-            let attributes = try container.decode([String: Attribute].self, forKey: .value)
-            self = .complex(attributes)
+            let attributes = try container.decode(ValueLayoutPair.self, forKey: .value)
+            self = .complex(attributes.values, layout: attributes.layout)
         case "enumerableCollection":
             let pair = try container.decode(EnumCollection.self, forKey: .value)
             self = .enumerableCollection(pair.values, validValues: pair.cases)
@@ -124,9 +335,9 @@ public enum BlockAttribute: Hashable, Codable {
         case .collection(let values, let type):
             try container.encode("collection", forKey: .type)
             try container.encode(TypeValuesPair(type: type, values: values), forKey: .value)
-        case .complex(let values):
+        case .complex(let values, let layout):
             try container.encode("complex", forKey: .type)
-            try container.encode(values, forKey: .value)
+            try container.encode(ValueLayoutPair(values: values, layout: layout), forKey: .value)
         case .enumerableCollection(let values, let cases):
             try container.encode("enumerableCollection", forKey: .type)
             try container.encode(EnumCollection(cases: cases, values: values), forKey: .value)
@@ -141,16 +352,11 @@ public enum BlockAttribute: Hashable, Codable {
         
     }
     
-    private struct KeyValuePair: Hashable, Codable {
+    private struct ValueLayoutPair: Hashable, Codable {
         
-        var key: String
+        var values: [String: Attribute]
         
-        var value: Attribute
-        
-        init(key: String, value: Attribute) {
-            self.key = key
-            self.value = value
-        }
+        var layout: [String: AttributeType]
         
     }
     

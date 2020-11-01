@@ -91,11 +91,200 @@ public enum Attribute: Hashable, Codable {
                 return .text
             case .collection(_, let type):
                 return .collection(type: type)
-            case .complex(let values):
-                return .complex(layout: values.mapValues { $0.type })
+            case .complex(_, let layout):
+                return .complex(layout: layout)
             case .enumerableCollection(_, let validValues):
                 return .enumerableCollection(validValues: validValues)
             }
+        }
+    }
+    
+    public var boolValue: Bool? {
+        switch self {
+        case .line(let attribute):
+            return attribute.boolValue
+        default:
+            return nil
+        }
+    }
+    
+    public var integerValue: Int? {
+        switch self {
+        case .line(let attribute):
+            return attribute.integerValue
+        default:
+            return nil
+        }
+    }
+    
+    public var floatValue: Double? {
+        switch self {
+        case .line(let value):
+            return value.floatValue
+        default:
+            return nil
+        }
+    }
+    
+    public var expressionValue: Expression? {
+        switch self {
+        case .line(let value):
+            return value.expressionValue
+        default:
+            return nil
+        }
+    }
+    
+    public var enumeratedValue: (String, Set<String>)? {
+        switch self {
+        case .line(let value):
+            return value.enumeratedValue
+        default:
+            return nil
+        }
+    }
+    
+    public var lineValue: String? {
+        switch self {
+        case .line(let value):
+            return value.lineValue
+        default:
+            return nil
+        }
+    }
+    
+    public var codeValue: String? {
+        switch self {
+        case .block(let value):
+            return value.codeValue
+        default:
+            return nil
+        }
+    }
+    
+    public var textValue: String? {
+        switch self {
+        case .block(let value):
+            return value.textValue
+        default:
+            return nil
+        }
+    }
+    
+    public var collectionValue: ([Attribute], type: AttributeType)? {
+        switch self {
+        case .block(let value):
+            return value.collectionValue
+        default:
+            return nil
+        }
+    }
+    
+    public var complexValue: ([String: Attribute], layout: [String: AttributeType])? {
+        switch self {
+        case .block(let value):
+            return value.complexValue
+        default:
+            return nil
+        }
+    }
+    
+    public var enumerableCollectionValue: (Set<String>, validValues: Set<String>)? {
+        switch self {
+        case .block(let value):
+            return value.enumerableCollectionValue
+        default:
+            return nil
+        }
+    }
+    
+    public var collectionBools: [Bool]? {
+        switch self {
+        case .block(let blockAttribute):
+            return blockAttribute.collectionBools
+        default:
+            return nil
+        }
+    }
+    
+    public var collectionIntegers: [Int]? {
+        switch self {
+        case .block(let blockAttribute):
+            return blockAttribute.collectionIntegers
+        default:
+            return nil
+        }
+    }
+    
+    public var collectionFloats: [Double]? {
+        switch self {
+        case .block(let blockAttribute):
+            return blockAttribute.collectionFloats
+        default:
+            return nil
+        }
+    }
+    
+    public var collectionExpressions: [Expression]? {
+        switch self {
+        case .block(let blockAttribute):
+            return blockAttribute.collectionExpressions
+        default:
+            return nil
+        }
+    }
+    
+    public var collectionEnumerated: ([String], validValues: Set<String>)? {
+        switch self {
+        case .block(let blockAttribute):
+            return blockAttribute.collectionEnumerated
+        default:
+            return nil
+        }
+    }
+    
+    public var collectionLines: [String]? {
+        switch self {
+        case .block(let blockAttribute):
+            return blockAttribute.collectionLines
+        default:
+            return nil
+        }
+    }
+    
+    public var collectionCode: [String]? {
+        switch self {
+        case .block(let blockAttribute):
+            return blockAttribute.collectionCode
+        default:
+            return nil
+        }
+    }
+    
+    public var collectionText: [String]? {
+        switch self {
+        case .block(let blockAttribute):
+            return blockAttribute.collectionText
+        default:
+            return nil
+        }
+    }
+    
+    public var collectionComplex: ([[String: Attribute]], layout: [String: AttributeType])? {
+        switch self {
+        case .block(let blockAttribute):
+            return blockAttribute.collectionComplex
+        default:
+            return nil
+        }
+    }
+    
+    public var collectionEnumerableCollection: ([Set<String>], validValues: Set<String>)? {
+        switch self {
+        case .block(let blockAttribute):
+            return blockAttribute.collectionEnumerableCollection
+        default:
+            return nil
         }
     }
     
@@ -191,7 +380,7 @@ public enum Attribute: Hashable, Codable {
     }
     
     public static func collection(complex: [[String: Attribute]], layout: [String: AttributeType]) -> Attribute {
-        return .block(.collection(complex.map { Attribute.complex($0) }, type: .complex(layout: layout)))
+        return .block(.collection(complex.map { Attribute.complex($0, layout: layout) }, type: .complex(layout: layout)))
     }
     
     public static func collection(enumerated: [String], validValues: Set<String>) -> Attribute {
@@ -210,8 +399,8 @@ public enum Attribute: Hashable, Codable {
         return .block(.collection(values, type: type))
     }
     
-    public static func complex(_ value: [String: Attribute]) -> Attribute {
-        return .block(.complex(value))
+    public static func complex(_ values: [String: Attribute], layout: [String: AttributeType]) -> Attribute {
+        return .block(.complex(values, layout: layout))
     }
     
     public static func enumerated(_ value: String, validValues: Set<String>) -> Attribute {
