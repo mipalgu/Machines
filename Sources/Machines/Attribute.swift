@@ -56,12 +56,7 @@
  *
  */
 
-public enum Attribute: Hashable, Codable {
-    
-    public enum CodingKeys: CodingKey {
-        case type
-        case value
-    }
+public enum Attribute: Hashable {
     
     case line(LineAttribute)
     case block(BlockAttribute)
@@ -78,8 +73,8 @@ public enum Attribute: Hashable, Codable {
                 return .float
             case .expression(_, let language):
                 return .expression(language: language)
-            case .enumerated(_, let validValues):
-                return .enumerated(validValues: validValues)
+            case .enumerated(let attribute):
+                return .enumerated(validValues: attribute.validValues)
             case .line:
                 return .line
             }
@@ -135,7 +130,7 @@ public enum Attribute: Hashable, Codable {
         }
     }
     
-    public var enumeratedValue: (String, Set<String>)? {
+    public var enumeratedValue: EnumeratedAttribute? {
         switch self {
         case .line(let value):
             return value.enumeratedValue
@@ -234,7 +229,7 @@ public enum Attribute: Hashable, Codable {
         }
     }
     
-    public var collectionEnumerated: ([String], validValues: Set<String>)? {
+    public var collectionEnumerated: ([EnumeratedAttribute], validValues: Set<String>)? {
         switch self {
         case .block(let blockAttribute):
             return blockAttribute.collectionEnumerated
@@ -294,33 +289,6 @@ public enum Attribute: Hashable, Codable {
     
     public init(blockAttribute: BlockAttribute) {
         self = .block(blockAttribute)
-    }
-    
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        let type = try container.decode(String.self, forKey: .type)
-        switch type {
-        case "line":
-            let value = try container.decode(LineAttribute.self, forKey: .value)
-            self = .line(value)
-        case "block":
-            let value = try container.decode(BlockAttribute.self, forKey: .value)
-            self = .block(value)
-        default:
-            throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: [CodingKeys.type], debugDescription: "Invalid value \(type)"))
-        }
-    }
-    
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        switch self {
-        case .line(let lineValue):
-            try container.encode("line", forKey: .type)
-            try container.encode(lineValue, forKey: .value)
-        case .block(let blockValue):
-            try container.encode("block", forKey: .type)
-            try container.encode(blockValue, forKey: .value)
-        }
     }
     
     public static func bool(_ value: Bool) -> Attribute {
@@ -404,11 +372,47 @@ public enum Attribute: Hashable, Codable {
     }
     
     public static func enumerated(_ value: String, validValues: Set<String>) -> Attribute {
-        return .line(.enumerated(value, validValues: validValues))
+        return .line(.enumerated(EnumeratedAttribute(value: value, validValues: validValues)))
     }
     
     public static func enumerableCollection(_ value: Set<String>, validValues: Set<String>) -> Attribute {
         return .block(.enumerableCollection(value, validValues: validValues))
+    }
+    
+}
+
+extension Attribute: Codable {
+    
+    public enum CodingKeys: CodingKey {
+        case type
+        case value
+    }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let type = try container.decode(String.self, forKey: .type)
+        switch type {
+        case "line":
+            let value = try container.decode(LineAttribute.self, forKey: .value)
+            self = .line(value)
+        case "block":
+            let value = try container.decode(BlockAttribute.self, forKey: .value)
+            self = .block(value)
+        default:
+            throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: [CodingKeys.type], debugDescription: "Invalid value \(type)"))
+        }
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        switch self {
+        case .line(let lineValue):
+            try container.encode("line", forKey: .type)
+            try container.encode(lineValue, forKey: .value)
+        case .block(let blockValue):
+            try container.encode("block", forKey: .type)
+            try container.encode(blockValue, forKey: .value)
+        }
     }
     
 }
