@@ -191,16 +191,16 @@ public enum BlockAttribute: Hashable, Codable {
         }
     }
     
-    public var collectionEnumerated: ([EnumeratedAttribute], validValues: Set<String>)? {
+    public var collectionEnumerated: ([String], validValues: Set<String>)? {
         switch self {
         case .collection(let values, type: let type):
             switch type {
             case .enumerated(let validValues):
-                guard let values: [EnumeratedAttribute] = values.failMap({
-                    guard let attribute = $0.enumeratedValue, attribute.validValues == validValues else {
+                guard let values: [String] = values.failMap({
+                    guard let (elementValue, elementValidValues) = $0.enumeratedValue, elementValidValues == validValues else {
                         return nil
                     }
-                    return attribute
+                    return elementValue
                 }) else {
                     return nil
                 }
