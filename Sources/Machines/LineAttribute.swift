@@ -170,34 +170,33 @@ public enum LineAttribute: Hashable {
 extension LineAttribute: Codable {
     
     public init(from decoder: Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        if let bool = try? container.decode(BoolAttribute.self) {
+        if let bool = try? BoolAttribute(from: decoder) {
             self = .bool(bool.value)
             return
         }
-        if let integer = try? container.decode(IntegerAttribute.self) {
+        if let integer = try? IntegerAttribute(from: decoder) {
             self = .integer(integer.value)
             return
         }
-        if let float = try? container.decode(FloatAttribute.self) {
+        if let float = try? FloatAttribute(from: decoder) {
             self = .float(float.value)
             return
         }
-        if let expression = try? container.decode(ExpressionAttribute.self) {
+        if let expression = try? ExpressionAttribute(from: decoder) {
             self = .expression(expression.value, language: expression.language)
             return
         }
-        if let enumerated = try? container.decode(EnumAttribute.self) {
+        if let enumerated = try? EnumAttribute(from: decoder) {
             self = .enumerated(enumerated.value, validValues: enumerated.cases)
             return
         }
-        if let line = try? container.decode(LineAttribute.self) {
+        if let line = try? LineAttribute(from: decoder) {
             self = .line(line.value)
             return
         }
         throw DecodingError.dataCorrupted(
             DecodingError.Context(
-                codingPath: container.codingPath,
+                codingPath: decoder.codingPath,
                 debugDescription: "Unsupported value"
             )
         )
