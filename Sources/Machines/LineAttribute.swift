@@ -56,12 +56,7 @@
  *
  */
 
-public enum LineAttribute: Hashable, Codable {
-    
-    public enum CodingKeys: CodingKey {
-        case type
-        case value
-    }
+public enum LineAttribute: Hashable {
     
     case bool(Bool)
     case integer(Int)
@@ -170,58 +165,122 @@ public enum LineAttribute: Hashable, Codable {
         }
     }
     
+}
+
+extension LineAttribute: Codable {
+    
     public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        let type = try container.decode(String.self, forKey: .type)
-        switch type {
-        case "bool":
-            let value = try container.decode(Bool.self, forKey: .value)
-            self = .bool(value)
-        case "integer":
-            let value = try container.decode(Int.self, forKey: .value)
-            self = .integer(value)
-        case "float":
-            let value = try container.decode(Double.self, forKey: .value)
-            self = .float(value)
-        case "expression":
-            let attributes = try container.decode(LanguageValuePair.self, forKey: .value)
-            self = .expression(attributes.value, language: attributes.language)
-        case "enumerated":
-            let pair = try container.decode(EnumPair.self, forKey: .value)
-            self = .enumerated(pair.value, validValues: pair.cases)
-        case "line":
-            let value = try container.decode(String.self, forKey: .value)
-            self = .line(value)
-        default:
-            throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: [CodingKeys.type], debugDescription: "Invalid value \(type)"))
+        let container = try decoder.singleValueContainer()
+        if let bool = try? container.decode(BoolAttribute.self) {
+            self = .bool(bool.value)
+            return
         }
+        if let integer = try? container.decode(IntegerAttribute.self) {
+            self = .integer(integer.value)
+            return
+        }
+        if let float = try? container.decode(FloatAttribute.self) {
+            self = .float(float.value)
+            return
+        }
+        if let expression = try? container.decode(ExpressionAttribute.self) {
+            self = .expression(expression.value, language: expression.language)
+            return
+        }
+        if let enumerated = try? container.decode(EnumAttribute.self) {
+            self = .enumerated(enumerated.value, validValues: enumerated.cases)
+            return
+        }
+        if let line = try? container.decode(LineAttribute.self) {
+            self = .line(line.value)
+            return
+        }
+        throw DecodingError.dataCorrupted(
+            DecodingError.Context(
+                codingPath: container.codingPath,
+                debugDescription: "Unsupported value"
+            )
+        )
     }
     
     public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
         switch self {
         case .bool(let value):
-            try container.encode("bool", forKey: .type)
-            try container.encode(value, forKey: .value)
+            try BoolAttribute(value).encode(to: encoder)
         case .integer(let value):
-            try container.encode("integer", forKey: .type)
-            try container.encode(value, forKey: .value)
+            try IntegerAttribute(value).encode(to: encoder)
         case .float(let value):
-            try container.encode("float", forKey: .type)
-            try container.encode(value, forKey: .value)
+            try FloatAttribute(value).encode(to: encoder)
         case .expression(let value, let language):
-            try container.encode("expression", forKey: .type)
-            try container.encode(LanguageValuePair(value: value, language: language), forKey: .value)
+            try ExpressionAttribute(value: value, language: language).encode(to: encoder)
         case .enumerated(let value, let cases):
-            try container.encode("enumerated", forKey: .type)
-            try container.encode(EnumPair(cases: cases, value: value), forKey: .value)
+            try EnumAttribute(cases: cases, value: value).encode(to: encoder)
         case .line(let value):
-            try container.encode("line", forKey: .type)
-            try container.encode(value, forKey: .value)
+            try LineAttribute(value).encode(to: encoder)
         }
     }
     
-    private struct LanguageValuePair: Hashable, Codable {
+    private struct BoolAttribute: Hashable, Codable {
+        
+        var value: Bool
+        
+        init(_ value: Bool) {
+            self.value = value
+        }
+        
+        init(from decoder: Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            self.value = try container.decode(Bool.self)
+        }
+        
+        func encode(to encoder: Encoder) throws {
+            var container = encoder.singleValueContainer()
+            try container.encode(self.value)
+        }
+        
+    }
+    
+    private struct IntegerAttribute: Hashable, Codable {
+        
+        var value: Int
+        
+        init(_ value: Int) {
+            self.value = value
+        }
+        
+        init(from decoder: Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            self.value = try container.decode(Int.self)
+        }
+        
+        func encode(to encoder: Encoder) throws {
+            var container = encoder.singleValueContainer()
+            try container.encode(self.value)
+        }
+        
+    }
+    
+    private struct FloatAttribute: Hashable, Codable {
+        
+        var value: Double
+        
+        init(_ value: Double) {
+            self.value = value
+        }
+        
+        init(from decoder: Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            self.value = try container.decode(Double.self)
+        }
+        
+        func encode(to encoder: Encoder) throws {
+            var container = encoder.singleValueContainer()
+            try container.encode(self.value)
+        }
+        
+    }
+    
+    private struct ExpressionAttribute: Hashable, Codable {
         
         var value: Expression
         
@@ -229,11 +288,31 @@ public enum LineAttribute: Hashable, Codable {
         
     }
     
-    private struct EnumPair: Hashable, Codable {
+    private struct EnumAttribute: Hashable, Codable {
         
         var cases: Set<String>
         
         var value: String
+        
+    }
+    
+    private struct LineAttribute: Hashable, Codable {
+        
+        var value: String
+        
+        init(_ value: String) {
+            self.value = value
+        }
+        
+        init(from decoder: Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            self.value = try container.decode(String.self)
+        }
+        
+        func encode(to encoder: Encoder) throws {
+            var container = encoder.singleValueContainer()
+            try container.encode(self.value)
+        }
         
     }
     
