@@ -139,7 +139,7 @@ final class XMIKeyedEncodingContainer<Key: CodingKey>: KeyedEncodingContainerPro
     
     func encode<T>(_ value: T, forKey key: Key) throws where T : Encodable {
         let encoder = XMIEncoder()
-        let str: String = try encoder.encode(value)
+        let str: String = try encoder.encode(value, xmiName: (value as? XMIConvertible)?.xmiName ?? "\(T.self)")
         try addtoData(str, key: key, type: "\(T.self)")
     }
     

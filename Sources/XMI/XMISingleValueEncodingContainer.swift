@@ -135,7 +135,7 @@ final class XMISingleValueEncodingContainer: SingleValueEncodingContainer {
     
     func encode<T>(_ value: T) throws where T : Encodable {
         let encoder = XMIEncoder()
-        let str: String = try encoder.encode(value)
+        let str: String = try encoder.encode(value, xmiName: (value as? XMIConvertible)?.xmiName ?? "\(T.self)")
         try replaceData(str, type: "\(T.self)")
     }
     

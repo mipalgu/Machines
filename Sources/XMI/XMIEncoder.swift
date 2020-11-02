@@ -101,15 +101,7 @@ public final class XMIEncoder: Encoder {
         return try self.encode(value, xmiName: value.xmiName ?? "\(T.self)")
     }
     
-    internal func encode<T : Encodable>(_ value: T) throws -> String {
-        return try self.encode(value, xmiName: "\(T.self)")
-    }
-    
-    internal func encode<T : Encodable>(_ value: T) throws -> String where T: XMIConvertible {
-        return try self.encode(value, xmiName: value.xmiName ?? "\(T.self)")
-    }
-    
-    private func encode<T: Encodable>(_ value: T, xmiName: String) throws -> Data {
+    internal func encode<T: Encodable>(_ value: T, xmiName: String) throws -> Data {
         let body: String = try self.encode(value, xmiName: xmiName)
         let head = """
             <?xml version="1.0" encoding="UTF-8"?>
@@ -125,7 +117,7 @@ public final class XMIEncoder: Encoder {
         return result
     }
     
-    private func encode<T: Encodable>(_ value: T, xmiName: String) throws -> String {
+    internal func encode<T: Encodable>(_ value: T, xmiName: String) throws -> String {
         self.lastData = nil
         try value.encode(to: self)
         let body = self.lastData()
