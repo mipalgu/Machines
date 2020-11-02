@@ -56,6 +56,7 @@
  *
  */
 
+import XMI
 import swift_helpers
 
 public enum BlockAttribute: Hashable {
@@ -344,16 +345,6 @@ extension BlockAttribute: Codable {
         }
     }
     
-//    case code(_ value: String, language: Language)
-//
-//    case text(_ value: String)
-//
-//    indirect case collection(_ values: [Attribute], type: AttributeType)
-//
-//    indirect case complex(_ data: [String: Attribute], layout: [String: AttributeType])
-//
-//    case enumerableCollection(_ values: Set<String>, validValues: Set<String>)
-    
     private struct CodeAttribute: Hashable, Codable {
         
         var value: String
@@ -409,6 +400,35 @@ extension BlockAttribute: Codable {
             self.values = values
         }
         
+    }
+    
+}
+
+extension BlockAttribute: XMIConvertible {
+    
+    //    case code(_ value: String, language: Language)
+    //
+    //    case text(_ value: String)
+    //
+    //    indirect case collection(_ values: [Attribute], type: AttributeType)
+    //
+    //    indirect case complex(_ data: [String: Attribute], layout: [String: AttributeType])
+    //
+    //    case enumerableCollection(_ values: Set<String>, validValues: Set<String>)
+    
+    public var xmiName: String? {
+        switch self {
+        case .code:
+            return "CodeAttribute"
+        case .text:
+            return "TextAttribute"
+        case .collection:
+            return "CollectionAttribute"
+        case .complex:
+            return "ComplexAttribute"
+        case .enumerableCollection:
+            return "EnumerableAttribute"
+        }
     }
     
 }

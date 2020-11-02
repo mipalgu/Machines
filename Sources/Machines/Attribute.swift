@@ -56,12 +56,9 @@
  *
  */
 
-public enum Attribute: Hashable, Codable {
-    
-    public enum CodingKeys: CodingKey {
-        case type
-        case value
-    }
+import XMI
+
+public enum Attribute: Hashable {
     
     case line(LineAttribute)
     case block(BlockAttribute)
@@ -296,33 +293,6 @@ public enum Attribute: Hashable, Codable {
         self = .block(blockAttribute)
     }
     
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        let type = try container.decode(String.self, forKey: .type)
-        switch type {
-        case "line":
-            let value = try container.decode(LineAttribute.self, forKey: .value)
-            self = .line(value)
-        case "block":
-            let value = try container.decode(BlockAttribute.self, forKey: .value)
-            self = .block(value)
-        default:
-            throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: [CodingKeys.type], debugDescription: "Invalid value \(type)"))
-        }
-    }
-    
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        switch self {
-        case .line(let lineValue):
-            try container.encode("line", forKey: .type)
-            try container.encode(lineValue, forKey: .value)
-        case .block(let blockValue):
-            try container.encode("block", forKey: .type)
-            try container.encode(blockValue, forKey: .value)
-        }
-    }
-    
     public static func bool(_ value: Bool) -> Attribute {
         return .line(.bool(value))
     }
@@ -409,6 +379,49 @@ public enum Attribute: Hashable, Codable {
     
     public static func enumerableCollection(_ value: Set<String>, validValues: Set<String>) -> Attribute {
         return .block(.enumerableCollection(value, validValues: validValues))
+    }
+    
+}
+
+extension Attribute: Codable {
+    
+    public init(from decoder: Decoder) throws {
+        if let lineAttribute = try? LineAttribute(from: decoder) {
+            self = .line(lineAttribute)
+            return
+        }
+        if let blockAttribute = try? BlockAttribute(from: decoder) {
+            self = .block(blockAttribute)
+            return
+        }
+        throw DecodingError.dataCorrupted(
+            DecodingError.Context(
+                codingPath: decoder.codingPath,
+                debugDescription: "Unsupported value"
+            )
+        )
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        switch self {
+        case .line(let attribute):
+            try attribute.encode(to: encoder)
+        case .block(let attribute):
+            try attribute.encode(to: encoder)
+        }
+    }
+    
+}
+
+extension Attribute: XMIConvertible {
+    
+    public var xmiName: String? {
+        switch self {
+        case .line(let attribute):
+            return attribute.xmiName
+        case .block(let attribute):
+            return attribute.xmiName
+        }
     }
     
 }

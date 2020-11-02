@@ -56,6 +56,8 @@
  *
  */
 
+import XMI
+
 public enum LineAttribute: Hashable {
     
     case bool(Bool)
@@ -313,6 +315,27 @@ extension LineAttribute: Codable {
             try container.encode(self.value)
         }
         
+    }
+    
+}
+
+extension LineAttribute: XMIConvertible {
+    
+    public var xmiName: String? {
+        switch self {
+        case .bool:
+            return "BoolAttribute"
+        case .integer:
+            return "IntegerAttribute"
+        case .float:
+            return "FloatAttribute"
+        case .enumerated:
+            return "EnumeratedAttribute"
+        case .expression:
+            return "ExpressionAttribute"
+        case .line:
+            return "LineAttribute"
+        }
     }
     
 }
