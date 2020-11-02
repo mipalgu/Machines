@@ -1,5 +1,5 @@
 /*
- * ConvertibleToXMI.swift
+ * XMIConvertible.swift
  * Machines
  *
  * Created by Callum McColl on 1/11/20.
@@ -56,10 +56,14 @@
  *
  */
 
-public protocol ConvertibleToXMI {
+public protocol XMIConvertible {
     
-    var xmiRepresentation: [String: Any] { get }
+    var xmiName: String? { get }
     
-    init?(fromXMI: [String: Any])
+}
+
+extension XMIConvertible {
+    
+    public var xmiName: String? { return nil }
     
 }
