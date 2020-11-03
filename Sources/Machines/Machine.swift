@@ -85,25 +85,25 @@ public struct Machine: Hashable, Codable {
     }
     
     /// The underlying semantics which this meta machine follows.
-    public private(set) var semantics: Semantics
+    public fileprivate(set) var semantics: Semantics
     
     /// The name of the machine.
-    public var name: String
+    public fileprivate(set) var name: String
     
     /// The path to the .machine directory on the file system.
-    public var filePath: URL
+    public fileprivate(set) var filePath: URL
     
     /// The name of the initial state.
     ///
     /// The name should represent the name of a state within the `states` array.
-    public var initialState: StateName
+    public fileprivate(set) var initialState: StateName
     
     /// The name of the suspendState.
     ///
     /// The suspend state is the state that, when it is the current state,
     /// denotes that the machine is suspended. The name of the suspendState
     /// should represent the name of a state within the `states` array.
-    public var suspendState: StateName
+    public fileprivate(set) var suspendState: StateName
     
     /// The accepting states of the machine.
     ///
@@ -118,10 +118,10 @@ public struct Machine: Hashable, Codable {
     }
     
     /// All states within the machine.
-    public var states: [State]
+    public fileprivate(set) var states: [State]
     
     /// All transitions within the machine --- attached or unattached to states.
-    public var transitions: [Transition]
+    public fileprivate(set) var transitions: [Transition]
     
     /// A list of variables denotes by unique names.
     ///
@@ -129,7 +129,7 @@ public struct Machine: Hashable, Codable {
     /// accessed at the machine level --- accessible from any state within the
     /// machine. This includes, for example, external variables, fsm variables
     /// and parameters.
-    public var variables: [VariableList]
+    public fileprivate(set) var variables: [VariableList]
     
     /// A list of attributes specifying additional fields that can change.
     ///
@@ -203,6 +203,34 @@ public struct Machine: Hashable, Codable {
         self.variables = variables
         self.attributes = attributes
         self.metaData = metaData
+    }
+    
+}
+
+extension Machine {
+    
+    public var path: MachinePath {
+        return MachinePath()
+    }
+    
+    public mutating func modify<Path: MachinePathProtocol>(attribute: Path, value: Path.Value) throws {
+        let backup = self
+        self[keyPath: attribute.path] = value
+        do {
+            try validate()
+        } catch let e {
+            self = backup
+            throw e
+        }
+    }
+    
+    public mutating func validate() throws {
+        switch self.semantics {
+        case .swiftfsm:
+            self = try SwiftfsmMachineValidator().validate(machine: self)
+        default:
+            return
+        }
     }
     
 }
