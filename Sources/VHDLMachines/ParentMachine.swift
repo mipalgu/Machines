@@ -7,11 +7,11 @@
 
 public struct ParentMachine {
     
-    var parent: Machine
+    public var parent: Machine
     
-    var children: [String: Machine]
+    public var children: [String: Machine]
     
     /// Maps variables (1 to many) to other machine parameters. Of the format: [ParentVariableName: [ChildMachineName: [ChildParameter]]]
-    var links: [String: [String: [Variable]]]
+    public var links: [String: [String: [Variable]]]
     
 }

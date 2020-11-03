@@ -5,31 +5,35 @@
 //  Created by Morgan McColl on 3/11/20.
 //
 
+import Foundation
+
 public struct Machine {
     
-    var name: String
+    public var name: String
     
-    var initialState: State
+    public var path: URL
     
-    var suspendedState: State
+    public var initialState: State
     
-    var otherStates: [State]
+    public var suspendedState: State
+    
+    public var otherStates: [State]
     
     /// State name is the key
-    var transitions: [String: [Transition]]
+    public var transitions: [String: [Transition]]
     
     /// Variable name is the key
-    var externalVariables: [String: ExternalVariable]
+    public var externalVariables: [String: VHDLExternalVariable]
     
     /// Variable name is the key
-    var parameters: [String: Parameter]
+    public var parameters: [String: Parameter]
     
     /// Variable name is the key
-    var returnableVariables: [String: ReturnableVariable]
+    public var returnableVariables: [String: ReturnableVariable]
     
     /// Variable name is the key
-    var machineVariables: [String: Variable]
+    public var machineVariables: [String: VHDLVariable]
     
-    var includes: String
+    public var includes: String
     
 }

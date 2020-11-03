@@ -5,13 +5,13 @@
 //  Created by Morgan McColl on 3/11/20.
 //
 
-struct State {
+public struct State {
     
-    var name: String
+    public var name: String
     
     /// List of timeslots with a list of actions in each time slot.
-    var ringlet: [[Action]]
+    public var ringlet: [[Action]]
     
-    var variables: [Variable]
+    public var variables: [Variable]
     
 }

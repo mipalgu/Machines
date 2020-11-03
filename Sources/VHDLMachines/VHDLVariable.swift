@@ -5,7 +5,7 @@
 //  Created by Morgan McColl on 3/11/20.
 //
 
-protocol VHDLVariable {
+public protocol VHDLVariable {
     
     var signalType: String {get set}
     

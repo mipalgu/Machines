@@ -5,14 +5,14 @@
 //  Created by Morgan McColl on 3/11/20.
 //
 
-struct Variable: VHDLVariable {
+public struct Variable: VHDLVariable {
  
-    var signalType: VhdlSignalType
+    public var signalType: VhdlSignalType
     
-    var name: String
+    public var name: String
     
-    var type: VhdlType
+    public var type: VhdlType
     
-    var initial: String
+    public var initial: String
     
 }
