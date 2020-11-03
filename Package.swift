@@ -32,8 +32,12 @@ let package = Package(
             dependencies: ["swift_helpers", "Functional"]
         ),
         .target(
+            name: "VHDLMachines",
+            dependencies: ["swift_helpers"]
+        ),
+        .target(
             name: "Machines",
-            dependencies: ["swift_helpers", "IO", "Functional", "SwiftMachines", "CXXMachines", "XMI"]
+            dependencies: ["swift_helpers", "IO", "Functional", "SwiftMachines", "CXXMachines", "XMI", "VHDLMachines"]
         ),
         .testTarget(
             name: "SwiftMachinesTests",
