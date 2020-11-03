@@ -56,93 +56,92 @@
  *
  */
 
-public enum AttributeType: Hashable, Codable {
+public enum AttributeType: Hashable {
     
-    public enum CodingKeys: CodingKey {
-        case type
-        case value
+    case line(LineAttributeType)
+    case block(BlockAttributeType)
+    
+    public static var bool: AttributeType {
+        return .line(.bool)
     }
     
-    case bool
-    case integer
-    case float
-    case expression(language: Language)
-    case line
-    case code(language: Language)
-    case text
-    indirect case collection(type: AttributeType)
-    indirect case complex(layout: [String: AttributeType])
-    case enumerated(validValues: Set<String>)
-    case enumerableCollection(validValues: Set<String>)
+    public static var integer: AttributeType {
+        return .line(.integer)
+    }
+    
+    public static var float: AttributeType {
+        return .line(.float)
+    }
+    
+    public static func expression(language: Language) -> AttributeType {
+        return .line(.expression(language: language))
+    }
+    
+    public static func enumerated(validValues: Set<String>) -> AttributeType {
+        return .line(.enumerated(validValues: validValues))
+    }
+    
+    public static var line: AttributeType {
+        return .line(.line)
+    }
+    
+    //    case code(_ value: String, language: Language)
+    //
+    //    case text(_ value: String)
+    //
+    //    indirect case collection(_ values: [Attribute], type: AttributeType)
+    //
+    //    indirect case complex(_ data: [String: Attribute], layout: [String: AttributeType])
+    //
+    //    case enumerableCollection(_ values: Set<String>, validValues: Set<String>)
+    
+    public static func code(language: Language) -> AttributeType {
+        return .block(.code(language: language))
+    }
+    
+    public static var text: AttributeType {
+        return .block(.text)
+    }
+    
+    public static func collection(type: AttributeType) -> AttributeType {
+        return .block(.collection(type: type))
+    }
+    
+    public static func complex(layout: [String: AttributeType]) -> AttributeType {
+        return .block(.complex(layout: layout))
+    }
+    
+    public static func enumerableCollection(validValues: Set<String>) -> AttributeType {
+        return .block(.enumerableCollection(validValues: validValues))
+    }
+
+}
+
+extension AttributeType: Codable {
     
     public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        let type = try container.decode(String.self, forKey: .type)
-        switch type {
-        case "bool":
-            self = .bool
-        case "integer":
-            self = .integer
-        case "float":
-            self = .float
-        case "expression":
-            let language = try container.decode(Language.self, forKey: .value)
-            self = .expression(language: language)
-        case "enumerated":
-            let value = try container.decode(Set<String>.self, forKey: .value)
-            self = .enumerated(validValues: value)
-        case "line":
-            self = .line
-        case "code":
-            let language = try container.decode(Language.self, forKey: .value)
-            self = .code(language: language)
-        case "text":
-            self = .text
-        case "collection":
-            let value = try container.decode(AttributeType.self, forKey: .value)
-            self = .collection(type: value)
-        case "complex":
-            let value = try container.decode([String: AttributeType].self, forKey: .value)
-            self = .complex(layout: value)
-        case "enumerableCollection":
-            let cases = try container.decode(Set<String>.self, forKey: .value)
-            self = .enumerableCollection(validValues: cases)
-        default:
-            throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: [CodingKeys.type], debugDescription: "Invalid value \(type)"))
+        if let lineAttributeType = try? LineAttributeType(from: decoder) {
+            self = .line(lineAttributeType)
+            return
         }
+        if let blockAttributeType = try? BlockAttributeType(from: decoder) {
+            self = .block(blockAttributeType)
+            return
+        }
+        throw DecodingError.dataCorrupted(
+            DecodingError.Context(
+                codingPath: decoder.codingPath,
+                debugDescription: "Unsupported type"
+            )
+        )
     }
     
     public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
         switch self {
-        case .bool:
-            try container.encode("bool", forKey: .type)
-        case .integer:
-            try container.encode("integer", forKey: .type)
-        case .float:
-            try container.encode("float", forKey: .type)
-        case .expression(let language):
-            try container.encode("expression", forKey: .type)
-            try container.encode(language, forKey: .value)
-        case .enumerated(let value):
-            try container.encode("enumerated", forKey: .type)
-            try container.encode(value, forKey: .value)
-        case .line:
-            try container.encode("line", forKey: .type)
-        case .code(let language):
-            try container.encode("code", forKey: .type)
-            try container.encode(language, forKey: .value)
-        case .text:
-            try container.encode("text", forKey: .type)
-        case .collection(let values):
-            try container.encode("collection", forKey: .type)
-            try container.encode(values, forKey: .value)
-        case .complex(let values):
-            try container.encode("complex", forKey: .type)
-            try container.encode(values, forKey: .value)
-        case .enumerableCollection(let cases):
-            try container.encode("enumerableCollection", forKey: .type)
-            try container.encode(cases, forKey: .value)
+        case .line(let attributeType):
+            try attributeType.encode(to: encoder)
+        case .block(let attributeType):
+            try attributeType.encode(to: encoder)
         }
     }
     

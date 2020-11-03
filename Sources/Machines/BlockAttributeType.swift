@@ -56,12 +56,7 @@
  *
  */
 
-public enum BlockAttributeType: Hashable, Codable {
-    
-    public enum CodingKeys: CodingKey {
-        case type
-        case value
-    }
+public enum BlockAttributeType: Hashable {
     
     case code(language: Language)
     case text
@@ -69,47 +64,75 @@ public enum BlockAttributeType: Hashable, Codable {
     indirect case complex(layout: [String: AttributeType])
     case enumerableCollection(validValues: Set<String>)
     
+}
+
+extension BlockAttributeType: Codable {
+    
     public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        let type = try container.decode(String.self, forKey: .type)
-        switch type {
-        case "code":
-            let language = try container.decode(Language.self, forKey: .value)
-            self = .code(language: language)
-        case "text":
-            self = .text
-        case "collection":
-            let value = try container.decode(AttributeType.self, forKey: .value)
-            self = .collection(type: value)
-        case "complex":
-            let value = try container.decode([String: AttributeType].self, forKey: .value)
-            self = .complex(layout: value)
-        case "enumerableCollection":
-            let cases = try container.decode(Set<String>.self, forKey: .value)
-            self = .enumerableCollection(validValues: cases)
-        default:
-            throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: [CodingKeys.type], debugDescription: "Invalid value \(type)"))
+        if let code = try? CodeAttributeType(from: decoder) {
+            self = .code(language: code.language)
+            return
         }
+        if let _ = try? TextAttributeType(from: decoder) {
+            self = .text
+            return
+        }
+        if let collection = try? CollectionAttributeType(from: decoder) {
+            self = .collection(type: collection.type)
+        }
+        if let complex = try? ComplexAttributeType(from: decoder) {
+            self = .complex(layout: complex.layout)
+        }
+        if let enumCollection = try? EnumCollectionAttributeType(from: decoder) {
+            self = .enumerableCollection(validValues: enumCollection.validValues)
+        }
+        throw DecodingError.dataCorrupted(
+            DecodingError.Context(
+                codingPath: decoder.codingPath,
+                debugDescription: "Unsupported type"
+            )
+        )
     }
     
     public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
         switch self {
         case .code(let language):
-            try container.encode("code", forKey: .type)
-            try container.encode(language, forKey: .value)
+            try CodeAttributeType(language: language).encode(to: encoder)
         case .text:
-            try container.encode("text", forKey: .type)
-        case .collection(let values):
-            try container.encode("collection", forKey: .type)
-            try container.encode(values, forKey: .value)
-        case .complex(let values):
-            try container.encode("complex", forKey: .type)
-            try container.encode(values, forKey: .value)
-        case .enumerableCollection(let cases):
-            try container.encode("enumerableCollection", forKey: .type)
-            try container.encode(cases, forKey: .value)
+            try TextAttributeType().encode(to: encoder)
+        case .collection(let type):
+            try CollectionAttributeType(type: type).encode(to: encoder)
+        case .complex(let layout):
+            try ComplexAttributeType(layout: layout).encode(to: encoder)
+        case .enumerableCollection(let validValues):
+            try EnumCollectionAttributeType(validValues: validValues).encode(to: encoder)
         }
+    }
+    
+    private struct CodeAttributeType: Hashable, Codable {
+        
+        var language: Language
+        
+    }
+    
+    private struct TextAttributeType: Hashable, Codable {}
+    
+    private struct CollectionAttributeType: Hashable, Codable {
+        
+        var type: AttributeType
+        
+    }
+    
+    private struct ComplexAttributeType: Hashable, Codable {
+        
+        var layout: [String: AttributeType]
+        
+    }
+    
+    private struct EnumCollectionAttributeType: Hashable, Codable {
+        
+        var validValues: Set<String>
+        
     }
     
 }

@@ -56,12 +56,8 @@
  *
  */
 
-public enum LineAttributeType: Hashable, Codable {
-    
-    public enum CodingKeys: CodingKey {
-        case type
-        case value
-    }
+public enum LineAttributeType: Hashable {
+
     
     case bool
     case integer
@@ -70,47 +66,78 @@ public enum LineAttributeType: Hashable, Codable {
     case enumerated(validValues: Set<String>)
     case line
     
+}
+
+extension LineAttributeType: Codable {
+    
     public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        let type = try container.decode(String.self, forKey: .type)
-        switch type {
-        case "bool":
+        if let _ = try? BoolAttributeType(from: decoder) {
             self = .bool
-        case "integer":
-            self = .integer
-        case "float":
-            self = .float
-        case "expression":
-            let language = try container.decode(Language.self, forKey: .value)
-            self = .expression(language: language)
-        case "enumerated":
-            let value = try container.decode(Set<String>.self, forKey: .value)
-            self = .enumerated(validValues: value)
-        case "line":
-            self = .line
-        default:
-            throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: [CodingKeys.type], debugDescription: "Invalid value \(type)"))
+            return
         }
+        if let _ = try? IntegerAttributeType(from: decoder) {
+            self = .integer
+            return
+        }
+        if let _ = try? FloatAttributeType(from: decoder) {
+            self = .float
+            return
+        }
+        if let expression = try? ExpressionAttributeType(from: decoder) {
+            self = .expression(language: expression.language)
+            return
+        }
+        if let enumerated = try? EnumAttributeType(from: decoder) {
+            self = .enumerated(validValues: enumerated.validValues)
+            return
+        }
+        if let _ = try? LineAttributeType(from: decoder) {
+            self = .line
+            return
+        }
+        throw DecodingError.dataCorrupted(
+            DecodingError.Context(
+                codingPath: decoder.codingPath,
+                debugDescription: "Unsupported type"
+            )
+        )
     }
     
     public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
         switch self {
         case .bool:
-            try container.encode("bool", forKey: .type)
+            try BoolAttributeType().encode(to: encoder)
         case .integer:
-            try container.encode("integer", forKey: .type)
+            try IntegerAttributeType().encode(to: encoder)
         case .float:
-            try container.encode("float", forKey: .type)
+            try FloatAttributeType().encode(to: encoder)
         case .expression(let language):
-            try container.encode("expression", forKey: .type)
-            try container.encode(language, forKey: .value)
+            try ExpressionAttributeType(language: language).encode(to: encoder)
         case .enumerated(let value):
-            try container.encode("enumerated", forKey: .type)
-            try container.encode(value, forKey: .value)
+            try EnumAttributeType(validValues: value).encode(to: encoder)
         case .line:
-            try container.encode("line", forKey: .type)
+            try LineAttributeType().encode(to: encoder)
         }
     }
+    
+    private struct BoolAttributeType: Hashable, Codable {}
+    
+    private struct IntegerAttributeType: Hashable, Codable {}
+    
+    private struct FloatAttributeType: Hashable, Codable {}
+    
+    private struct ExpressionAttributeType: Hashable, Codable {
+        
+        var language: Language
+        
+    }
+    
+    private struct EnumAttributeType: Hashable, Codable {
+        
+        var validValues: Set<String>
+        
+    }
+    
+    private struct LineAttributeType: Hashable, Codable {}
     
 }

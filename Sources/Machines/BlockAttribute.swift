@@ -177,7 +177,7 @@ public enum BlockAttribute: Hashable {
         switch self {
         case .collection(let values, type: let type):
             switch type {
-            case .expression:
+            case .line(.expression):
                 return values.failMap { $0.expressionValue }
             default:
                 return nil
@@ -191,7 +191,7 @@ public enum BlockAttribute: Hashable {
         switch self {
         case .collection(let values, type: let type):
             switch type {
-            case .enumerated(let validValues):
+            case .line(.enumerated(let validValues)):
                 guard let values: [String] = values.failMap({
                     guard let (elementValue, elementValidValues) = $0.enumeratedValue, elementValidValues == validValues else {
                         return nil
@@ -227,7 +227,7 @@ public enum BlockAttribute: Hashable {
         switch self {
         case .collection(let values, type: let type):
             switch type {
-            case .code:
+            case .block(.code):
                 return values.failMap { $0.codeValue }
             default:
                 return nil
@@ -255,7 +255,7 @@ public enum BlockAttribute: Hashable {
         switch self {
         case .collection(let values, type: let type):
             switch type {
-            case .complex(let layout):
+            case .block(.complex(let layout)):
                 guard let values: [[String: Attribute]] = values.failMap({
                     guard let (elementValues, elementLayout) = $0.complexValue, elementLayout == layout else {
                         return nil
@@ -277,7 +277,7 @@ public enum BlockAttribute: Hashable {
         switch self {
         case .collection(let values, type: let type):
             switch type {
-            case .enumerableCollection(let validValues):
+            case .block(.enumerableCollection(let validValues)):
                 guard let values: [Set<String>] = values.failMap({
                     guard let (elementValues, elementValidValues) = $0.enumerableCollectionValue, elementValidValues == validValues else {
                         return nil
@@ -405,16 +405,6 @@ extension BlockAttribute: Codable {
 }
 
 extension BlockAttribute: XMIConvertible {
-    
-    //    case code(_ value: String, language: Language)
-    //
-    //    case text(_ value: String)
-    //
-    //    indirect case collection(_ values: [Attribute], type: AttributeType)
-    //
-    //    indirect case complex(_ data: [String: Attribute], layout: [String: AttributeType])
-    //
-    //    case enumerableCollection(_ values: Set<String>, validValues: Set<String>)
     
     public var xmiName: String? {
         switch self {
