@@ -56,6 +56,8 @@
  *
  */
 
+import XMI
+
 public enum AttributeType: Hashable {
     
     case line(LineAttributeType)
@@ -142,6 +144,19 @@ extension AttributeType: Codable {
             try attributeType.encode(to: encoder)
         case .block(let attributeType):
             try attributeType.encode(to: encoder)
+        }
+    }
+    
+}
+
+extension AttributeType: XMIConvertible {
+    
+    public var xmiName: String? {
+        switch self {
+        case .line(let type):
+            return type.xmiName
+        case .block(let type):
+            return type.xmiName
         }
     }
     

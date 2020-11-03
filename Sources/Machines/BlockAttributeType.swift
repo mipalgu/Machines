@@ -56,6 +56,8 @@
  *
  */
 
+import XMI
+
 public enum BlockAttributeType: Hashable {
     
     case code(language: Language)
@@ -109,30 +111,61 @@ extension BlockAttributeType: Codable {
         }
     }
     
-    private struct CodeAttributeType: Hashable, Codable {
+    private struct CodeAttributeType: Hashable, Codable, XMIConvertible {
+        
+        var xmiName: String? { "CodeAttributeType" }
         
         var language: Language
         
     }
     
-    private struct TextAttributeType: Hashable, Codable {}
+    private struct TextAttributeType: Hashable, Codable, XMIConvertible {
+        
+        var xmiName: String? { "TextAttributeType" }
+        
+    }
     
-    private struct CollectionAttributeType: Hashable, Codable {
+    private struct CollectionAttributeType: Hashable, Codable, XMIConvertible {
+        
+        var xmiName: String? { "CollectionAttributeType" }
         
         var type: AttributeType
         
     }
     
-    private struct ComplexAttributeType: Hashable, Codable {
+    private struct ComplexAttributeType: Hashable, Codable, XMIConvertible {
+        
+        var xmiName: String? { "ComplexAttributeType" }
         
         var layout: [String: AttributeType]
         
     }
     
-    private struct EnumCollectionAttributeType: Hashable, Codable {
+    private struct EnumCollectionAttributeType: Hashable, Codable, XMIConvertible {
+        
+        var xmiName: String? { "EnumCollectionAttributeType" }
         
         var validValues: Set<String>
         
+    }
+    
+}
+
+extension BlockAttributeType: XMIConvertible {
+    
+    public var xmiName: String? {
+        switch self {
+        case .code(let language):
+            return CodeAttributeType(language: language).xmiName
+        case .text:
+            return TextAttributeType().xmiName
+        case .collection(let type):
+            return CollectionAttributeType(type: type).xmiName
+        case .complex(let layout):
+            return ComplexAttributeType(layout: layout).xmiName
+        case .enumerableCollection(let validValues):
+            return EnumCollectionAttributeType(validValues: validValues).xmiName
+        }
     }
     
 }

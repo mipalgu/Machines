@@ -56,6 +56,8 @@
  *
  */
 
+import XMI
+
 public enum LineAttributeType: Hashable {
 
     
@@ -120,24 +122,65 @@ extension LineAttributeType: Codable {
         }
     }
     
-    private struct BoolAttributeType: Hashable, Codable {}
+    private struct BoolAttributeType: Hashable, Codable, XMIConvertible {
+        
+        var xmiName: String? { "BoolAttributeType" }
+        
+    }
     
-    private struct IntegerAttributeType: Hashable, Codable {}
+    private struct IntegerAttributeType: Hashable, Codable, XMIConvertible {
+        
+        var xmiName: String? { "IntegerAttributeType" }
+        
+    }
     
-    private struct FloatAttributeType: Hashable, Codable {}
+    private struct FloatAttributeType: Hashable, Codable, XMIConvertible {
+        
+        var xmiName: String? { "FloatAttributeType" }
+        
+    }
     
-    private struct ExpressionAttributeType: Hashable, Codable {
+    private struct ExpressionAttributeType: Hashable, Codable, XMIConvertible {
+        
+        var xmiName: String? { "ExpressionAttributeType" }
         
         var language: Language
         
     }
     
-    private struct EnumAttributeType: Hashable, Codable {
+    private struct EnumAttributeType: Hashable, Codable, XMIConvertible {
+        
+        var xmiName: String? { "EnumAttributeType" }
         
         var validValues: Set<String>
         
     }
     
-    private struct LineAttributeType: Hashable, Codable {}
+    private struct LineAttributeType: Hashable, Codable, XMIConvertible {
+        
+        var xmiName: String? { "LineAttributeType" }
+        
+    }
+    
+}
+
+extension LineAttributeType: XMIConvertible {
+    
+    public var xmiName: String? {
+        switch self {
+        case .bool:
+            return BoolAttributeType().xmiName
+        case .integer:
+            return IntegerAttributeType().xmiName
+        case .float:
+            return FloatAttributeType().xmiName
+        case .expression(let language):
+            return ExpressionAttributeType(language: language).xmiName
+        case .enumerated(let value):
+            return EnumAttributeType(validValues: value).xmiName
+        case .line:
+            return LineAttributeType().xmiName
+        }
+    }
     
 }
