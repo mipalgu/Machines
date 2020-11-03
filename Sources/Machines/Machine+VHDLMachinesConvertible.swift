@@ -10,6 +10,7 @@ import VHDLMachines
 extension Machine: VHDLMachinesConvertible {
     
     public init(from vhdlMachine: VHDLMachines.ParentMachine) {
+        fatalError("Not Yet Implemented")
         self.init(
             semantics: .vhdl,
             name: vhdlMachine.parent.name,
@@ -31,7 +32,7 @@ extension Machine: VHDLMachinesConvertible {
     }
     
     public func vhdlMachine() throws -> VHDLMachines.ParentMachine {
-        <#code#>
+        throw ConversionError(message: "Not Yet Implemented")
     }
     
     fileprivate func vhdlStateToState(vhdl: VHDLMachines.State) -> State {
