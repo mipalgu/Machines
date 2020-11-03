@@ -1,5 +1,5 @@
 /*
- * SwiftfsmMachineValidator.swift
+ * ConversionError.swift
  * Machines
  *
  * Created by Callum McColl on 3/11/20.
@@ -56,13 +56,8 @@
  *
  */
 
-struct SwiftfsmMachineValidator: MachineValidator {
+public struct ConversionError: Error, Hashable, Codable {
     
-    func validate(machine: Machine) throws -> Machine {
-        if machine.semantics != .swiftfsm {
-            throw ValidationError.unsupportedSemantics(machine.semantics)
-        }
-        throw ConversionError(message: "Not Yet Implemented")
-    }
+    public var message: String
     
 }

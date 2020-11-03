@@ -79,12 +79,6 @@ import Foundation
 /// - SeeAlso: `SwiftMachinesConvertible`.
 public struct Machine: Hashable, Codable {
     
-    public struct ConversionError: Error, Hashable, Codable {
-        
-        public var message: String
-        
-    }
-    
     public enum Semantics: String, Hashable, Codable {
         case other
         case swiftfsm
@@ -307,15 +301,36 @@ extension Machine: SwiftMachinesConvertible {
             ]
         )
         attributes.append(moduleDependencies)
-        let states = swiftMachine.states.map {
-            State(
-                name: $0.name,
-                actions: Dictionary(uniqueKeysWithValues: $0.actions.map { ($0.name, $0.implementation) }),
+        let states = swiftMachine.states.map { (state) -> State in
+            let settingsFields: [String: AttributeType]
+            let settingsAttributes: [String: Attribute]
+            if let externals = state.externalVariables {
+                settingsFields = [
+                    "access_external_variables": .bool,
+                    "external_variables": .enumerableCollection(validValues: Set(swiftMachine.externalVariables.map { $0.label })),
+                    "imports": .text
+                ]
+                settingsAttributes = [
+                    "access_external_variables": .bool(true),
+                    "external_variables": .enumerableCollection(Set(externals.map { $0.label }), validValues: Set(swiftMachine.externalVariables.map { $0.label })),
+                    "imports": .text(state.imports)
+                ]
+            } else {
+                settingsFields = [
+                    "access_external_variables": .bool
+                ]
+                settingsAttributes = [
+                    "access_external_variables": .bool(false)
+                ]
+            }
+            return State(
+                name: state.name,
+                actions: Dictionary(uniqueKeysWithValues: state.actions.map { ($0.name, $0.implementation) }),
                 variables: [
                     VariableList(
                         name: "state_variables",
-                        enabled: $0.externalVariables != nil,
-                        variables: $0.vars.map {
+                        enabled: true,
+                        variables: state.vars.map {
                             Variable(
                                 label: $0.label,
                                 type: $0.type,
@@ -334,14 +349,8 @@ extension Machine: SwiftMachinesConvertible {
                 attributes: [
                     AttributeGroup(
                         name: "settings",
-                        fields: [
-                            "external_variables": .enumerableCollection(validValues: Set(swiftMachine.externalVariables.map { $0.label })),
-                            "imports": .text
-                        ],
-                        attributes: [
-                            "external_variables": .enumerableCollection(Set($0.externalVariables?.map { $0.label } ?? []), validValues: Set(swiftMachine.externalVariables.map { $0.label })),
-                            "imports": .text($0.imports)
-                        ]
+                        fields: settingsFields,
+                        attributes: settingsAttributes
                     )
                 ]
             )
@@ -424,15 +433,7 @@ extension Machine: SwiftMachinesConvertible {
     
     /// Convert the meta model machine to a `SwiftMachines.Machine`.
     public func swiftMachine() throws -> SwiftMachines.Machine {
-        let validator = SwiftfsmMachineValidator()
-        let machine = try validator.validate(machine: self)
-        guard let ringletGroup = machine.attributes.first(where: { $0.name == "ringlet" }) else {
-            throw ConversionError(message: "Missing ringlet group in attributes")
-        }
-        let actions = Set(ringletGroup.attributes["actions"]?.collectionLines ?? ["onEntry", "onExit", "main"]).sorted().filter {
-            $0.trimmingCharacters(in: .whitespacesAndNewlines) != ""
-        }
-        throw ConversionError(message: "Not Yet Implemented")
+        return try SwiftfsmConverter(validator: SwiftfsmMachineValidator()).swiftMachine(self)
     }
     
     public static func createSwiftMachine(_ name: String, atPath url: URL) -> Machine {

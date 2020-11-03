@@ -80,7 +80,7 @@ public final class MachineAssembler {
             let swiftMachine: SwiftMachines.Machine
             do {
                 swiftMachine = try machine.swiftMachine()
-            } catch let e as Machine.ConversionError {
+            } catch let e as ConversionError {
                 self.errors.append(e.message)
                 return nil
             } catch let e {
