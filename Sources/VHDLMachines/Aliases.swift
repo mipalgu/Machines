@@ -5,7 +5,7 @@
 //  Created by Morgan McColl on 3/11/20.
 //
 
-typealias VhdlLabel = String
-typealias VhdlType = String
-typealias VhdlMode = String
-typealias VhdlSignalType = String
+public typealias VhdlLabel = String
+public typealias VhdlType = String
+public typealias VhdlMode = String
+public typealias VhdlSignalType = String

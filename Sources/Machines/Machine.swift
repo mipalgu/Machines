@@ -82,6 +82,7 @@ public struct Machine: Hashable, Codable {
         case other
         case swiftfsm
         case clfsm
+        case vhdl
     }
     
     /// The underlying semantics which this meta machine follows.

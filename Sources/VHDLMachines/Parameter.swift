@@ -5,13 +5,13 @@
 //  Created by Morgan McColl on 3/11/20.
 //
 
-struct Parameter: VHDLExternalVariable {
+public struct Parameter: VHDLExternalVariable {
     
-    var mode: String
+    public var mode: String
     
     var variable: Variable
 
-    var signalType: String {
+    public var signalType: String {
         get {
             variable.signalType
         }
@@ -20,7 +20,7 @@ struct Parameter: VHDLExternalVariable {
         }
     }
     
-    var name: String {
+    public var name: String {
         get {
             variable.name
         }
@@ -29,7 +29,7 @@ struct Parameter: VHDLExternalVariable {
         }
     }
     
-    var type: VhdlType {
+    public var type: VhdlType {
         get {
             variable.type
         }
@@ -38,7 +38,7 @@ struct Parameter: VHDLExternalVariable {
         }
     }
     
-    var initial: String {
+    public var initial: String {
         get {
             variable.initial
         }

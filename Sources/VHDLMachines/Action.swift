@@ -5,10 +5,10 @@
 //  Created by Morgan McColl on 3/11/20.
 //
 
-struct Action {
+public struct Action {
 
-    var name: VhdlLabel
+    public var name: VhdlLabel
     
-    var code: String
+    public var code: String
 
 }
