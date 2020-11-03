@@ -1,5 +1,5 @@
 /*
- * SwiftfsmMachineValidator.swift
+ * NullMachineValidator.swift
  * Machines
  *
  * Created by Callum McColl on 3/11/20.
@@ -56,13 +56,10 @@
  *
  */
 
-struct SwiftfsmMachineValidator: MachineValidator {
+struct NullMachineValidator: MachineValidator {
     
     func validate(machine: Machine) throws -> Machine {
-        if machine.semantics != .swiftfsm {
-            throw ValidationError.unsupportedSemantics(machine.semantics)
-        }
-        throw Machine.ConversionError(message: "Not Yet Implemented")
+        return machine
     }
     
 }
