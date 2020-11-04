@@ -1,8 +1,8 @@
 /*
- * AttributeGroup.swift
+ * MachinePath.swift
  * Machines
  *
- * Created by Callum McColl on 29/10/20.
+ * Created by Callum McColl on 4/11/20.
  * Copyright © 2020 Callum McColl. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,25 +57,44 @@
  */
 
 import Attributes
+import Foundation
 
-public struct AttributeGroup: Hashable, Codable {
+extension Path where Value == Machine {
     
-    public var name: String
+    var name: Path<Root, String> {
+        return Path<Root, String>(path: path.appending(path: \.name))
+    }
     
-    public var variables: VariableList?
+    var filePath: Path<Root, URL> {
+        return Path<Root, URL>(path: path.appending(path: \.filePath))
+    }
     
-    public var fields: [String: AttributeType]
+    var initialState: Path<Root, StateName> {
+        return Path<Root, StateName>(path: path.appending(path: \.initialState))
+    }
     
-    public var attributes: [String: Attribute]
+    var suspendState: Path<Root, StateName> {
+        return Path<Root, StateName>(path: path.appending(path: \.suspendState))
+    }
     
-    public var metaData: [String: Attribute]
+    var states: Path<Root, [State]> {
+        Path<Root, [State]>(path: path.appending(path: \.states))
+    }
     
-    public init(name: String, variables: VariableList? = nil, fields: [String: AttributeType] = [:], attributes: [String: Attribute] = [:], metaData: [String: Attribute] = [:]) {
-        self.name = name
-        self.variables = variables
-        self.fields = fields
-        self.attributes = attributes
-        self.metaData = metaData
+    var transitions: Path<Root, [Transition]> {
+        Path<Root, [Transition]>(path: path.appending(path: \.transitions))
+    }
+    
+    var variables: Path<Root, [VariableList]> {
+        Path<Root, [VariableList]>(path: path.appending(path: \.variables))
+    }
+    
+    var attributes: Path<Root, [AttributeGroup]> {
+        return Path<Root, [AttributeGroup]>(path: path.appending(path: \.attributes))
+    }
+    
+    var metaData: Path<Root, [AttributeGroup]> {
+        return Path<Root, [AttributeGroup]>(path: path.appending(path: \.metaData))
     }
     
 }

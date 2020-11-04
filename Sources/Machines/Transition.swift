@@ -56,6 +56,8 @@
  *
  */
 
+import Attributes
+
 public struct Transition: Hashable, Codable {
     
     public var condition: Expression?

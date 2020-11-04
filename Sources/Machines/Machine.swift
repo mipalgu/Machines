@@ -57,6 +57,7 @@
  */
 
 import Foundation
+import Attributes
 
 /// A general meta model machine.
 ///
@@ -210,11 +211,11 @@ public struct Machine: Hashable, Codable {
 
 extension Machine {
     
-    public var path: MachinePath {
-        return MachinePath()
+    public var path: Path<Machine, Machine> {
+        return Path<Machine, Machine>(path: \.self)
     }
     
-    public mutating func modify<Path: MachinePathProtocol>(attribute: Path, value: Path.Value) throws {
+    public mutating func modify<Path: PathProtocol>(attribute: Path, value: Path.Value) throws where Path.Root == Machine {
         let backup = self
         self[keyPath: attribute.path] = value
         do {

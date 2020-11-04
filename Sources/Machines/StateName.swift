@@ -1,5 +1,5 @@
 /*
- * Code.swift
+ * StateName.swift
  * Machines
  *
  * Created by Callum McColl on 29/10/20.
@@ -57,7 +57,3 @@
  */
 
 public typealias StateName = String
-
-public typealias Code = String
-
-public typealias Expression = String

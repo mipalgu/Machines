@@ -1,8 +1,8 @@
 /*
- * AttributePath.swift
- * Machines
+ * OptionalPath.swift
+ * Attributes
  *
- * Created by Callum McColl on 3/11/20.
+ * Created by Callum McColl on 4/11/20.
  * Copyright © 2020 Callum McColl. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,8 +56,20 @@
  *
  */
 
-struct AttributePath: MachinePathProtocol {
+public struct OptionalPath<Root, Wrapped>: PathProtocol {
     
-    var path: WritableKeyPath<Machine, Attribute>
+    public var path: WritableKeyPath<Root, Wrapped?>
+    
+    public init(path: WritableKeyPath<Root, Wrapped?>) {
+        self.path = path
+    }
+    
+    public var wrappedValue: Path<Root, Wrapped> {
+        return Path<Root, Wrapped>(path: path.appending(path: \.self!))
+    }
+    
+    public func hasValue(_ root: Root) -> Bool {
+        return nil != root[keyPath: self.path]
+    }
     
 }

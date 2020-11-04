@@ -56,6 +56,8 @@
  *
  */
 
+import Attributes
+
 public struct Variable: Hashable, Codable {
     
     public var label: String

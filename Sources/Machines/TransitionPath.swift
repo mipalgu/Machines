@@ -1,8 +1,8 @@
 /*
- * AttributeGroup.swift
+ * TransitionPath.swift
  * Machines
  *
- * Created by Callum McColl on 29/10/20.
+ * Created by Callum McColl on 4/11/20.
  * Copyright © 2020 Callum McColl. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,24 +58,26 @@
 
 import Attributes
 
-public struct AttributeGroup: Hashable, Codable {
+extension Path where Value == Transition {
     
-    public var name: String
+    var condition: OptionalPath<Root, Expression> {
+        OptionalPath<Root, String>(path: path.appending(path: \.condition))
+    }
     
-    public var variables: VariableList?
+    var source: OptionalPath<Root, String> {
+        OptionalPath<Root, String>(path: path.appending(path: \.source))
+    }
     
-    public var fields: [String: AttributeType]
+    var target: OptionalPath<Root, String> {
+        OptionalPath<Root, String>(path: path.appending(path: \.target))
+    }
     
-    public var attributes: [String: Attribute]
+    var attributes: Path<Root, [AttributeGroup]> {
+        return Path<Root, [AttributeGroup]>(path: path.appending(path: \.attributes))
+    }
     
-    public var metaData: [String: Attribute]
-    
-    public init(name: String, variables: VariableList? = nil, fields: [String: AttributeType] = [:], attributes: [String: Attribute] = [:], metaData: [String: Attribute] = [:]) {
-        self.name = name
-        self.variables = variables
-        self.fields = fields
-        self.attributes = attributes
-        self.metaData = metaData
+    var metaData: Path<Root, [AttributeGroup]> {
+        return Path<Root, [AttributeGroup]>(path: path.appending(path: \.metaData))
     }
     
 }
