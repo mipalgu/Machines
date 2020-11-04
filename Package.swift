@@ -24,6 +24,10 @@ let package = Package(
             dependencies: []
         ),
         .target(
+            name: "Attributes",
+            dependencies: ["XMI", "swift_helpers"]
+        ),
+        .target(
             name: "SwiftMachines",
             dependencies: ["swift_helpers", "IO"]
         ),
@@ -37,7 +41,7 @@ let package = Package(
         ),
         .target(
             name: "Machines",
-            dependencies: ["swift_helpers", "IO", "Functional", "SwiftMachines", "CXXMachines", "XMI", "VHDLMachines"]
+            dependencies: ["swift_helpers", "IO", "Functional", "SwiftMachines", "CXXMachines", "XMI", "VHDLMachines", "Attributes"]
         ),
         .testTarget(
             name: "SwiftMachinesTests",
