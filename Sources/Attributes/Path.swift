@@ -58,10 +58,21 @@
 
 public struct Path<Root, Value>: PathProtocol {
     
+    public var ancestors: [AnyPath<Root>]
+    
     public var path: WritableKeyPath<Root, Value>
     
-    public init(path: WritableKeyPath<Root, Value>) {
+    public init(path: WritableKeyPath<Root, Value>, ancestors: [AnyPath<Root>]) {
+        self.ancestors = ancestors
         self.path = path
+    }
+    
+}
+
+extension Path {
+    
+    public var fullPath: [AnyPath<Root>] {
+        return self.ancestors + [AnyPath(self)]
     }
     
 }

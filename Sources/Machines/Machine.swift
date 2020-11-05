@@ -212,7 +212,7 @@ public struct Machine: Hashable, Codable {
 extension Machine {
     
     public var path: Path<Machine, Machine> {
-        return Path<Machine, Machine>(path: \.self)
+        return Path<Machine, Machine>(path: \.self, ancestors: [])
     }
     
     public mutating func modify<Path: PathProtocol>(attribute: Path, value: Path.Value) throws where Path.Root == Machine {

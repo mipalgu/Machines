@@ -59,7 +59,7 @@
 extension Path where Value == [String: LineAttribute] {
     
     func attribute(key: String) -> Path<Root, LineAttribute> {
-        Path<Root, LineAttribute>(path: path.appending(path: \.[key]!))
+        Path<Root, LineAttribute>(path: path.appending(path: \.[key]!), ancestors: fullPath)
     }
     
 }

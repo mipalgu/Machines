@@ -61,6 +61,8 @@ public protocol PathProtocol {
     associatedtype Root
     associatedtype Value
     
+    var ancestors: [AnyPath<Root>] { get }
+    
     var path: WritableKeyPath<Root, Value> { get }
     
 }

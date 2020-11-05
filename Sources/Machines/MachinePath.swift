@@ -62,39 +62,39 @@ import Foundation
 extension Path where Value == Machine {
     
     var name: Path<Root, String> {
-        return Path<Root, String>(path: path.appending(path: \.name))
+        return Path<Root, String>(path: path.appending(path: \.name), ancestors: fullPath)
     }
     
     var filePath: Path<Root, URL> {
-        return Path<Root, URL>(path: path.appending(path: \.filePath))
+        return Path<Root, URL>(path: path.appending(path: \.filePath), ancestors: fullPath)
     }
     
     var initialState: Path<Root, StateName> {
-        return Path<Root, StateName>(path: path.appending(path: \.initialState))
+        return Path<Root, StateName>(path: path.appending(path: \.initialState), ancestors: fullPath)
     }
     
     var suspendState: Path<Root, StateName> {
-        return Path<Root, StateName>(path: path.appending(path: \.suspendState))
+        return Path<Root, StateName>(path: path.appending(path: \.suspendState), ancestors: fullPath)
     }
     
     var states: Path<Root, [State]> {
-        Path<Root, [State]>(path: path.appending(path: \.states))
+        Path<Root, [State]>(path: path.appending(path: \.states), ancestors: fullPath)
     }
     
     var transitions: Path<Root, [Transition]> {
-        Path<Root, [Transition]>(path: path.appending(path: \.transitions))
+        Path<Root, [Transition]>(path: path.appending(path: \.transitions), ancestors: fullPath)
     }
     
     var variables: Path<Root, [VariableList]> {
-        Path<Root, [VariableList]>(path: path.appending(path: \.variables))
+        Path<Root, [VariableList]>(path: path.appending(path: \.variables), ancestors: fullPath)
     }
     
     var attributes: Path<Root, [AttributeGroup]> {
-        return Path<Root, [AttributeGroup]>(path: path.appending(path: \.attributes))
+        return Path<Root, [AttributeGroup]>(path: path.appending(path: \.attributes), ancestors: fullPath)
     }
     
     var metaData: Path<Root, [AttributeGroup]> {
-        return Path<Root, [AttributeGroup]>(path: path.appending(path: \.metaData))
+        return Path<Root, [AttributeGroup]>(path: path.appending(path: \.metaData), ancestors: fullPath)
     }
     
 }

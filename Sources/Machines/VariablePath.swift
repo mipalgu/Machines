@@ -61,15 +61,15 @@ import Attributes
 extension Path where Value == Variable {
     
     var label: Path<Root, String> {
-        return Path<Root, String>(path: self.path.appending(path: \.label))
+        return Path<Root, String>(path: self.path.appending(path: \.label), ancestors: fullPath)
     }
     
     var type: Path<Root, String> {
-        return Path<Root, String>(path: self.path.appending(path: \.type))
+        return Path<Root, String>(path: self.path.appending(path: \.type), ancestors: fullPath)
     }
     
     var extraFields: Path<Root, [String: LineAttribute]> {
-        return Path<Root, [String: LineAttribute]>(path: self.path.appending(path: \.extraFields))
+        return Path<Root, [String: LineAttribute]>(path: self.path.appending(path: \.extraFields), ancestors: fullPath)
     }
     
 }

@@ -61,23 +61,23 @@ import Attributes
 extension Path where Value == VariableList {
     
     var name: Path<Root, String> {
-        return Path<Root, String>(path: path.appending(path: \.name))
+        return Path<Root, String>(path: path.appending(path: \.name), ancestors: fullPath)
     }
     
     var enabled: Path<Root, Bool> {
-        return Path<Root, Bool>(path: path.appending(path: \.enabled))
+        return Path<Root, Bool>(path: path.appending(path: \.enabled), ancestors: fullPath)
     }
     
     var extraFields: Path<Root, [String: LineAttributeType]> {
-        return Path<Root, [String: LineAttributeType]>(path: path.appending(path: \.extraFields))
+        return Path<Root, [String: LineAttributeType]>(path: path.appending(path: \.extraFields), ancestors: fullPath)
     }
     
     var attributes: Path<Root, [String: Attribute]> {
-        return Path<Root, [String: Attribute]>(path: path.appending(path: \.attributes))
+        return Path<Root, [String: Attribute]>(path: path.appending(path: \.attributes), ancestors: fullPath)
     }
     
     var metaData: Path<Root, [String: Attribute]> {
-        return Path<Root, [String: Attribute]>(path: path.appending(path: \.metaData))
+        return Path<Root, [String: Attribute]>(path: path.appending(path: \.metaData), ancestors: fullPath)
     }
     
 }

@@ -61,23 +61,23 @@ import Attributes
 extension Path where Value == Transition {
     
     var condition: OptionalPath<Root, Expression> {
-        OptionalPath<Root, String>(path: path.appending(path: \.condition))
+        OptionalPath<Root, String>(path: path.appending(path: \.condition), ancestors: fullPath)
     }
     
     var source: OptionalPath<Root, String> {
-        OptionalPath<Root, String>(path: path.appending(path: \.source))
+        OptionalPath<Root, String>(path: path.appending(path: \.source), ancestors: fullPath)
     }
     
     var target: OptionalPath<Root, String> {
-        OptionalPath<Root, String>(path: path.appending(path: \.target))
+        OptionalPath<Root, String>(path: path.appending(path: \.target), ancestors: fullPath)
     }
     
     var attributes: Path<Root, [AttributeGroup]> {
-        return Path<Root, [AttributeGroup]>(path: path.appending(path: \.attributes))
+        return Path<Root, [AttributeGroup]>(path: path.appending(path: \.attributes), ancestors: fullPath)
     }
     
     var metaData: Path<Root, [AttributeGroup]> {
-        return Path<Root, [AttributeGroup]>(path: path.appending(path: \.metaData))
+        return Path<Root, [AttributeGroup]>(path: path.appending(path: \.metaData), ancestors: fullPath)
     }
     
 }

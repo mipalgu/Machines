@@ -61,23 +61,23 @@ import Attributes
 extension Path where Value == State {
     
     var name: Path<Root, String> {
-        return Path<Root, String>(path: path.appending(path: \.name))
+        return Path<Root, String>(path: path.appending(path: \.name), ancestors: fullPath)
     }
     
     var actions: Path<Root, [String: Code]> {
-        return Path<Root, [String: Code]>(path: path.appending(path: \.actions))
+        return Path<Root, [String: Code]>(path: path.appending(path: \.actions), ancestors: fullPath)
     }
     
     var variables: Path<Root, [VariableList]> {
-        return Path<Root, [VariableList]>(path: path.appending(path: \.variables))
+        return Path<Root, [VariableList]>(path: path.appending(path: \.variables), ancestors: fullPath)
     }
     
     var attributes: Path<Root, [AttributeGroup]> {
-        return Path<Root, [AttributeGroup]>(path: path.appending(path: \.attributes))
+        return Path<Root, [AttributeGroup]>(path: path.appending(path: \.attributes), ancestors: fullPath)
     }
     
     var metaData: Path<Root, [AttributeGroup]> {
-        return Path<Root, [AttributeGroup]>(path: path.appending(path: \.metaData))
+        return Path<Root, [AttributeGroup]>(path: path.appending(path: \.metaData), ancestors: fullPath)
     }
     
 }

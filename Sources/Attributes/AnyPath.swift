@@ -1,8 +1,8 @@
 /*
- * OptionalPath.swift
+ * AnyPath.swift
  * Attributes
  *
- * Created by Callum McColl on 4/11/20.
+ * Created by Callum McColl on 5/11/20.
  * Copyright © 2020 Callum McColl. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,23 +56,40 @@
  *
  */
 
-public struct OptionalPath<Root, Wrapped>: PathProtocol {
+public struct AnyPath<Root> {
     
-    public var ancestors: [AnyPath<Root>]
+    let _value: (Root) -> Any
     
-    public var path: WritableKeyPath<Root, Wrapped?>
+    let _isOptional: () -> Bool
     
-    public init(path: WritableKeyPath<Root, Wrapped?>, ancestors: [AnyPath<Root>]) {
-        self.ancestors = ancestors
-        self.path = path
+    let _isNil: (Root) -> Bool
+    
+    public var isOptional: Bool {
+        return self._isOptional()
     }
     
-    public var wrappedValue: Path<Root, Wrapped> {
-        return Path<Root, Wrapped>(path: path.appending(path: \.self!), ancestors: self.ancestors + [AnyPath(optional: self)])
+    public init<P: PathProtocol>(_ path: P) where P.Root == Root {
+        self._value = { $0[keyPath: path.path] as Any }
+        self._isOptional = { false }
+        self._isNil = { root in (path.ancestors.last?.isNil(root) ?? false) }
+    }
+    
+    public init<P: PathProtocol, V>(optional path: P) where P.Root == Root, P.Value == V? {
+        self._value = { $0[keyPath: path.path] as Any }
+        self._isOptional = { true }
+        self._isNil = { root in (path.ancestors.last?.isNil(root) ?? false) || nil == root[keyPath: path.path] }
     }
     
     public func hasValue(_ root: Root) -> Bool {
-        return nil != root[keyPath: self.path]
+        return !isOptional || (isOptional && !isNil(root))
+    }
+    
+    public func value(_ root: Root) -> Any {
+        return self._value(root)
+    }
+    
+    public func isNil(_ root: Root) -> Bool {
+        return self._isNil(root)
     }
     
 }
