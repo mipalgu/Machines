@@ -1,8 +1,8 @@
 /*
- * AttributeGroup.swift
+ * StatePath.swift
  * Machines
  *
- * Created by Callum McColl on 29/10/20.
+ * Created by Callum McColl on 4/11/20.
  * Copyright © 2020 Callum McColl. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,24 +58,26 @@
 
 import Attributes
 
-public struct AttributeGroup: Hashable, Codable {
+extension Path where Value == State {
     
-    public var name: String
+    var name: Path<Root, String> {
+        return Path<Root, String>(path: path.appending(path: \.name), ancestors: fullPath)
+    }
     
-    public var variables: VariableList?
+    var actions: Path<Root, [String: Code]> {
+        return Path<Root, [String: Code]>(path: path.appending(path: \.actions), ancestors: fullPath)
+    }
     
-    public var fields: [String: AttributeType]
+    var variables: Path<Root, [VariableList]> {
+        return Path<Root, [VariableList]>(path: path.appending(path: \.variables), ancestors: fullPath)
+    }
     
-    public var attributes: [String: Attribute]
+    var attributes: Path<Root, [AttributeGroup]> {
+        return Path<Root, [AttributeGroup]>(path: path.appending(path: \.attributes), ancestors: fullPath)
+    }
     
-    public var metaData: [String: Attribute]
-    
-    public init(name: String, variables: VariableList? = nil, fields: [String: AttributeType] = [:], attributes: [String: Attribute] = [:], metaData: [String: Attribute] = [:]) {
-        self.name = name
-        self.variables = variables
-        self.fields = fields
-        self.attributes = attributes
-        self.metaData = metaData
+    var metaData: Path<Root, [AttributeGroup]> {
+        return Path<Root, [AttributeGroup]>(path: path.appending(path: \.metaData), ancestors: fullPath)
     }
     
 }

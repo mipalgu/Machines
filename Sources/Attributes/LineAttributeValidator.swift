@@ -1,8 +1,8 @@
 /*
- * AttributeGroup.swift
+ * LineAttributeValidator.swift
  * Machines
  *
- * Created by Callum McColl on 29/10/20.
+ * Created by Callum McColl on 3/11/20.
  * Copyright © 2020 Callum McColl. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,26 +56,14 @@
  *
  */
 
-import Attributes
-
-public struct AttributeGroup: Hashable, Codable {
+public struct LineAttributeValidator {
     
-    public var name: String
+    public let path: [String]
     
-    public var variables: VariableList?
-    
-    public var fields: [String: AttributeType]
-    
-    public var attributes: [String: Attribute]
-    
-    public var metaData: [String: Attribute]
-    
-    public init(name: String, variables: VariableList? = nil, fields: [String: AttributeType] = [:], attributes: [String: Attribute] = [:], metaData: [String: Attribute] = [:]) {
-        self.name = name
-        self.variables = variables
-        self.fields = fields
-        self.attributes = attributes
-        self.metaData = metaData
+    public func validate(_ attribute: Attribute) throws {
+        
+        
+        
     }
     
 }

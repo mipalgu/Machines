@@ -10,11 +10,13 @@ import VHDLMachines
 extension Machine: VHDLMachinesConvertible {
     
     public init(from vhdlMachine: VHDLMachines.ParentMachine) {
-        self = createMachine(vhdlMachine: vhdlMachine)
+        fatalError("Not yet implemented")
+        //self = createMachine(vhdlMachine: vhdlMachine)
     }
     
     fileprivate func createMachine(vhdlMachine: VHDLMachines.ParentMachine) -> Machine {
-        Machine(
+        fatalError("Not Yet Implemented")
+        /*self.init(
             semantics: .vhdl,
             name: vhdlMachine.parent.name,
             filePath: vhdlMachine.parent.path,
@@ -30,11 +32,11 @@ extension Machine: VHDLMachinesConvertible {
             ],
             attributes: [],
             metaData: []
-        )
+        )*/
     }
     
     public func vhdlMachine() throws -> VHDLMachines.ParentMachine {
-        VHDLMachines.ParentMachine(
+        /*VHDLMachines.ParentMachine(
             parent: VHDLMachines.Machine(
                 name: self.name,
                 path: self.filePath,
@@ -50,11 +52,13 @@ extension Machine: VHDLMachinesConvertible {
             ),
             children: <#[String : Machine]#>,
             links: <#[String : [String : [Variable]]]#>
-        )
+        )*/
+        throw ConversionError(message: "Not Yet Implemented")
     }
     
     fileprivate func vhdlStateToState(vhdl: VHDLMachines.State) -> State {
-        let actionList: [VHDLMachines.Action] = vhdl.ringlet.flatMap {$0}
+        fatalError("Not Yet Implemented")
+        /*let actionList: [VHDLMachines.Action] = vhdl.ringlet.flatMap {$0}
         var actionDict: [String: String] = [:]
         actionList.forEach { actionDict[$0.name] = $0.code }
         return State(
@@ -83,7 +87,7 @@ extension Machine: VHDLMachinesConvertible {
                 )
             ],
             metaData: []
-        )
+        )*/
     }
     
     fileprivate func vhdlTransitionsToTransition(vhdl: [String: [VHDLMachines.Transition]]) -> [Transition] {
@@ -97,18 +101,20 @@ extension Machine: VHDLMachinesConvertible {
     
     
     fileprivate func vhdlVariableToVariable(vhdl: VHDLMachines.VHDLVariable) -> Variable {
-        Variable(label: joinStrings(lhs: vhdl.signalType, rhs: vhdl.name), type: vhdl.type, extraFields: ["Default Value": .line(vhdl.initial)])
+        fatalError("Not yet implemented")
+        //Variable(label: joinStrings(lhs: vhdl.signalType, rhs: vhdl.name), type: vhdl.type, extraFields: ["Default Value": .line(vhdl.initial)])
     }
     
     fileprivate func vhdlExternalVariableToVariable(vhdl: VHDLMachines.VHDLExternalVariable) -> Variable {
-        Variable(
+        fatalError("Not yet implemented")
+        /*Variable(
             label: joinStrings(lhs: vhdl.signalType, rhs: vhdl.name),
             type: vhdl.type,
             extraFields: [
                 "Default Value": .line(vhdl.initial),
                 "Mode": .line(vhdl.mode)
             ]
-        )
+        )*/
     }
     
     fileprivate func joinStrings(lhs: String, rhs: String) -> String {

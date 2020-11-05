@@ -1,8 +1,8 @@
 /*
- * AttributeGroup.swift
- * Machines
+ * OptionalPath.swift
+ * Attributes
  *
- * Created by Callum McColl on 29/10/20.
+ * Created by Callum McColl on 4/11/20.
  * Copyright © 2020 Callum McColl. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,26 +56,23 @@
  *
  */
 
-import Attributes
-
-public struct AttributeGroup: Hashable, Codable {
+public struct OptionalPath<Root, Wrapped>: PathProtocol {
     
-    public var name: String
+    public var ancestors: [AnyPath<Root>]
     
-    public var variables: VariableList?
+    public var path: WritableKeyPath<Root, Wrapped?>
     
-    public var fields: [String: AttributeType]
+    public init(path: WritableKeyPath<Root, Wrapped?>, ancestors: [AnyPath<Root>]) {
+        self.ancestors = ancestors
+        self.path = path
+    }
     
-    public var attributes: [String: Attribute]
+    public var wrappedValue: Path<Root, Wrapped> {
+        return Path<Root, Wrapped>(path: path.appending(path: \.self!), ancestors: self.ancestors + [AnyPath(optional: self)])
+    }
     
-    public var metaData: [String: Attribute]
-    
-    public init(name: String, variables: VariableList? = nil, fields: [String: AttributeType] = [:], attributes: [String: Attribute] = [:], metaData: [String: Attribute] = [:]) {
-        self.name = name
-        self.variables = variables
-        self.fields = fields
-        self.attributes = attributes
-        self.metaData = metaData
+    public func hasValue(_ root: Root) -> Bool {
+        return nil != root[keyPath: self.path]
     }
     
 }

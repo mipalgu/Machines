@@ -1,8 +1,8 @@
 /*
- * AttributeGroup.swift
- * Machines
+ * AnyPath.swift
+ * Attributes
  *
- * Created by Callum McColl on 29/10/20.
+ * Created by Callum McColl on 5/11/20.
  * Copyright © 2020 Callum McColl. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,26 +56,40 @@
  *
  */
 
-import Attributes
-
-public struct AttributeGroup: Hashable, Codable {
+public struct AnyPath<Root> {
     
-    public var name: String
+    let _value: (Root) -> Any
     
-    public var variables: VariableList?
+    let _isOptional: () -> Bool
     
-    public var fields: [String: AttributeType]
+    let _isNil: (Root) -> Bool
     
-    public var attributes: [String: Attribute]
+    public var isOptional: Bool {
+        return self._isOptional()
+    }
     
-    public var metaData: [String: Attribute]
+    public init<P: PathProtocol>(_ path: P) where P.Root == Root {
+        self._value = { $0[keyPath: path.path] as Any }
+        self._isOptional = { false }
+        self._isNil = { root in (path.ancestors.last?.isNil(root) ?? false) }
+    }
     
-    public init(name: String, variables: VariableList? = nil, fields: [String: AttributeType] = [:], attributes: [String: Attribute] = [:], metaData: [String: Attribute] = [:]) {
-        self.name = name
-        self.variables = variables
-        self.fields = fields
-        self.attributes = attributes
-        self.metaData = metaData
+    public init<P: PathProtocol, V>(optional path: P) where P.Root == Root, P.Value == V? {
+        self._value = { $0[keyPath: path.path] as Any }
+        self._isOptional = { true }
+        self._isNil = { root in (path.ancestors.last?.isNil(root) ?? false) || nil == root[keyPath: path.path] }
+    }
+    
+    public func hasValue(_ root: Root) -> Bool {
+        return !isOptional || (isOptional && !isNil(root))
+    }
+    
+    public func value(_ root: Root) -> Any {
+        return self._value(root)
+    }
+    
+    public func isNil(_ root: Root) -> Bool {
+        return self._isNil(root)
     }
     
 }
