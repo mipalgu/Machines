@@ -10,28 +10,47 @@ import VHDLMachines
 extension Machine: VHDLMachinesConvertible {
     
     public init(from vhdlMachine: VHDLMachines.ParentMachine) {
-        self.init(
+        self = createMachine(vhdlMachine: vhdlMachine)
+    }
+    
+    fileprivate func createMachine(vhdlMachine: VHDLMachines.ParentMachine) -> Machine {
+        Machine(
             semantics: .vhdl,
             name: vhdlMachine.parent.name,
             filePath: vhdlMachine.parent.path,
             initialState: vhdlMachine.parent.initialState.name,
             suspendState: vhdlMachine.parent.suspendedState.name,
-            states: [vhdlStateToState(vhdl: vhdlMachine.parent.initialState)] + [vhdlStateToState(vhdl: vhdlMachine.parent.suspendedState)] + vhdlMachine.parent.otherStates.map{vhdlStateToState(vhdl:$0)},
+            states: [vhdlStateToState(vhdl: vhdlMachine.parent.initialState), vhdlStateToState(vhdl: vhdlMachine.parent.suspendedState)] + vhdlMachine.parent.otherStates.map{vhdlStateToState(vhdl:$0)},
             transitions: vhdlTransitionsToTransition(vhdl: vhdlMachine.parent.transitions),
-            variables:
-                [
-                    VariableList(name: "External Variables", enabled: true, variables: vhdlMachine.parent.externalVariables.values.map {  vhdlExternalVariableToVariable(vhdl: $0)}),
-                    VariableList(name: "Parameters", enabled: true, variables: vhdlMachine.parent.parameters.values.map { vhdlVariableToVariable(vhdl: $0) }),
-                    VariableList(name: "Returned Variables", enabled: true, variables: vhdlMachine.parent.returnableVariables.values.map { vhdlVariableToVariable(vhdl: $0) }),
-                    VariableList(name: "Machine Variables", enabled: true, variables: vhdlMachine.parent.machineVariables.values.map { vhdlVariableToVariable(vhdl: $0) })
-                ],
+            variables: [
+                VariableList(name: "External Variables", enabled: true, variables: vhdlMachine.parent.externalVariables.values.map {  vhdlExternalVariableToVariable(vhdl: $0)}),
+                VariableList(name: "Parameters", enabled: true, variables: vhdlMachine.parent.parameters.values.map { vhdlVariableToVariable(vhdl: $0) }),
+                VariableList(name: "Returned Variables", enabled: true, variables: vhdlMachine.parent.returnableVariables.values.map { vhdlVariableToVariable(vhdl: $0) }),
+                VariableList(name: "Machine Variables", enabled: true, variables: vhdlMachine.parent.machineVariables.values.map { vhdlVariableToVariable(vhdl: $0) })
+            ],
             attributes: [],
             metaData: []
         )
     }
     
     public func vhdlMachine() throws -> VHDLMachines.ParentMachine {
-        <#code#>
+        VHDLMachines.ParentMachine(
+            parent: VHDLMachines.Machine(
+                name: self.name,
+                path: self.filePath,
+                initialState: VHDLMachines.State(ringlet: [[Action]], variables: [Variable]),
+                suspendedState: <#State#>,
+                otherStates: <#[State]#>,
+                transitions: <#[String : [Transition]]#>,
+                externalVariables: <#[String : VHDLExternalVariable]#>,
+                parameters: <#[String : Parameter]#>,
+                returnableVariables: <#[String : ReturnableVariable]#>,
+                machineVariables: <#[String : VHDLVariable]#>,
+                includes: <#String#>
+            ),
+            children: <#[String : Machine]#>,
+            links: <#[String : [String : [Variable]]]#>
+        )
     }
     
     fileprivate func vhdlStateToState(vhdl: VHDLMachines.State) -> State {
@@ -41,8 +60,28 @@ extension Machine: VHDLMachinesConvertible {
         return State(
             name: vhdl.name,
             actions: actionDict,
-            variables: [VariableList(name: "State Variables", enabled: vhdl.variables.count > 0, variables: vhdl.variables.map { vhdlVariableToVariable(vhdl: $0) })],
-            attributes: [],
+            variables: [VariableList(
+                name: "State Variables",
+                enabled: vhdl.variables.count > 0,
+                variables: vhdl.variables.map { vhdlVariableToVariable(vhdl: $0) }
+            )],
+            attributes: [
+                AttributeGroup(
+                    name: "Action Execution Order",
+                    variables: VariableList(
+                        name: "Actions",
+                        enabled: true,
+                        variables: vhdl.ringlet.map {
+                            Variable(
+                                label: $0.reduce("") { joinStrings(lhs: $0, rhs: $1.name) },
+                                type: ""
+                            )
+                        }),
+                    fields: ["Action Execution Order": .block],
+                    attributes: <#T##[String : Attribute]#>,
+                    metaData: <#T##[String : Attribute]#>
+                )
+            ],
             metaData: []
         )
     }
