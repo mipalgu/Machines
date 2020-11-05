@@ -62,15 +62,15 @@ public struct Transition: Hashable, Codable {
     
     public var condition: Expression?
     
-    public var source: String?
+    public var source: StateName?
     
-    public var target: String?
+    public var target: StateName?
     
     public var attributes: [AttributeGroup]
     
     public var metaData: [AttributeGroup]
     
-    public init(condition: Code? = nil, source: String? = nil, target: String? = nil, attributes: [AttributeGroup] = [], metaData: [AttributeGroup] = []) {
+    public init(condition: Code? = nil, source: StateName? = nil, target: StateName? = nil, attributes: [AttributeGroup] = [], metaData: [AttributeGroup] = []) {
         self.condition = condition
         self.source = source
         self.target = target

@@ -60,8 +60,8 @@ import Attributes
 
 extension Path where Value == State {
     
-    var name: Path<Root, String> {
-        return Path<Root, String>(path: path.appending(path: \.name), ancestors: fullPath)
+    var name: Path<Root, StateName> {
+        return Path<Root, StateName>(path: path.appending(path: \.name), ancestors: fullPath)
     }
     
     var actions: Path<Root, [String: Code]> {

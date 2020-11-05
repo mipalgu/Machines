@@ -60,7 +60,7 @@ import Foundation
 
 extension Path where Value: MutableCollection, Value.Index: Hashable {
     
-    subscript(position: Value.Index) -> Path<Root, Value.Element> {
+    public subscript(position: Value.Index) -> Path<Root, Value.Element> {
         return Path<Root, Value.Element>(path: path.appending(path: \.[position]), ancestors: fullPath)
     }
     
