@@ -66,3 +66,11 @@ public protocol PathProtocol: Hashable {
     var path: WritableKeyPath<Root, Value> { get }
     
 }
+
+extension PathProtocol {
+    
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        return lhs.path == rhs.path
+    }
+    
+}
