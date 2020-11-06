@@ -104,6 +104,74 @@ extension PathValidator where Value: Hashable {
     
 }
 
+extension PathValidator where Value: Equatable {
+    
+    public func equal(to value: Value) -> Self {
+        return push {
+            if $0 != value {
+                
+            }
+        }
+    }
+    
+}
+
+extension PathValidator where Value == Bool {
+    
+    public func equalsFalse() -> Self {
+        return self.equal(to: false)
+    }
+    
+    public func equalsTrue() -> Self {
+        return self.equal(to: true)
+    }
+    
+}
+
+extension PathValidator where Value: Comparable {
+    
+    public func between(min: Value, max: Value) -> Self {
+        return push {
+            if $0 < min || $0 > max {
+                
+            }
+        }
+    }
+    
+    public func lessThan(_ value: Value) -> Self {
+        return push {
+            if $0 >= value {
+                
+            }
+        }
+    }
+    
+    public func lessThanEqual(_ value: Value) -> Self {
+        return push {
+            if $0 > value {
+                
+            }
+        }
+    }
+    
+    public func greaterThan(_ value: Value) -> Self {
+        return push {
+            if $0 <= value {
+                
+            }
+        }
+    }
+    
+    public func greaterThanEqual(_ value: Value) -> Self {
+        return push {
+            if $0 < value {
+                
+            }
+        }
+    }
+    
+}
+
 extension PathValidator where Value: Collection {
     
     public func minLength(_ length: Int) -> Self {
@@ -117,6 +185,34 @@ extension PathValidator where Value: Collection {
     public func maxLength(_ length: Int) -> Self {
         return push {
             if $0.count > length {
+                
+            }
+        }
+    }
+    
+}
+
+extension PathValidator where Value: StringProtocol {
+    
+    public func alpha() -> Self {
+        return push {
+            if nil != $0.first(where: { !$0.isLetter }) {
+                
+            }
+        }
+    }
+    
+    public func alphadash() -> Self {
+        return push {
+            if nil != $0.first(where: { !$0.isLetter && !$0.isNumber && $0 != "_" && $0 != "-" }) {
+                
+            }
+        }
+    }
+    
+    public func alphanumeric() -> Self {
+        return push {
+            if nil != $0.first(where: { !$0.isLetter && !$0.isNumber }) {
                 
             }
         }
