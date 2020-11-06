@@ -1,8 +1,8 @@
 /*
- * AnyPath.swift
+ * ValidatorProtocol.swift
  * Attributes
  *
- * Created by Callum McColl on 5/11/20.
+ * Created by Callum McColl on 6/11/20.
  * Copyright © 2020 Callum McColl. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,69 +56,10 @@
  *
  */
 
-public struct AnyPath<Root> {
+public protocol ValidatorProtocol {
     
-    fileprivate let ancestors: [AnyPath<Root>]
+    associatedtype Root
     
-    fileprivate let partialKeyPath: PartialKeyPath<Root>
-    
-    public let isOptional: Bool
-    
-    let _value: (Root) -> Any
-    
-    let _isNil: (Root) -> Bool
-    
-    private init<P: PathProtocol>(_ path: P, isOptional: Bool, isNil: @escaping (Root) -> Bool) where P.Root == Root {
-        self.ancestors = path.ancestors
-        self.partialKeyPath = path.path
-        self._value = { $0[keyPath: path.path] as Any }
-        self.isOptional = isOptional || (path.ancestors.last?.isOptional ?? false)
-        self._isNil = { root in (path.ancestors.last?.isNil(root) ?? false) || isNil(root) }
-    }
-    
-    public init<P: PathProtocol>(_ path: P) where P.Root == Root {
-        self.init(path, isOptional: false, isNil: { _ in false })
-    }
-    
-    public init<P: PathProtocol, V>(optional path: P) where P.Root == Root, P.Value == V? {
-        self.init(path, isOptional: true, isNil: { nil == $0[keyPath: path.path] })
-    }
-    
-    public func hasValue(_ root: Root) -> Bool {
-        return !isOptional || !isNil(root)
-    }
-    
-    public func value(_ root: Root) -> Any {
-        return self._value(root)
-    }
-    
-    public func isNil(_ root: Root) -> Bool {
-        return self._isNil(root)
-    }
-    
-}
-
-extension AnyPath: Equatable {
-    
-    public static func == <Root>(lhs: AnyPath<Root>, rhs: AnyPath<Root>) -> Bool {
-        lhs.partialKeyPath == rhs.partialKeyPath
-    }
-    
-}
-
-extension AnyPath: Hashable {
-    
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(self.ancestors)
-        hasher.combine(self.partialKeyPath)
-    }
-    
-}
-
-extension AnyPath: CustomStringConvertible {
-    
-    public var description: String {
-        return "\(self.partialKeyPath)"
-    }
+    func validate(_ root: Root) throws
     
 }

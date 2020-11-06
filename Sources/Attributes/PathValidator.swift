@@ -81,7 +81,7 @@ extension _Push {
 
 internal typealias _PathValidator = _Push & PathValidator
 
-public protocol PathValidator {
+public protocol PathValidator: ValidatorProtocol {
     
     associatedtype Root
     associatedtype Value
@@ -91,8 +91,6 @@ public protocol PathValidator {
     init(path: AnyPath<Root>)
     
     func push(_ f: @escaping (Value) throws -> Void) -> Self
-    
-    func validate(_ root: Root) throws
     
 }
 
@@ -185,6 +183,14 @@ extension PathValidator where Value: Comparable {
 }
 
 extension PathValidator where Value: Collection {
+    
+    public func length(_ length: Int) -> Self {
+        return push {
+            if $0.count != length {
+                throw ValidationError(message: "Must have exactly \(length) elements.", path: path)
+            }
+        }
+    }
     
     public func minLength(_ length: Int) -> Self {
         return push {

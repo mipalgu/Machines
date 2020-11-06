@@ -67,7 +67,7 @@ public struct ValidationError<Root>: Error {
 extension ValidationError: CustomStringConvertible {
     
     public var description: String {
-        return self.message
+        return "\(self.path) " + self.message
     }
     
 }

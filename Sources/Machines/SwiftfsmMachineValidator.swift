@@ -69,7 +69,7 @@ struct SwiftfsmMachineValidator: MachineValidator {
     }
     
     private func validator(for swiftMachine: Machine) -> AnyValidator<Machine> {
-        return AnyValidator([
+        return [
             AnyValidator(
                 Machine.path.name.validator
                     .alphadash()
@@ -80,9 +80,17 @@ struct SwiftfsmMachineValidator: MachineValidator {
                     .maxLength(128)),
             AnyValidator(
                 Machine.path.states.each {
-                    $0.name.validator
-                }(swiftMachine))
-        ])
+                    [
+                        AnyValidator($0.name.validator
+                            .alphadash()
+                            .minLength(1)
+                            .maxLength(64))
+                    ]
+                }(swiftMachine)),
+            AnyValidator(Machine.path.attributes.validator.length(2)),
+            AnyValidator(Machine.path.attributes[0].name.validator.equals("ringlet")),
+            AnyValidator(Machine.path.attributes[1].name.validator.equals("module_dependencies"))
+        ]
     }
     
 }

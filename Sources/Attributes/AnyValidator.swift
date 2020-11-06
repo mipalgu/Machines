@@ -56,11 +56,11 @@
  *
  */
 
-public struct AnyValidator<Root> {
+public struct AnyValidator<Root>: ValidatorProtocol {
     
     private let _validate: (Root) throws -> Void
     
-    public init<V: PathValidator>(_ validator: V) where V.Root == Root {
+    public init<V: ValidatorProtocol>(_ validator: V) where V.Root == Root {
         self._validate = { try validator.validate($0) }
     }
     
@@ -72,12 +72,23 @@ public struct AnyValidator<Root> {
         self._validate = { root in try validators.forEach { try $0.validate(root) } }
     }
     
-    public init<S: Sequence, V: PathValidator>(_ validators: S) where S.Element == V, V.Root == Root {
+    public init<S: Sequence, V: ValidatorProtocol>(_ validators: S) where S.Element == V, V.Root == Root {
         self._validate = { root in try validators.forEach { try $0.validate(root) } }
     }
     
     public func validate(_ root: Root) throws {
         return try self._validate(root)
+    }
+    
+}
+
+extension AnyValidator: ExpressibleByArrayLiteral {
+    
+    public typealias ArrayLiteralElement = AnyValidator<Root>
+    
+    
+    public init(arrayLiteral validators: ArrayLiteralElement...) {
+        self._validate = { root in try validators.forEach { try $0.validate(root) } }
     }
     
 }
