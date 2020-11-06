@@ -105,3 +105,12 @@ extension AnyPath: Equatable {
     }
     
 }
+
+extension AnyPath: Hashable {
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(self.ancestors)
+        hasher.combine(self.partialKeyPath)
+    }
+    
+}
