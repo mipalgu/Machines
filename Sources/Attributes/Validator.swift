@@ -58,7 +58,7 @@
 
 public struct Validator<Root, Value>: _PathValidator {
     
-    internal let path: AnyPath<Root>
+    public let path: AnyPath<Root>
     
     internal let _validate: (Value) throws -> Void
     
