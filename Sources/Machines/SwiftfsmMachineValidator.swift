@@ -56,13 +56,33 @@
  *
  */
 
+import Attributes
+
 struct SwiftfsmMachineValidator: MachineValidator {
     
-    func validate(machine: Machine) throws -> Machine {
+    func validate(machine: Machine) throws {
         if machine.semantics != .swiftfsm {
             throw ValidationError.unsupportedSemantics(machine.semantics)
         }
-        throw ConversionError(message: "Not Yet Implemented")
+        let validator = self.validator(for: machine)
+        try validator.validate(machine)
+    }
+    
+    private func validator(for swiftMachine: Machine) -> AnyValidator<Machine> {
+        return AnyValidator([
+            AnyValidator(
+                Machine.path.name.validator
+                    .alphadash()
+                    .minLength(1)
+                    .maxLength(64)),
+            AnyValidator(
+                Machine.path.states.validator
+                    .maxLength(128)),
+            AnyValidator(
+                Machine.path.states.each {
+                    $0.name.validator
+                }(swiftMachine))
+        ])
     }
     
 }

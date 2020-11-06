@@ -341,7 +341,7 @@ struct SwiftfsmConverter: Converter, MachineValidator {
     }
     
     func convert(_ machine: Machine) throws -> SwiftMachines.Machine {
-        let machine = try self.validator.validate(machine: machine)
+        try self.validator.validate(machine: machine)
         guard let ringletGroup = machine.attributes.first(where: { $0.name == "ringlet" }) else {
             throw ConversionError(message: "Missing ringlet group in attributes")
         }
@@ -533,8 +533,8 @@ struct SwiftfsmConverter: Converter, MachineValidator {
         return Variable(label: label, type: type, extraFields: variable.extraFields)
     }
     
-    func validate(machine: Machine) throws -> Machine {
-        return try self.validator.validate(machine: machine)
+    func validate(machine: Machine) throws {
+        try self.validator.validate(machine: machine)
     }
     
 }

@@ -64,6 +64,17 @@ public struct AnyValidator<Root> {
         self._validate = { try validator.validate($0) }
     }
     
+    public init(_ validator: AnyValidator<Root>) {
+        self = validator
+    }
+    
+    public init<S: Sequence>(_ validators: S) where S.Element == AnyValidator<Root> {
+        self._validate = { root in try validators.forEach { try $0.validate(root) } }
+    }
+    
+    public init<S: Sequence, V: PathValidator>(_ validators: S) where S.Element == V, V.Root == Root {
+        self._validate = { root in try validators.forEach { try $0.validate(root) } }
+    }
     
     public func validate(_ root: Root) throws {
         return try self._validate(root)

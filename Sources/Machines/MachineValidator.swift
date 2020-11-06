@@ -58,6 +58,6 @@
 
 protocol MachineValidator {
     
-    func validate(machine: Machine) throws -> Machine
+    func validate(machine: Machine) throws
     
 }

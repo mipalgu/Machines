@@ -69,6 +69,14 @@ public protocol PathProtocol: Hashable {
 
 extension PathProtocol {
     
+    public var validator: Validator<Root, Value> {
+        return Validator(path: AnyPath(self))
+    }
+    
+}
+
+extension PathProtocol {
+    
     public static func == (lhs: Self, rhs: Self) -> Bool {
         return lhs.path == rhs.path
     }

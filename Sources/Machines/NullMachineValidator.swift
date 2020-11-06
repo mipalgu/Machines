@@ -58,8 +58,6 @@
 
 struct NullMachineValidator: MachineValidator {
     
-    func validate(machine: Machine) throws -> Machine {
-        return machine
-    }
+    func validate(machine _: Machine) throws {}
     
 }

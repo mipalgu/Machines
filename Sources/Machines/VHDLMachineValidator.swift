@@ -7,7 +7,7 @@
 
 struct VHDLMachineValidator: MachineValidator {
     
-    func validate(machine: Machine) throws -> Machine {
+    func validate(machine: Machine) throws {
         if machine.semantics != .vhdl {
             throw ValidationError.unsupportedSemantics(machine.semantics)
         }

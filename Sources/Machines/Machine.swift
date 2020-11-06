@@ -211,7 +211,7 @@ public struct Machine: Hashable, Codable {
 
 extension Machine {
     
-    public var path: Path<Machine, Machine> {
+    public static var path: Path<Machine, Machine> {
         return Path<Machine, Machine>(path: \Machine.self, ancestors: [])
     }
     
@@ -226,10 +226,10 @@ extension Machine {
         }
     }
     
-    public mutating func validate() throws {
+    public func validate() throws {
         switch self.semantics {
         case .swiftfsm:
-            self = try SwiftfsmMachineValidator().validate(machine: self)
+            try SwiftfsmMachineValidator().validate(machine: self)
         default:
             return
         }

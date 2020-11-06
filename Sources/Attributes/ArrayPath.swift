@@ -64,4 +64,12 @@ extension Path where Value: MutableCollection, Value.Index: Hashable {
         return Path<Root, Value.Element>(path: path.appending(path: \.[position]), ancestors: fullPath)
     }
     
+    public func each<T>(_ f: @escaping (Path<Root, Value.Element>) -> T) -> (Root) -> [T] {
+        return { root in
+            root[keyPath: self.path].indices.map {
+                return f(self[$0])
+            }
+        }
+    }
+    
 }
