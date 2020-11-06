@@ -9,7 +9,7 @@ final class MachinesTests: XCTestCase {
     
     func test_encoder() {
         let encoder = XMIEncoder()
-        let swiftMachine: Machine = .createSwiftMachine("Test", atPath: URL(fileURLWithPath: "test"))
+        let swiftMachine = Machine.initialSwiftMachine
         guard let data = try? encoder.encode(swiftMachine) else {
             XCTFail("Unable to encode swift machine")
             return
@@ -20,4 +20,14 @@ final class MachinesTests: XCTestCase {
         }
         print(str)
     }
+    
+    func test_validation() {
+        let machine = Machine.initialSwiftMachine
+        do {
+            try machine.validate()
+        } catch let e {
+            XCTFail("Failed to validate: \(e)")
+        }
+    }
+    
 }
