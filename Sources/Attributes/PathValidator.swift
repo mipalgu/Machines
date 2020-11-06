@@ -92,6 +92,8 @@ public protocol PathValidator {
     
     func push(_ f: @escaping (Value) throws -> Void) -> Self
     
+    func validate(_ root: Root) throws
+    
 }
 
 extension PathValidator where Value: Hashable {
