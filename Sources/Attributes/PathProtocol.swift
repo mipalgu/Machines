@@ -56,7 +56,7 @@
  *
  */
 
-public protocol PathProtocol {
+public protocol PathProtocol: Hashable {
     
     associatedtype Root
     associatedtype Value
