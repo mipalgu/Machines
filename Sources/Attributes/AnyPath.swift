@@ -101,7 +101,7 @@ public struct AnyPath<Root> {
 extension AnyPath: Equatable {
     
     public static func == <Root>(lhs: AnyPath<Root>, rhs: AnyPath<Root>) -> Bool {
-        lhs.ancestors == rhs.ancestors && lhs.partialKeyPath == rhs.partialKeyPath
+        lhs.partialKeyPath == rhs.partialKeyPath
     }
     
 }
