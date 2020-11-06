@@ -1,8 +1,8 @@
 /*
- * ComplexAttributeTypePath.swift
+ * Dictionary.swift
  * Attributes
  *
- * Created by Callum McColl on 4/11/20.
+ * Created by Callum McColl on 6/11/20.
  * Copyright © 2020 Callum McColl. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,4 +56,13 @@
  *
  */
 
-public typealias ComplexAttributeTypePath<Root> = Path<Root, [String: AttributeType]>
+public protocol DictionaryProtocol {
+    
+    associatedtype Key: Hashable
+    associatedtype Value
+    
+    subscript(key: Key) -> Value? { get set }
+    
+}
+
+extension Dictionary: DictionaryProtocol {}
