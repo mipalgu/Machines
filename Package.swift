@@ -43,6 +43,7 @@ let package = Package(
             name: "Machines",
             dependencies: ["swift_helpers", "IO", "Functional", "SwiftMachines", "CXXMachines", "XMI", "VHDLMachines", "Attributes"]
         ),
+        .testTarget(name: "AttributesTests", dependencies: ["Attributes"]),
         .testTarget(
             name: "SwiftMachinesTests",
             dependencies: ["SwiftMachines"]
