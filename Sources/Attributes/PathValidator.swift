@@ -106,9 +106,17 @@ extension PathValidator where Value: Hashable {
 
 extension PathValidator where Value: Equatable {
     
-    public func equal(to value: Value) -> Self {
+    public func equals(_ value: Value) -> Self {
         return push {
             if $0 != value {
+                
+            }
+        }
+    }
+    
+    public func notEquals(_ value: Value) -> Self {
+        return push {
+            if $0 == value {
                 
             }
         }
@@ -119,11 +127,11 @@ extension PathValidator where Value: Equatable {
 extension PathValidator where Value == Bool {
     
     public func equalsFalse() -> Self {
-        return self.equal(to: false)
+        return self.equals(false)
     }
     
     public func equalsTrue() -> Self {
-        return self.equal(to: true)
+        return self.equals(true)
     }
     
 }
@@ -190,6 +198,18 @@ extension PathValidator where Value: Collection {
         }
     }
     
+    public func each(_ f: @escaping (Value.Element) throws -> Void) -> Self {
+        return push {
+            try $0.forEach(f)
+        }
+    }
+    
+    public func each(_ f: @escaping (Value.Element) throws -> Void, where filter: @escaping (Value.Element) -> Bool) -> Self {
+        return push {
+            try $0.filter(filter).forEach(f)
+        }
+    }
+    
 }
 
 extension PathValidator where Value: StringProtocol {
@@ -213,6 +233,14 @@ extension PathValidator where Value: StringProtocol {
     public func alphanumeric() -> Self {
         return push {
             if nil != $0.first(where: { !$0.isLetter && !$0.isNumber }) {
+                
+            }
+        }
+    }
+    
+    public func numeric() -> Self {
+        return push {
+            if nil != $0.first(where: { !$0.isNumber }) {
                 
             }
         }

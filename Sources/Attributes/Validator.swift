@@ -1,5 +1,5 @@
 /*
- * StringValidator.swift
+ * Validator.swift
  * Machines
  *
  * Created by Callum McColl on 6/11/20.
@@ -56,17 +56,17 @@
  *
  */
 
-public struct StringValidator<Root>: _PathValidator {
+public struct Validator<Root, Value>: _PathValidator {
     
     internal let path: AnyPath<Root>
     
-    internal let _validate: (String) throws -> Void
+    internal let _validate: (Value) throws -> Void
     
     public init(path: AnyPath<Root>) {
         self.init(path) { _ in }
     }
     
-    internal init(_ path: AnyPath<Root>, _validate: @escaping (String) throws -> Void) {
+    internal init(_ path: AnyPath<Root>, _validate: @escaping (Value) throws -> Void) {
         self.path = path
         self._validate = _validate
     }
@@ -75,25 +75,10 @@ public struct StringValidator<Root>: _PathValidator {
         if !path.hasValue(root) {
             return
         }
-        guard let value = path.value(root) as? String else {
+        guard let value = path.value(root) as? Value else {
             return
         }
         _ = try self._validate(value)
-    }
-    
-    public func minLength(_ length: Int) -> StringValidator<Root> {
-        return push {
-            if $0.count < length {
-            }
-        }
-    }
-    
-    public func maxLength(_ length: Int) -> StringValidator<Root> {
-        return push {
-            if $0.count > length {
-                
-            }
-        }
     }
     
 }
