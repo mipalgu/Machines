@@ -56,7 +56,7 @@
  *
  */
 
-protocol Converter: Hashable, Codable {
+protocol Converter {
     
     associatedtype ConcreteMachine
     

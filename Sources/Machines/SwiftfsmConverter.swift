@@ -60,7 +60,9 @@ import Attributes
 import SwiftMachines
 import Foundation
 
-struct SwiftfsmConverter: Converter {
+struct SwiftfsmConverter: Converter, MachineValidator {
+    
+    private let validator = SwiftfsmMachineValidator()
     
     var initial: Machine {
         let swiftMachine = SwiftMachines.Machine(
@@ -339,7 +341,7 @@ struct SwiftfsmConverter: Converter {
     }
     
     func convert(_ machine: Machine) throws -> SwiftMachines.Machine {
-        let machine = try SwiftfsmMachineValidator().validate(machine: machine)
+        let machine = try self.validator.validate(machine: machine)
         guard let ringletGroup = machine.attributes.first(where: { $0.name == "ringlet" }) else {
             throw ConversionError(message: "Missing ringlet group in attributes")
         }
@@ -529,6 +531,10 @@ struct SwiftfsmConverter: Converter {
             throw ConversionError(message: "The type of the variable must not be empty")
         }
         return Variable(label: label, type: type, extraFields: variable.extraFields)
+    }
+    
+    func validate(machine: Machine) throws -> Machine {
+        return try self.validator.validate(machine: machine)
     }
     
 }
