@@ -60,13 +60,13 @@ public struct Validator<Root, Value>: _PathValidator {
     
     public let path: AnyPath<Root>
     
-    internal let _validate: (Value) throws -> Void
+    internal let _validate: (Root, Value) throws -> Void
     
     public init(path: AnyPath<Root>) {
-        self.init(path) { _ in }
+        self.init(path) { (_, _) in }
     }
     
-    internal init(_ path: AnyPath<Root>, _validate: @escaping (Value) throws -> Void) {
+    internal init(_ path: AnyPath<Root>, _validate: @escaping (Root, Value) throws -> Void) {
         self.path = path
         self._validate = _validate
     }
@@ -78,7 +78,7 @@ public struct Validator<Root, Value>: _PathValidator {
         guard let value = path.value(root) as? Value else {
             return
         }
-        _ = try self._validate(value)
+        _ = try self._validate(root, value)
     }
     
 }

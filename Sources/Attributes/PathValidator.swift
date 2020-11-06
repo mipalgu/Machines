@@ -62,18 +62,18 @@ internal protocol _Push {
     associatedtype _Value
     
     var path: AnyPath<_Root> { get }
-    var _validate: (_Value) throws -> Void { get }
+    var _validate: (_Root, _Value) throws -> Void { get }
     
-    init(_ path: AnyPath<_Root>, _validate: @escaping (_Value) throws -> Void)
+    init(_ path: AnyPath<_Root>, _validate: @escaping (_Root, _Value) throws -> Void)
     
 }
 
 extension _Push {
     
-    public func push(_ f: @escaping (_Value) throws -> Void) -> Self {
+    public func push(_ f: @escaping (_Root, _Value) throws -> Void) -> Self {
         return Self(self.path) {
-            try self._validate($0)
-            try f($0)
+            try self._validate($0, $1)
+            try f($0, $1)
         }
     }
     
@@ -90,15 +90,23 @@ public protocol PathValidator: ValidatorProtocol {
     
     init(path: AnyPath<Root>)
     
-    func push(_ f: @escaping (Value) throws -> Void) -> Self
+    func push(_ f: @escaping (Root, Value) throws -> Void) -> Self
     
 }
 
 extension PathValidator where Value: Hashable {
     
+    public func `in`<P: PathProtocol>(_ p: P) -> Self where P.Root == Root, P.Value == Set<Value> {
+        return push {
+            if !$0[keyPath: p.path].contains($1) {
+                throw ValidationError(message: "Must equal on of the following: '\(p)'.", path: path)
+            }
+        }
+    }
+    
     public func `in`(_ set: Set<Value>) -> Self {
         return push {
-            if !set.contains($0) {
+            if !set.contains($1) {
                 throw ValidationError(message: "Must equal on of the following: '\(set)'.", path: path)
             }
         }
@@ -110,7 +118,7 @@ extension PathValidator where Value: Equatable {
     
     public func equals(_ value: Value) -> Self {
         return push {
-            if $0 != value {
+            if $1 != value {
                 throw ValidationError(message: "Must equal \(value).", path: path)
             }
         }
@@ -118,7 +126,7 @@ extension PathValidator where Value: Equatable {
     
     public func notEquals(_ value: Value) -> Self {
         return push {
-            if $0 == value {
+            if $1 == value {
                 throw ValidationError(message: "Must not equal \(value).", path: path)
             }
         }
@@ -142,7 +150,7 @@ extension PathValidator where Value: Comparable {
     
     public func between(min: Value, max: Value) -> Self {
         return push {
-            if $0 < min || $0 > max {
+            if $1 < min || $1 > max {
                 throw ValidationError(message: "Must be between \(min) and \(max).", path: path)
             }
         }
@@ -150,7 +158,7 @@ extension PathValidator where Value: Comparable {
     
     public func lessThan(_ value: Value) -> Self {
         return push {
-            if $0 >= value {
+            if $1 >= value {
                 throw ValidationError(message: "Must be less than \(value).", path: path)
             }
         }
@@ -158,7 +166,7 @@ extension PathValidator where Value: Comparable {
     
     public func lessThanEqual(_ value: Value) -> Self {
         return push {
-            if $0 > value {
+            if $1 > value {
                 throw ValidationError(message: "Must be less than or equal to \(value).", path: path)
             }
         }
@@ -166,7 +174,7 @@ extension PathValidator where Value: Comparable {
     
     public func greaterThan(_ value: Value) -> Self {
         return push {
-            if $0 <= value {
+            if $1 <= value {
                 throw ValidationError(message: "Must be greater than \(value).", path: path)
             }
         }
@@ -174,7 +182,7 @@ extension PathValidator where Value: Comparable {
     
     public func greaterThanEqual(_ value: Value) -> Self {
         return push {
-            if $0 < value {
+            if $1 < value {
                 throw ValidationError(message: "Must be greater than or equal to \(value).", path: path)
             }
         }
@@ -186,7 +194,7 @@ extension PathValidator where Value: Collection {
     
     public func length(_ length: Int) -> Self {
         return push {
-            if $0.count != length {
+            if $1.count != length {
                 throw ValidationError(message: "Must have exactly \(length) elements.", path: path)
             }
         }
@@ -194,7 +202,7 @@ extension PathValidator where Value: Collection {
     
     public func minLength(_ length: Int) -> Self {
         return push {
-            if $0.count < length {
+            if $1.count < length {
                 throw ValidationError(message: "Must provide at least \(length) values.", path: path)
             }
         }
@@ -202,7 +210,7 @@ extension PathValidator where Value: Collection {
     
     public func maxLength(_ length: Int) -> Self {
         return push {
-            if $0.count > length {
+            if $1.count > length {
                 throw ValidationError(message: "Must provide no more than \(length) values.", path: path)
             }
         }
@@ -210,13 +218,13 @@ extension PathValidator where Value: Collection {
     
     public func each(_ f: @escaping (Value.Element) throws -> Void) -> Self {
         return push {
-            try $0.forEach(f)
+            try $1.forEach(f)
         }
     }
     
     public func each(_ f: @escaping (Value.Element) throws -> Void, where filter: @escaping (Value.Element) -> Bool) -> Self {
         return push {
-            try $0.filter(filter).forEach(f)
+            try $1.filter(filter).forEach(f)
         }
     }
     
@@ -226,7 +234,7 @@ extension PathValidator where Value: Nilable {
     
     public func required() -> Self {
         return push {
-            if $0.isNil {
+            if $1.isNil {
                 throw ValidationError(message: "Required.", path: path)
             }
         }
@@ -238,7 +246,7 @@ extension PathValidator where Value: StringProtocol {
     
     public func alpha() -> Self {
         return push {
-            if nil != $0.first(where: { !$0.isLetter }) {
+            if nil != $1.first(where: { !$0.isLetter }) {
                 throw ValidationError(message: "Must be alphabetic.", path: path)
             }
         }
@@ -246,7 +254,7 @@ extension PathValidator where Value: StringProtocol {
     
     public func alphadash() -> Self {
         return push {
-            if nil != $0.first(where: { !$0.isLetter && !$0.isNumber && $0 != "_" && $0 != "-" }) {
+            if nil != $1.first(where: { !$0.isLetter && !$0.isNumber && $0 != "_" && $0 != "-" }) {
                 throw ValidationError(message: "Must be alphabetic with underscores and dashes allowed.", path: path)
             }
         }
@@ -254,7 +262,7 @@ extension PathValidator where Value: StringProtocol {
     
     public func alphanumeric() -> Self {
         return push {
-            if nil != $0.first(where: { !$0.isLetter && !$0.isNumber }) {
+            if nil != $1.first(where: { !$0.isLetter && !$0.isNumber }) {
                 throw ValidationError(message: "Must be alphanumeric.", path: path)
             }
         }
@@ -262,7 +270,7 @@ extension PathValidator where Value: StringProtocol {
     
     public func numeric() -> Self {
         return push {
-            if nil != $0.first(where: { !$0.isNumber }) {
+            if nil != $1.first(where: { !$0.isNumber }) {
                 throw ValidationError(message: "Must be numeric.", path: path)
             }
         }
