@@ -212,6 +212,26 @@ extension PathValidator where Value: Collection {
     
 }
 
+extension PathValidator where Value: Nilable {
+    
+    public func required() -> Self {
+        return push {
+            if $0.isNil {
+                
+            }
+        }
+    }
+    
+    public func nilable() -> Self {
+        return push {
+            if !$0.isNil {
+                
+            }
+        }
+    }
+    
+}
+
 extension PathValidator where Value: StringProtocol {
     
     public func alpha() -> Self {
