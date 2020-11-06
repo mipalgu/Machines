@@ -60,6 +60,8 @@ import SwiftMachines
 
 public protocol SwiftMachinesConvertible {
     
+    static var initialSwiftMachine: Self { get }
+    
     init(from swiftMachine: SwiftMachines.Machine)
     
     func swiftMachine() throws -> SwiftMachines.Machine

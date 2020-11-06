@@ -1,8 +1,8 @@
 /*
- * Machine+SwiftMachinesConvertible.swift
+ * Converter.swift
  * Machines
  *
- * Created by Callum McColl on 3/11/20.
+ * Created by Callum McColl on 6/11/20.
  * Copyright © 2020 Callum McColl. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,23 +56,14 @@
  *
  */
 
-import Foundation
-import SwiftMachines
-
-extension Machine: SwiftMachinesConvertible {
+protocol Converter: Hashable, Codable {
     
-    public static var initialSwiftMachine: Machine {
-        return SwiftfsmConverter().initial
-    }
+    associatedtype ConcreteMachine
     
-    /// Convert a `SwiftMachines.Machine` to a `Machine`.
-    public init(from swiftMachine: SwiftMachines.Machine) {
-        self = SwiftfsmConverter().metaMachine(of: swiftMachine)
-    }
+    var initial: Machine { get }
     
-    /// Convert the meta model machine to a `SwiftMachines.Machine`.
-    public func swiftMachine() throws -> SwiftMachines.Machine {
-        return try SwiftfsmConverter().convert(self)
-    }
+    func metaMachine(of: ConcreteMachine) -> Machine
+    
+    func convert(_: Machine) throws -> ConcreteMachine
     
 }

@@ -87,25 +87,25 @@ public struct Machine: Hashable, Codable {
     }
     
     /// The underlying semantics which this meta machine follows.
-    public fileprivate(set) var semantics: Semantics
+    public internal(set) var semantics: Semantics
     
     /// The name of the machine.
-    public fileprivate(set) var name: String
+    public internal(set) var name: String
     
     /// The path to the .machine directory on the file system.
-    public fileprivate(set) var filePath: URL
+    public internal(set) var filePath: URL
     
     /// The name of the initial state.
     ///
     /// The name should represent the name of a state within the `states` array.
-    public fileprivate(set) var initialState: StateName
+    public internal(set) var initialState: StateName
     
     /// The name of the suspendState.
     ///
     /// The suspend state is the state that, when it is the current state,
     /// denotes that the machine is suspended. The name of the suspendState
     /// should represent the name of a state within the `states` array.
-    public fileprivate(set) var suspendState: StateName
+    public internal(set) var suspendState: StateName
     
     /// The accepting states of the machine.
     ///
@@ -120,10 +120,10 @@ public struct Machine: Hashable, Codable {
     }
     
     /// All states within the machine.
-    public fileprivate(set) var states: [State]
+    public internal(set) var states: [State]
     
     /// All transitions within the machine --- attached or unattached to states.
-    public fileprivate(set) var transitions: [Transition]
+    public internal(set) var transitions: [Transition]
     
     /// A list of variables denotes by unique names.
     ///
@@ -131,7 +131,7 @@ public struct Machine: Hashable, Codable {
     /// accessed at the machine level --- accessible from any state within the
     /// machine. This includes, for example, external variables, fsm variables
     /// and parameters.
-    public fileprivate(set) var variables: [VariableList]
+    public internal(set) var variables: [VariableList]
     
     /// A list of attributes specifying additional fields that can change.
     ///
@@ -142,7 +142,7 @@ public struct Machine: Hashable, Codable {
     /// (swiftfsm, clfsm for example). Obviously each scheduler has a different
     /// feature set. The features which are not common between schedulers
     /// should be facilitated through this attributes field.
-    public fileprivate(set) var attributes: [AttributeGroup]
+    public internal(set) var attributes: [AttributeGroup]
     
     /// A list of attributes specifying additional fields that do not change.
     ///
@@ -155,7 +155,7 @@ public struct Machine: Hashable, Codable {
     ///
     /// - Attention: If you were to make a GUI using the meta model machines,
     /// then you should simply keep these values the same between modifications.
-    public fileprivate(set) var metaData: [AttributeGroup]
+    public internal(set) var metaData: [AttributeGroup]
     
     /// Create a new `Machine`.
     ///
@@ -212,7 +212,7 @@ public struct Machine: Hashable, Codable {
 extension Machine {
     
     public var path: Path<Machine, Machine> {
-        return Path<Machine, Machine>(path: \.self, ancestors: [])
+        return Path<Machine, Machine>(path: \Machine.self, ancestors: [])
     }
     
     public mutating func modify<Path: PathProtocol>(attribute: Path, value: Path.Value) throws where Path.Root == Machine {

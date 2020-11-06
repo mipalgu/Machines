@@ -1,4 +1,4 @@
-// swift-tools-version:4.0
+// swift-tools-version:5.2
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -29,11 +29,11 @@ let package = Package(
         ),
         .target(
             name: "SwiftMachines",
-            dependencies: ["swift_helpers", "IO"]
+            dependencies: ["swift_helpers", .product(name: "IO", package: "swift_helpers")]
         ),
         .target(
             name: "CXXMachines",
-            dependencies: ["swift_helpers", "Functional"]
+            dependencies: [.product(name: "swift_helpers", package: "swift_helpers"), .product(name: "Functional", package: "swift_helpers")]
         ),
         .target(
             name: "VHDLMachines",
@@ -41,7 +41,7 @@ let package = Package(
         ),
         .target(
             name: "Machines",
-            dependencies: ["swift_helpers", "IO", "Functional", "SwiftMachines", "CXXMachines", "XMI", "VHDLMachines", "Attributes"]
+            dependencies: ["swift_helpers", .product(name: "IO", package: "swift_helpers"), .product(name: "Functional", package: "swift_helpers"), "SwiftMachines", "CXXMachines", "XMI", "VHDLMachines", "Attributes"]
         ),
         .testTarget(name: "AttributesTests", dependencies: ["Attributes"]),
         .testTarget(

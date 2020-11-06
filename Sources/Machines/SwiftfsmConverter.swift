@@ -60,9 +60,65 @@ import Attributes
 import SwiftMachines
 import Foundation
 
-struct SwiftfsmConverter {
+struct SwiftfsmConverter: Converter {
     
-    func metaMachine(_ swiftMachine: SwiftMachines.Machine) -> Machine {
+    var initial: Machine {
+        let swiftMachine = SwiftMachines.Machine(
+            name: "Untitled",
+            filePath: URL(fileURLWithPath: "/tmp/Untitled.machine"),
+            externalVariables: [],
+            packageDependencies: [],
+            swiftIncludeSearchPaths: [],
+            includeSearchPaths: [],
+            libSearchPaths: [],
+            imports: "",
+            includes: nil,
+            vars: [],
+            model: nil,
+            parameters: nil,
+            returnType: nil,
+            initialState: SwiftMachines.State(
+                name: "Initial",
+                imports: "",
+                externalVariables: nil,
+                vars: [],
+                actions: [Action(name: "onEntry", implementation: ""), Action(name: "onExit", implementation: ""), Action(name: "main", implementation: "")],
+                transitions: []
+            ),
+            suspendState: SwiftMachines.State(
+                name: "Suspend",
+                imports: "",
+                externalVariables: nil,
+                vars: [],
+                actions: [Action(name: "onEntry", implementation: ""), Action(name: "onExit", implementation: ""), Action(name: "main", implementation: "")],
+                transitions: []
+            ),
+            states: [
+                SwiftMachines.State(
+                    name: "Initial",
+                    imports: "",
+                    externalVariables: nil,
+                    vars: [],
+                    actions: [Action(name: "onEntry", implementation: ""), Action(name: "onExit", implementation: ""), Action(name: "main", implementation: "")],
+                    transitions: []
+                ),
+                SwiftMachines.State(
+                    name: "Suspend",
+                    imports: "",
+                    externalVariables: nil,
+                    vars: [],
+                    actions: [Action(name: "onEntry", implementation: ""), Action(name: "onExit", implementation: ""), Action(name: "main", implementation: "")],
+                    transitions: []
+                )
+            ],
+            submachines: [],
+            callableMachines: [],
+            invocableMachines: []
+        )
+        return metaMachine(of: swiftMachine)
+    }
+    
+    func metaMachine(of swiftMachine: SwiftMachines.Machine) -> Machine {
         var attributes: [AttributeGroup] = []
         if let model = swiftMachine.model {
             let group = AttributeGroup(
@@ -282,7 +338,7 @@ struct SwiftfsmConverter {
         )
     }
     
-    func swiftMachine(_ machine: Machine) throws -> SwiftMachines.Machine {
+    func convert(_ machine: Machine) throws -> SwiftMachines.Machine {
         let machine = try SwiftfsmMachineValidator().validate(machine: machine)
         guard let ringletGroup = machine.attributes.first(where: { $0.name == "ringlet" }) else {
             throw ConversionError(message: "Missing ringlet group in attributes")
