@@ -89,6 +89,14 @@ struct SwiftfsmMachineValidator: MachineValidator {
                 }(swiftMachine)),
             AnyValidator(Machine.path.attributes.validator.length(2)),
             AnyValidator(Machine.path.attributes[0].name.validator.equals("ringlet")),
+            AnyValidator(Machine.path.attributes[0].attributes["use_custom_ringlet"].validator.required()),
+            AnyValidator(Machine.path.attributes[0].attributes["use_custom_ringlet"].validator
+                .if({ $0?.boolValue ?? false }, then: [
+                    AnyValidator(Machine.path.attributes[0].variables.validator.required()),
+                    AnyValidator(Machine.path.attributes[0].variables.wrappedValue.name.validator.equals("ringlet_variables")),
+                    AnyValidator(Machine.path.attributes[0].variables.wrappedValue.enabled.validator.equalsTrue()),
+                    
+                ])),
             AnyValidator(Machine.path.attributes[1].name.validator.equals("module_dependencies"))
         ]
     }

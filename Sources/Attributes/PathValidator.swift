@@ -94,6 +94,18 @@ public protocol PathValidator: ValidatorProtocol {
     
 }
 
+extension PathValidator {
+    
+    public func `if`(_ condition: @escaping (Value) -> Bool, then validator: AnyValidator<Root>) -> Self {
+        return push {
+            if condition($1) {
+                return try validator.validate($0)
+            }
+        }
+    }
+    
+}
+
 extension PathValidator where Value: Hashable {
     
     public func `in`<P: PathProtocol>(_ p: P) -> Self where P.Root == Root, P.Value == Set<Value> {
@@ -215,6 +227,12 @@ extension PathValidator where Value: Collection {
             }
         }
     }
+    
+//    public func each(_ f: @escaping (Validator<Root, Value.Element>) throws -> Void) -> Self {
+//        return push {
+//            AnyValidator(Validator(, _validate: <#T##(_, _) throws -> Void#>))
+//        }
+//    }
     
     public func each(_ f: @escaping (Value.Element) throws -> Void) -> Self {
         return push {
