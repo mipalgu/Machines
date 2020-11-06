@@ -58,30 +58,34 @@
 
 public struct AnyPath<Root> {
     
-    let _value: (Root) -> Any
+    fileprivate let ancestors: [AnyPath<Root>]
     
-    let _isOptional: () -> Bool
+    fileprivate let partialKeyPath: PartialKeyPath<Root>
+    
+    public let isOptional: Bool
+    
+    let _value: (Root) -> Any
     
     let _isNil: (Root) -> Bool
     
-    public var isOptional: Bool {
-        return self._isOptional()
+    private init<P: PathProtocol>(_ path: P, isOptional: Bool, isNil: @escaping (Root) -> Bool) where P.Root == Root {
+        self.ancestors = path.ancestors
+        self.partialKeyPath = path.path
+        self._value = { $0[keyPath: path.path] as Any }
+        self.isOptional = isOptional || (path.ancestors.last?.isOptional ?? false)
+        self._isNil = { root in (path.ancestors.last?.isNil(root) ?? false) || isNil(root) }
     }
     
     public init<P: PathProtocol>(_ path: P) where P.Root == Root {
-        self._value = { $0[keyPath: path.path] as Any }
-        self._isOptional = { false }
-        self._isNil = { root in (path.ancestors.last?.isNil(root) ?? false) }
+        self.init(path, isOptional: false, isNil: { _ in false })
     }
     
     public init<P: PathProtocol, V>(optional path: P) where P.Root == Root, P.Value == V? {
-        self._value = { $0[keyPath: path.path] as Any }
-        self._isOptional = { true }
-        self._isNil = { root in (path.ancestors.last?.isNil(root) ?? false) || nil == root[keyPath: path.path] }
+        self.init(path, isOptional: true, isNil: { nil == $0[keyPath: path.path] })
     }
     
     public func hasValue(_ root: Root) -> Bool {
-        return !isOptional || (isOptional && !isNil(root))
+        return !isOptional || !isNil(root)
     }
     
     public func value(_ root: Root) -> Any {
@@ -90,6 +94,14 @@ public struct AnyPath<Root> {
     
     public func isNil(_ root: Root) -> Bool {
         return self._isNil(root)
+    }
+    
+}
+
+extension AnyPath: Equatable {
+    
+    public static func == <Root>(lhs: AnyPath<Root>, rhs: AnyPath<Root>) -> Bool {
+        lhs.ancestors == rhs.ancestors && lhs.partialKeyPath == rhs.partialKeyPath
     }
     
 }
