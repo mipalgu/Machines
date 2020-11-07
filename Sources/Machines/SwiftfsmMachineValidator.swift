@@ -69,7 +69,7 @@ struct SwiftfsmMachineValidator: MachineValidator {
     
     private func validate(_ machine: Machine) throws {
         try machine.validate { (machine: Validator<Path<Machine, Machine>>) in
-            machine.name.alphadash().minLength(1).maxLength(64)
+            machine.name.alphadash().notEmpty().maxLength(64)
             machine.states.maxLength(128).each { state in
                 state.name
                     .alphadash()
@@ -79,10 +79,17 @@ struct SwiftfsmMachineValidator: MachineValidator {
             machine.transitions.maxLength(128).each { transition in
             }
             machine.attributes.length(2).validate { attributes in
-                attributes[0].validate { validator in
-                    validator.name.equals("ringlet")
-                    validator.attributes["use_custom_ringlet"]
+                attributes[0].validate { ringlet in
+                    ringlet.name.equals("ringlet")
+                    ringlet.attributes["use_custom_ringlet"]
                         .required()
+                        .if { $0?.boolValue ?? false }
+                        then: {
+                            //ringlet.variables.required().wrappedValue
+                            ringlet.variables.required().wrappedValue.validate { list in
+                                list.name.equals("ringlet_variables")
+                            }
+                        }
                 }
                 attributes[1].validate { validator in
                     validator.name.equals("module_dependencies")

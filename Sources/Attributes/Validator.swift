@@ -73,12 +73,27 @@ public struct Validator<P: ReadOnlyPathProtocol>: _PathValidator {
         self._validate = _validate
     }
     
-    public func validate(_ root: PathType.Root) throws {
+    public func performValidation(_ root: PathType.Root) throws {
         _ = try self._validate(root, root[keyPath: self.path.keyPath])
     }
     
     public func validate(@ValidatorBuilder<PathType.Root> builder: (Self) -> [AnyValidator<PathType.Root>]) -> AnyValidator<PathType.Root> {
         return AnyValidator(builder(self))
+    }
+    
+}
+
+extension Validator {
+    
+    public func `if`(
+        _ condition: @escaping (Value) -> Bool,
+        @ValidatorBuilder<Root> then builder: @escaping () -> [AnyValidator<Root>]
+    ) -> Self {
+        return push {
+            if condition($1) {
+                try AnyValidator(builder()).performValidation($0)
+            }
+        }
     }
     
 }

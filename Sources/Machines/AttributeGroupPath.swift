@@ -64,8 +64,8 @@ extension Path where Value == AttributeGroup {
         return Path<Root, String>(path: path.appending(path: \.name), ancestors: self.ancestors + [AnyPath(self)])
     }
     
-    var variables: OptionalPath<Root, VariableList> {
-        return OptionalPath<Root, VariableList>(path: path.appending(path: \.variables), ancestors: fullPath)
+    var variables: Path<Root, VariableList?> {
+        return Path<Root, VariableList?>(path: path.appending(path: \.variables), ancestors: fullPath)
     }
     
     var fields: Path<Root, [String: AttributeType]> {
@@ -88,8 +88,8 @@ extension PathValidator where Value == AttributeGroup {
         return Validator(path: ReadOnlyPath<Root, String>(keyPath: path.keyPath.appending(path: \.name), ancestors: path.fullPath))
     }
     
-    var variables: Validator<ReadOnlyOptionalPath<Root, VariableList>> {
-        return Validator(path: ReadOnlyOptionalPath<Root, VariableList>(keyPath: path.keyPath.appending(path: \.variables), ancestors: path.fullPath))
+    var variables: Validator<ReadOnlyPath<Root, VariableList?>> {
+        return Validator(path: ReadOnlyPath<Root, VariableList?>(keyPath: path.keyPath.appending(path: \.variables), ancestors: path.fullPath))
     }
     
     var fields: Validator<ReadOnlyPath<Root, [String: AttributeType]>> {

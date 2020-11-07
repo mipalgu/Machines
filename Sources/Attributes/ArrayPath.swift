@@ -94,7 +94,7 @@ extension Validator where P.Value: MutableCollection, P.Value.Index: Hashable {
         return AnyValidator<Root>(validate: { root in
             return try AnyValidator<Root>(root[keyPath: self.path.keyPath].indices.flatMap { index in
                 return builder(self[index])
-            }).validate(root)
+            }).performValidation(root)
         })
     }
     

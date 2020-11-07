@@ -65,7 +65,7 @@ public struct AnyValidator<Root>: ValidatorProtocol {
     }
     
     public init<V: ValidatorProtocol>(_ validator: V) where V.Root == Root {
-        self._validate = { try validator.validate($0) }
+        self._validate = { try validator.performValidation($0) }
     }
     
     public init(_ validator: AnyValidator<Root>) {
@@ -77,14 +77,14 @@ public struct AnyValidator<Root>: ValidatorProtocol {
     }
     
     public init<S: Sequence>(_ validators: S) where S.Element == AnyValidator<Root> {
-        self._validate = { root in try validators.forEach { try $0.validate(root) } }
+        self._validate = { root in try validators.forEach { try $0.performValidation(root) } }
     }
     
     public init<S: Sequence, V: ValidatorProtocol>(_ validators: S) where S.Element == V, V.Root == Root {
-        self._validate = { root in try validators.forEach { try $0.validate(root) } }
+        self._validate = { root in try validators.forEach { try $0.performValidation(root) } }
     }
     
-    public func validate(_ root: Root) throws {
+    public func performValidation(_ root: Root) throws {
         return try self._validate(root)
     }
     
@@ -96,7 +96,7 @@ extension AnyValidator: ExpressibleByArrayLiteral {
     
     
     public init(arrayLiteral validators: ArrayLiteralElement...) {
-        self._validate = { root in try validators.forEach { try $0.validate(root) } }
+        self._validate = { root in try validators.forEach { try $0.performValidation(root) } }
     }
     
 }

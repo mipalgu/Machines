@@ -96,14 +96,6 @@ extension PathValidator {
     
     public typealias Value = PathType.Value
     
-    public func `if`<V: ValidatorProtocol>(_ condition: @escaping (Value) -> Bool, then validator: V) -> Self where V.Root == Root {
-        return push {
-            if condition($1) {
-                return try validator.validate($0)
-            }
-        }
-    }
-    
 }
 
 extension PathValidator where Value: Hashable {

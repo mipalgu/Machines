@@ -58,16 +58,16 @@
 
 extension Path where Value: DictionaryProtocol {
     
-    public subscript(key: Value.Key) -> OptionalPath<Root, Value.Value> {
-        return OptionalPath(path: path.appending(path: \.[key]), ancestors: fullPath)
+    public subscript(key: Value.Key) -> Path<Root, Value.Value?> {
+        return Path<Root, Value.Value?>(path: path.appending(path: \.[key]), ancestors: fullPath)
     }
     
 }
 
 extension PathValidator where Value: DictionaryProtocol {
     
-    public subscript(key: Value.Key) -> Validator<ReadOnlyOptionalPath<Root, Value.Value>> {
-        return Validator(path: ReadOnlyOptionalPath(keyPath: path.keyPath.appending(path: \.[key]), ancestors: path.fullPath))
+    public subscript(key: Value.Key) -> Validator<ReadOnlyPath<Root, Value.Value?>> {
+        return Validator(path: ReadOnlyPath<Root, Value.Value?>(keyPath: path.keyPath.appending(path: \.[key]), ancestors: path.fullPath))
     }
     
 }

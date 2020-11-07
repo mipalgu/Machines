@@ -58,7 +58,11 @@
 
 public protocol Nilable {
     
+    associatedtype Wrapped
+    
     var isNil: Bool { get }
+    
+    var wrappedValue: Wrapped { get set }
     
 }
 
@@ -66,6 +70,14 @@ extension Optional: Nilable {
     
     public var isNil: Bool {
         return self == nil
+    }
+    
+    public var wrappedValue: Wrapped {
+        get {
+            return self!
+        } set {
+            self = .some(newValue)
+        }
     }
     
 }

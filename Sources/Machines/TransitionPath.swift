@@ -60,16 +60,16 @@ import Attributes
 
 extension Path where Value == Transition {
     
-    var condition: OptionalPath<Root, Expression> {
-        OptionalPath<Root, String>(path: path.appending(path: \.condition), ancestors: fullPath)
+    var condition: Path<Root, Expression?> {
+        Path<Root, Expression?>(path: path.appending(path: \.condition), ancestors: fullPath)
     }
     
-    var source: OptionalPath<Root, String> {
-        OptionalPath<Root, String>(path: path.appending(path: \.source), ancestors: fullPath)
+    var source: Path<Root, StateName?> {
+        Path<Root, StateName?>(path: path.appending(path: \.source), ancestors: fullPath)
     }
     
-    var target: OptionalPath<Root, String> {
-        OptionalPath<Root, String>(path: path.appending(path: \.target), ancestors: fullPath)
+    var target: Path<Root, StateName?> {
+        Path<Root, StateName?>(path: path.appending(path: \.target), ancestors: fullPath)
     }
     
     var attributes: Path<Root, [AttributeGroup]> {

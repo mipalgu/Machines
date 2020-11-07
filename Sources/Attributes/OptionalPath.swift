@@ -56,44 +56,18 @@
  *
  */
 
-public struct ReadOnlyOptionalPath<Root, Wrapped>: ReadOnlyPathProtocol {
+extension Path where Value: Nilable {
     
-    public var ancestors: [AnyPath<Root>]
-    
-    public var keyPath: KeyPath<Root, Wrapped?>
-    
-    public init(keyPath: KeyPath<Root, Wrapped?>, ancestors: [AnyPath<Root>]) {
-        self.ancestors = ancestors
-        self.keyPath = keyPath
-    }
-    
-    public var wrappedValue: ReadOnlyPath<Root, Wrapped> {
-        return ReadOnlyPath<Root, Wrapped>(keyPath: keyPath.appending(path: \.self!), ancestors: self.ancestors + [AnyPath(optional: self)])
-    }
-    
-    public func hasValue(_ root: Root) -> Bool {
-        return nil != root[keyPath: self.keyPath]
+    public var wrappedValue: Path<Root, Value.Wrapped> {
+        return Path<Root, Value.Wrapped>(path: path.appending(path: \.wrappedValue), ancestors: self.ancestors + [AnyPath(self)])
     }
     
 }
 
-public struct OptionalPath<Root, Wrapped>: PathProtocol {
-    
-    public var ancestors: [AnyPath<Root>]
-    
-    public var path: WritableKeyPath<Root, Wrapped?>
-    
-    public init(path: WritableKeyPath<Root, Wrapped?>, ancestors: [AnyPath<Root>]) {
-        self.ancestors = ancestors
-        self.path = path
-    }
-    
-    public var wrappedValue: Path<Root, Wrapped> {
-        return Path<Root, Wrapped>(path: path.appending(path: \.self!), ancestors: self.ancestors + [AnyPath(optional: self)])
-    }
-    
-    public func hasValue(_ root: Root) -> Bool {
-        return nil != root[keyPath: self.path]
+extension PathValidator where Value: Nilable {
+
+    public var wrappedValue: Validator<ReadOnlyPath<Root, Value.Wrapped>> {
+        return Validator(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.wrappedValue), ancestors: path.fullPath))
     }
     
 }

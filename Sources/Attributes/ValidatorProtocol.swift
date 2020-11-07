@@ -60,6 +60,6 @@ public protocol ValidatorProtocol {
     
     associatedtype Root
     
-    func validate(_ root: Root) throws
+    func performValidation(_ root: Root) throws
     
 }
