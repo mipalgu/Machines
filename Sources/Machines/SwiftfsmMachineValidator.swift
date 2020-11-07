@@ -73,7 +73,7 @@ struct SwiftfsmMachineValidator: MachineValidator {
             machine.states.maxLength(128).each { state in
                 state.name
                     .alphadash()
-                    .minLength(1)
+                    .notEmpty()
                     .maxLength(64)
             }
             machine.transitions.maxLength(128).each { transition in
