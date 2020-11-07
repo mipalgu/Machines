@@ -237,6 +237,14 @@ extension PathValidator where Value: Comparable {
 
 extension PathValidator where Value: Collection {
     
+    public func empty() -> Self {
+        return push {
+            if !$1.isEmpty {
+                throw ValidationError(message: "Must be empty.", path: path)
+            }
+        }
+    }
+    
     public func notEmpty() -> Self {
         return push {
             if $1.isEmpty {
@@ -246,6 +254,9 @@ extension PathValidator where Value: Collection {
     }
     
     public func length(_ length: Int) -> Self {
+        if length == 0 {
+            return empty()
+        }
         return push {
             if $1.count != length {
                 throw ValidationError(message: "Must have exactly \(length) elements.", path: path)
@@ -265,6 +276,9 @@ extension PathValidator where Value: Collection {
     }
     
     public func maxLength(_ length: Int) -> Self {
+        if length == 0 {
+            return empty()
+        }
         return push {
             if $1.count > length {
                 throw ValidationError(message: "Must provide no more than \(length) values.", path: path)

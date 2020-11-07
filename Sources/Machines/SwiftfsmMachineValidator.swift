@@ -105,6 +105,7 @@ struct SwiftfsmMachineValidator: MachineValidator {
                 transition.condition.ifNotNil {
                     transition.condition.wrappedValue.maxLength(1024)
                 }
+                transition.attributes.empty()
             }
             validator.attributes.length(2).validate { attributes in
                 attributes[0].validate { ringlet in
