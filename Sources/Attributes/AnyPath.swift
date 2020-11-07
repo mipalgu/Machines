@@ -68,20 +68,20 @@ public struct AnyPath<Root> {
     
     let _isNil: (Root) -> Bool
     
-    private init<P: PathProtocol>(_ path: P, isOptional: Bool, isNil: @escaping (Root) -> Bool) where P.Root == Root {
+    private init<P: ReadOnlyPathProtocol>(_ path: P, isOptional: Bool, isNil: @escaping (Root) -> Bool) where P.Root == Root {
         self.ancestors = path.ancestors
-        self.partialKeyPath = path.path
-        self._value = { $0[keyPath: path.path] as Any }
+        self.partialKeyPath = path.keyPath
+        self._value = { $0[keyPath: path.keyPath] as Any }
         self.isOptional = isOptional || (path.ancestors.last?.isOptional ?? false)
         self._isNil = { root in (path.ancestors.last?.isNil(root) ?? false) || isNil(root) }
     }
     
-    public init<P: PathProtocol>(_ path: P) where P.Root == Root {
+    public init<P: ReadOnlyPathProtocol>(_ path: P) where P.Root == Root {
         self.init(path, isOptional: false, isNil: { _ in false })
     }
     
-    public init<P: PathProtocol, V>(optional path: P) where P.Root == Root, P.Value == V? {
-        self.init(path, isOptional: true, isNil: { nil == $0[keyPath: path.path] })
+    public init<P: ReadOnlyPathProtocol, V>(optional path: P) where P.Root == Root, P.Value == V? {
+        self.init(path, isOptional: true, isNil: { nil == $0[keyPath: path.keyPath] })
     }
     
     public func hasValue(_ root: Root) -> Bool {

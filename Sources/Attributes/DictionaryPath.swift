@@ -66,8 +66,8 @@ extension Path where Value: DictionaryProtocol {
 
 extension PathValidator where Value: DictionaryProtocol {
     
-    public subscript(key: Value.Key) -> Validator<OptionalPath<Root, Value.Value>> {
-        return Validator(path: OptionalPath(path: path.path.appending(path: \.[key]), ancestors: path.fullPath))
+    public subscript(key: Value.Key) -> Validator<ReadOnlyOptionalPath<Root, Value.Value>> {
+        return Validator(path: ReadOnlyOptionalPath(keyPath: path.keyPath.appending(path: \.[key]), ancestors: path.fullPath))
     }
     
 }

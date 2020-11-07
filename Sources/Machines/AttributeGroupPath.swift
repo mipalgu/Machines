@@ -84,24 +84,24 @@ extension Path where Value == AttributeGroup {
 
 extension PathValidator where Value == AttributeGroup {
     
-    var name: Validator<Path<Root, String>> {
-        return Validator(path: Path<Root, String>(path: path.path.appending(path: \.name), ancestors: path.fullPath))
+    var name: Validator<ReadOnlyPath<Root, String>> {
+        return Validator(path: ReadOnlyPath<Root, String>(keyPath: path.keyPath.appending(path: \.name), ancestors: path.fullPath))
     }
     
-    var variables: Validator<OptionalPath<Root, VariableList>> {
-        return Validator(path: OptionalPath<Root, VariableList>(path: path.path.appending(path: \.variables), ancestors: path.fullPath))
+    var variables: Validator<ReadOnlyOptionalPath<Root, VariableList>> {
+        return Validator(path: ReadOnlyOptionalPath<Root, VariableList>(keyPath: path.keyPath.appending(path: \.variables), ancestors: path.fullPath))
     }
     
-    var fields: Validator<Path<Root, [String: AttributeType]>> {
-        return Validator(path: Path<Root, [String: AttributeType]>(path: path.path.appending(path: \.fields), ancestors: path.fullPath))
+    var fields: Validator<ReadOnlyPath<Root, [String: AttributeType]>> {
+        return Validator(path: ReadOnlyPath<Root, [String: AttributeType]>(keyPath: path.keyPath.appending(path: \.fields), ancestors: path.fullPath))
     }
     
-    var attributes: Validator<Path<Root, [String: Attribute]>> {
-        return Validator(path: Path<Root, [String: Attribute]>(path: path.path.appending(path: \.attributes), ancestors: path.fullPath))
+    var attributes: Validator<ReadOnlyPath<Root, [String: Attribute]>> {
+        return Validator(path: ReadOnlyPath<Root, [String: Attribute]>(keyPath: path.keyPath.appending(path: \.attributes), ancestors: path.fullPath))
     }
     
-    var metaData: Validator<Path<Root, [String: Attribute]>> {
-        return Validator(path: Path<Root, [String: Attribute]>(path: path.path.appending(path: \.metaData), ancestors: path.fullPath))
+    var metaData: Validator<ReadOnlyPath<Root, [String: Attribute]>> {
+        return Validator(path: ReadOnlyPath<Root, [String: Attribute]>(keyPath: path.keyPath.appending(path: \.metaData), ancestors: path.fullPath))
     }
     
 }

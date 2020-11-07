@@ -56,7 +56,7 @@
  *
  */
 
-public struct Validator<P: PathProtocol>: _PathValidator {
+public struct Validator<P: ReadOnlyPathProtocol>: _PathValidator {
     
     public typealias PathType = P
     
@@ -74,7 +74,7 @@ public struct Validator<P: PathProtocol>: _PathValidator {
     }
     
     public func validate(_ root: PathType.Root) throws {
-        _ = try self._validate(root, root[keyPath: self.path.path])
+        _ = try self._validate(root, root[keyPath: self.path.keyPath])
     }
     
     public func validate(@ValidatorBuilder<PathType.Root> builder: (Self) -> [AnyValidator<PathType.Root>]) -> AnyValidator<PathType.Root> {

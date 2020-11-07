@@ -58,7 +58,7 @@
 
 internal protocol _Push {
     
-    associatedtype PathType: PathProtocol
+    associatedtype PathType: ReadOnlyPathProtocol
     
     var path: PathType { get }
     var _validate: (PathType.Root, PathType.Value) throws -> Void { get }
@@ -82,7 +82,7 @@ internal typealias _PathValidator = _Push & PathValidator
 
 public protocol PathValidator: ValidatorProtocol where Root == PathType.Root {
     
-    associatedtype PathType: PathProtocol
+    associatedtype PathType: ReadOnlyPathProtocol
     
     var path: PathType { get }
     
@@ -108,9 +108,9 @@ extension PathValidator {
 
 extension PathValidator where Value: Hashable {
     
-    public func `in`<P: PathProtocol>(_ p: P) -> Self where P.Root == Root, P.Value == Set<Value> {
+    public func `in`<P: ReadOnlyPathProtocol>(_ p: P) -> Self where P.Root == Root, P.Value == Set<Value> {
         return push {
-            if !$0[keyPath: p.path].contains($1) {
+            if !$0[keyPath: p.keyPath].contains($1) {
                 throw ValidationError(message: "Must equal on of the following: '\(p)'.", path: path)
             }
         }

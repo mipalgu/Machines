@@ -68,18 +68,17 @@ struct SwiftfsmMachineValidator: MachineValidator {
     }
     
     private func validate(_ machine: Machine) throws {
-        try machine.validate { validator in
-            validator.name.alphadash().minLength(1).maxLength(64)
-            validator.states.maxLength(128).each { state in
+        try machine.validate { (machine: Validator<Path<Machine, Machine>>) in
+            machine.name.alphadash().minLength(1).maxLength(64)
+            machine.states.maxLength(128).each { state in
                 state.name
                     .alphadash()
                     .minLength(1)
                     .maxLength(64)
             }
-            validator.transitions.maxLength(128).each { transition in
+            machine.transitions.maxLength(128).each { transition in
             }
-            validator.attributes.validate { attributes in
-                attributes.length(2)
+            machine.attributes.length(2).validate { attributes in
                 attributes[0].validate { validator in
                     validator.name.equals("ringlet")
                     validator.attributes["use_custom_ringlet"]

@@ -56,12 +56,29 @@
  *
  */
 
-public protocol PathProtocol: Hashable {
+public protocol ReadOnlyPathProtocol: Hashable {
     
     associatedtype Root
     associatedtype Value
     
     var ancestors: [AnyPath<Root>] { get }
+    
+    var keyPath: KeyPath<Root, Value> { get }
+    
+}
+
+extension ReadOnlyPathProtocol {
+    
+    public var fullPath: [AnyPath<Root>] {
+        return self.ancestors + [AnyPath(self)]
+    }
+    
+}
+
+public protocol PathProtocol: ReadOnlyPathProtocol {
+    
+    associatedtype Root
+    associatedtype Value
     
     var path: WritableKeyPath<Root, Value> { get }
     
@@ -69,8 +86,8 @@ public protocol PathProtocol: Hashable {
 
 extension PathProtocol {
     
-    public var fullPath: [AnyPath<Root>] {
-        return self.ancestors + [AnyPath(self)]
+    public var keyPath: KeyPath<Root, Value> {
+        return self.path as KeyPath<Root, Value>
     }
     
 }

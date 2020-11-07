@@ -56,6 +56,27 @@
  *
  */
 
+public struct ReadOnlyOptionalPath<Root, Wrapped>: ReadOnlyPathProtocol {
+    
+    public var ancestors: [AnyPath<Root>]
+    
+    public var keyPath: KeyPath<Root, Wrapped?>
+    
+    public init(keyPath: KeyPath<Root, Wrapped?>, ancestors: [AnyPath<Root>]) {
+        self.ancestors = ancestors
+        self.keyPath = keyPath
+    }
+    
+    public var wrappedValue: ReadOnlyPath<Root, Wrapped> {
+        return ReadOnlyPath<Root, Wrapped>(keyPath: keyPath.appending(path: \.self!), ancestors: self.ancestors + [AnyPath(optional: self)])
+    }
+    
+    public func hasValue(_ root: Root) -> Bool {
+        return nil != root[keyPath: self.keyPath]
+    }
+    
+}
+
 public struct OptionalPath<Root, Wrapped>: PathProtocol {
     
     public var ancestors: [AnyPath<Root>]

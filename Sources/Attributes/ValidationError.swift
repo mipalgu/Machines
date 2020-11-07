@@ -56,7 +56,7 @@
  *
  */
 
-public struct ValidationError<Path: PathProtocol>: Error {
+public struct ValidationError<Path: ReadOnlyPathProtocol>: Error {
     
     public var message: String
     

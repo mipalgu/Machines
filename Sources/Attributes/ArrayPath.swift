@@ -86,13 +86,13 @@ extension Path where Value: MutableCollection, Value.Index: Hashable {
 
 extension Validator where P.Value: MutableCollection, P.Value.Index: Hashable {
     
-    public subscript(position: Value.Index) -> Validator<Path<P.Root, P.Value.Element>> {
-        return Validator<Path<P.Root, P.Value.Element>>(path: Path<P.Root, P.Value.Element>(path: path.path.appending(path: \.[position]), ancestors: path.fullPath))
+    public subscript(position: Value.Index) -> Validator<ReadOnlyPath<P.Root, P.Value.Element>> {
+        return Validator<ReadOnlyPath<P.Root, P.Value.Element>>(path: ReadOnlyPath<P.Root, P.Value.Element>(keyPath: path.keyPath.appending(path: \.[position]), ancestors: path.fullPath))
     }
     
-    public func each(@ValidatorBuilder<Root> builder: @escaping (Validator<Path<Root, Value.Element>>) -> [AnyValidator<Root>]) -> AnyValidator<Root> {
+    public func each(@ValidatorBuilder<Root> builder: @escaping (Validator<ReadOnlyPath<Root, Value.Element>>) -> [AnyValidator<Root>]) -> AnyValidator<Root> {
         return AnyValidator<Root>(validate: { root in
-            return try AnyValidator<Root>(root[keyPath: self.path.path].indices.flatMap { index in
+            return try AnyValidator<Root>(root[keyPath: self.path.keyPath].indices.flatMap { index in
                 return builder(self[index])
             }).validate(root)
         })
