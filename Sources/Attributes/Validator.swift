@@ -111,3 +111,49 @@ extension Validator {
     }
     
 }
+
+extension Validator where Value: Nilable {
+    
+    public func ifNil(@ValidatorBuilder<Root> then builder: @escaping () -> [AnyValidator<Root>]) -> Self {
+        return push {
+            if $1.isNil {
+                try AnyValidator(builder()).performValidation($0)
+            }
+        }
+    }
+    
+    public func ifNil(
+        @ValidatorBuilder<Root> then builder1: @escaping () -> [AnyValidator<Root>],
+        @ValidatorBuilder<Root> else builder2: @escaping () -> [AnyValidator<Root>]
+    ) -> Self {
+        return push {
+            if $1.isNil {
+                try AnyValidator(builder1()).performValidation($0)
+            } else {
+                try AnyValidator(builder2()).performValidation($0)
+            }
+        }
+    }
+    
+    public func ifNotNil(@ValidatorBuilder<Root> then builder: @escaping () -> [AnyValidator<Root>]) -> Self {
+        return push {
+            if !$1.isNil {
+                try AnyValidator(builder()).performValidation($0)
+            }
+        }
+    }
+    
+    public func ifNotNil(
+        @ValidatorBuilder<Root> then builder1: @escaping () -> [AnyValidator<Root>],
+        @ValidatorBuilder<Root> else builder2: @escaping () -> [AnyValidator<Root>]
+    ) -> Self {
+        return push {
+            if !$1.isNil {
+                try AnyValidator(builder1()).performValidation($0)
+            } else {
+                try AnyValidator(builder2()).performValidation($0)
+            }
+        }
+    }
+    
+}
