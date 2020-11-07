@@ -77,6 +77,22 @@ struct SwiftfsmMachineValidator: MachineValidator {
                     .alphadash()
                     .notEmpty()
                     .maxLength(64)
+                state.attributes.length(1)
+                state.attributes[0].validate { settings in
+                    settings.name.equals("settings")
+                    settings.fields["access_external_variables"].required()
+                    settings.fields["access_external_variables"].wrappedValue.equals(AttributeType.bool)
+                    settings.attributes["access_external_variables"].required()
+                    settings.attributes["access_external_variables"].wrappedValue
+                        .if { $0.boolValue ?? false }
+                        then: {
+                            settings.fields["imports"].required()
+                            settings.fields["imports"].wrappedValue.equals(AttributeType.code(language: .swift))
+                            settings.attributes["imports"].required()
+                            settings.attributes["imports"].wrappedValue.codeValue.required()
+                            settings.attributes["imports"].wrappedValue.codeValue.wrappedValue.maxLength(1024)
+                        }
+                }
             }
             validator.transitions.maxLength(128).each { transition in
             }
