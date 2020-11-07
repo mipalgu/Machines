@@ -98,12 +98,53 @@ extension PathValidator {
     
 }
 
+extension PathValidator where Value: Equatable {
+    
+    public func `in`<P: ReadOnlyPathProtocol, S: Sequence, S2: Sequence>(_ p: P, transform: @escaping (S) -> S2) -> Self where P.Root == Root, P.Value == S, S2.Element == Value {
+        return push { (root, value) in
+            let collection = transform(root[keyPath: p.keyPath])
+            if nil == collection.first(where: { $0 == value }) {
+                throw ValidationError(message: "Must equal on of the following: '\(collection.map { "\($0)" }.joined(separator: ", "))'.", path: path)
+            }
+        }
+    }
+    
+    public func `in`<P: ReadOnlyPathProtocol, S: Sequence>(_ p: P) -> Self where P.Root == Root, P.Value == S, S.Element == Value {
+        return push { (root, value) in
+            let collection = root[keyPath: p.keyPath]
+            if nil == collection.first(where: { $0 == value }) {
+                throw ValidationError(message: "Must equal on of the following: '\(collection.map { "\($0)" }.joined(separator: ", "))'.", path: path)
+            }
+        }
+    }
+    
+}
+
 extension PathValidator where Value: Hashable {
+    
+    public func `in`<P: ReadOnlyPathProtocol, S: Sequence>(_ p: P, transform: @escaping (S) -> Set<Value>) -> Self where P.Root == Root, P.Value == S {
+        return push {
+            let set = transform($0[keyPath: p.keyPath])
+            if !set.contains($1) {
+                throw ValidationError(message: "Must equal on of the following: '\(set.map { "\($0)" }.joined(separator: ", "))'.", path: path)
+            }
+        }
+    }
+    
+    public func `in`<P: ReadOnlyPathProtocol, S: Sequence>(_ p: P) -> Self where P.Root == Root, P.Value == S, S.Element == Value {
+        return push {
+            let set = Set($0[keyPath: p.keyPath])
+            if !set.contains($1) {
+                throw ValidationError(message: "Must equal on of the following: '\(set.map { "\($0)" }.joined(separator: ", "))'.", path: path)
+            }
+        }
+    }
     
     public func `in`<P: ReadOnlyPathProtocol>(_ p: P) -> Self where P.Root == Root, P.Value == Set<Value> {
         return push {
-            if !$0[keyPath: p.keyPath].contains($1) {
-                throw ValidationError(message: "Must equal on of the following: '\(p)'.", path: path)
+            let set = $0[keyPath: p.keyPath]
+            if !set.contains($1) {
+                throw ValidationError(message: "Must equal on of the following: '\(set.map { "\($0)" }.joined(separator: ", "))'.", path: path)
             }
         }
     }

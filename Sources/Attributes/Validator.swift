@@ -96,4 +96,18 @@ extension Validator {
         }
     }
     
+    public func `if`(
+        _ condition: @escaping (Value) -> Bool,
+        @ValidatorBuilder<Root> then builder1: @escaping () -> [AnyValidator<Root>],
+        @ValidatorBuilder<Root> else builder2: @escaping () -> [AnyValidator<Root>]
+    ) -> Self {
+        return push {
+            if condition($1) {
+                try AnyValidator(builder1()).performValidation($0)
+            } else {
+                try AnyValidator(builder2()).performValidation($0)
+            }
+        }
+    }
+    
 }

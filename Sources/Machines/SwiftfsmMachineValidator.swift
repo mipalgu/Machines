@@ -68,26 +68,29 @@ struct SwiftfsmMachineValidator: MachineValidator {
     }
     
     private func validate(_ machine: Machine) throws {
-        try machine.validate { (machine: Validator<Path<Machine, Machine>>) in
-            machine.name.alphadash().notEmpty().maxLength(64)
-            machine.states.maxLength(128).each { state in
+        try machine.validate { validator in
+            validator.name.alphadash().notEmpty().maxLength(64)
+            validator.initialState.in(machine.path.states, transform: { Set($0.map { $0.name }) })
+            validator.suspendState.in(machine.path.states, transform: { Set($0.map { $0.name }) })
+            validator.states.maxLength(128).each { state in
                 state.name
                     .alphadash()
                     .notEmpty()
                     .maxLength(64)
             }
-            machine.transitions.maxLength(128).each { transition in
+            validator.transitions.maxLength(128).each { transition in
             }
-            machine.attributes.length(2).validate { attributes in
+            validator.attributes.length(2).validate { attributes in
                 attributes[0].validate { ringlet in
                     ringlet.name.equals("ringlet")
+                    ringlet.attributes["use_custom_ringlet"].required()
                     ringlet.attributes["use_custom_ringlet"]
-                        .required()
                         .if { $0?.boolValue ?? false }
                         then: {
-                            //ringlet.variables.required().wrappedValue
-                            ringlet.variables.required().wrappedValue.validate { list in
+                            ringlet.variables.required()
+                            ringlet.variables.wrappedValue.validate { list in
                                 list.name.equals("ringlet_variables")
+                                list.enabled.equalsTrue()
                             }
                         }
                 }
@@ -95,14 +98,6 @@ struct SwiftfsmMachineValidator: MachineValidator {
                     validator.name.equals("module_dependencies")
                 }
             }
-            //            Machine.path.attributes[0].attributes["use_custom_ringlet"].validator
-            //                .if({ $0?.boolValue ?? false }, then: [
-            //                    AnyValidator(Machine.path.attributes[0].variables.validator.required()),
-            //                    AnyValidator(Machine.path.attributes[0].variables.wrappedValue.name.validator.equals("ringlet_variables")),
-            //                    AnyValidator(Machine.path.attributes[0].variables.wrappedValue.enabled.validator.equalsTrue()),
-            //
-            //                ])
-            
         }
     }
     
