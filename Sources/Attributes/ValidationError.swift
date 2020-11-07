@@ -56,11 +56,11 @@
  *
  */
 
-public struct ValidationError<Root>: Error {
+public struct ValidationError<Path: PathProtocol>: Error {
     
     public var message: String
     
-    public var path: AnyPath<Root>
+    public var path: Path
     
 }
 

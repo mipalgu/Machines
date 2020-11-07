@@ -58,19 +58,18 @@
 
 internal protocol _Push {
     
-    associatedtype _Root
-    associatedtype _Value
+    associatedtype Path: PathProtocol
     
-    var path: AnyPath<_Root> { get }
-    var _validate: (_Root, _Value) throws -> Void { get }
+    var path: Path { get }
+    var _validate: (Path.Root, Path.Value) throws -> Void { get }
     
-    init(_ path: AnyPath<_Root>, _validate: @escaping (_Root, _Value) throws -> Void)
+    init(_ path: Path, _validate: @escaping (Path.Root, Path.Value) throws -> Void)
     
 }
 
 extension _Push {
     
-    public func push(_ f: @escaping (_Root, _Value) throws -> Void) -> Self {
+    public func push(_ f: @escaping (Path.Root, Path.Value) throws -> Void) -> Self {
         return Self(self.path) {
             try self._validate($0, $1)
             try f($0, $1)
@@ -83,20 +82,22 @@ internal typealias _PathValidator = _Push & PathValidator
 
 public protocol PathValidator: ValidatorProtocol {
     
-    associatedtype Root
-    associatedtype Value
+    associatedtype Path: PathProtocol
     
-    var path: AnyPath<Root> { get }
+    var path: Path { get }
     
-    init(path: AnyPath<Root>)
+    init(path: Path)
     
-    func push(_ f: @escaping (Root, Value) throws -> Void) -> Self
+    func push(_ f: @escaping (Path.Root, Path.Value) throws -> Void) -> Self
     
 }
 
 extension PathValidator {
     
-    public func `if`(_ condition: @escaping (Value) -> Bool, then validator: AnyValidator<Root>) -> Self {
+    public typealias Root = Path.Root
+    public typealias Value = Path.Value
+    
+    public func `if`<V: ValidatorProtocol>(_ condition: @escaping (Path.Value) -> Bool, then validator: V) -> Self where V.Root == Path.Root {
         return push {
             if condition($1) {
                 return try validator.validate($0)
@@ -106,7 +107,7 @@ extension PathValidator {
     
 }
 
-extension PathValidator where Value: Hashable {
+extension PathValidator where Path.Value: Hashable {
     
     public func `in`<P: PathProtocol>(_ p: P) -> Self where P.Root == Root, P.Value == Set<Value> {
         return push {

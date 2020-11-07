@@ -69,8 +69,8 @@ public protocol PathProtocol: Hashable {
 
 extension PathProtocol {
     
-    public var validator: Validator<Root, Value> {
-        return Validator(path: AnyPath(self))
+    public var validator: Validator<Self> {
+        return Validator(path: self)
     }
     
 }

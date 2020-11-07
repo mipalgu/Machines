@@ -68,6 +68,10 @@ public struct AnyValidator<Root>: ValidatorProtocol {
         self = validator
     }
     
+    public init(@ValidatorBuilder<Root> builder: () -> [AnyValidator<Root>]) {
+        self.init(builder())
+    }
+    
     public init<S: Sequence>(_ validators: S) where S.Element == AnyValidator<Root> {
         self._validate = { root in try validators.forEach { try $0.validate(root) } }
     }
