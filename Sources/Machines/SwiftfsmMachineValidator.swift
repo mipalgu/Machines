@@ -94,7 +94,17 @@ struct SwiftfsmMachineValidator: MachineValidator {
                         }
                 }
             }
-            validator.transitions.maxLength(128).each { transition in
+            validator.transitions.maxLength(128)
+            validator.transitions.each { transition in
+                transition.source.ifNotNil {
+                    transition.source.wrappedValue.in(machine.path.states, transform: { Set($0.map { $0.name }) })
+                }
+                transition.target.ifNotNil {
+                    transition.target.wrappedValue.in(machine.path.states, transform: { Set($0.map { $0.name }) })
+                }
+                transition.condition.ifNotNil {
+                    transition.condition.wrappedValue.maxLength(1024)
+                }
             }
             validator.attributes.length(2).validate { attributes in
                 attributes[0].validate { ringlet in

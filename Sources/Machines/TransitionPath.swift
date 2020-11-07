@@ -58,7 +58,7 @@
 
 import Attributes
 
-extension Path where Value == Transition {
+extension PathProtocol where Value == Transition {
     
     var condition: Path<Root, Expression?> {
         Path<Root, Expression?>(path: path.appending(path: \.condition), ancestors: fullPath)
@@ -78,6 +78,30 @@ extension Path where Value == Transition {
     
     var metaData: Path<Root, [AttributeGroup]> {
         return Path<Root, [AttributeGroup]>(path: path.appending(path: \.metaData), ancestors: fullPath)
+    }
+    
+}
+
+extension PathValidator where Value == Transition {
+    
+    var condition: Validator<ReadOnlyPath<Root, Expression?>> {
+        Validator(path: ReadOnlyPath<Root, Expression?>(keyPath: path.keyPath.appending(path: \.condition), ancestors: path.fullPath))
+    }
+    
+    var source: Validator<ReadOnlyPath<Root, StateName?>> {
+        Validator(path: ReadOnlyPath<Root, StateName?>(keyPath: path.keyPath.appending(path: \.source), ancestors: path.fullPath))
+    }
+    
+    var target: Validator<ReadOnlyPath<Root, StateName?>> {
+        Validator(path: ReadOnlyPath<Root, StateName?>(keyPath: path.keyPath.appending(path: \.target), ancestors: path.fullPath))
+    }
+    
+    var attributes: Validator<ReadOnlyPath<Root, [AttributeGroup]>> {
+        return Validator(path: ReadOnlyPath<Root, [AttributeGroup]>(keyPath: path.keyPath.appending(path: \.attributes), ancestors: path.fullPath))
+    }
+    
+    var metaData: Validator<ReadOnlyPath<Root, [AttributeGroup]>> {
+        return Validator(path: ReadOnlyPath<Root, [AttributeGroup]>(keyPath: path.keyPath.appending(path: \.metaData), ancestors: path.fullPath))
     }
     
 }
