@@ -82,26 +82,26 @@ extension PathProtocol where Value == Transition {
     
 }
 
-extension PathValidator where Value == Transition {
+extension ValidationPath where Value == Transition {
     
-    var condition: Validator<ReadOnlyPath<Root, Expression?>> {
-        Validator(path: ReadOnlyPath<Root, Expression?>(keyPath: path.keyPath.appending(path: \.condition), ancestors: path.fullPath))
+    var condition: ValidationPath<ReadOnlyPath<Root, Expression?>> {
+        ValidationPath<ReadOnlyPath<Root, Expression?>>(path: ReadOnlyPath<Root, Expression?>(keyPath: path.keyPath.appending(path: \.condition), ancestors: path.fullPath))
     }
     
-    var source: Validator<ReadOnlyPath<Root, StateName?>> {
-        Validator(path: ReadOnlyPath<Root, StateName?>(keyPath: path.keyPath.appending(path: \.source), ancestors: path.fullPath))
+    var source: ValidationPath<ReadOnlyPath<Root, StateName?>> {
+        ValidationPath<ReadOnlyPath<Root, StateName?>>(path: ReadOnlyPath<Root, StateName?>(keyPath: path.keyPath.appending(path: \.source), ancestors: path.fullPath))
     }
     
-    var target: Validator<ReadOnlyPath<Root, StateName?>> {
-        Validator(path: ReadOnlyPath<Root, StateName?>(keyPath: path.keyPath.appending(path: \.target), ancestors: path.fullPath))
+    var target: ValidationPath<ReadOnlyPath<Root, StateName?>> {
+        ValidationPath<ReadOnlyPath<Root, StateName?>>(path: ReadOnlyPath<Root, StateName?>(keyPath: path.keyPath.appending(path: \.target), ancestors: path.fullPath))
     }
     
-    var attributes: Validator<ReadOnlyPath<Root, [AttributeGroup]>> {
-        return Validator(path: ReadOnlyPath<Root, [AttributeGroup]>(keyPath: path.keyPath.appending(path: \.attributes), ancestors: path.fullPath))
+    var attributes: ValidationPath<ReadOnlyPath<Root, [AttributeGroup]>> {
+        return ValidationPath<ReadOnlyPath<Root, [AttributeGroup]>>(path: ReadOnlyPath<Root, [AttributeGroup]>(keyPath: path.keyPath.appending(path: \.attributes), ancestors: path.fullPath))
     }
     
-    var metaData: Validator<ReadOnlyPath<Root, [AttributeGroup]>> {
-        return Validator(path: ReadOnlyPath<Root, [AttributeGroup]>(keyPath: path.keyPath.appending(path: \.metaData), ancestors: path.fullPath))
+    var metaData: ValidationPath<ReadOnlyPath<Root, [AttributeGroup]>> {
+        return ValidationPath<ReadOnlyPath<Root, [AttributeGroup]>>(path: ReadOnlyPath<Root, [AttributeGroup]>(keyPath: path.keyPath.appending(path: \.metaData), ancestors: path.fullPath))
     }
     
 }

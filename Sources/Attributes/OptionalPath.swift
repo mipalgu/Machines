@@ -64,10 +64,10 @@ extension Path where Value: Nilable {
     
 }
 
-extension PathValidator where Value: Nilable {
+extension ValidationPath where Value: Nilable {
 
-    public var wrappedValue: Validator<ReadOnlyPath<Root, Value.Wrapped>> {
-        return Validator(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.wrappedValue), ancestors: path.fullPath))
+    public var wrappedValue: ValidationPath<ReadOnlyPath<Root, Value.Wrapped>> {
+        return ValidationPath<ReadOnlyPath<Root, Value.Wrapped>>(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.wrappedValue), ancestors: path.fullPath))
     }
     
 }

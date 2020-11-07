@@ -1,8 +1,8 @@
 /*
- * DictionaryPath.swift
+ * ValidationPath.swift
  * Attributes
  *
- * Created by Callum McColl on 6/11/20.
+ * Created by Callum McColl on 8/11/20.
  * Copyright © 2020 Callum McColl. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,18 +56,25 @@
  *
  */
 
-extension Path where Value: DictionaryProtocol {
+public struct ValidationPath<P: ReadOnlyPathProtocol>: _ValidationPath {
+
+    public typealias PathType = P
     
-    public subscript(key: Value.Key) -> Path<Root, Value.Value?> {
-        return Path<Root, Value.Value?>(path: path.appending(path: \.[key]), ancestors: fullPath)
+    public let path: PathType
+    
+    internal let _validate: (PathType.Root, PathType.Value) throws -> Void
+    
+    public init(path: PathType) {
+        self.init(path) { (_, _) in }
     }
     
-}
-
-extension ValidationPath where Value: DictionaryProtocol {
+    internal init(_ path: PathType, _validate: @escaping (PathType.Root, PathType.Value) throws -> Void) {
+        self.path = path
+        self._validate = _validate
+    }
     
-    public subscript(key: Value.Key) -> ValidationPath<ReadOnlyPath<Root, Value.Value?>> {
-        return ValidationPath<ReadOnlyPath<Root, Value.Value?>>(path: ReadOnlyPath<Root, Value.Value?>(keyPath: path.keyPath.appending(path: \.[key]), ancestors: path.fullPath))
+    public func validate(@ValidatorBuilder<PathType.Root> builder: (Self) -> [AnyValidator<PathType.Root>]) -> AnyValidator<PathType.Root> {
+        return AnyValidator(builder(self))
     }
     
 }

@@ -149,94 +149,94 @@ extension ReadOnlyPathProtocol where Value == Attribute {
     
 }
 
-extension PathValidator where Value == Attribute {
+extension ValidationPath where Value == Attribute {
     
-    public var type: Validator<ReadOnlyPath<Root, AttributeType>> {
-        return Validator(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.type), ancestors: path.fullPath))
+    public var type: ValidationPath<ReadOnlyPath<Root, AttributeType>> {
+        return ValidationPath<ReadOnlyPath<Root, AttributeType>>(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.type), ancestors: path.fullPath))
     }
     
-    public var boolValue: Validator<ReadOnlyPath<Root, Bool?>> {
-        return Validator(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.boolValue), ancestors: path.fullPath))
+    public var boolValue: ValidationPath<ReadOnlyPath<Root, Bool?>> {
+        return ValidationPath<ReadOnlyPath<Root, Bool?>>(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.boolValue), ancestors: path.fullPath))
     }
     
-    public var integerValue: Validator<ReadOnlyPath<Root, Int?>> {
-        return Validator(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.integerValue), ancestors: path.fullPath))
+    public var integerValue: ValidationPath<ReadOnlyPath<Root, Int?>> {
+        return ValidationPath<ReadOnlyPath<Root, Int?>>(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.integerValue), ancestors: path.fullPath))
     }
     
-    public var floatValue: Validator<ReadOnlyPath<Root, Double?>> {
-        return Validator(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.floatValue), ancestors: path.fullPath))
+    public var floatValue: ValidationPath<ReadOnlyPath<Root, Double?>> {
+        return ValidationPath<ReadOnlyPath<Root, Double?>>(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.floatValue), ancestors: path.fullPath))
     }
     
-    public var expressionValue: Validator<ReadOnlyPath<Root, Expression?>> {
-        return Validator(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.expressionValue), ancestors: path.fullPath))
+    public var expressionValue: ValidationPath<ReadOnlyPath<Root, Expression?>> {
+        return ValidationPath<ReadOnlyPath<Root, Expression?>>(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.expressionValue), ancestors: path.fullPath))
     }
     
-    public var enumeratedValue: Validator<ReadOnlyPath<Root, (String, Set<String>)?>> {
-        return Validator(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.enumeratedValue), ancestors: path.fullPath))
+    public var enumeratedValue: ValidationPath<ReadOnlyPath<Root, (String, Set<String>)?>> {
+        return ValidationPath<ReadOnlyPath<Root, (String, Set<String>)?>>(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.enumeratedValue), ancestors: path.fullPath))
     }
     
-    public var lineValue: Validator<ReadOnlyPath<Root, String?>> {
-        return Validator(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.lineValue), ancestors: path.fullPath))
+    public var lineValue: ValidationPath<ReadOnlyPath<Root, String?>> {
+        return ValidationPath<ReadOnlyPath<Root, String?>>(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.lineValue), ancestors: path.fullPath))
     }
     
-    public var codeValue: Validator<ReadOnlyPath<Root, String?>> {
-        return Validator(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.codeValue), ancestors: path.fullPath))
+    public var codeValue: ValidationPath<ReadOnlyPath<Root, String?>> {
+        return ValidationPath<ReadOnlyPath<Root, String?>>(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.codeValue), ancestors: path.fullPath))
     }
     
-    public var textValue: Validator<ReadOnlyPath<Root, String?>> {
-        return Validator(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.textValue), ancestors: path.fullPath))
+    public var textValue: ValidationPath<ReadOnlyPath<Root, String?>> {
+        return ValidationPath<ReadOnlyPath<Root, String?>>(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.textValue), ancestors: path.fullPath))
     }
     
-    public var collectionValue: Validator<ReadOnlyPath<Root, ([Attribute], type: AttributeType)?>> {
-        return Validator(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.collectionValue), ancestors: path.fullPath))
+    public var collectionValue: ValidationPath<ReadOnlyPath<Root, ([Attribute], type: AttributeType)?>> {
+        return ValidationPath<ReadOnlyPath<Root, ([Attribute], type: AttributeType)?>>(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.collectionValue), ancestors: path.fullPath))
     }
     
-    public var complexValue: Validator<ReadOnlyPath<Root, ([String: Attribute], layout: [String: AttributeType])?>> {
-        return Validator(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.complexValue), ancestors: path.fullPath))
+    public var complexValue: ValidationPath<ReadOnlyPath<Root, ([String: Attribute], layout: [String: AttributeType])?>> {
+        return ValidationPath<ReadOnlyPath<Root, ([String: Attribute], layout: [String: AttributeType])?>>(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.complexValue), ancestors: path.fullPath))
     }
     
-    public var enumerableCollectionValue: Validator<ReadOnlyPath<Root, (Set<String>, validValues: Set<String>)?>> {
-        return Validator(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.enumerableCollectionValue), ancestors: path.fullPath))
+    public var enumerableCollectionValue: ValidationPath<ReadOnlyPath<Root, (Set<String>, validValues: Set<String>)?>> {
+        return ValidationPath<ReadOnlyPath<Root, (Set<String>, validValues: Set<String>)?>>(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.enumerableCollectionValue), ancestors: path.fullPath))
     }
     
-    public var collectionBools: Validator<ReadOnlyPath<Root, [Bool]?>> {
-        return Validator(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.collectionBools), ancestors: path.fullPath))
+    public var collectionBools: ValidationPath<ReadOnlyPath<Root, [Bool]?>> {
+        return ValidationPath<ReadOnlyPath<Root, [Bool]?>>(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.collectionBools), ancestors: path.fullPath))
     }
     
-    public var collectionIntegers: Validator<ReadOnlyPath<Root, [Int]?>> {
-        return Validator(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.collectionIntegers), ancestors: path.fullPath))
+    public var collectionIntegers: ValidationPath<ReadOnlyPath<Root, [Int]?>> {
+        return ValidationPath<ReadOnlyPath<Root, [Int]?>>(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.collectionIntegers), ancestors: path.fullPath))
     }
     
-    public var collectionFloats: Validator<ReadOnlyPath<Root, [Double]?>> {
-        return Validator(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.collectionFloats), ancestors: path.fullPath))
+    public var collectionFloats: ValidationPath<ReadOnlyPath<Root, [Double]?>> {
+        return ValidationPath<ReadOnlyPath<Root, [Double]?>>(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.collectionFloats), ancestors: path.fullPath))
     }
     
-    public var collectionExpressions: Validator<ReadOnlyPath<Root, [Expression]?>> {
-        return Validator(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.collectionExpressions), ancestors: path.fullPath))
+    public var collectionExpressions: ValidationPath<ReadOnlyPath<Root, [Expression]?>> {
+        return ValidationPath<ReadOnlyPath<Root, [Expression]?>>(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.collectionExpressions), ancestors: path.fullPath))
     }
     
-    public var collectionEnumerated: Validator<ReadOnlyPath<Root, ([String], validValues: Set<String>)?>> {
-        return Validator(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.collectionEnumerated), ancestors: path.fullPath))
+    public var collectionEnumerated: ValidationPath<ReadOnlyPath<Root, ([String], validValues: Set<String>)?>> {
+        return ValidationPath<ReadOnlyPath<Root, ([String], validValues: Set<String>)?>>(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.collectionEnumerated), ancestors: path.fullPath))
     }
     
-    public var collectionLines: Validator<ReadOnlyPath<Root, [String]?>> {
-        return Validator(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.collectionLines), ancestors: path.fullPath))
+    public var collectionLines: ValidationPath<ReadOnlyPath<Root, [String]?>> {
+        return ValidationPath<ReadOnlyPath<Root, [String]?>>(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.collectionLines), ancestors: path.fullPath))
     }
     
-    public var collectionCode: Validator<ReadOnlyPath<Root, [String]?>> {
-        return Validator(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.collectionCode), ancestors: path.fullPath))
+    public var collectionCode: ValidationPath<ReadOnlyPath<Root, [String]?>> {
+        return ValidationPath<ReadOnlyPath<Root, [String]?>>(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.collectionCode), ancestors: path.fullPath))
     }
     
-    public var collectionText: Validator<ReadOnlyPath<Root, [String]?>> {
-        return Validator(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.collectionText), ancestors: path.fullPath))
+    public var collectionText: ValidationPath<ReadOnlyPath<Root, [String]?>> {
+        return ValidationPath<ReadOnlyPath<Root, [String]?>>(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.collectionText), ancestors: path.fullPath))
     }
     
-    public var collectionComplex: Validator<ReadOnlyPath<Root, ([[String: Attribute]], layout: [String: AttributeType])?>> {
-        return Validator(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.collectionComplex), ancestors: path.fullPath))
+    public var collectionComplex: ValidationPath<ReadOnlyPath<Root, ([[String: Attribute]], layout: [String: AttributeType])?>> {
+        return ValidationPath<ReadOnlyPath<Root, ([[String: Attribute]], layout: [String: AttributeType])?>>(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.collectionComplex), ancestors: path.fullPath))
     }
     
-    public var collectionEnumerableCollection: Validator<ReadOnlyPath<Root, ([Set<String>], validValues: Set<String>)?>> {
-        return Validator(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.collectionEnumerableCollection), ancestors: path.fullPath))
+    public var collectionEnumerableCollection: ValidationPath<ReadOnlyPath<Root, ([Set<String>], validValues: Set<String>)?>> {
+        return ValidationPath<ReadOnlyPath<Root, ([Set<String>], validValues: Set<String>)?>>(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.collectionEnumerableCollection), ancestors: path.fullPath))
     }
     
 }

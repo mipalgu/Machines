@@ -1,8 +1,8 @@
 /*
- * DictionaryPath.swift
+ * ValidationPathProtocol.swift
  * Attributes
  *
- * Created by Callum McColl on 6/11/20.
+ * Created by Callum McColl on 8/11/20.
  * Copyright © 2020 Callum McColl. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,18 +56,31 @@
  *
  */
 
-extension Path where Value: DictionaryProtocol {
+internal protocol _PushValidator {
     
-    public subscript(key: Value.Key) -> Path<Root, Value.Value?> {
-        return Path<Root, Value.Value?>(path: path.appending(path: \.[key]), ancestors: fullPath)
+    associatedtype PathType: ReadOnlyPathProtocol
+    
+    var path: PathType { get }
+    
+}
+
+extension _PushValidator {
+    
+    public func push(_ f: @escaping (PathType.Root, PathType.Value) throws -> Void) -> Validator<PathType> {
+        return Validator(path, _validate: f)
     }
     
 }
 
-extension ValidationPath where Value: DictionaryProtocol {
+public protocol ValidationPathProtocol: ValidationPushProtocol {
     
-    public subscript(key: Value.Key) -> ValidationPath<ReadOnlyPath<Root, Value.Value?>> {
-        return ValidationPath<ReadOnlyPath<Root, Value.Value?>>(path: ReadOnlyPath<Root, Value.Value?>(keyPath: path.keyPath.appending(path: \.[key]), ancestors: path.fullPath))
-    }
+    associatedtype PathType: ReadOnlyPathProtocol
+    associatedtype PushValidator = Validator<PathType>
+    
+    var path: PathType { get }
+    
+    init(path: PathType)
     
 }
+
+internal typealias _ValidationPath = _PushValidator & ValidationPathProtocol

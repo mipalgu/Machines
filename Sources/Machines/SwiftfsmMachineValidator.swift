@@ -68,11 +68,12 @@ struct SwiftfsmMachineValidator: MachineValidator {
     }
     
     private func validate(_ machine: Machine) throws {
-        try machine.validate { validator in
+        try machine.validate { (validator: ValidationPath<Path<Machine, Machine>>) in
             validator.name.alphadash().notEmpty().maxLength(64)
             validator.initialState.in(machine.path.states, transform: { Set($0.map { $0.name }) })
             validator.suspendState.in(machine.path.states, transform: { Set($0.map { $0.name }) })
-            validator.states.maxLength(128).each { state in
+            validator.states.maxLength(128)
+            validator.states.each { (state: ValidationPath<ReadOnlyPath<Machine, State>>) in
                 state.name
                     .alphadash()
                     .notEmpty()
@@ -96,18 +97,19 @@ struct SwiftfsmMachineValidator: MachineValidator {
             }
             validator.transitions.maxLength(128)
             validator.transitions.each { transition in
-                transition.source.ifNotNil {
+                transition.source.if { $0 != nil } then: {
                     transition.source.wrappedValue.in(machine.path.states, transform: { Set($0.map { $0.name }) })
                 }
-                transition.target.ifNotNil {
+                transition.target.if { $0 != nil } then: {
                     transition.target.wrappedValue.in(machine.path.states, transform: { Set($0.map { $0.name }) })
                 }
-                transition.condition.ifNotNil {
+                transition.condition.if { $0 != nil } then: {
                     transition.condition.wrappedValue.maxLength(1024)
                 }
                 transition.attributes.empty()
             }
-            validator.attributes.length(2).validate { attributes in
+            validator.attributes.length(2)
+            validator.attributes.validate { attributes in
                 attributes[0].validate { ringlet in
                     ringlet.name.equals("ringlet")
                     ringlet.attributes["use_custom_ringlet"].required()

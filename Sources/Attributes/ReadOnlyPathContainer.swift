@@ -1,8 +1,8 @@
 /*
- * DictionaryPath.swift
+ * ReadOnlyPathContainer.swift
  * Attributes
  *
- * Created by Callum McColl on 6/11/20.
+ * Created by Callum McColl on 8/11/20.
  * Copyright © 2020 Callum McColl. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,18 +56,18 @@
  *
  */
 
-extension Path where Value: DictionaryProtocol {
+public protocol ReadOnlyPathContainer {
     
-    public subscript(key: Value.Key) -> Path<Root, Value.Value?> {
-        return Path<Root, Value.Value?>(path: path.appending(path: \.[key]), ancestors: fullPath)
-    }
+    associatedtype Path: ReadOnlyPathProtocol
+    
+    var path: Path { get }
     
 }
 
-extension ValidationPath where Value: DictionaryProtocol {
+extension ReadOnlyPathContainer {
     
-    public subscript(key: Value.Key) -> ValidationPath<ReadOnlyPath<Root, Value.Value?>> {
-        return ValidationPath<ReadOnlyPath<Root, Value.Value?>>(path: ReadOnlyPath<Root, Value.Value?>(keyPath: path.keyPath.appending(path: \.[key]), ancestors: path.fullPath))
+    public func validate(@ValidatorBuilder<Self> builder: (Validator<Path>) -> [AnyValidator<Self>]) throws {
+        return try AnyValidator(builder(Validator(path: self.path))).performValidation(self)
     }
     
 }
