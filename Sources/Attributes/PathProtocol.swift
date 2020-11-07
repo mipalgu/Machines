@@ -69,6 +69,14 @@ public protocol PathProtocol: Hashable {
 
 extension PathProtocol {
     
+    public var fullPath: [AnyPath<Root>] {
+        return self.ancestors + [AnyPath(self)]
+    }
+    
+}
+
+extension PathProtocol {
+    
     public var validator: Validator<Self> {
         return Validator(path: self)
     }

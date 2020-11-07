@@ -83,3 +83,11 @@ extension Path where Value: MutableCollection, Value.Index: Hashable {
     }
     
 }
+
+extension PathValidator where Value: MutableCollection, Value.Index: Hashable {
+    
+    public subscript(position: Value.Index) -> Validator<Path<Root, Value.Element>> {
+        return Validator(path: Path<Root, Value.Element>(path: path.path.appending(path: \.[position]), ancestors: path.fullPath))
+    }
+    
+}

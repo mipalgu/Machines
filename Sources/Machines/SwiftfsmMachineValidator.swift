@@ -64,35 +64,58 @@ struct SwiftfsmMachineValidator: MachineValidator {
         if machine.semantics != .swiftfsm {
             throw ValidationError.unsupportedSemantics(machine.semantics)
         }
-        let validator = self.validator(for: machine)
-        try validator.validate(machine)
+        try self.validate(machine)
     }
     
-    private func validator(for swiftMachine: Machine) -> AnyValidator<Machine> {
-        return AnyValidator {
-            Machine.path.name.validator
+    private func validate(_ machine: Machine) throws {
+        try machine.validate { validator in
+            validator.name
                     .alphadash()
                     .minLength(1)
                     .maxLength(64)
-            Machine.path.states.validator.maxLength(128)
-//            Machine.path.states.validateEach {
-//                $0.name.validator
+            validator.states.maxLength(128)
+            //            Machine.path.states.validateEach {
+            //                $0.name.validator
+            //                    .alphadash()
+            //                    .minLength(1)
+            //                    .maxLength(64)
+            //            }(swiftMachine)
+            validator.attributes.length(2)
+            validator.attributes[0].name.equals("ringlet")
+            validator.attributes[0].attributes["use_custom_ringlet"].required()
+            //            Machine.path.attributes[0].attributes["use_custom_ringlet"].validator
+            //                .if({ $0?.boolValue ?? false }, then: [
+            //                    AnyValidator(Machine.path.attributes[0].variables.validator.required()),
+            //                    AnyValidator(Machine.path.attributes[0].variables.wrappedValue.name.validator.equals("ringlet_variables")),
+            //                    AnyValidator(Machine.path.attributes[0].variables.wrappedValue.enabled.validator.equalsTrue()),
+            //
+            //                ])
+            validator.attributes[1].name.equals("module_dependencies")
+        }
+//        return AnyValidator {
+//            Machine.path.name.validator
 //                    .alphadash()
 //                    .minLength(1)
 //                    .maxLength(64)
-//            }(swiftMachine)
-            Machine.path.attributes.validator.length(2)
-            Machine.path.attributes[0].name.validator.equals("ringlet")
-            Machine.path.attributes[0].attributes["use_custom_ringlet"].validator.required()
-//            Machine.path.attributes[0].attributes["use_custom_ringlet"].validator
-//                .if({ $0?.boolValue ?? false }, then: [
-//                    AnyValidator(Machine.path.attributes[0].variables.validator.required()),
-//                    AnyValidator(Machine.path.attributes[0].variables.wrappedValue.name.validator.equals("ringlet_variables")),
-//                    AnyValidator(Machine.path.attributes[0].variables.wrappedValue.enabled.validator.equalsTrue()),
-//
-//                ])
-            Machine.path.attributes[1].name.validator.equals("module_dependencies")
-        }
+//            Machine.path.states.validator.maxLength(128)
+////            Machine.path.states.validateEach {
+////                $0.name.validator
+////                    .alphadash()
+////                    .minLength(1)
+////                    .maxLength(64)
+////            }(swiftMachine)
+//            Machine.path.attributes.validator.length(2)
+//            Machine.path.attributes[0].name.validator.equals("ringlet")
+//            Machine.path.attributes[0].attributes["use_custom_ringlet"].validator.required()
+////            Machine.path.attributes[0].attributes["use_custom_ringlet"].validator
+////                .if({ $0?.boolValue ?? false }, then: [
+////                    AnyValidator(Machine.path.attributes[0].variables.validator.required()),
+////                    AnyValidator(Machine.path.attributes[0].variables.wrappedValue.name.validator.equals("ringlet_variables")),
+////                    AnyValidator(Machine.path.attributes[0].variables.wrappedValue.enabled.validator.equalsTrue()),
+////
+////                ])
+//            Machine.path.attributes[1].name.validator.equals("module_dependencies")
+//        }
     }
     
 }

@@ -1,8 +1,8 @@
 /*
- * DictionaryPath.swift
+ * PathContainer.swift
  * Attributes
  *
- * Created by Callum McColl on 6/11/20.
+ * Created by Callum McColl on 7/11/20.
  * Copyright © 2020 Callum McColl. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,18 +56,18 @@
  *
  */
 
-extension Path where Value: DictionaryProtocol {
+public protocol PathContainer {
     
-    public subscript(key: Value.Key) -> OptionalPath<Root, Value.Value> {
-        return OptionalPath(path: path.appending(path: \.[key]), ancestors: fullPath)
-    }
+    associatedtype Path: PathProtocol
+    
+    var path: Path { get }
     
 }
 
-extension PathValidator where Value: DictionaryProtocol {
+extension PathContainer {
     
-    public subscript(key: Value.Key) -> Validator<OptionalPath<Root, Value.Value>> {
-        return Validator(path: OptionalPath(path: path.path.appending(path: \.[key]), ancestors: path.fullPath))
+    public func validate(@ValidatorBuilder<Self> builder: (Validator<Path>) -> [AnyValidator<Self>]) throws {
+        return try AnyValidator(builder(Validator(path: self.path))).validate(self)
     }
     
 }

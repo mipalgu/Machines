@@ -77,7 +77,8 @@ import Attributes
 /// for swiftfsm machines for example.
 ///
 /// - SeeAlso: `SwiftMachinesConvertible`.
-public struct Machine: Hashable, Codable {
+public struct Machine: Hashable, Codable, PathContainer {
+    
     
     public enum Semantics: String, Hashable, Codable {
         case other
@@ -211,8 +212,12 @@ public struct Machine: Hashable, Codable {
 
 extension Machine {
     
+    public var path: Path<Machine, Machine> {
+        return Path(path: \.self, ancestors: [])
+    }
+    
     public static var path: Path<Machine, Machine> {
-        return Path<Machine, Machine>(path: \Machine.self, ancestors: [])
+        return Path(path: \Machine.self, ancestors: [])
     }
     
     public mutating func modify<Path: PathProtocol>(attribute: Path, value: Path.Value) throws where Path.Root == Machine {

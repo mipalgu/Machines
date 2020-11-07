@@ -68,11 +68,3 @@ public struct Path<Root, Value>: PathProtocol {
     }
     
 }
-
-extension Path {
-    
-    public var fullPath: [AnyPath<Root>] {
-        return self.ancestors + [AnyPath(self)]
-    }
-    
-}

@@ -60,13 +60,13 @@
 public struct ValidatorBuilder<Root> {
     
     public func buildBlock() -> [AnyValidator<Root>] { [] }
-    
+
     public func makeValidator(@ValidatorBuilder _ content: () -> [AnyValidator<Root>]) -> AnyValidator<Root> {
         AnyValidator(content())
     }
     
-    public static func buildBlock<V: ValidatorProtocol>(_ validator: V) -> V where V.Root == Root {
-        return validator
+    public static func buildBlock<V0: ValidatorProtocol>(_ v0: V0) -> [AnyValidator<Root>] where V0.Root == Root {
+        return [AnyValidator(v0)]
     }
     
     public static func buildBlock<V0: ValidatorProtocol, V1: ValidatorProtocol>(_ v0: V0, _ v1: V1) -> [AnyValidator<Root>] where V0.Root == Root, V1.Root == Root {
@@ -274,10 +274,6 @@ public struct ValidatorBuilder<Root> {
             AnyValidator(v8),
             AnyValidator(v9)
         ]
-    }
-    
-    public static func buildBlock<V: ValidatorProtocol>(_ validators: V...) -> [AnyValidator<Root>] where V.Root == Root {
-        validators.map { AnyValidator($0) }
     }
     
 }

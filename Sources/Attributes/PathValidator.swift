@@ -58,18 +58,18 @@
 
 internal protocol _Push {
     
-    associatedtype Path: PathProtocol
+    associatedtype PathType: PathProtocol
     
-    var path: Path { get }
-    var _validate: (Path.Root, Path.Value) throws -> Void { get }
+    var path: PathType { get }
+    var _validate: (PathType.Root, PathType.Value) throws -> Void { get }
     
-    init(_ path: Path, _validate: @escaping (Path.Root, Path.Value) throws -> Void)
+    init(_ path: PathType, _validate: @escaping (PathType.Root, PathType.Value) throws -> Void)
     
 }
 
 extension _Push {
     
-    public func push(_ f: @escaping (Path.Root, Path.Value) throws -> Void) -> Self {
+    public func push(_ f: @escaping (PathType.Root, PathType.Value) throws -> Void) -> Self {
         return Self(self.path) {
             try self._validate($0, $1)
             try f($0, $1)
@@ -80,24 +80,23 @@ extension _Push {
 
 internal typealias _PathValidator = _Push & PathValidator
 
-public protocol PathValidator: ValidatorProtocol {
+public protocol PathValidator: ValidatorProtocol where Root == PathType.Root {
     
-    associatedtype Path: PathProtocol
+    associatedtype PathType: PathProtocol
     
-    var path: Path { get }
+    var path: PathType { get }
     
-    init(path: Path)
+    init(path: PathType)
     
-    func push(_ f: @escaping (Path.Root, Path.Value) throws -> Void) -> Self
+    func push(_ f: @escaping (PathType.Root, PathType.Value) throws -> Void) -> Self
     
 }
 
 extension PathValidator {
     
-    public typealias Root = Path.Root
-    public typealias Value = Path.Value
+    public typealias Value = PathType.Value
     
-    public func `if`<V: ValidatorProtocol>(_ condition: @escaping (Path.Value) -> Bool, then validator: V) -> Self where V.Root == Path.Root {
+    public func `if`<V: ValidatorProtocol>(_ condition: @escaping (Value) -> Bool, then validator: V) -> Self where V.Root == Root {
         return push {
             if condition($1) {
                 return try validator.validate($0)
@@ -107,7 +106,7 @@ extension PathValidator {
     
 }
 
-extension PathValidator where Path.Value: Hashable {
+extension PathValidator where Value: Hashable {
     
     public func `in`<P: PathProtocol>(_ p: P) -> Self where P.Root == Root, P.Value == Set<Value> {
         return push {
