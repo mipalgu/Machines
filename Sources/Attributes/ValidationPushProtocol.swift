@@ -330,24 +330,6 @@ extension ValidationPushProtocol where Value: Collection {
         }
     }
     
-//    public func each(_ f: @escaping (Validator<Root, Value.Element>) throws -> Void) -> Self {
-//        return push {
-//            AnyValidator(Validator(, _validate: <#T##(_, _) throws -> Void#>))
-//        }
-//    }
-    
-    public func each(_ f: @escaping (Value.Element) throws -> Void) -> PushValidator {
-        return push {
-            try $1.forEach(f)
-        }
-    }
-    
-    public func each(_ f: @escaping (Value.Element) throws -> Void, where filter: @escaping (Value.Element) -> Bool) -> PushValidator {
-        return push {
-            try $1.filter(filter).forEach(f)
-        }
-    }
-    
 }
 
 extension ValidationPushProtocol where Value: Nilable {
