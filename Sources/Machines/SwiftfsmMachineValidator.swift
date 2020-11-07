@@ -81,8 +81,10 @@ struct SwiftfsmMachineValidator: MachineValidator {
             //                    .maxLength(64)
             //            }(swiftMachine)
             validator.attributes.length(2)
-            validator.attributes[0].name.equals("ringlet")
-            validator.attributes[0].attributes["use_custom_ringlet"].required()
+            validator.attributes[0].validate { validator in
+                validator.name.equals("ringlet")
+                validator.attributes["use_custom_ringlet"].required()
+            }
             //            Machine.path.attributes[0].attributes["use_custom_ringlet"].validator
             //                .if({ $0?.boolValue ?? false }, then: [
             //                    AnyValidator(Machine.path.attributes[0].variables.validator.required()),
@@ -90,7 +92,9 @@ struct SwiftfsmMachineValidator: MachineValidator {
             //                    AnyValidator(Machine.path.attributes[0].variables.wrappedValue.enabled.validator.equalsTrue()),
             //
             //                ])
-            validator.attributes[1].name.equals("module_dependencies")
+            validator.attributes[1].validate { validator in
+                validator.name.equals("module_dependencies")
+            }
         }
 //        return AnyValidator {
 //            Machine.path.name.validator

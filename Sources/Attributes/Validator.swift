@@ -75,4 +75,8 @@ public struct Validator<Path: PathProtocol>: _PathValidator {
         _ = try self._validate(root, root[keyPath: self.path.path])
     }
     
+    public func validate(@ValidatorBuilder<Path.Root> builder: (Self) -> [AnyValidator<Path.Root>]) -> AnyValidator<Path.Root> {
+        return AnyValidator(builder(self))
+    }
+    
 }
