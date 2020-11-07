@@ -69,21 +69,25 @@ struct SwiftfsmMachineValidator: MachineValidator {
     
     private func validate(_ machine: Machine) throws {
         try machine.validate { validator in
-            validator.name
+            validator.name.alphadash().minLength(1).maxLength(64)
+            validator.states.maxLength(128).each { state in
+                state.name
                     .alphadash()
                     .minLength(1)
                     .maxLength(64)
-            validator.states.maxLength(128)
-            //            Machine.path.states.validateEach {
-            //                $0.name.validator
-            //                    .alphadash()
-            //                    .minLength(1)
-            //                    .maxLength(64)
-            //            }(swiftMachine)
-            validator.attributes.length(2)
-            validator.attributes[0].validate { validator in
-                validator.name.equals("ringlet")
-                validator.attributes["use_custom_ringlet"].required()
+            }
+            validator.transitions.maxLength(128).each { transition in
+            }
+            validator.attributes.validate { attributes in
+                attributes.length(2)
+                attributes[0].validate { validator in
+                    validator.name.equals("ringlet")
+                    validator.attributes["use_custom_ringlet"]
+                        .required()
+                }
+                attributes[1].validate { validator in
+                    validator.name.equals("module_dependencies")
+                }
             }
             //            Machine.path.attributes[0].attributes["use_custom_ringlet"].validator
             //                .if({ $0?.boolValue ?? false }, then: [
@@ -92,34 +96,8 @@ struct SwiftfsmMachineValidator: MachineValidator {
             //                    AnyValidator(Machine.path.attributes[0].variables.wrappedValue.enabled.validator.equalsTrue()),
             //
             //                ])
-            validator.attributes[1].validate { validator in
-                validator.name.equals("module_dependencies")
-            }
+            
         }
-//        return AnyValidator {
-//            Machine.path.name.validator
-//                    .alphadash()
-//                    .minLength(1)
-//                    .maxLength(64)
-//            Machine.path.states.validator.maxLength(128)
-////            Machine.path.states.validateEach {
-////                $0.name.validator
-////                    .alphadash()
-////                    .minLength(1)
-////                    .maxLength(64)
-////            }(swiftMachine)
-//            Machine.path.attributes.validator.length(2)
-//            Machine.path.attributes[0].name.validator.equals("ringlet")
-//            Machine.path.attributes[0].attributes["use_custom_ringlet"].validator.required()
-////            Machine.path.attributes[0].attributes["use_custom_ringlet"].validator
-////                .if({ $0?.boolValue ?? false }, then: [
-////                    AnyValidator(Machine.path.attributes[0].variables.validator.required()),
-////                    AnyValidator(Machine.path.attributes[0].variables.wrappedValue.name.validator.equals("ringlet_variables")),
-////                    AnyValidator(Machine.path.attributes[0].variables.wrappedValue.enabled.validator.equalsTrue()),
-////
-////                ])
-//            Machine.path.attributes[1].name.validator.equals("module_dependencies")
-//        }
     }
     
 }

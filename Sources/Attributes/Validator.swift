@@ -56,26 +56,28 @@
  *
  */
 
-public struct Validator<Path: PathProtocol>: _PathValidator {
+public struct Validator<P: PathProtocol>: _PathValidator {
     
-    public let path: Path
+    public typealias PathType = P
     
-    internal let _validate: (Path.Root, Path.Value) throws -> Void
+    public let path: PathType
     
-    public init(path: Path) {
+    internal let _validate: (PathType.Root, PathType.Value) throws -> Void
+    
+    public init(path: PathType) {
         self.init(path) { (_, _) in }
     }
     
-    internal init(_ path: Path, _validate: @escaping (Root, Value) throws -> Void) {
+    internal init(_ path: PathType, _validate: @escaping (PathType.Root, PathType.Value) throws -> Void) {
         self.path = path
         self._validate = _validate
     }
     
-    public func validate(_ root: Path.Root) throws {
+    public func validate(_ root: PathType.Root) throws {
         _ = try self._validate(root, root[keyPath: self.path.path])
     }
     
-    public func validate(@ValidatorBuilder<Path.Root> builder: (Self) -> [AnyValidator<Path.Root>]) -> AnyValidator<Path.Root> {
+    public func validate(@ValidatorBuilder<PathType.Root> builder: (Self) -> [AnyValidator<PathType.Root>]) -> AnyValidator<PathType.Root> {
         return AnyValidator(builder(self))
     }
     

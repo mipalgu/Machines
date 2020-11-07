@@ -60,6 +60,10 @@ public struct AnyValidator<Root>: ValidatorProtocol {
     
     private let _validate: (Root) throws -> Void
     
+    public init(validate: @escaping (Root) throws -> Void) {
+        self._validate = validate
+    }
+    
     public init<V: ValidatorProtocol>(_ validator: V) where V.Root == Root {
         self._validate = { try validator.validate($0) }
     }

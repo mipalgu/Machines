@@ -81,3 +81,27 @@ extension Path where Value == State {
     }
     
 }
+
+extension PathValidator where Value == State {
+    
+    var name: Validator<Path<Root, StateName>> {
+        return Validator(path: Path<Root, StateName>(path: path.path.appending(path: \.name), ancestors: path.fullPath))
+    }
+    
+    var actions: Validator<Path<Root, [String: Code]>> {
+        return Validator(path: Path<Root, [String: Code]>(path: path.path.appending(path: \.actions), ancestors: path.fullPath))
+    }
+    
+    var variables: Validator<Path<Root, [VariableList]>> {
+        return Validator(path: Path<Root, [VariableList]>(path: path.path.appending(path: \.variables), ancestors: path.fullPath))
+    }
+    
+    var attributes: Validator<Path<Root, [AttributeGroup]>> {
+        return Validator(path: Path<Root, [AttributeGroup]>(path: path.path.appending(path: \.attributes), ancestors: path.fullPath))
+    }
+    
+    var metaData: Validator<Path<Root, [AttributeGroup]>> {
+        return Validator(path:  Path<Root, [AttributeGroup]>(path: path.path.appending(path: \.metaData), ancestors: path.fullPath))
+    }
+    
+}
