@@ -59,7 +59,6 @@
 import XMI
 
 public enum LineAttributeType: Hashable {
-
     
     case bool
     case integer

@@ -60,11 +60,25 @@ import XMI
 
 public enum BlockAttributeType: Hashable {
     
+    public struct TableColumn: Hashable, Codable {
+        
+        public var name: String
+        
+        public var type: LineAttributeType
+        
+        public init(name: String, type: LineAttributeType) {
+            self.name = name
+            self.type = type
+        }
+        
+    }
+    
     case code(language: Language)
     case text
     indirect case collection(type: AttributeType)
     indirect case complex(layout: [String: AttributeType])
     case enumerableCollection(validValues: Set<String>)
+    case table(columns: [TableColumn])
     
 }
 
@@ -88,6 +102,9 @@ extension BlockAttributeType: Codable {
         if let enumCollection = try? EnumCollectionAttributeType(from: decoder) {
             self = .enumerableCollection(validValues: enumCollection.validValues)
         }
+        if let table = try? TableAttributeType(from: decoder) {
+            self = .table(columns: table.columns)
+        }
         throw DecodingError.dataCorrupted(
             DecodingError.Context(
                 codingPath: decoder.codingPath,
@@ -108,6 +125,8 @@ extension BlockAttributeType: Codable {
             try ComplexAttributeType(layout: layout).encode(to: encoder)
         case .enumerableCollection(let validValues):
             try EnumCollectionAttributeType(validValues: validValues).encode(to: encoder)
+        case .table(columns: let columns):
+            try TableAttributeType(columns: columns).encode(to: encoder)
         }
     }
     
@@ -149,6 +168,14 @@ extension BlockAttributeType: Codable {
         
     }
     
+    private struct TableAttributeType: Hashable, Codable, XMIConvertible {
+        
+        var xmiName: String? { "TableAttributeType" }
+        
+        var columns: [BlockAttributeType.TableColumn]
+        
+    }
+    
 }
 
 extension BlockAttributeType: XMIConvertible {
@@ -165,6 +192,8 @@ extension BlockAttributeType: XMIConvertible {
             return ComplexAttributeType(layout: layout).xmiName
         case .enumerableCollection(let validValues):
             return EnumCollectionAttributeType(validValues: validValues).xmiName
+        case .table(columns: let columns):
+            return TableAttributeType(columns: columns).xmiName
         }
     }
     

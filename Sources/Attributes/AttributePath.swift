@@ -107,6 +107,10 @@ extension ReadOnlyPathProtocol where Value == Attribute {
         return ReadOnlyPath(keyPath: keyPath.appending(path: \.enumerableCollectionValue), ancestors: fullPath)
     }
     
+    public var tableValue: ReadOnlyPath<Root, [[LineAttribute]]?> {
+        return ReadOnlyPath(keyPath: keyPath.appending(path: \.tableValue), ancestors: fullPath)
+    }
+    
     public var collectionBools: ReadOnlyPath<Root, [Bool]?> {
         return ReadOnlyPath(keyPath: keyPath.appending(path: \.collectionBools), ancestors: fullPath)
     }
@@ -145,6 +149,10 @@ extension ReadOnlyPathProtocol where Value == Attribute {
     
     public var collectionEnumerableCollection: ReadOnlyPath<Root, [Set<String>]?> {
         return ReadOnlyPath(keyPath: keyPath.appending(path: \.collectionEnumerableCollection), ancestors: fullPath)
+    }
+    
+    public var collectionTable: ReadOnlyPath<Root, [[[LineAttribute]]]?> {
+        return ReadOnlyPath(keyPath: keyPath.appending(path: \.collectionTable), ancestors: fullPath)
     }
     
 }
@@ -199,6 +207,10 @@ extension ValidationPath where Value == Attribute {
         return ValidationPath<ReadOnlyPath<Root, Set<String>?>>(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.enumerableCollectionValue), ancestors: path.fullPath))
     }
     
+    public var tableValue: ValidationPath<ReadOnlyPath<Root, [[LineAttribute]]?>> {
+        return ValidationPath<ReadOnlyPath<Root, [[LineAttribute]]?>>(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.tableValue), ancestors: path.fullPath))
+    }
+    
     public var collectionBools: ValidationPath<ReadOnlyPath<Root, [Bool]?>> {
         return ValidationPath<ReadOnlyPath<Root, [Bool]?>>(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.collectionBools), ancestors: path.fullPath))
     }
@@ -237,6 +249,10 @@ extension ValidationPath where Value == Attribute {
     
     public var collectionEnumerableCollection: ValidationPath<ReadOnlyPath<Root, [Set<String>]?>> {
         return ValidationPath<ReadOnlyPath<Root, [Set<String>]?>>(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.collectionEnumerableCollection), ancestors: path.fullPath))
+    }
+    
+    public var collectionTable: ValidationPath<ReadOnlyPath<Root, [[[LineAttribute]]]?>> {
+        return ValidationPath<ReadOnlyPath<Root, [[[LineAttribute]]]?>>(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.collectionTable), ancestors: path.fullPath))
     }
     
 }

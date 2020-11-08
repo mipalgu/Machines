@@ -71,6 +71,8 @@ public enum BlockAttribute: Hashable {
     
     case enumerableCollection(_ values: Set<String>, validValues: Set<String>)
     
+    case table([[LineAttribute]], columns: [BlockAttributeType.TableColumn])
+    
     public var type: BlockAttributeType {
         switch self {
         case .code(_, let language):
@@ -83,6 +85,8 @@ public enum BlockAttribute: Hashable {
             return .complex(layout: layout)
         case .enumerableCollection(_, let validValues):
             return .enumerableCollection(validValues: validValues)
+        case .table(_, columns: let columns):
+            return .table(columns: columns)
         }
     }
     
@@ -125,6 +129,15 @@ public enum BlockAttribute: Hashable {
     public var enumerableCollectionValue: Set<String>? {
         switch self {
         case .enumerableCollection(let values, _):
+            return values
+        default:
+            return nil
+        }
+    }
+    
+    public var tableValue: [[LineAttribute]]? {
+        switch self {
+        case .table(let values, _):
             return values
         default:
             return nil
@@ -295,6 +308,28 @@ public enum BlockAttribute: Hashable {
         }
     }
     
+    public var collectionTable: [[[LineAttribute]]]? {
+        switch self {
+        case .collection(let values, type: let type):
+            switch type {
+            case .block(.table):
+                guard let values: [[[LineAttribute]]] = values.failMap({
+                    guard let elementValues = $0.tableValue else {
+                        return nil
+                    }
+                    return elementValues
+                }) else {
+                    return nil
+                }
+                return values
+            default:
+                return nil
+            }
+        default:
+            return nil
+        }
+    }
+    
 }
 
 extension BlockAttribute: Codable {
@@ -322,6 +357,9 @@ extension BlockAttribute: Codable {
         if let enumCollection = try? EnumCollectionAttribute(from: decoder) {
             self = .enumerableCollection(enumCollection.values, validValues: enumCollection.cases)
         }
+        if let table = try? TableAttribute(from: decoder) {
+            self = .table(table.rows, columns: table.columns)
+        }
         throw DecodingError.dataCorrupted(
             DecodingError.Context(
                 codingPath: decoder.codingPath,
@@ -342,6 +380,8 @@ extension BlockAttribute: Codable {
             try ComplexAttribute(values: values, layout: layout).encode(to: encoder)
         case .enumerableCollection(let values, let cases):
             try EnumCollectionAttribute(cases: cases, values: values).encode(to: encoder)
+        case .table(let rows, columns: let columns):
+            try TableAttribute(rows: rows, columns: columns).encode(to: encoder)
         }
     }
     
@@ -395,10 +435,13 @@ extension BlockAttribute: Codable {
         
         var values: Set<String>
         
-        init(cases: Set<String>, values: Set<String>) {
-            self.cases = cases
-            self.values = values
-        }
+    }
+    
+    private struct TableAttribute: Hashable, Codable {
+        
+        var rows: [[LineAttribute]]
+        
+        var columns: [BlockAttributeType.TableColumn]
         
     }
     
@@ -418,6 +461,8 @@ extension BlockAttribute: XMIConvertible {
             return "ComplexAttribute"
         case .enumerableCollection:
             return "EnumerableAttribute"
+        case .table:
+            return "TableAttribute"
         }
     }
     

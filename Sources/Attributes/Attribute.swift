@@ -92,6 +92,8 @@ public enum Attribute: Hashable {
                 return .complex(layout: layout)
             case .enumerableCollection(_, let validValues):
                 return .enumerableCollection(validValues: validValues)
+            case .table(_, columns: let columns):
+                return .table(columns: columns.map { ($0.name, $0.type) })
             }
         }
     }
@@ -195,6 +197,15 @@ public enum Attribute: Hashable {
         }
     }
     
+    public var tableValue: [[LineAttribute]]? {
+        switch self {
+        case .block(let value):
+            return value.tableValue
+        default:
+            return nil
+        }
+    }
+    
     public var collectionBools: [Bool]? {
         switch self {
         case .block(let blockAttribute):
@@ -285,6 +296,15 @@ public enum Attribute: Hashable {
         }
     }
     
+    public var collectionTable: [[[LineAttribute]]]? {
+        switch self {
+        case .block(let blockAttribute):
+            return blockAttribute.collectionTable
+        default:
+            return nil
+        }
+    }
+    
     public init(lineAttribute: LineAttribute) {
         self = .line(lineAttribute)
     }
@@ -361,6 +381,10 @@ public enum Attribute: Hashable {
         return .block(.collection(enumerables.map { Attribute.enumerableCollection($0, validValues: validValues) }, type: .enumerableCollection(validValues: validValues)))
     }
     
+    public static func collection(tables: [[[LineAttribute]]], columns: [(name: String, type: LineAttributeType)]) -> Attribute {
+        return .block(.collection(tables.map { Attribute.table($0, columns: columns) }, type: .table(columns: columns)))
+    }
+    
     public static func collection(collection: [[Attribute]], type: AttributeType) -> Attribute {
         return .block(.collection(collection.map { Attribute.collection($0, type: type) }, type: type))
     }
@@ -379,6 +403,10 @@ public enum Attribute: Hashable {
     
     public static func enumerableCollection(_ value: Set<String>, validValues: Set<String>) -> Attribute {
         return .block(.enumerableCollection(value, validValues: validValues))
+    }
+    
+    public static func table(_ rows: [[LineAttribute]], columns: [(name: String, type: LineAttributeType)]) -> Attribute {
+        return .block(.table(rows, columns: columns.map { BlockAttributeType.TableColumn(name: $0.name, type: $0.type) }))
     }
     
 }

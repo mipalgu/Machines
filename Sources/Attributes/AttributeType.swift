@@ -116,6 +116,10 @@ public enum AttributeType: Hashable {
     public static func enumerableCollection(validValues: Set<String>) -> AttributeType {
         return .block(.enumerableCollection(validValues: validValues))
     }
+    
+    public static func table(columns: [(name: String, type: LineAttributeType)]) -> AttributeType {
+        return .block(.table(columns: columns.map { BlockAttributeType.TableColumn(name: $0.name, type: $0.type) }))
+    }
 
 }
 
