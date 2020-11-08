@@ -120,10 +120,10 @@ public enum LineAttribute: Hashable {
         }
     }
     
-    public var enumeratedValue: (String, validValues: Set<String>)? {
+    public var enumeratedValue: String? {
         switch self {
         case .enumerated(let value, validValues: let validValues):
-            return (value, validValues)
+            return value
         default:
             return nil
         }

@@ -132,7 +132,7 @@ public enum Attribute: Hashable {
         }
     }
     
-    public var enumeratedValue: (String, Set<String>)? {
+    public var enumeratedValue: String? {
         switch self {
         case .line(let value):
             return value.enumeratedValue
@@ -168,7 +168,7 @@ public enum Attribute: Hashable {
         }
     }
     
-    public var collectionValue: ([Attribute], type: AttributeType)? {
+    public var collectionValue: [Attribute]? {
         switch self {
         case .block(let value):
             return value.collectionValue
@@ -177,7 +177,7 @@ public enum Attribute: Hashable {
         }
     }
     
-    public var complexValue: ([String: Attribute], layout: [String: AttributeType])? {
+    public var complexValue: [String: Attribute]? {
         switch self {
         case .block(let value):
             return value.complexValue
@@ -186,7 +186,7 @@ public enum Attribute: Hashable {
         }
     }
     
-    public var enumerableCollectionValue: (Set<String>, validValues: Set<String>)? {
+    public var enumerableCollectionValue: Set<String>? {
         switch self {
         case .block(let value):
             return value.enumerableCollectionValue
@@ -231,7 +231,7 @@ public enum Attribute: Hashable {
         }
     }
     
-    public var collectionEnumerated: ([String], validValues: Set<String>)? {
+    public var collectionEnumerated: [String]? {
         switch self {
         case .block(let blockAttribute):
             return blockAttribute.collectionEnumerated
@@ -267,7 +267,7 @@ public enum Attribute: Hashable {
         }
     }
     
-    public var collectionComplex: ([[String: Attribute]], layout: [String: AttributeType])? {
+    public var collectionComplex: [[String: Attribute]]? {
         switch self {
         case .block(let blockAttribute):
             return blockAttribute.collectionComplex
@@ -276,7 +276,7 @@ public enum Attribute: Hashable {
         }
     }
     
-    public var collectionEnumerableCollection: ([Set<String>], validValues: Set<String>)? {
+    public var collectionEnumerableCollection: [Set<String>]? {
         switch self {
         case .block(let blockAttribute):
             return blockAttribute.collectionEnumerableCollection

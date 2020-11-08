@@ -210,6 +210,16 @@ struct SwiftfsmConverter: Converter, MachineValidator {
             ]
         )
         attributes.append(moduleDependencies)
+        let settings = AttributeGroup(
+            name: "settings",
+            variables: nil,
+            fields: [
+                "suspend_state": .enumerated(validValues: Set(swiftMachine.states.map(\.name)))
+            ],
+            attributes: swiftMachine.suspendState.map { ["suspend_state": Attribute.enumerated($0.name, validValues: Set(swiftMachine.states.map(\.name)))] } ?? [:],
+            metaData: [:]
+        )
+        attributes.append(settings)
         let states = swiftMachine.states.map { (state) -> State in
             let settingsFields: [String: AttributeType]
             let settingsAttributes: [String: Attribute]
@@ -331,7 +341,6 @@ struct SwiftfsmConverter: Converter, MachineValidator {
             name: swiftMachine.name,
             filePath: swiftMachine.filePath,
             initialState: swiftMachine.initialState.name,
-            suspendState: swiftMachine.suspendState?.name ?? swiftMachine.initialState.name,
             states: states,
             transitions: transitions,
             variables: variables,
@@ -412,7 +421,7 @@ struct SwiftfsmConverter: Converter, MachineValidator {
             let vars = try stateVariablesList.variables.enumerated().map { (varIndex, variable) in
                 try self.parseNormalVariable(variable, attributePath: "states[\(index)].state_variables.variables[\(varIndex)]")
             }
-            let externalVariablesSet: Set<String>? = settings.attributes["external_variables"]?.enumerableCollectionValue?.0
+            let externalVariablesSet: Set<String>? = settings.attributes["external_variables"]?.enumerableCollectionValue
             let externalVariables: [SwiftMachines.Variable]? = externalVariablesSet?.compactMap { label in machineVariables["external_variables"]?.first { $0.label == label } }
             return SwiftMachines.State(
                 name: state.name,
@@ -423,14 +432,16 @@ struct SwiftfsmConverter: Converter, MachineValidator {
                 transitions: transitions[state.name] ?? []
             )
         }
-        guard let initialState = states.first(where: { $0.name == String(machine.initialState) }) else {
+        guard let initialState = states.first(where: { $0.name == String(machine.initialState!) }) else {
             throw ConversionError(message: "Initial state does not exist in the states array")
         }
-        let suspendState = states.first(where: { $0.name == String(machine.suspendState) })
+        let suspendState = machine.attributes[2].attributes["suspend_state"]?.enumeratedValue.map { stateName in
+            return states.first(where: { stateName == $0.name })
+        } ?? nil
         guard let moduleDependencies = machine.attributes.first(where: { $0.name == "module_dependencies" }) else {
             throw ConversionError(message: "Missing required attributes module_dependencies")
         }
-        let packageDependencies = try (moduleDependencies.attributes["packages"]?.collectionComplex?.0.enumerated().map {
+        let packageDependencies = try (moduleDependencies.attributes["packages"]?.collectionComplex?.enumerated().map {
             try self.parsePackageDependencies($1, attributePath: "module_dependencies.packages[\($0)]")
         }) ?? []
         return SwiftMachines.Machine(
@@ -478,7 +489,7 @@ struct SwiftfsmConverter: Converter, MachineValidator {
     
     private func parseExternals(_ variable: Variable, attributePath: String) throws -> SwiftMachines.Variable {
         let variable = try self.parseVariable(variable, attributePath: attributePath)
-        guard let (accessTypeStr, _) = variable.extraFields["access_type"]?.enumeratedValue else {
+        guard let accessTypeStr = variable.extraFields["access_type"]?.enumeratedValue else {
             throw ConversionError(message: "Missing required field \(attributePath).access_type")
         }
         guard let accessType = SwiftMachines.Variable.AccessType(rawValue: accessTypeStr) else {
@@ -502,7 +513,7 @@ struct SwiftfsmConverter: Converter, MachineValidator {
     
     private func parseNormalVariable(_ variable: Variable, attributePath: String) throws -> SwiftMachines.Variable {
         let variable = try self.parseVariable(variable, attributePath: attributePath)
-        guard let (accessTypeStr, _) = variable.extraFields["access_type"]?.enumeratedValue else {
+        guard let accessTypeStr = variable.extraFields["access_type"]?.enumeratedValue else {
             throw ConversionError(message: "Missing required field \(attributePath).access_type")
         }
         guard let accessType = SwiftMachines.Variable.AccessType(rawValue: accessTypeStr) else {

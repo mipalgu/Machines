@@ -70,8 +70,9 @@ struct SwiftfsmMachineValidator: MachineValidator {
     private func validate(_ machine: Machine) throws {
         try machine.validate { (validator: ValidationPath<Path<Machine, Machine>>) in
             validator.name.alphadash().notEmpty().maxLength(64)
+            validator.initialState.required()
             validator.initialState.in(machine.path.states, transform: { Set($0.map { $0.name }) })
-            validator.suspendState.in(machine.path.states, transform: { Set($0.map { $0.name }) })
+            //validator.suspendState.in(machine.path.states, transform: { Set($0.map { $0.name }) })
             validator.states.maxLength(128)
             validator.states.each { (state: ValidationPath<ReadOnlyPath<Machine, State>>) in
                 state.name
@@ -108,12 +109,11 @@ struct SwiftfsmMachineValidator: MachineValidator {
                 }
                 transition.attributes.empty()
             }
-            validator.attributes.length(2)
+            validator.attributes.length(3)
             validator.attributes.validate { attributes in
                 attributes[0].validate { ringlet in
                     ringlet.name.equals("ringlet")
                     ringlet.attributes["use_custom_ringlet"].required()
-                    ringlet.attributes["use_custom_ringlet"]
                         .if { $0?.boolValue ?? false }
                         then: {
                             ringlet.variables.required()
@@ -125,6 +125,14 @@ struct SwiftfsmMachineValidator: MachineValidator {
                 }
                 attributes[1].validate { validator in
                     validator.name.equals("module_dependencies")
+                }
+                attributes[2].validate { settings in
+                    settings.name.equals("settings")
+                    settings.fields["suspend_state"].required()
+                    settings.fields["suspend_state"].wrappedValue.equals(AttributeType.enumerated(validValues: Set(machine.states.map { $0.name })))
+                    settings.attributes["suspend_state"].required()
+                    settings.attributes["suspend_state"].wrappedValue.enumeratedValue.required()
+                    settings.attributes["suspend_state"].wrappedValue.enumeratedValue.wrappedValue.in(Machine.path.states, transform: { Set($0.map {$0.name}) })
                 }
             }
         }

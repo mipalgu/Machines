@@ -99,14 +99,7 @@ public struct Machine: Hashable, Codable, PathContainer {
     /// The name of the initial state.
     ///
     /// The name should represent the name of a state within the `states` array.
-    public internal(set) var initialState: StateName
-    
-    /// The name of the suspendState.
-    ///
-    /// The suspend state is the state that, when it is the current state,
-    /// denotes that the machine is suspended. The name of the suspendState
-    /// should represent the name of a state within the `states` array.
-    public internal(set) var suspendState: StateName
+    public internal(set) var initialState: StateName?
     
     /// The accepting states of the machine.
     ///
@@ -188,8 +181,7 @@ public struct Machine: Hashable, Codable, PathContainer {
         semantics: Semantics,
         name: String,
         filePath: URL,
-        initialState: StateName,
-        suspendState: StateName,
+        initialState: StateName?,
         states: [State] = [],
         transitions: [Transition] = [],
         variables: [VariableList],
@@ -200,7 +192,6 @@ public struct Machine: Hashable, Codable, PathContainer {
         self.name = name
         self.filePath = filePath
         self.initialState = initialState
-        self.suspendState = suspendState
         self.states = states
         self.transitions = transitions
         self.variables = variables

@@ -104,28 +104,28 @@ public enum BlockAttribute: Hashable {
         }
     }
     
-    public var collectionValue: ([Attribute], type: AttributeType)? {
+    public var collectionValue: [Attribute]? {
         switch self {
-        case .collection(let value, let type):
-            return (value, type)
+        case .collection(let value, _):
+            return value
         default:
             return nil
         }
     }
     
-    public var complexValue: ([String: Attribute], layout: [String: AttributeType])? {
+    public var complexValue: [String: Attribute]? {
         switch self {
-        case .complex(let values, let layout):
-            return (values, layout)
+        case .complex(let values, _):
+            return values
         default:
             return nil
         }
     }
     
-    public var enumerableCollectionValue: (Set<String>, validValues: Set<String>)? {
+    public var enumerableCollectionValue: Set<String>? {
         switch self {
-        case .enumerableCollection(let values, let validValues):
-            return (values, validValues)
+        case .enumerableCollection(let values, _):
+            return values
         default:
             return nil
         }
@@ -187,20 +187,20 @@ public enum BlockAttribute: Hashable {
         }
     }
     
-    public var collectionEnumerated: ([String], validValues: Set<String>)? {
+    public var collectionEnumerated: [String]? {
         switch self {
         case .collection(let values, type: let type):
             switch type {
-            case .line(.enumerated(let validValues)):
+            case .line(.enumerated):
                 guard let values: [String] = values.failMap({
-                    guard let (elementValue, elementValidValues) = $0.enumeratedValue, elementValidValues == validValues else {
+                    guard let elementValue = $0.enumeratedValue else {
                         return nil
                     }
                     return elementValue
                 }) else {
                     return nil
                 }
-                return (values, validValues)
+                return values
             default:
                 return nil
             }
@@ -251,20 +251,20 @@ public enum BlockAttribute: Hashable {
         }
     }
     
-    public var collectionComplex: ([[String: Attribute]], layout: [String: AttributeType])? {
+    public var collectionComplex: [[String: Attribute]]? {
         switch self {
         case .collection(let values, type: let type):
             switch type {
-            case .block(.complex(let layout)):
+            case .block(.complex):
                 guard let values: [[String: Attribute]] = values.failMap({
-                    guard let (elementValues, elementLayout) = $0.complexValue, elementLayout == layout else {
+                    guard let elementValues = $0.complexValue else {
                         return nil
                     }
                     return elementValues
                 }) else {
                     return nil
                 }
-                return (values, layout)
+                return values
             default:
                 return nil
             }
@@ -273,20 +273,20 @@ public enum BlockAttribute: Hashable {
         }
     }
     
-    public var collectionEnumerableCollection: ([Set<String>], validValues: Set<String>)? {
+    public var collectionEnumerableCollection: [Set<String>]? {
         switch self {
         case .collection(let values, type: let type):
             switch type {
-            case .block(.enumerableCollection(let validValues)):
+            case .block(.enumerableCollection):
                 guard let values: [Set<String>] = values.failMap({
-                    guard let (elementValues, elementValidValues) = $0.enumerableCollectionValue, elementValidValues == validValues else {
+                    guard let elementValues = $0.enumerableCollectionValue else {
                         return nil
                     }
                     return elementValues
                 }) else {
                     return nil
                 }
-                return (values, validValues)
+                return values
             default:
                 return nil
             }
