@@ -201,6 +201,10 @@ extension Machine {
         return Path(path: \Machine.self, ancestors: [])
     }
     
+    public mutating func addItem<Path: PathProtocol>(attribute: Path) throws where Path.Root == Machine {}
+    
+    public mutating func deleteItem<Path: PathProtocol>(attribute: Path) throws where Path.Root == Machine {}
+    
     public mutating func modify<Path: PathProtocol>(attribute: Path, value: Path.Value) throws where Path.Root == Machine {
         let backup = self
         self[keyPath: attribute.path] = value
