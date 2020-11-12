@@ -59,7 +59,7 @@
 import Attributes
 import Foundation
 
-extension Path where Value == Machine {
+public extension Path where Value == Machine {
     
     var name: Path<Root, String> {
         return Path<Root, String>(path: path.appending(path: \.name), ancestors: fullPath)
@@ -95,7 +95,7 @@ extension Path where Value == Machine {
     
 }
 
-extension ValidationPath where Value == Machine {
+public extension ValidationPath where Value == Machine {
     
     var name: ValidationPath<ReadOnlyPath<Root, String>> {
         return ValidationPath<ReadOnlyPath<Root, String>>(path: ReadOnlyPath<Root, String>(keyPath: path.keyPath.appending(path: \.name), ancestors: path.fullPath))

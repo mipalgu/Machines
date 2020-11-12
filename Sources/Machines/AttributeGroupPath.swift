@@ -58,7 +58,7 @@
 
 import Attributes
 
-extension Path where Value == AttributeGroup {
+public extension Path where Value == AttributeGroup {
     
     var name: Path<Root, String> {
         return Path<Root, String>(path: path.appending(path: \.name), ancestors: self.ancestors + [AnyPath(self)])
@@ -82,7 +82,7 @@ extension Path where Value == AttributeGroup {
     
 }
 
-extension ValidationPath where Value == AttributeGroup {
+public extension ValidationPath where Value == AttributeGroup {
     
     var name: ValidationPath<ReadOnlyPath<Root, String>> {
         return ValidationPath<ReadOnlyPath<Root, String>>(path: ReadOnlyPath<Root, String>(keyPath: path.keyPath.appending(path: \.name), ancestors: path.fullPath))
