@@ -77,8 +77,7 @@ import Attributes
 /// for swiftfsm machines for example.
 ///
 /// - SeeAlso: `SwiftMachinesConvertible`.
-public struct Machine: Hashable, Codable, PathContainer {
-    
+public struct Machine: PathContainer {
     
     public enum Semantics: String, Hashable, Codable {
         case other
@@ -86,6 +85,8 @@ public struct Machine: Hashable, Codable, PathContainer {
         case clfsm
         case vhdl
     }
+    
+    private let mutator: MachineMutator
     
     /// The underlying semantics which this meta machine follows.
     public internal(set) var semantics: Semantics
@@ -154,15 +155,10 @@ public struct Machine: Hashable, Codable, PathContainer {
     /// - Parameter initialState: The name of the starting state of the machine
     /// within the `states` array.
     ///
-    /// - Parameter suspendState: The name of the state which denots that the
-    /// machine is suspended representing a state within the `states` array.
-    ///
     /// - Parameter states: All states within the machine.
     ///
     /// - Parameter transitions: All transitions within the machine, even those
     /// that aren't attached to states.
-    ///
-    /// - Parameter variables: A list of variables denoted by a unique names.
     ///
     /// - Parameter attributes: All attributes of the meta machine that detail
     /// additional fields for custom semantics provided by a particular
@@ -181,12 +177,138 @@ public struct Machine: Hashable, Codable, PathContainer {
         metaData: [AttributeGroup]
     ) {
         self.semantics = semantics
+        switch semantics {
+        case .clfsm:
+            fatalError("clfsm semantics are not yet implemented.")
+        case .swiftfsm:
+            self.mutator = SwiftfsmConverter()
+        case .vhdl:
+            fatalError("vhdl semantics are not yet implemented.")
+        case .other:
+            fatalError("Use the mutator constructor if you wish to use an undefined semantics")
+        }
         self.filePath = filePath
         self.initialState = initialState
         self.states = states
         self.transitions = transitions
         self.attributes = attributes
         self.metaData = metaData
+    }
+    
+    /// Create a new `Machine`.
+    ///
+    /// Creates a new meta machine model.
+    ///
+    /// - Parameter semantics: A `MachineMutator` responsible for performing
+    /// mutating operations on the machine.
+    ///
+    /// - Parameter initialState: The name of the starting state of the machine
+    /// within the `states` array.
+    ///
+    /// - Parameter states: All states within the machine.
+    ///
+    /// - Parameter transitions: All transitions within the machine, even those
+    /// that aren't attached to states.
+    ///
+    /// - Parameter attributes: All attributes of the meta machine that detail
+    /// additional fields for custom semantics provided by a particular
+    /// scheduler.
+    ///
+    /// - Parameter metaData: Attributes which should be hidden from the user,
+    /// but detail additional field for custom semantics provided by a
+    /// particular scheduler.
+    public init(
+        mutator: MachineMutator,
+        filePath: URL,
+        initialState: StateName,
+        states: [State] = [],
+        transitions: [Transition] = [],
+        attributes: [AttributeGroup],
+        metaData: [AttributeGroup]
+    ) {
+        self.semantics = .other
+        self.mutator = mutator
+        self.filePath = filePath
+        self.initialState = initialState
+        self.states = states
+        self.transitions = transitions
+        self.attributes = attributes
+        self.metaData = metaData
+    }
+    
+}
+
+extension Machine: Equatable {
+    
+    public static func == (lhs: Machine, rhs: Machine) -> Bool {
+        return lhs.semantics == rhs.semantics
+            && lhs.filePath == rhs.filePath
+            && lhs.initialState == rhs.initialState
+            && lhs.states == rhs.states
+            && lhs.transitions == rhs.transitions
+            && lhs.attributes == rhs.attributes
+            && lhs.metaData == rhs.metaData
+    }
+    
+}
+
+extension Machine: Hashable {
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(self.semantics)
+        hasher.combine(self.filePath)
+        hasher.combine(self.initialState)
+        hasher.combine(self.states)
+        hasher.combine(self.transitions)
+        hasher.combine(self.attributes)
+        hasher.combine(self.metaData)
+    }
+    
+}
+
+extension Machine: Codable {
+    
+    public enum CodingKeys: CodingKey {
+        
+        case semantics
+        case filePath
+        case initialState
+        case states
+        case transitions
+        case attributes
+        case metaData
+        
+    }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let semantics = try container.decode(Semantics.self, forKey: .semantics)
+        let filePath = try container.decode(URL.self, forKey: .filePath)
+        let initialState = try container.decode(StateName.self, forKey: .initialState)
+        let states = try container.decode([State].self, forKey: .states)
+        let transitions = try container.decode([Transition].self, forKey: .transitions)
+        let attributes = try container.decode([AttributeGroup].self, forKey: .attributes)
+        let metaData = try container.decode([AttributeGroup].self, forKey: .metaData)
+        self.init(
+            semantics: semantics,
+            filePath: filePath,
+            initialState: initialState,
+            states: states,
+            transitions: transitions,
+            attributes: attributes,
+            metaData: metaData
+        )
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(self.semantics, forKey: .semantics)
+        try container.encode(self.filePath, forKey: .filePath)
+        try container.encode(self.initialState, forKey: .initialState)
+        try container.encode(self.states, forKey: .states)
+        try container.encode(self.transitions, forKey: .transitions)
+        try container.encode(self.attributes, forKey: .attributes)
+        try container.encode(self.metaData, forKey: .metaData)
     }
     
 }
@@ -201,28 +323,20 @@ extension Machine {
         return Path(path: \Machine.self, ancestors: [])
     }
     
-    public mutating func addItem<Path: PathProtocol>(attribute: Path) throws where Path.Root == Machine {}
+    public mutating func addItem<Path: PathProtocol>(attribute: Path) throws where Path.Root == Machine {
+        try self.mutator.addItem(attribute: attribute, machine: &self)
+    }
     
-    public mutating func deleteItem<Path: PathProtocol>(attribute: Path) throws where Path.Root == Machine {}
+    public mutating func deleteItem<Path: PathProtocol>(attribute: Path) throws where Path.Root == Machine {
+        try self.mutator.deleteItem(attribute: attribute, machine: &self)
+    }
     
     public mutating func modify<Path: PathProtocol>(attribute: Path, value: Path.Value) throws where Path.Root == Machine {
-        let backup = self
-        self[keyPath: attribute.path] = value
-        do {
-            try validate()
-        } catch let e {
-            self = backup
-            throw e
-        }
+        try self.mutator.modify(attribute: attribute, value: value, machine: &self)
     }
     
     public func validate() throws {
-        switch self.semantics {
-        case .swiftfsm:
-            try SwiftfsmMachineValidator().validate(machine: self)
-        default:
-            return
-        }
+        try self.mutator.validate(machine: self)
     }
     
 }

@@ -62,6 +62,7 @@ import Foundation
 
 struct SwiftfsmConverter: Converter, MachineValidator {
     
+    
     private let validator = SwiftfsmMachineValidator()
     
     var initial: Machine {
@@ -533,6 +534,20 @@ struct SwiftfsmConverter: Converter, MachineValidator {
     
     func validate(machine: Machine) throws {
         try self.validator.validate(machine: machine)
+    }
+    
+}
+
+extension SwiftfsmConverter: MachineMutator {
+
+    func addItem<Path>(attribute: Path, machine: inout Machine) throws where Path : PathProtocol, Path.Root == Machine {
+    }
+    
+    func deleteItem<Path>(attribute: Path, machine: inout Machine) throws where Path : PathProtocol, Path.Root == Machine {
+    }
+    
+    func modify<Path>(attribute: Path, value: Path.Value, machine: inout Machine) throws where Path : PathProtocol, Path.Root == Machine {
+        machine[keyPath: attribute.path] = value
     }
     
 }
