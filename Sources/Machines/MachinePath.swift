@@ -61,16 +61,12 @@ import Foundation
 
 public extension Path where Value == Machine {
     
-    var name: Path<Root, String> {
-        return Path<Root, String>(path: path.appending(path: \.name), ancestors: fullPath)
-    }
-    
     var filePath: Path<Root, URL> {
         return Path<Root, URL>(path: path.appending(path: \.filePath), ancestors: fullPath)
     }
     
-    var initialState: Path<Root, StateName?> {
-        return Path<Root, StateName?>(path: path.appending(path: \.initialState), ancestors: fullPath)
+    var initialState: Path<Root, StateName> {
+        return Path<Root, StateName>(path: path.appending(path: \.initialState), ancestors: fullPath)
     }
     
     var states: Path<Root, [State]> {
@@ -101,8 +97,8 @@ public extension ValidationPath where Value == Machine {
         return ValidationPath<ReadOnlyPath<Root, URL>>(path: ReadOnlyPath<Root, URL>(keyPath: path.keyPath.appending(path: \.filePath), ancestors: path.fullPath))
     }
     
-    var initialState: ValidationPath<ReadOnlyPath<Root, StateName?>> {
-        return ValidationPath<ReadOnlyPath<Root, StateName?>>(path: ReadOnlyPath<Root, StateName?>(keyPath: path.keyPath.appending(path: \.initialState), ancestors: path.fullPath))
+    var initialState: ValidationPath<ReadOnlyPath<Root, StateName>> {
+        return ValidationPath<ReadOnlyPath<Root, StateName>>(path: ReadOnlyPath<Root, StateName>(keyPath: path.keyPath.appending(path: \.initialState), ancestors: path.fullPath))
     }
     
     var states: ValidationPath<ReadOnlyPath<Root, [State]>> {

@@ -374,7 +374,6 @@ struct SwiftfsmConverter: Converter, MachineValidator {
         }
         return Machine(
             semantics: .swiftfsm,
-            name: swiftMachine.name,
             filePath: swiftMachine.filePath,
             initialState: swiftMachine.initialState.name,
             states: states,
@@ -450,7 +449,7 @@ struct SwiftfsmConverter: Converter, MachineValidator {
                 transitions: transitions[state.name] ?? []
             )
         }
-        guard let initialState = states.first(where: { $0.name == String(machine.initialState!) }) else {
+        guard let initialState = states.first(where: { $0.name == String(machine.initialState) }) else {
             throw ConversionError(message: "Initial state does not exist in the states array")
         }
         let suspendState = machine.attributes[2].attributes["suspend_state"]?.enumeratedValue.map { stateName in

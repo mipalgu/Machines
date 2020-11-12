@@ -70,7 +70,6 @@ struct SwiftfsmMachineValidator: MachineValidator {
     private func validate(_ machine: Machine) throws {
         try machine.validate { (validator: ValidationPath<Path<Machine, Machine>>) in
             validator.name.alphadash().notEmpty().maxLength(64)
-            validator.initialState.required()
             validator.initialState.in(machine.path.states, transform: { Set($0.map { $0.name }) })
             //validator.suspendState.in(machine.path.states, transform: { Set($0.map { $0.name }) })
             validator.states.maxLength(128)

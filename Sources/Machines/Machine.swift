@@ -91,7 +91,9 @@ public struct Machine: Hashable, Codable, PathContainer {
     public internal(set) var semantics: Semantics
     
     /// The name of the machine.
-    public internal(set) var name: String
+    public var name: String {
+        return self.filePath.lastPathComponent.components(separatedBy: ".")[0]
+    }
     
     /// The path to the .machine directory on the file system.
     public internal(set) var filePath: URL
@@ -99,7 +101,7 @@ public struct Machine: Hashable, Codable, PathContainer {
     /// The name of the initial state.
     ///
     /// The name should represent the name of a state within the `states` array.
-    public internal(set) var initialState: StateName?
+    public internal(set) var initialState: StateName
     
     /// The accepting states of the machine.
     ///
@@ -171,16 +173,14 @@ public struct Machine: Hashable, Codable, PathContainer {
     /// particular scheduler.
     public init(
         semantics: Semantics,
-        name: String,
         filePath: URL,
-        initialState: StateName?,
+        initialState: StateName,
         states: [State] = [],
         transitions: [Transition] = [],
         attributes: [AttributeGroup],
         metaData: [AttributeGroup]
     ) {
         self.semantics = semantics
-        self.name = name
         self.filePath = filePath
         self.initialState = initialState
         self.states = states
