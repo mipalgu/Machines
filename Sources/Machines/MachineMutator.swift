@@ -62,6 +62,10 @@ public protocol MachineMutator {
     
     func addItem<Path: PathProtocol>(attribute: Path, machine: inout Machine) throws where Path.Root == Machine
     
+    func newState(machine: inout Machine) throws
+    
+    func deleteState(atIndex index: Int, machine: inout Machine) throws
+    
     func deleteItem<Path: PathProtocol>(attribute: Path, machine: inout Machine) throws where Path.Root == Machine
     
     func modify<Path: PathProtocol>(attribute: Path, value: Path.Value, machine: inout Machine) throws where Path.Root == Machine

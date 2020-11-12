@@ -146,6 +146,18 @@ public struct Machine: PathContainer {
     /// then you should simply keep these values the same between modifications.
     public internal(set) var metaData: [AttributeGroup]
     
+    /// Fetches a keypath like structure for use when modifying and validating
+    /// properties of machines.
+    public var path: Path<Machine, Machine> {
+        return Path(path: \.self, ancestors: [])
+    }
+    
+    /// Fetches a keypath like structure for use when modifying and validating
+    /// properties of machines.
+    public static var path: Path<Machine, Machine> {
+        return Path(path: \Machine.self, ancestors: [])
+    }
+    
     /// Create a new `Machine`.
     ///
     /// Creates a new meta machine model.
@@ -236,6 +248,33 @@ public struct Machine: PathContainer {
         self.metaData = metaData
     }
     
+    /// Add a new item to a table attribute.
+    public mutating func addItem<Path: PathProtocol>(table attribute: Path) throws where Path.Root == Machine {
+        try self.mutator.addItem(attribute: attribute, machine: &self)
+    }
+    
+    public mutating func newState() throws {
+        try self.mutator.newState(machine: &self)
+    }
+    
+    public mutating func deleteState(atIndex index: Int) throws {
+        try self.mutator.deleteState(atIndex: index, machine: &self)
+    }
+    
+    /// Delete a specific item in a table attribute.
+    public mutating func deleteItem<Path: PathProtocol>(table attribute: Path) throws where Path.Root == Machine {
+        try self.mutator.deleteItem(attribute: attribute, machine: &self)
+    }
+    
+    /// Modify a specific attributes value.
+    public mutating func modify<Path: PathProtocol>(attribute: Path, value: Path.Value) throws where Path.Root == Machine {
+        try self.mutator.modify(attribute: attribute, value: value, machine: &self)
+    }
+    
+    public func validate() throws {
+        try self.mutator.validate(machine: self)
+    }
+    
 }
 
 extension Machine: Equatable {
@@ -309,34 +348,6 @@ extension Machine: Codable {
         try container.encode(self.transitions, forKey: .transitions)
         try container.encode(self.attributes, forKey: .attributes)
         try container.encode(self.metaData, forKey: .metaData)
-    }
-    
-}
-
-extension Machine {
-    
-    public var path: Path<Machine, Machine> {
-        return Path(path: \.self, ancestors: [])
-    }
-    
-    public static var path: Path<Machine, Machine> {
-        return Path(path: \Machine.self, ancestors: [])
-    }
-    
-    public mutating func addItem<Path: PathProtocol>(attribute: Path) throws where Path.Root == Machine {
-        try self.mutator.addItem(attribute: attribute, machine: &self)
-    }
-    
-    public mutating func deleteItem<Path: PathProtocol>(attribute: Path) throws where Path.Root == Machine {
-        try self.mutator.deleteItem(attribute: attribute, machine: &self)
-    }
-    
-    public mutating func modify<Path: PathProtocol>(attribute: Path, value: Path.Value) throws where Path.Root == Machine {
-        try self.mutator.modify(attribute: attribute, value: value, machine: &self)
-    }
-    
-    public func validate() throws {
-        try self.mutator.validate(machine: self)
     }
     
 }

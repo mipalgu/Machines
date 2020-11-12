@@ -410,7 +410,7 @@ struct SwiftfsmConverter: Converter, MachineValidator {
         } else {
             model = nil
         }
-        var resultType: String? = machine.attributes[1].attributes["result_type"]?.expressionValue.map { String($0) }
+        let resultType: String? = machine.attributes[1].attributes["result_type"]?.expressionValue.map { String($0) }
         guard let externalVariables = try machine.attributes[0].attributes["external_variables"]?.tableValue?.map(self.parseVariable) else {
             throw ConversionError(message: "Missing required variable list external_variables")
         }
@@ -541,13 +541,93 @@ struct SwiftfsmConverter: Converter, MachineValidator {
 extension SwiftfsmConverter: MachineMutator {
 
     func addItem<Path>(attribute: Path, machine: inout Machine) throws where Path : PathProtocol, Path.Root == Machine {
+        fatalError("addItem is not yet implemented.")
+    }
+    
+    func newState(machine: inout Machine) throws {
+        if machine.semantics != .swiftfsm {
+            throw ValidationError.unsupportedSemantics(machine.semantics)
+        }
+        let name = "State"
+        if nil == machine.states.first(where: { $0.name == name }) {
+            try machine.states.append(self.createState(named: name, forMachine: machine))
+        }
+        var num = 0
+        var stateName: String
+        repeat {
+            stateName = name + "\(num)"
+            num += 1
+        } while (nil != machine.states.reversed().first(where: { $0.name == stateName }))
+        try machine.states.append(self.createState(named: stateName, forMachine: machine))
     }
     
     func deleteItem<Path>(attribute: Path, machine: inout Machine) throws where Path : PathProtocol, Path.Root == Machine {
+        fatalError("deleteItem is not yet implemented")
+    }
+    
+    func deleteState(atIndex index: Int, machine: inout Machine) throws {
+        if machine.states.count >= index {
+            fatalError("can't delete state that doesn't exist")
+        }
+        if machine.states[index].name == machine.initialState {
+            fatalError("Can't delete the initial state")
+        }
+        machine.states.remove(at: index)
     }
     
     func modify<Path>(attribute: Path, value: Path.Value, machine: inout Machine) throws where Path : PathProtocol, Path.Root == Machine {
+        let backup = machine
         machine[keyPath: attribute.path] = value
+        do {
+            try self.validate(machine: machine)
+        } catch let e {
+            machine = backup
+            throw e
+        }
+    }
+    
+    private func createState(named name: String, forMachine machine: Machine) throws -> State {
+        guard machine.attributes.count >= 3 else {
+            throw NSError(domain: "asd", code: 0, userInfo: [:])
+        }
+        let actions = machine.attributes[2].attributes["actions"]?.collectionValue?.failMap { $0.lineValue } ?? ["onEntry", "main", "onExit"]
+        return State(
+            name: name,
+            actions: Dictionary(uniqueKeysWithValues: actions.map { ($0, Code("")) }),
+            attributes: [
+                AttributeGroup(
+                    name: "variables",
+                    fields: [
+                        "state_variables": .table(columns: [
+                            ("access_type", .enumerated(validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue }))),
+                            ("label", .line),
+                            ("type", .expression(language: .swift)),
+                            ("initial_value", .expression(language: .swift))
+                        ])
+                    ],
+                    attributes: [
+                        "state_variables": .table(
+                            [],
+                            columns: [
+                                ("access_type", .enumerated(validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue }))),
+                                ("label", .line),
+                                ("type", .expression(language: .swift)),
+                                ("initial_value", .expression(language: .swift))
+                            ]
+                        )
+                    ]
+                ),
+                AttributeGroup(
+                    name: "settings",
+                    fields: [
+                        "access_external_variables": .bool
+                    ],
+                    attributes: [
+                        "access_external_variables": .bool(false)
+                    ]
+                )
+            ]
+        )
     }
     
 }
