@@ -253,17 +253,29 @@ public struct Machine: PathContainer {
         try self.mutator.addItem(attribute: attribute, machine: &self)
     }
     
+    /// Add a new empty state to the machine.
     public mutating func newState() throws {
         try self.mutator.newState(machine: &self)
     }
     
-    public mutating func deleteState(atIndex index: Int) throws {
-        try self.mutator.deleteState(atIndex: index, machine: &self)
+    /// Add a new empty transition to the machine.
+    public mutating func newTransition(source: StateName, target: StateName, condition: Expression? = nil) throws {
+        try self.mutator.newTransition(source: source, target: target, condition: condition, machine: &self)
     }
     
     /// Delete a specific item in a table attribute.
     public mutating func deleteItem<Path: PathProtocol>(table attribute: Path) throws where Path.Root == Machine {
         try self.mutator.deleteItem(attribute: attribute, machine: &self)
+    }
+    
+    /// Delete a state at a specific index.
+    public mutating func deleteState(atIndex index: Int) throws {
+        try self.mutator.deleteState(atIndex: index, machine: &self)
+    }
+    
+    /// Delete a transition at a specific index.
+    public mutating func deleteTransition(atIndex index: Int) throws {
+        try self.mutator.deleteTransition(atIndex: index, machine: &self)
     }
     
     /// Modify a specific attributes value.

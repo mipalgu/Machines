@@ -545,20 +545,37 @@ extension SwiftfsmConverter: MachineMutator {
     }
     
     func newState(machine: inout Machine) throws {
-        if machine.semantics != .swiftfsm {
-            throw ValidationError.unsupportedSemantics(machine.semantics)
+        try perform(on: &machine) { machine in
+            if machine.semantics != .swiftfsm {
+                throw ValidationError.unsupportedSemantics(machine.semantics)
+            }
+            let name = "State"
+            if nil == machine.states.first(where: { $0.name == name }) {
+                try machine.states.append(self.createState(named: name, forMachine: machine))
+            }
+            var num = 0
+            var stateName: String
+            repeat {
+                stateName = name + "\(num)"
+                num += 1
+            } while (nil != machine.states.reversed().first(where: { $0.name == stateName }))
+            try machine.states.append(self.createState(named: stateName, forMachine: machine))
         }
-        let name = "State"
-        if nil == machine.states.first(where: { $0.name == name }) {
-            try machine.states.append(self.createState(named: name, forMachine: machine))
+    }
+    
+    public func newTransition(source: StateName, target: StateName, condition: Expression? = nil, machine: inout Machine) throws {
+        try perform(on: &machine) { machine in
+            guard nil != machine.states.first(where: { $0.name == source }), nil != machine.states.first(where: { $0.name == target }) else {
+                fatalError("You must attach a transition to a source and target state")
+            }
+            machine.transitions.append(
+                Transition(
+                    condition: condition,
+                    source: source,
+                    target: target
+                )
+            )
         }
-        var num = 0
-        var stateName: String
-        repeat {
-            stateName = name + "\(num)"
-            num += 1
-        } while (nil != machine.states.reversed().first(where: { $0.name == stateName }))
-        try machine.states.append(self.createState(named: stateName, forMachine: machine))
     }
     
     func deleteItem<Path>(attribute: Path, machine: inout Machine) throws where Path : PathProtocol, Path.Root == Machine {
@@ -566,18 +583,36 @@ extension SwiftfsmConverter: MachineMutator {
     }
     
     func deleteState(atIndex index: Int, machine: inout Machine) throws {
-        if machine.states.count >= index {
-            fatalError("can't delete state that doesn't exist")
+        try perform(on: &machine) { machine in
+            if machine.states.count >= index {
+                fatalError("can't delete state that doesn't exist")
+            }
+            if machine.states[index].name == machine.initialState {
+                fatalError("Can't delete the initial state")
+            }
+            machine.transitions.removeAll { $0.source == machine.states[index].name || $0.target == machine.states[index].name }
+            machine.states.remove(at: index)
         }
-        if machine.states[index].name == machine.initialState {
-            fatalError("Can't delete the initial state")
+    }
+    
+    public func deleteTransition(atIndex index: Int, machine: inout Machine) throws {
+        try perform(on: &machine) { machine in
+            guard machine.transitions.count >= index else {
+                fatalError("Cannot delete transition that does not exist")
+            }
+            machine.transitions.remove(at: index)
         }
-        machine.states.remove(at: index)
     }
     
     func modify<Path>(attribute: Path, value: Path.Value, machine: inout Machine) throws where Path : PathProtocol, Path.Root == Machine {
+        try perform(on: &machine) { machine in
+            machine[keyPath: attribute.path] = value
+        }
+    }
+    
+    private func perform(on machine: inout Machine, _ f: (inout Machine) throws -> Void) throws {
         let backup = machine
-        machine[keyPath: attribute.path] = value
+        try f(&machine)
         do {
             try self.validate(machine: machine)
         } catch let e {
