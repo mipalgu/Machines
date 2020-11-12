@@ -81,10 +81,6 @@ public extension Path where Value == Machine {
         Path<Root, [Transition]>(path: path.appending(path: \.transitions), ancestors: fullPath)
     }
     
-    var variables: Path<Root, [VariableList]> {
-        Path<Root, [VariableList]>(path: path.appending(path: \.variables), ancestors: fullPath)
-    }
-    
     var attributes: Path<Root, [AttributeGroup]> {
         return Path<Root, [AttributeGroup]>(path: path.appending(path: \.attributes), ancestors: fullPath)
     }
@@ -115,10 +111,6 @@ public extension ValidationPath where Value == Machine {
     
     var transitions: ValidationPath<ReadOnlyPath<Root, [Transition]>> {
         ValidationPath<ReadOnlyPath<Root, [Transition]>>(path: ReadOnlyPath<Root, [Transition]>(keyPath: path.keyPath.appending(path: \.transitions), ancestors: path.fullPath))
-    }
-    
-    var variables: ValidationPath<ReadOnlyPath<Root, [VariableList]>> {
-        ValidationPath<ReadOnlyPath<Root, [VariableList]>>(path: ReadOnlyPath<Root, [VariableList]>(keyPath: path.keyPath.appending(path: \.variables), ancestors: path.fullPath))
     }
     
     var attributes: ValidationPath<ReadOnlyPath<Root, [AttributeGroup]>> {

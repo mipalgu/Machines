@@ -68,10 +68,6 @@ extension Path where Value == State {
         return Path<Root, [String: Code]>(path: path.appending(path: \.actions), ancestors: fullPath)
     }
     
-    var variables: Path<Root, [VariableList]> {
-        return Path<Root, [VariableList]>(path: path.appending(path: \.variables), ancestors: fullPath)
-    }
-    
     var attributes: Path<Root, [AttributeGroup]> {
         return Path<Root, [AttributeGroup]>(path: path.appending(path: \.attributes), ancestors: fullPath)
     }
@@ -90,10 +86,6 @@ extension ValidationPath where Value == State {
     
     var actions: ValidationPath<ReadOnlyPath<Root, [String: Code]>> {
         return ValidationPath<ReadOnlyPath<Root, [String: Code]>>(path: ReadOnlyPath<Root, [String: Code]>(keyPath: path.keyPath.appending(path: \.actions), ancestors: path.fullPath))
-    }
-    
-    var variables: ValidationPath<ReadOnlyPath<Root, [VariableList]>> {
-        return ValidationPath<ReadOnlyPath<Root, [VariableList]>>(path: ReadOnlyPath<Root, [VariableList]>(keyPath: path.keyPath.appending(path: \.variables), ancestors: path.fullPath))
     }
     
     var attributes: ValidationPath<ReadOnlyPath<Root, [AttributeGroup]>> {

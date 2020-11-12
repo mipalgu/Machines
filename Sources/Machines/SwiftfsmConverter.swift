@@ -122,36 +122,122 @@ struct SwiftfsmConverter: Converter, MachineValidator {
     
     func metaMachine(of swiftMachine: SwiftMachines.Machine) -> Machine {
         var attributes: [AttributeGroup] = []
+        let variables = AttributeGroup(
+            name: "variables",
+            fields: [
+                "external_variables": .table(columns: [
+                    ("label", .line),
+                    ("type", .expression(language: .swift)),
+                    ("value", .expression(language: .swift))
+                ]),
+                "fsm_variables": .table(columns: [
+                    ("access_type", .enumerated(validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue }))),
+                    ("label", .line),
+                    ("type", .expression(language: .swift)),
+                    ("initial_value", .expression(language: .swift))
+                ])
+            ],
+            attributes: [
+                "external_variables": .table(
+                    swiftMachine.externalVariables.map {
+                        [
+                            .enumerated($0.accessType.rawValue, validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue })),
+                            .line($0.label),
+                            .expression(Expression($0.type), language: .swift),
+                            .expression(Expression($0.initialValue ?? ""), language: .swift)
+                        ]
+                    },
+                    columns: [
+                        ("access_type", .enumerated(validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue }))),
+                        ("label", .line),
+                        ("type", .expression(language: .swift)),
+                        ("value", .expression(language: .swift))
+                    ]
+                ),
+                "fsm_variables": .table(
+                    swiftMachine.vars.map {
+                        [
+                            .enumerated($0.accessType.rawValue, validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue })),
+                            .line($0.label),
+                            .expression(Expression($0.type), language: .swift),
+                            .expression(Expression($0.initialValue ?? ""), language: .swift)
+                        ]
+                    },
+                    columns: [
+                        ("access_type", .enumerated(validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue }))),
+                        ("label", .line),
+                        ("type", .expression(language: .swift)),
+                        ("initial_value", .expression(language: .swift))
+                    ]
+                ),
+            ]
+        )
+        attributes.append(variables)
+        let parameters = AttributeGroup(
+            name: "parameters",
+            fields: swiftMachine.parameters == nil ? ["enable_parameters": .bool] : [
+                "enable_parameters": .bool,
+                "parameters": .table(columns: [
+                    ("label", .line),
+                    ("type", .expression(language: .swift)),
+                    ("default_value", .expression(language: .swift))
+                ]),
+                "result_type": .expression(language: .swift)
+            ],
+            attributes: swiftMachine.parameters == nil ? ["enable_parameters": .bool(false)] : [
+                "enable_parameters": .bool(true),
+                "parameters": .table(
+                    (swiftMachine.parameters ?? []).map {
+                        [
+                            .line($0.label),
+                            .expression(Expression($0.type), language: .swift),
+                            .expression(Expression($0.initialValue ?? ""), language: .swift)
+                        ]
+                    },
+                    columns: [
+                        ("label", .line),
+                        ("type", .expression(language: .swift)),
+                        ("default_value", .expression(language: .swift))
+                    ]
+                ),
+                "result_type": .expression(Expression(swiftMachine.returnType ?? ""), language: .swift)
+            ]
+        )
+        attributes.append(parameters)
         if let model = swiftMachine.model {
             let group = AttributeGroup(
                 name: "ringlet",
-                variables: VariableList(
-                    name: "ringlet_variables",
-                    enabled: true,
-                    variables: model.ringlet.vars.map {
-                        Variable(
-                            label: $0.label,
-                            type: $0.type,
-                            extraFields: [
-                                "access_type": .enumerated($0.accessType.rawValue, validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue })),
-                                "initial_value": .expression($0.initialValue ?? "", language: .swift)
-                            ]
-                        )
-                    },
-                    extraFields: [
-                        "access_type": .enumerated(validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue })),
-                        "initial_value": .expression(language: .swift)
-                    ]
-                ),
                 fields: [
                     "use_custom_ringlet": .bool,
                     "actions": .collection(type: .line),
+                    "ringlet_variables": .table(columns: [
+                        ("access_type", .enumerated(validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue }))),
+                        ("label", .line),
+                        ("type", .expression(language: .swift)),
+                        ("initial_value", .expression(language: .swift))
+                    ]),
                     "imports": .code(language: .swift),
                     "execute": .code(language: .swift)
                 ],
                 attributes: [
                     "use_custom_ringlet": .bool(true),
                     "actions": .collection(lines: model.actions),
+                    "ringlet_variables": .table(
+                        model.ringlet.vars.map {
+                            [
+                                .enumerated($0.accessType.rawValue, validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue })),
+                                .line($0.label),
+                                .expression(Expression($0.type), language: .swift),
+                                .expression(Expression($0.initialValue ?? ""), language: .swift)
+                            ]
+                        },
+                        columns: [
+                            ("access_type", .enumerated(validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue }))),
+                            ("label", .line),
+                            ("type", .expression(language: .swift)),
+                            ("initial_value", .expression(language: .swift))
+                        ]
+                    ),
                     "imports": .code(model.ringlet.imports, language: .swift),
                     "execute": .code(model.ringlet.execute, language: .swift)
                 ]
@@ -160,7 +246,6 @@ struct SwiftfsmConverter: Converter, MachineValidator {
         } else {
             let group = AttributeGroup(
                 name: "ringlet",
-                variables: nil,
                 fields: [
                     "use_custom_ringlet": .bool
                 ],
@@ -212,7 +297,6 @@ struct SwiftfsmConverter: Converter, MachineValidator {
         attributes.append(moduleDependencies)
         let settings = AttributeGroup(
             name: "settings",
-            variables: nil,
             fields: [
                 "suspend_state": .enumerated(validValues: Set(swiftMachine.states.map(\.name)))
             ],
@@ -245,27 +329,36 @@ struct SwiftfsmConverter: Converter, MachineValidator {
             return State(
                 name: state.name,
                 actions: Dictionary(uniqueKeysWithValues: state.actions.map { ($0.name, $0.implementation) }),
-                variables: [
-                    VariableList(
-                        name: "state_variables",
-                        enabled: true,
-                        variables: state.vars.map {
-                            Variable(
-                                label: $0.label,
-                                type: $0.type,
-                                extraFields: [
-                                    "access_type": .enumerated($0.accessType.rawValue, validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue })),
-                                    "initial_value": .expression($0.initialValue ?? "", language: .swift)
+                attributes: [
+                    AttributeGroup(
+                        name: "variables",
+                        fields: [
+                            "state_variables": .table(columns: [
+                                ("access_type", .enumerated(validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue }))),
+                                ("label", .line),
+                                ("type", .expression(language: .swift)),
+                                ("initial_value", .expression(language: .swift))
+                            ])
+                        ],
+                        attributes: [
+                            "state_variables": .table(
+                                state.vars.map {
+                                    [
+                                        .enumerated($0.accessType.rawValue, validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue })),
+                                        .line($0.label),
+                                        .expression(Expression($0.type), language: .swift),
+                                        .expression(Expression($0.initialValue ?? ""), language: .swift)
+                                    ]
+                                },
+                                columns: [
+                                    ("access_type", .enumerated(validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue }))),
+                                    ("label", .line),
+                                    ("type", .expression(language: .swift)),
+                                    ("initial_value", .expression(language: .swift))
                                 ]
                             )
-                        },
-                        extraFields: [
-                            "access_type": .enumerated(validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue })),
-                            "initial_value": .expression(language: .swift)
                         ]
-                    )
-                ],
-                attributes: [
+                    ),
                     AttributeGroup(
                         name: "settings",
                         fields: settingsFields,
@@ -279,63 +372,6 @@ struct SwiftfsmConverter: Converter, MachineValidator {
                 Transition(condition: $0.condition, source: state.name, target: $0.target)
             }
         }
-        let variables = [
-            VariableList(
-                name: "external_variables",
-                enabled: true,
-                variables: swiftMachine.externalVariables.map {
-                    Variable(
-                        label: $0.label,
-                        type: $0.type,
-                        extraFields: [
-                            "access_type": .enumerated($0.accessType.rawValue, validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue })),
-                            "value": .expression($0.initialValue ?? "", language: .swift)
-                        ]
-                    )
-                },
-                extraFields: [
-                    "access_type": .enumerated(validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue })),
-                    "value": .expression(language: .swift)
-                ]
-            ),
-            VariableList(
-                name: "parameters",
-                enabled: swiftMachine.parameters != nil,
-                variables: (swiftMachine.parameters ?? []).map {
-                    Variable(
-                        label: $0.label,
-                        type: $0.type,
-                        extraFields: [
-                            "default_value": .expression($0.initialValue ?? "", language: .swift)
-                        ]
-                    )
-                },
-                extraFields: [
-                    "default_value": .expression(language: .swift)
-                ],
-                attributes: [
-                    "result_type": .expression(swiftMachine.returnType ?? "", language: .swift)
-                ]
-            ),
-            VariableList(
-                name: "fsm_variables",
-                enabled: true,
-                variables: swiftMachine.vars.map {
-                    Variable(
-                        label: $0.label,
-                        type: $0.type,
-                        extraFields: [
-                            "access_type": .enumerated($0.accessType.rawValue, validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue })),
-                            "initial_value": .expression($0.initialValue ?? "", language: .swift)
-                        ]
-                    )
-                },
-                extraFields: [
-                    "access_type": .enumerated(validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue })),
-                    "initial_value": .expression(language: .swift)
-                ]
-            )
-        ]
         return Machine(
             semantics: .swiftfsm,
             name: swiftMachine.name,
@@ -343,7 +379,6 @@ struct SwiftfsmConverter: Converter, MachineValidator {
             initialState: swiftMachine.initialState.name,
             states: states,
             transitions: transitions,
-            variables: variables,
             attributes: attributes,
             metaData: []
         )
@@ -365,11 +400,8 @@ struct SwiftfsmConverter: Converter, MachineValidator {
             guard let execute = ringletGroup.attributes["executes"]?.codeValue else {
                 throw ConversionError(message: "Missing required attribute ringlet.execute")
             }
-            guard let variablesList = ringletGroup.variables else {
-                throw ConversionError(message: "Missing required field ringlet.variables")
-            }
-            let vars = try variablesList.variables.enumerated().map { (index, variable) -> SwiftMachines.Variable in
-                try self.parseNormalVariable(variable, attributePath: "ringlet.variables.variables[\(index)]")
+            guard let vars = try ringletGroup.attributes["ringlet_variables"]?.tableValue?.map(self.parseVariable) else {
+                throw ConversionError(message: "Missing required variable list ringlet_variables")
             }
             model = SwiftMachines.Model(
                 actions: actions,
@@ -378,25 +410,14 @@ struct SwiftfsmConverter: Converter, MachineValidator {
         } else {
             model = nil
         }
-        var resultType: String? = nil
-        let machineVariables: [String: [SwiftMachines.Variable]] = try Dictionary(uniqueKeysWithValues: machine.variables.map { (list) -> (String, [SwiftMachines.Variable]) in
-            switch list.name {
-            case "parameters":
-                if let type = list.attributes["result_type"]?.expressionValue.map({ String($0) })?.trimmingCharacters(in: .whitespacesAndNewlines) {
-                    resultType = type.isEmpty ? nil : type
-                }
-                return (list.name, try list.variables.enumerated().map { try self.parseParameters($1, attributePath: "variables.parameters.variables[\($0)]") })
-            case "external_variables":
-                return (list.name, try list.variables.enumerated().map { try self.parseExternals($1, attributePath: "variables.external_variables[\($0)]") })
-            default:
-                return (list.name, try list.variables.enumerated().map { try self.parseNormalVariable($1, attributePath: "variables.\(list.name)[\($0)]") })
-            }
-        })
-        guard let externalVariables = machineVariables["external_variables"] else {
+        var resultType: String? = machine.attributes[1].attributes["result_type"]?.expressionValue.map { String($0) }
+        guard let externalVariables = try machine.attributes[0].attributes["external_variables"]?.tableValue?.map(self.parseVariable) else {
             throw ConversionError(message: "Missing required variable list external_variables")
         }
-        let parameters = machineVariables["parameters"]
-        guard let fsmVars = machineVariables["fsm_variables"] else {
+        let parameters: [SwiftMachines.Variable]? = (machine.attributes[1].attributes["enable_parameters"]?.boolValue ?? false)
+            ? try machine.attributes[1].attributes["parameters"]?.tableValue?.map(self.parseParameters)
+            : nil
+        guard let fsmVars = try machine.attributes[0].attributes["fsm_vars"]?.tableValue?.map(self.parseVariable) else {
             throw ConversionError(message: "Missing required variable list fsm_vars")
         }
         var transitions: [String: [SwiftMachines.Transition]] = [:]
@@ -415,14 +436,11 @@ struct SwiftfsmConverter: Converter, MachineValidator {
             guard let settings = state.attributes.first(where: { $0.name == "settings" }) else {
                 throw ConversionError(message: "Missing required attributes states[\(index)].settings")
             }
-            guard let stateVariablesList = state.variables.first(where: { $0.name == "state_variables" }) else {
-                throw ConversionError(message: "Missing required variables states[\(index).state_variables]")
-            }
-            let vars = try stateVariablesList.variables.enumerated().map { (varIndex, variable) in
-                try self.parseNormalVariable(variable, attributePath: "states[\(index)].state_variables.variables[\(varIndex)]")
+            guard let vars = try state.attributes[0].attributes["state_variables"]?.tableValue?.map(self.parseVariable) else {
+                throw ConversionError(message: "Missing required variable list state_variables")
             }
             let externalVariablesSet: Set<String>? = settings.attributes["external_variables"]?.enumerableCollectionValue
-            let externalVariables: [SwiftMachines.Variable]? = externalVariablesSet?.compactMap { label in machineVariables["external_variables"]?.first { $0.label == label } }
+            let externalVariables: [SwiftMachines.Variable]? = externalVariablesSet?.compactMap { label in externalVariables.first { $0.label == label } }
             return SwiftMachines.State(
                 name: state.name,
                 imports: settings.attributes["imports"]?.codeValue.map { String($0) } ?? "",
@@ -487,61 +505,31 @@ struct SwiftfsmConverter: Converter, MachineValidator {
         return SwiftMachines.PackageDependency(products: products, targets: targets, url: url, qualifiers: qualifiers)
     }
     
-    private func parseExternals(_ variable: Variable, attributePath: String) throws -> SwiftMachines.Variable {
-        let variable = try self.parseVariable(variable, attributePath: attributePath)
-        guard let accessTypeStr = variable.extraFields["access_type"]?.enumeratedValue else {
-            throw ConversionError(message: "Missing required field \(attributePath).access_type")
-        }
-        guard let accessType = SwiftMachines.Variable.AccessType(rawValue: accessTypeStr) else {
-            throw ConversionError(message: "Malformed value '\(accessTypeStr)', expected value in \(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue })")
-        }
-        guard let initialValueStr = variable.extraFields["value"]?.expressionValue else {
-            throw ConversionError(message: "Missing required field \(attributePath).value")
-        }
-        let initialValue = initialValueStr.trimmingCharacters(in: .whitespacesAndNewlines)
-        return SwiftMachines.Variable(accessType: accessType, label: variable.label, type: variable.type, initialValue: initialValue.isEmpty ? nil : initialValue)
+    private func parseParameters(_ variable: [LineAttribute]) throws -> SwiftMachines.Variable {
+        return try self.parseVariable(
+            [
+                LineAttribute.enumerated(
+                    SwiftMachines.Variable.AccessType.readOnly.rawValue,
+                    validValues: Set(SwiftMachines.Variable.AccessType.allCases.map(\.rawValue))
+                )
+            ] + variable
+        )
     }
     
-    private func parseParameters(_ variable: Variable, attributePath: String) throws -> SwiftMachines.Variable {
-        let variable = try self.parseVariable(variable, attributePath: attributePath)
-        guard let initialValueStr = variable.extraFields["default_value"]?.expressionValue else {
-            throw ConversionError(message: "Missing required field \(attributePath).default_value")
+    private func parseVariable(_ variable: [LineAttribute]) throws -> SwiftMachines.Variable {
+        guard variable.count == 4 else {
+            throw ConversionError(message: "Missing required fields")
         }
-        let initialValue = initialValueStr.trimmingCharacters(in: .whitespacesAndNewlines)
-        return SwiftMachines.Variable(accessType: .readOnly, label: variable.label, type: variable.type, initialValue: initialValue.isEmpty ? nil : initialValue)
-    }
-    
-    private func parseNormalVariable(_ variable: Variable, attributePath: String) throws -> SwiftMachines.Variable {
-        let variable = try self.parseVariable(variable, attributePath: attributePath)
-        guard let accessTypeStr = variable.extraFields["access_type"]?.enumeratedValue else {
-            throw ConversionError(message: "Missing required field \(attributePath).access_type")
+        guard let accessType = variable[0].enumeratedValue.flatMap({ SwiftMachines.Variable.AccessType(rawValue: $0) }) else {
+            throw ConversionError(message: "Missing required field")
         }
-        guard let accessType = SwiftMachines.Variable.AccessType(rawValue: accessTypeStr) else {
-            throw ConversionError(message: "Malformed value '\(accessTypeStr)', expected value in \(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue })")
+        guard let label = variable[1].expressionValue.map({ String($0) }) else {
+            throw ConversionError(message: "Missing required field")
         }
-        guard let initialValueStr = variable.extraFields["initial_value"]?.expressionValue else {
-            throw ConversionError(message: "Missing required field \(attributePath).initial_value")
+        guard let type = variable[2].expressionValue.map({ String($0) }) else {
+            throw ConversionError(message: "Missing required field")
         }
-        let initialValue = initialValueStr.trimmingCharacters(in: .whitespacesAndNewlines)
-        return SwiftMachines.Variable(accessType: accessType, label: variable.label, type: variable.type, initialValue: initialValue.isEmpty ? nil : initialValue)
-    }
-    
-    private func parseVariable(_ variable: Variable, attributePath: String) throws -> Variable {
-        let label = variable.label.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard let first = label.first else {
-            throw ConversionError(message: "Missing required field \(attributePath).label")
-        }
-        if !first.isLetter {
-            throw ConversionError(message: "The variable label must start with an alphabetic character \(attributePath).label")
-        }
-        if label.contains(where: { !$0.isNumber && !$0.isLetter && $0 != "_" }) {
-            throw ConversionError(message: "The variable label must be alphanumeric with underscores \(attributePath).label")
-        }
-        let type = variable.type.trimmingCharacters(in: .whitespacesAndNewlines)
-        if type.isEmpty {
-            throw ConversionError(message: "The type of the variable must not be empty")
-        }
-        return Variable(label: label, type: type, extraFields: variable.extraFields)
+        return SwiftMachines.Variable(accessType: accessType, label: label, type: type, initialValue: variable[3].expressionValue.map({ String($0) }))
     }
     
     func validate(machine: Machine) throws {

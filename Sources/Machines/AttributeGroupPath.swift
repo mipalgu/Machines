@@ -64,10 +64,6 @@ public extension Path where Value == AttributeGroup {
         return Path<Root, String>(path: path.appending(path: \.name), ancestors: self.ancestors + [AnyPath(self)])
     }
     
-    var variables: Path<Root, VariableList?> {
-        return Path<Root, VariableList?>(path: path.appending(path: \.variables), ancestors: fullPath)
-    }
-    
     var fields: Path<Root, [String: AttributeType]> {
         return Path<Root, [String: AttributeType]>(path: path.appending(path: \.fields), ancestors: fullPath)
     }
@@ -86,10 +82,6 @@ public extension ValidationPath where Value == AttributeGroup {
     
     var name: ValidationPath<ReadOnlyPath<Root, String>> {
         return ValidationPath<ReadOnlyPath<Root, String>>(path: ReadOnlyPath<Root, String>(keyPath: path.keyPath.appending(path: \.name), ancestors: path.fullPath))
-    }
-    
-    var variables: ValidationPath<ReadOnlyPath<Root, VariableList?>> {
-        return ValidationPath<ReadOnlyPath<Root, VariableList?>>(path: ReadOnlyPath<Root, VariableList?>(keyPath: path.keyPath.appending(path: \.variables), ancestors: path.fullPath))
     }
     
     var fields: ValidationPath<ReadOnlyPath<Root, [String: AttributeType]>> {

@@ -119,14 +119,6 @@ public struct Machine: Hashable, Codable, PathContainer {
     /// All transitions within the machine --- attached or unattached to states.
     public internal(set) var transitions: [Transition]
     
-    /// A list of variables denotes by unique names.
-    ///
-    /// This list is used to represent different types of variables that are
-    /// accessed at the machine level --- accessible from any state within the
-    /// machine. This includes, for example, external variables, fsm variables
-    /// and parameters.
-    public internal(set) var variables: [VariableList]
-    
     /// A list of attributes specifying additional fields that can change.
     ///
     /// The attribute list usually details extra fields necessary for additional
@@ -184,7 +176,6 @@ public struct Machine: Hashable, Codable, PathContainer {
         initialState: StateName?,
         states: [State] = [],
         transitions: [Transition] = [],
-        variables: [VariableList],
         attributes: [AttributeGroup],
         metaData: [AttributeGroup]
     ) {
@@ -194,7 +185,6 @@ public struct Machine: Hashable, Codable, PathContainer {
         self.initialState = initialState
         self.states = states
         self.transitions = transitions
-        self.variables = variables
         self.attributes = attributes
         self.metaData = metaData
     }

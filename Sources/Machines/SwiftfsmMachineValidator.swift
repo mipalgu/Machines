@@ -79,15 +79,14 @@ struct SwiftfsmMachineValidator: MachineValidator {
                     .alphadash()
                     .notEmpty()
                     .maxLength(64)
-                state.attributes.length(1)
-                state.attributes[0].validate { settings in
+                state.attributes.length(2)
+                state.attributes[1].validate { settings in
                     settings.name.equals("settings")
                     settings.fields["access_external_variables"].required()
                     settings.fields["access_external_variables"].wrappedValue.equals(AttributeType.bool)
                     settings.attributes["access_external_variables"].required()
                     settings.attributes["access_external_variables"].wrappedValue
-                        .if { $0.boolValue ?? false }
-                        then: {
+                        .if { $0.boolValue ?? false } then: {
                             settings.fields["imports"].required()
                             settings.fields["imports"].wrappedValue.equals(AttributeType.code(language: .swift))
                             settings.attributes["imports"].required()
@@ -109,24 +108,29 @@ struct SwiftfsmMachineValidator: MachineValidator {
                 }
                 transition.attributes.empty()
             }
-            validator.attributes.length(3)
+            validator.attributes.length(5)
             validator.attributes.validate { attributes in
-                attributes[0].validate { ringlet in
+                attributes[0].validate { variables in
+                    variables.name.equals("variables")
+                }
+                attributes[1].validate { parameters in
+                    parameters.name.equals("parameters")
+                }
+                attributes[2].validate { ringlet in
                     ringlet.name.equals("ringlet")
                     ringlet.attributes["use_custom_ringlet"].required()
                         .if { $0?.boolValue ?? false }
                         then: {
-                            ringlet.variables.required()
-                            ringlet.variables.wrappedValue.validate { list in
-                                list.name.equals("ringlet_variables")
-                                list.enabled.equalsTrue()
-                            }
+                            ringlet.attributes["ringlet_variables"].required()
+//                            ringlet.attributes["ringlet_variables"].wrappedValue.validate { table in
+//                                list.enabled.equalsTrue()
+//                            }
                         }
                 }
-                attributes[1].validate { validator in
-                    validator.name.equals("module_dependencies")
+                attributes[3].validate { moduleDependencies in
+                    moduleDependencies.name.equals("module_dependencies")
                 }
-                attributes[2].validate { settings in
+                attributes[4].validate { settings in
                     settings.name.equals("settings")
                     settings.fields["suspend_state"].required()
                     settings.fields["suspend_state"].wrappedValue.equals(AttributeType.enumerated(validValues: Set(machine.states.map { $0.name })))
