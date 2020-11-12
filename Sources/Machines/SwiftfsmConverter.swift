@@ -563,7 +563,7 @@ extension SwiftfsmConverter: MachineMutator {
         }
     }
     
-    public func newTransition(source: StateName, target: StateName, condition: Expression? = nil, machine: inout Machine) throws {
+    func newTransition(source: StateName, target: StateName, condition: Expression? = nil, machine: inout Machine) throws {
         try perform(on: &machine) { machine in
             guard nil != machine.states.first(where: { $0.name == source }), nil != machine.states.first(where: { $0.name == target }) else {
                 fatalError("You must attach a transition to a source and target state")
@@ -595,7 +595,7 @@ extension SwiftfsmConverter: MachineMutator {
         }
     }
     
-    public func deleteTransition(atIndex index: Int, machine: inout Machine) throws {
+    func deleteTransition(atIndex index: Int, machine: inout Machine) throws {
         try perform(on: &machine) { machine in
             guard machine.transitions.count >= index else {
                 fatalError("Cannot delete transition that does not exist")
