@@ -98,35 +98,29 @@ public enum Attribute: Hashable {
         }
     }
     
-    public var lineAttribute: LineAttribute? {
+    public var lineAttribute: LineAttribute {
         get {
             switch self {
             case .line(let attribute):
                 return attribute
             default:
-                return nil
+                fatalError("Attempting to access line attribute of block attribute")
             }
         } set {
-            guard let value = newValue else {
-                return
-            }
-            self = .line(value)
+            self = .line(newValue)
         }
     }
     
-    public var blockAttribute: BlockAttribute? {
+    public var blockAttribute: BlockAttribute {
         get {
             switch self {
             case .block(let attribute):
                 return attribute
             default:
-                return nil
+                fatalError("Attempting to access block attribute of line attribute")
             }
         } set {
-            guard let value = newValue else {
-                return
-            }
-            self = .block(value)
+            self = .block(newValue)
         }
     }
     

@@ -63,11 +63,11 @@ extension ReadOnlyPathProtocol where Value == Attribute {
         return ReadOnlyPath(keyPath: keyPath.appending(path: \.type), ancestors: fullPath)
     }
     
-    public var lineAttribute: ReadOnlyPath<Root, LineAttribute?> {
+    public var lineAttribute: ReadOnlyPath<Root, LineAttribute> {
         return ReadOnlyPath(keyPath: keyPath.appending(path: \.lineAttribute), ancestors: fullPath)
     }
     
-    public var blockAttribute: ReadOnlyPath<Root, BlockAttribute?> {
+    public var blockAttribute: ReadOnlyPath<Root, BlockAttribute> {
         return ReadOnlyPath(keyPath: keyPath.appending(path: \.blockAttribute), ancestors: fullPath)
     }
     
@@ -167,11 +167,11 @@ extension ReadOnlyPathProtocol where Value == Attribute {
 
 extension PathProtocol where Value == Attribute {
     
-    public var lineAttribute: Path<Root, LineAttribute?> {
+    public var lineAttribute: Path<Root, LineAttribute> {
         return Path(path: path.appending(path: \.lineAttribute), ancestors: fullPath)
     }
     
-    public var blockAttribute: Path<Root, BlockAttribute?> {
+    public var blockAttribute: Path<Root, BlockAttribute> {
         return Path(path: path.appending(path: \.blockAttribute), ancestors: fullPath)
     }
     
@@ -183,12 +183,12 @@ extension ValidationPath where Value == Attribute {
         return ValidationPath<ReadOnlyPath<Root, AttributeType>>(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.type), ancestors: path.fullPath))
     }
     
-    public var lineAttribute: ValidationPath<ReadOnlyPath<Root, LineAttribute?>> {
-        return ValidationPath<ReadOnlyPath<Root, LineAttribute?>>(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.lineAttribute), ancestors: path.fullPath))
+    public var lineAttribute: ValidationPath<ReadOnlyPath<Root, LineAttribute>> {
+        return ValidationPath<ReadOnlyPath<Root, LineAttribute>>(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.lineAttribute), ancestors: path.fullPath))
     }
     
-    public var blockAttribute: ValidationPath<ReadOnlyPath<Root, BlockAttribute?>> {
-        return ValidationPath<ReadOnlyPath<Root, BlockAttribute?>>(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.blockAttribute), ancestors: path.fullPath))
+    public var blockAttribute: ValidationPath<ReadOnlyPath<Root, BlockAttribute>> {
+        return ValidationPath<ReadOnlyPath<Root, BlockAttribute>>(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.blockAttribute), ancestors: path.fullPath))
     }
     
     public var boolValue: ValidationPath<ReadOnlyPath<Root, Bool?>> {
