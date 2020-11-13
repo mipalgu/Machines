@@ -81,13 +81,15 @@ struct SwiftfsmMachineValidator: MachineValidator {
                 state.attributes.length(2)
                 state.attributes[1].validate { settings in
                     settings.name.equals("settings")
-                    settings.fields["access_external_variables"].required()
-                    settings.fields["access_external_variables"].wrappedValue.equals(AttributeType.bool)
+                    settings.fields.notEmpty()
+                    settings.fields[0].name.equals("access_external_variables")
+                    settings.fields[0].type.equals(AttributeType.bool)
                     settings.attributes["access_external_variables"].required()
                     settings.attributes["access_external_variables"].wrappedValue
                         .if { $0.boolValue ?? false } then: {
-                            settings.fields["imports"].required()
-                            settings.fields["imports"].wrappedValue.equals(AttributeType.code(language: .swift))
+                            settings.fields.minLength(2)
+                            settings.fields[1].name.equals("imports")
+                            settings.fields[1].type.equals(AttributeType.code(language: .swift))
                             settings.attributes["imports"].required()
                             settings.attributes["imports"].wrappedValue.codeValue.required()
                             settings.attributes["imports"].wrappedValue.codeValue.wrappedValue.maxLength(1024)
@@ -131,8 +133,9 @@ struct SwiftfsmMachineValidator: MachineValidator {
                 }
                 attributes[4].validate { settings in
                     settings.name.equals("settings")
-                    settings.fields["suspend_state"].required()
-                    settings.fields["suspend_state"].wrappedValue.equals(AttributeType.enumerated(validValues: Set(machine.states.map { $0.name })))
+                    settings.fields.notEmpty()
+                    settings.fields[0].name.equals("suspend_state")
+                    settings.fields[0].type.equals(AttributeType.enumerated(validValues: Set(machine.states.map { $0.name })))
                     settings.attributes["suspend_state"].required()
                     settings.attributes["suspend_state"].wrappedValue.enumeratedValue.required()
                     settings.attributes["suspend_state"].wrappedValue.enumeratedValue.wrappedValue.in(Machine.path.states, transform: { Set($0.map {$0.name}) })

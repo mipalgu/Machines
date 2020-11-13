@@ -305,7 +305,7 @@ struct SwiftfsmConverter: Converter, MachineValidator {
         )
         attributes.append(settings)
         let states = swiftMachine.states.map { (state) -> State in
-            let settingsFields: [String: AttributeType]
+            let settingsFields: [Field]
             let settingsAttributes: [String: Attribute]
             if let externals = state.externalVariables {
                 settingsFields = [
@@ -631,24 +631,24 @@ extension SwiftfsmConverter: MachineMutator {
                 }
                 machine.attributes[2].attributes["use_custom_ringlet"] = .bool(boolValue)
                 if !boolValue {
-                    machine.attributes[2].fields["actions"] = nil
-                    machine.attributes[2].fields["ringlet_variables"] = nil
-                    machine.attributes[2].fields["imports"] = nil
-                    machine.attributes[2].fields["execute"] = nil
+                    machine.attributes[2].fields = machine.attributes[2].fields.filter { $0.name == "use_custom_ringlet" }
                     return
                 }
-                if nil != machine.attributes[2].fields["actions"] {
+                if nil != machine.attributes[2].fields.first(where: { $0.name == "actions" }) {
                     return
                 }
-                machine.attributes[2].fields["actions"] = .collection(type: .line)
-                machine.attributes[2].fields["ringlet_variables"] = .table(columns: [
-                    ("access_type", .enumerated(validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue }))),
-                    ("label", .line),
-                    ("type", .expression(language: .swift)),
-                    ("initial_value", .expression(language: .swift))
-                ])
-                machine.attributes[2].fields["imports"] = .code(language: .swift)
-                machine.attributes[2].fields["execute"] = .code(language: .swift)
+                machine.attributes[2].fields = [
+                    "use_custom_ringlet": .bool,
+                    "actions": .collection(type: .line),
+                    "ringlet_variables": .table(columns: [
+                        ("access_type", .enumerated(validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue }))),
+                        ("label", .line),
+                        ("type", .expression(language: .swift)),
+                        ("initial_value", .expression(language: .swift))
+                    ]),
+                    "imports": .code(language: .swift),
+                    "execute": .code(language: .swift)
+                ]
                 machine.attributes[2].attributes["actions"] = .collection(lines: ["onEntry", "main", "onExit"])
                 machine.attributes[2].attributes["ringlet_variables"] = .table([], columns: [
                     ("access_type", .enumerated(validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue }))),

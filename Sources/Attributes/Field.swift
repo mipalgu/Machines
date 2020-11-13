@@ -1,8 +1,8 @@
 /*
- * AttributeGroup.swift
- * Machines
+ * Field.swift
+ * Attributes
  *
- * Created by Callum McColl on 29/10/20.
+ * Created by Callum McColl on 13/11/20.
  * Copyright © 2020 Callum McColl. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,23 +56,23 @@
  *
  */
 
-import Attributes
-
-public struct AttributeGroup: Hashable, Codable {
+public struct Field: Hashable, Codable {
     
     public var name: String
     
-    public var fields: [Field]
+    public var type: AttributeType
     
-    public var attributes: [String: Attribute]
-    
-    public var metaData: [String: Attribute]
-    
-    public init(name: String, fields: [Field] = [], attributes: [String: Attribute] = [:], metaData: [String: Attribute] = [:]) {
+    public init(name: String, type: AttributeType) {
         self.name = name
-        self.fields = fields
-        self.attributes = attributes
-        self.metaData = metaData
+        self.type = type
+    }
+    
+}
+
+extension Array: ExpressibleByDictionaryLiteral where Element == Field {
+    
+    public init(dictionaryLiteral elements: (String, AttributeType)...) {
+        self = elements.map { Field(name: $0, type: $1) }
     }
     
 }

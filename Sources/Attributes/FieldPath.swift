@@ -1,8 +1,8 @@
 /*
- * AttributeGroup.swift
- * Machines
+ * FieldPath.swift
+ * Attributes
  *
- * Created by Callum McColl on 29/10/20.
+ * Created by Callum McColl on 13/11/20.
  * Copyright © 2020 Callum McColl. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,23 +56,26 @@
  *
  */
 
-import Attributes
+extension PathProtocol where Value == Field {
+    
+    public var name: Path<Root, String> {
+        return Path(path: path.appending(path: \.name), ancestors: fullPath)
+    }
+    
+    public var type: Path<Root, AttributeType> {
+        return Path(path: path.appending(path: \.type), ancestors: fullPath)
+    }
+    
+}
 
-public struct AttributeGroup: Hashable, Codable {
+extension ValidationPath where Value == Field {
     
-    public var name: String
+    public var name: ValidationPath<ReadOnlyPath<Root, String>> {
+        return ValidationPath<ReadOnlyPath<Root, String>>(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.name), ancestors: path.fullPath))
+    }
     
-    public var fields: [Field]
-    
-    public var attributes: [String: Attribute]
-    
-    public var metaData: [String: Attribute]
-    
-    public init(name: String, fields: [Field] = [], attributes: [String: Attribute] = [:], metaData: [String: Attribute] = [:]) {
-        self.name = name
-        self.fields = fields
-        self.attributes = attributes
-        self.metaData = metaData
+    public var type: ValidationPath<ReadOnlyPath<Root, AttributeType>> {
+        return ValidationPath<ReadOnlyPath<Root, AttributeType>>(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.type), ancestors: path.fullPath))
     }
     
 }

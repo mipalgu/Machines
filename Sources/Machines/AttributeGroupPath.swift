@@ -64,8 +64,8 @@ public extension Path where Value == AttributeGroup {
         return Path<Root, String>(path: path.appending(path: \.name), ancestors: self.ancestors + [AnyPath(self)])
     }
     
-    var fields: Path<Root, [String: AttributeType]> {
-        return Path<Root, [String: AttributeType]>(path: path.appending(path: \.fields), ancestors: fullPath)
+    var fields: Path<Root, [Field]> {
+        return Path<Root, [Field]>(path: path.appending(path: \.fields), ancestors: fullPath)
     }
     
     var attributes: Path<Root, [String: Attribute]> {
@@ -84,8 +84,8 @@ public extension ValidationPath where Value == AttributeGroup {
         return ValidationPath<ReadOnlyPath<Root, String>>(path: ReadOnlyPath<Root, String>(keyPath: path.keyPath.appending(path: \.name), ancestors: path.fullPath))
     }
     
-    var fields: ValidationPath<ReadOnlyPath<Root, [String: AttributeType]>> {
-        return ValidationPath<ReadOnlyPath<Root, [String: AttributeType]>>(path: ReadOnlyPath<Root, [String: AttributeType]>(keyPath: path.keyPath.appending(path: \.fields), ancestors: path.fullPath))
+    var fields: ValidationPath<ReadOnlyPath<Root, [Field]>> {
+        return ValidationPath<ReadOnlyPath<Root, [Field]>>(path: ReadOnlyPath<Root, [Field]>(keyPath: path.keyPath.appending(path: \.fields), ancestors: path.fullPath))
     }
     
     var attributes: ValidationPath<ReadOnlyPath<Root, [String: Attribute]>> {
