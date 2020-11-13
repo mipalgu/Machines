@@ -62,7 +62,6 @@ import Foundation
 
 struct SwiftfsmConverter: Converter, MachineValidator {
     
-    
     private let validator = SwiftfsmMachineValidator()
     
     var initial: Machine {
@@ -532,10 +531,6 @@ struct SwiftfsmConverter: Converter, MachineValidator {
         return SwiftMachines.Variable(accessType: accessType, label: label, type: type, initialValue: variable[3].expressionValue.map({ String($0) }))
     }
     
-    func validate(machine: Machine) throws {
-        try self.validator.validate(machine: machine)
-    }
-    
 }
 
 extension SwiftfsmConverter: MachineMutator {
@@ -686,6 +681,10 @@ extension SwiftfsmConverter: MachineMutator {
                 )
             ]
         )
+    }
+    
+    func validate(machine: Machine) throws {
+        try self.validator.validate(machine: machine)
     }
     
 }
