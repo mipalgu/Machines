@@ -531,7 +531,7 @@ struct SwiftfsmConverter: Converter, MachineValidator {
 extension SwiftfsmConverter: MachineMutator {
 
     func addItem<Path>(attribute: Path, machine: inout Machine) throws where Path : PathProtocol, Path.Root == Machine {
-        fatalError("addItem is not yet implemented.")
+        throw ValidationError(message: "addItem is not yet implemented", path: attribute)
     }
     
     func newState(machine: inout Machine) throws {
@@ -556,7 +556,7 @@ extension SwiftfsmConverter: MachineMutator {
     func newTransition(source: StateName, target: StateName, condition: Expression? = nil, machine: inout Machine) throws {
         try perform(on: &machine) { machine in
             guard nil != machine.states.first(where: { $0.name == source }), nil != machine.states.first(where: { $0.name == target }) else {
-                fatalError("You must attach a transition to a source and target state")
+                throw ValidationError(message: "You must attach a transition to a source and target state", path: Machine.path.transitions)
             }
             machine.transitions.append(
                 Transition(
@@ -569,7 +569,7 @@ extension SwiftfsmConverter: MachineMutator {
     }
     
     func deleteItem<Path>(attribute: Path, machine: inout Machine) throws where Path : PathProtocol, Path.Root == Machine {
-        fatalError("deleteItem is not yet implemented")
+        throw ValidationError(message: "deleteItem is not yet implemented", path: attribute)
     }
     
     func delete(states: IndexSet, transitions: IndexSet, machine: inout Machine) throws {
@@ -578,7 +578,7 @@ extension SwiftfsmConverter: MachineMutator {
                 let initialIndex = machine.states.enumerated().first(where: { $0.1.name == machine.initialState })?.0,
                 states.contains(initialIndex)
             {
-                fatalError("You cannot delete the initial state")
+                throw ValidationError(message: "You cannot delete the initial state", path: Machine.path.states[initialIndex])
             }
             machine.transitions = machine.transitions.enumerated().filter { !transitions.contains($0.0) }.map { $1 }
             machine.states = machine.states.enumerated().filter { !states.contains($0.0) }.map { $1 }
@@ -598,10 +598,10 @@ extension SwiftfsmConverter: MachineMutator {
     func deleteState(atIndex index: Int, machine: inout Machine) throws {
         try perform(on: &machine) { machine in
             if machine.states.count >= index {
-                fatalError("can't delete state that doesn't exist")
+                throw ValidationError(message: "Can't delete state that doesn't exist", path: Machine.path.states)
             }
             if machine.states[index].name == machine.initialState {
-                fatalError("Can't delete the initial state")
+                throw ValidationError(message: "Can't delete the initial state", path: Machine.path.states[index])
             }
             machine.transitions.removeAll { $0.source == machine.states[index].name || $0.target == machine.states[index].name }
             machine.states.remove(at: index)
@@ -611,7 +611,7 @@ extension SwiftfsmConverter: MachineMutator {
     func deleteTransition(atIndex index: Int, machine: inout Machine) throws {
         try perform(on: &machine) { machine in
             guard machine.transitions.count >= index else {
-                fatalError("Cannot delete transition that does not exist")
+                throw ValidationError(message: "Cannot delete transition that does not exist", path: Machine.path.transitions)
             }
             machine.transitions.remove(at: index)
         }
@@ -622,7 +622,7 @@ extension SwiftfsmConverter: MachineMutator {
             switch attribute.path {
             case machine.path.attributes[2].attributes["use_custom_ringlet"].wrappedValue.path:
                 guard let attr = value as? Attribute, let boolValue = attr.boolValue else {
-                    fatalError("Invalid value \(value)")
+                    throw ValidationError(message: "Invalid value \(value)", path: Machine.path.attributes[2].attributes["use_custom_ringlet"].wrappedValue)
                 }
                 machine.attributes[2].attributes["use_custom_ringlet"] = .bool(boolValue)
                 if !boolValue {
@@ -672,7 +672,7 @@ extension SwiftfsmConverter: MachineMutator {
     
     private func createState(named name: String, forMachine machine: Machine) throws -> State {
         guard machine.attributes.count >= 3 else {
-            throw NSError(domain: "asd", code: 0, userInfo: [:])
+            throw ValidationError(message: "Missing attributes in machine", path: Machine.path.attributes)
         }
         let actions = machine.attributes[2].attributes["actions"]?.collectionValue?.failMap { $0.lineValue } ?? ["onEntry", "main", "onExit"]
         return State(

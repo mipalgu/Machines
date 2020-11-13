@@ -284,47 +284,93 @@ public struct Machine: PathContainer {
     
     /// Add a new item to a table attribute.
     public mutating func addItem<Path: PathProtocol>(table attribute: Path) throws where Path.Root == Machine {
-        try self.mutator.addItem(attribute: attribute, machine: &self)
+        try perform { [mutator] machine in
+            try mutator.addItem(attribute: attribute, machine: &machine)
+        }
     }
     
     /// Add a new empty state to the machine.
     public mutating func newState() throws {
-        try self.mutator.newState(machine: &self)
+        try perform { [mutator] machine in
+            try mutator.newState(machine: &machine)
+        }
     }
     
     /// Add a new empty transition to the machine.
     public mutating func newTransition(source: StateName, target: StateName, condition: Expression? = nil) throws {
-        try self.mutator.newTransition(source: source, target: target, condition: condition, machine: &self)
+        try perform { [mutator] machine in
+            try mutator.newTransition(source: source, target: target, condition: condition, machine: &machine)
+        }
     }
     
     /// Delete a specific item in a table attribute.
     public mutating func deleteItem<Path: PathProtocol>(table attribute: Path) throws where Path.Root == Machine {
-        try self.mutator.deleteItem(attribute: attribute, machine: &self)
+        try perform { [mutator] machine in
+            try mutator.deleteItem(attribute: attribute, machine: &machine)
+        }
     }
     
     /// Delete a set of states and transitions.
     public mutating func delete(states: IndexSet, transitions: IndexSet) throws {
-        try self.mutator.delete(states: states, transitions: transitions, machine: &self)
+        try perform { [mutator] machine in
+            try mutator.delete(states: states, transitions: transitions, machine: &machine)
+        }
     }
     
     /// Delete a state at a specific index.
     public mutating func deleteState(atIndex index: Int) throws {
-        try self.mutator.deleteState(atIndex: index, machine: &self)
+        try perform { [mutator] machine in
+            try mutator.deleteState(atIndex: index, machine: &machine)
+        }
     }
     
     /// Delete a transition at a specific index.
     public mutating func deleteTransition(atIndex index: Int) throws {
-        try self.mutator.deleteTransition(atIndex: index, machine: &self)
+        try perform { [mutator] machine in
+            try mutator.deleteTransition(atIndex: index, machine: &machine)
+        }
     }
     
     /// Modify a specific attributes value.
     public mutating func modify<Path: PathProtocol>(attribute: Path, value: Path.Value) throws where Path.Root == Machine {
-        try self.mutator.modify(attribute: attribute, value: value, machine: &self)
+        try perform { [mutator] machine in
+            try mutator.modify(attribute: attribute, value: value, machine: &machine)
+        }
     }
     
     /// Are there any errors with the machine?
     public func validate() throws {
-        try self.mutator.validate(machine: self)
+        try perform { machine in
+            try self.mutator.validate(machine: machine)
+        }
+    }
+    
+    private func perform(_ f: (Machine) throws -> Void) throws {
+        do {
+            try f(self)
+        } catch let e as ConversionError {
+            throw MachinesError.conversionError(e)
+        } catch let e as ValidationError<Machine> {
+            throw MachinesError.validationError(e)
+        } catch let e as MachinesError {
+            throw e
+        } catch let e {
+            fatalError("Unsupported error: \(e)")
+        }
+    }
+    
+    private mutating func perform(_ f: (inout Machine) throws -> Void) throws {
+        do {
+            try f(&self)
+        } catch let e as ConversionError {
+            throw MachinesError.conversionError(e)
+        } catch let e as ValidationError<Machine> {
+            throw MachinesError.validationError(e)
+        } catch let e as MachinesError {
+            throw e
+        } catch let e {
+            fatalError("Unsupported error: \(e)")
+        }
     }
     
 }
