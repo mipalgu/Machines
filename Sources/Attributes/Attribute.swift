@@ -99,20 +99,34 @@ public enum Attribute: Hashable {
     }
     
     public var lineAttribute: LineAttribute? {
-        switch self {
-        case .line(let attribute):
-            return attribute
-        default:
-            return nil
+        get {
+            switch self {
+            case .line(let attribute):
+                return attribute
+            default:
+                return nil
+            }
+        } set {
+            guard let value = newValue else {
+                return
+            }
+            self = .line(value)
         }
     }
     
     public var blockAttribute: BlockAttribute? {
-        switch self {
-        case .block(let attribute):
-            return attribute
-        default:
-            return nil
+        get {
+            switch self {
+            case .block(let attribute):
+                return attribute
+            default:
+                return nil
+            }
+        } set {
+            guard let value = newValue else {
+                return
+            }
+            self = .block(value)
         }
     }
     

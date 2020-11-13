@@ -165,6 +165,18 @@ extension ReadOnlyPathProtocol where Value == Attribute {
     
 }
 
+extension PathProtocol where Value == Attribute {
+    
+    public var lineAttribute: Path<Root, LineAttribute?> {
+        return Path(path: path.appending(path: \.lineAttribute), ancestors: fullPath)
+    }
+    
+    public var blockAttribute: Path<Root, BlockAttribute?> {
+        return Path(path: path.appending(path: \.blockAttribute), ancestors: fullPath)
+    }
+    
+}
+
 extension ValidationPath where Value == Attribute {
     
     public var type: ValidationPath<ReadOnlyPath<Root, AttributeType>> {
