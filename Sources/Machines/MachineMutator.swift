@@ -57,6 +57,7 @@
  */
 
 import Attributes
+import Foundation
 
 public protocol MachineMutator {
     
@@ -65,6 +66,8 @@ public protocol MachineMutator {
     func newState(machine: inout Machine) throws
     
     func newTransition(source: StateName, target: StateName, condition: Expression?, machine: inout Machine) throws
+    
+    func delete(states: IndexSet, transitions: IndexSet, machine: inout Machine) throws
     
     func deleteState(atIndex index: Int, machine: inout Machine) throws
     

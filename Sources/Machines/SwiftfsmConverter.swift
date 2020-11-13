@@ -582,6 +582,29 @@ extension SwiftfsmConverter: MachineMutator {
         fatalError("deleteItem is not yet implemented")
     }
     
+    func delete(states: IndexSet, transitions: IndexSet, machine: inout Machine) throws {
+        try self.perform(on: &machine) { machine in
+            if
+                let initialIndex = machine.states.enumerated().first(where: { $0.1.name == machine.initialState })?.0,
+                states.contains(initialIndex)
+            {
+                fatalError("You cannot delete the initial state")
+            }
+            machine.transitions = machine.transitions.enumerated().filter { !transitions.contains($0.0) }.map { $1 }
+            machine.states = machine.states.enumerated().filter { !states.contains($0.0) }.map { $1 }
+            let stateNames = Set(machine.states.map { $0.name })
+            machine.transitions.removeAll {
+                if let source = $0.source, stateNames.contains(source) {
+                    return true
+                }
+                if let target = $0.target, stateNames.contains(target) {
+                    return true
+                }
+                return false
+            }
+        }
+    }
+    
     func deleteState(atIndex index: Int, machine: inout Machine) throws {
         try perform(on: &machine) { machine in
             if machine.states.count >= index {

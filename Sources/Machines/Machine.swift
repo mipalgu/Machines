@@ -268,6 +268,11 @@ public struct Machine: PathContainer {
         try self.mutator.deleteItem(attribute: attribute, machine: &self)
     }
     
+    /// Delete a set of states and transitions.
+    public mutating func delete(states: IndexSet, transitions: IndexSet) throws {
+        try self.mutator.delete(states: states, transitions: transitions, machine: &self)
+    }
+    
     /// Delete a state at a specific index.
     public mutating func deleteState(atIndex index: Int) throws {
         try self.mutator.deleteState(atIndex: index, machine: &self)
