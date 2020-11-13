@@ -1,8 +1,8 @@
 /*
- * AttributeGroup.swift
- * Machines
+ * AttributeGroupPath.swift
+ * Attributes
  *
- * Created by Callum McColl on 29/10/20.
+ * Created by Callum McColl on 4/11/20.
  * Copyright © 2020 Callum McColl. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,23 +56,42 @@
  *
  */
 
-import Attributes
+public extension Path where Value == AttributeGroup {
+    
+    var name: Path<Root, String> {
+        return Path<Root, String>(path: path.appending(path: \.name), ancestors: self.ancestors + [AnyPath(self)])
+    }
+    
+    var fields: Path<Root, [Field]> {
+        return Path<Root, [Field]>(path: path.appending(path: \.fields), ancestors: fullPath)
+    }
+    
+    var attributes: Path<Root, [String: Attribute]> {
+        return Path<Root, [String: Attribute]>(path: path.appending(path: \.attributes), ancestors: fullPath)
+    }
+    
+    var metaData: Path<Root, [String: Attribute]> {
+        return Path<Root, [String: Attribute]>(path: path.appending(path: \.metaData), ancestors: fullPath)
+    }
+    
+}
 
-public struct AttributeGroup: Hashable, Codable {
+public extension ValidationPath where Value == AttributeGroup {
     
-    public var name: String
+    var name: ValidationPath<ReadOnlyPath<Root, String>> {
+        return ValidationPath<ReadOnlyPath<Root, String>>(path: ReadOnlyPath<Root, String>(keyPath: path.keyPath.appending(path: \.name), ancestors: path.fullPath))
+    }
     
-    public var fields: [Field]
+    var fields: ValidationPath<ReadOnlyPath<Root, [Field]>> {
+        return ValidationPath<ReadOnlyPath<Root, [Field]>>(path: ReadOnlyPath<Root, [Field]>(keyPath: path.keyPath.appending(path: \.fields), ancestors: path.fullPath))
+    }
     
-    public var attributes: [String: Attribute]
+    var attributes: ValidationPath<ReadOnlyPath<Root, [String: Attribute]>> {
+        return ValidationPath<ReadOnlyPath<Root, [String: Attribute]>>(path: ReadOnlyPath<Root, [String: Attribute]>(keyPath: path.keyPath.appending(path: \.attributes), ancestors: path.fullPath))
+    }
     
-    public var metaData: [String: Attribute]
-    
-    public init(name: String, fields: [Field] = [], attributes: [String: Attribute] = [:], metaData: [String: Attribute] = [:]) {
-        self.name = name
-        self.fields = fields
-        self.attributes = attributes
-        self.metaData = metaData
+    var metaData: ValidationPath<ReadOnlyPath<Root, [String: Attribute]>> {
+        return ValidationPath<ReadOnlyPath<Root, [String: Attribute]>>(path: ReadOnlyPath<Root, [String: Attribute]>(keyPath: path.keyPath.appending(path: \.metaData), ancestors: path.fullPath))
     }
     
 }
