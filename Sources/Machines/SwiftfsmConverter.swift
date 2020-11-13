@@ -620,43 +620,48 @@ extension SwiftfsmConverter: MachineMutator {
     func modify<Path>(attribute: Path, value: Path.Value, machine: inout Machine) throws where Path : PathProtocol, Path.Root == Machine {
         try perform(on: &machine) { machine in
             switch attribute.path {
-            case machine.path.attributes[2].attributes["use_custom_ringlet"].wrappedValue.path:
+            case machine.path.attributes[2].attributes["use_custom_ringlet"].wrappedValue.path,
+                 machine.path.attributes[2].attributes["use_custom_ringlet"].wrappedValue.boolValue.keyPath:
                 guard let attr = value as? Attribute, let boolValue = attr.boolValue else {
                     throw ValidationError(message: "Invalid value \(value)", path: Machine.path.attributes[2].attributes["use_custom_ringlet"].wrappedValue)
                 }
-                machine.attributes[2].attributes["use_custom_ringlet"] = .bool(boolValue)
-                if !boolValue {
-                    machine.attributes[2].fields = machine.attributes[2].fields.filter { $0.name == "use_custom_ringlet" }
-                    return
-                }
-                if nil != machine.attributes[2].fields.first(where: { $0.name == "actions" }) {
-                    return
-                }
-                machine.attributes[2].fields = [
-                    "use_custom_ringlet": .bool,
-                    "actions": .collection(type: .line),
-                    "ringlet_variables": .table(columns: [
-                        ("access_type", .enumerated(validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue }))),
-                        ("label", .line),
-                        ("type", .expression(language: .swift)),
-                        ("initial_value", .expression(language: .swift))
-                    ]),
-                    "imports": .code(language: .swift),
-                    "execute": .code(language: .swift)
-                ]
-                machine.attributes[2].attributes["actions"] = .collection(lines: ["onEntry", "main", "onExit"])
-                machine.attributes[2].attributes["ringlet_variables"] = .table([], columns: [
-                    ("access_type", .enumerated(validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue }))),
-                    ("label", .line),
-                    ("type", .expression(language: .swift)),
-                    ("initial_value", .expression(language: .swift))
-                ])
-                machine.attributes[2].attributes["imports"] = .code(Code(), language: .swift)
-                machine.attributes[2].attributes["execute"] = .code(Code(), language: .swift)
+                self.toggleUseCustomRinglet(boolValue: boolValue, machine: &machine)
             default:
                 machine[keyPath: attribute.path] = value
             }
         }
+    }
+    
+    private func toggleUseCustomRinglet(boolValue: Bool, machine: inout Machine) {
+        machine.attributes[2].attributes["use_custom_ringlet"] = .bool(boolValue)
+        if !boolValue {
+            machine.attributes[2].fields = machine.attributes[2].fields.filter { $0.name == "use_custom_ringlet" }
+            return
+        }
+        if nil != machine.attributes[2].fields.first(where: { $0.name == "actions" }) {
+            return
+        }
+        machine.attributes[2].fields = [
+            "use_custom_ringlet": .bool,
+            "actions": .collection(type: .line),
+            "ringlet_variables": .table(columns: [
+                ("access_type", .enumerated(validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue }))),
+                ("label", .line),
+                ("type", .expression(language: .swift)),
+                ("initial_value", .expression(language: .swift))
+            ]),
+            "imports": .code(language: .swift),
+            "execute": .code(language: .swift)
+        ]
+        machine.attributes[2].attributes["actions"] = .collection(lines: ["onEntry", "main", "onExit"])
+        machine.attributes[2].attributes["ringlet_variables"] = .table([], columns: [
+            ("access_type", .enumerated(validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue }))),
+            ("label", .line),
+            ("type", .expression(language: .swift)),
+            ("initial_value", .expression(language: .swift))
+        ])
+        machine.attributes[2].attributes["imports"] = .code(Code(), language: .swift)
+        machine.attributes[2].attributes["execute"] = .code(Code(), language: .swift)
     }
     
     private func perform(on machine: inout Machine, _ f: (inout Machine) throws -> Void) throws {
