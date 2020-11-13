@@ -263,6 +263,12 @@ public struct Machine: PathContainer {
         self.metaData = metaData
     }
     
+    /// Setup an initial machine for a specific semantics.
+    ///
+    /// - Parameter semantics: The semantics which the machine should follow.
+    ///
+    /// - Warning: The value of `semantics` should exist in the
+    /// `supportedSemantics` array.
     public static func initialMachine(forSemantics semantics: Machine.Semantics) -> Machine {
         switch semantics {
         case .clfsm:
@@ -316,6 +322,7 @@ public struct Machine: PathContainer {
         try self.mutator.modify(attribute: attribute, value: value, machine: &self)
     }
     
+    /// Are there any errors with the machine?
     public func validate() throws {
         try self.mutator.validate(machine: self)
     }
