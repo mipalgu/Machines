@@ -1,8 +1,8 @@
 /*
- * AnyPath.swift
- * Attributes
+ * ErrorBag.swift
+ * Machines
  *
- * Created by Callum McColl on 5/11/20.
+ * Created by Callum McColl on 14/11/20.
  * Copyright © 2020 Callum McColl. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,84 +56,33 @@
  *
  */
 
-public struct AnyPath<Root> {
-    
-    public let ancestors: [AnyPath<Root>]
-    
-    public let partialKeyPath: PartialKeyPath<Root>
-    
-    public let isOptional: Bool
-    
-    let _value: (Root) -> Any
-    
-    let _isNil: (Root) -> Bool
-    
-    let _isSame: (PartialKeyPath<Root>) -> Bool
-    
-    private init<P: ReadOnlyPathProtocol>(_ path: P, isOptional: Bool, isNil: @escaping (Root) -> Bool, isSame: @escaping (PartialKeyPath<Root>) -> Bool) where P.Root == Root {
-        self.ancestors = path.ancestors
-        self.partialKeyPath = path.keyPath
-        self._value = { $0[keyPath: path.keyPath] as Any }
-        self.isOptional = isOptional || (path.ancestors.last?.isOptional ?? false)
-        self._isNil = { root in (path.ancestors.last?.isNil(root) ?? false) || isNil(root) }
-        self._isSame = isSame
-    }
-    
-    public init<P: ReadOnlyPathProtocol>(_ path: P) where P.Root == Root {
-        self.init(path, isOptional: false, isNil: { _ in false }, isSame: { $0 == path.keyPath })
-    }
-    
-    public init<P: ReadOnlyPathProtocol, V>(optional path: P) where P.Root == Root, P.Value == V? {
-        self.init(path, isOptional: true, isNil: { nil == $0[keyPath: path.keyPath] }, isSame: { $0 == path.keyPath || $0 == path.keyPath.appending(path: \.wrappedValue) })
-    }
-    
-    public func hasValue(_ root: Root) -> Bool {
-        return !isOptional || !isNil(root)
-    }
-    
-    public func value(_ root: Root) -> Any {
-        return self._value(root)
-    }
-    
-    public func isNil(_ root: Root) -> Bool {
-        return self._isNil(root)
-    }
-    
-    public func isSame(as path: AnyPath<Root>) -> Bool {
-        return self._isSame(path.partialKeyPath)
-    }
-    
-    public func isSame(as path: PartialKeyPath<Root>) -> Bool {
-        return self._isSame(path)
-    }
-    
-    public func isSame<Path: ReadOnlyPathProtocol>(as path: Path) -> Bool where Path.Root == Root {
-        return self._isSame(path.keyPath)
-    }
-    
-}
+import Attributes
+import Foundation
+import swift_helpers
 
-extension AnyPath: Equatable {
+public struct ErrorBag<Root> {
     
-    public static func == <Root>(lhs: AnyPath<Root>, rhs: AnyPath<Root>) -> Bool {
-        lhs.partialKeyPath == rhs.partialKeyPath
+    private var sortedCollection = SortedCollection(compare: { (lhs: MachinesError, rhs: MachinesError) -> ComparisonResult in
+        if lhs.path.isSame(as: rhs.path) {
+            return .orderedSame
+        }
+        if lhs.path.ancestors.count <= rhs.path.ancestors.count {
+            return .orderedAscending
+        }
+        return .orderedDescending
+    })
+    
+    public init() {}
+    
+    public func error(forPath path: AnyPath<Machine>) -> MachinesError? {
+        guard let index = self.sortedCollection.anyIndex(of: MachinesError.conversionError(ConversionError(message: "", path: path))) else {
+            return nil
+        }
+        return self.sortedCollection[index]
     }
     
-}
-
-extension AnyPath: Hashable {
-    
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(self.ancestors)
-        hasher.combine(self.partialKeyPath)
-    }
-    
-}
-
-extension AnyPath: CustomStringConvertible {
-    
-    public var description: String {
-        return "\(self.partialKeyPath)"
+    public func error<Path: ReadOnlyPathProtocol>(forPath path: Path) -> MachinesError? where Path.Root == Machine {
+        return self.error(forPath: AnyPath(path))
     }
     
 }
