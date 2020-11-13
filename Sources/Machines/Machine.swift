@@ -79,11 +79,26 @@ import Attributes
 /// - SeeAlso: `SwiftMachinesConvertible`.
 public struct Machine: PathContainer {
     
-    public enum Semantics: String, Hashable, Codable {
+    public enum Semantics: String, Hashable, Codable, CaseIterable {
         case other
         case swiftfsm
         case clfsm
         case vhdl
+    }
+    
+    /// The semantics that are fully supported by this module.
+    ///
+    /// This means that it is possible to create a machine using the
+    /// helper functions such as `initialMachine(forSemantics:)` or call
+    /// the semantics initialiser.
+    ///
+    /// If you are implementing an editor, this could be used when creating a
+    /// new machine to display a list of options to asking inquiring which
+    /// semantics they would like to use.
+    ///
+    /// This array generally contains all semantics except for the `other` case.
+    public static var supportedSemantics: [Machine.Semantics] {
+        return Machine.Semantics.allCases.filter { $0 != .other }
     }
     
     private let mutator: MachineMutator
@@ -246,6 +261,19 @@ public struct Machine: PathContainer {
         self.transitions = transitions
         self.attributes = attributes
         self.metaData = metaData
+    }
+    
+    public static func initialMachine(forSemantics semantics: Machine.Semantics) -> Machine {
+        switch semantics {
+        case .clfsm:
+            fatalError("clfsm semantics have not been implemented")
+        case .swiftfsm:
+            return SwiftfsmConverter().initial
+        case .vhdl:
+            fatalError("vhdl semantics have not been implemented")
+        case .other:
+            fatalError("You cannot create an initial machine for an unknown semantics")
+        }
     }
     
     /// Add a new item to a table attribute.
