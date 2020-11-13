@@ -148,7 +148,7 @@ extension ValidationPushProtocol where Value: Equatable {
         return push { (root, value) in
             let collection = transform(root[keyPath: p.keyPath])
             if nil == collection.first(where: { $0 == value }) {
-                throw ValidationError(message: "Must equal on of the following: '\(collection.map { "\($0)" }.joined(separator: ", "))'.", path: path)
+                throw ValidationError(message: "Must equal on of the following: '\(collection.map { "\($0)" }.joined(separator: ", "))'.", path: AnyPath(path))
             }
         }
     }

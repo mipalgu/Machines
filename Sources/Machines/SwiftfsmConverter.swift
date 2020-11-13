@@ -385,22 +385,20 @@ struct SwiftfsmConverter: Converter, MachineValidator {
     
     func convert(_ machine: Machine) throws -> SwiftMachines.Machine {
         try self.validator.validate(machine: machine)
-        guard let ringletGroup = machine.attributes.first(where: { $0.name == "ringlet" }) else {
-            throw ConversionError(message: "Missing ringlet group in attributes")
-        }
+        let ringletGroup = machine.attributes[2]
         let actions = Set(ringletGroup.attributes["actions"]?.collectionLines ?? ["onEntry", "onExit", "main"]).sorted().filter {
             $0.trimmingCharacters(in: .whitespacesAndNewlines) != ""
         }
         let model: SwiftMachines.Model?
         if (ringletGroup.attributes["use_custom_ringlet"]?.boolValue ?? false) {
             guard let imports = ringletGroup.attributes["imports"]?.codeValue else {
-                throw ConversionError(message: "Missing required attribute ringlet.imports")
+                throw ConversionError(message: "Missing required attribute ringlet.imports", path: Machine.path.attributes[2].attributes["imports"].wrappedValue)
             }
             guard let execute = ringletGroup.attributes["executes"]?.codeValue else {
-                throw ConversionError(message: "Missing required attribute ringlet.execute")
+                throw ConversionError(message: "Missing required attribute ringlet.execute", path: Machine.path.attributes[2].attributes["executes"].wrappedValue)
             }
-            guard let vars = try ringletGroup.attributes["ringlet_variables"]?.tableValue.map(self.parseVariable) else {
-                throw ConversionError(message: "Missing required variable list ringlet_variables")
+            guard let vars = try ringletGroup.attributes["ringlet_variables"]?.tableValue.enumerated().map({ try self.parseVariable($1, path: Machine.path.attributes[2].attributes["ringlet_variables"].wrappedValue.tableValue[$0]) }) else {
+                throw ConversionError(message: "Missing required variable list ringlet_variables", path: Machine.path.attributes[2].attributes["ringlet_variables"].wrappedValue)
             }
             model = SwiftMachines.Model(
                 actions: actions,
@@ -410,14 +408,14 @@ struct SwiftfsmConverter: Converter, MachineValidator {
             model = nil
         }
         let resultType: String? = machine.attributes[1].attributes["result_type"]?.expressionValue.map { String($0) }
-        guard let externalVariables = try machine.attributes[0].attributes["external_variables"]?.tableValue.map(self.parseVariable) else {
-            throw ConversionError(message: "Missing required variable list external_variables")
+        guard let externalVariables = try machine.attributes[0].attributes["external_variables"]?.tableValue.enumerated().map({ try self.parseVariable($1, path: Machine.path.attributes[0].attributes["external_variables"].wrappedValue.tableValue[$0]) }) else {
+            throw ConversionError(message: "Missing required variable list external_variables", path: Machine.path.attributes[0].attributes["external_variables"].wrappedValue)
         }
         let parameters: [SwiftMachines.Variable]? = (machine.attributes[1].attributes["enable_parameters"]?.boolValue ?? false)
-            ? try machine.attributes[1].attributes["parameters"]?.tableValue.map(self.parseParameters)
+            ? try machine.attributes[1].attributes["parameters"]?.tableValue.enumerated().map({ try self.parseParameters($1, path: Machine.path.attributes[1].attributes["parameters"].wrappedValue.tableValue[$0]) })
             : nil
-        guard let fsmVars = try machine.attributes[0].attributes["fsm_vars"]?.tableValue.map(self.parseVariable) else {
-            throw ConversionError(message: "Missing required variable list fsm_vars")
+        guard let fsmVars = try machine.attributes[0].attributes["fsm_vars"]?.tableValue.enumerated().map({ try self.parseVariable($1, path: Machine.path.attributes[0].attributes["fsm_vars"].wrappedValue.tableValue[$0]) }) else {
+            throw ConversionError(message: "Missing required variable list fsm_vars", path: Machine.path.attributes[0].attributes["fsm_vars"].wrappedValue)
         }
         var transitions: [String: [SwiftMachines.Transition]] = [:]
         transitions.reserveCapacity(machine.transitions.count)
@@ -432,11 +430,9 @@ struct SwiftfsmConverter: Converter, MachineValidator {
         }
         let states = try machine.states.enumerated().map { (index, state) -> SwiftMachines.State in
             let actions = state.actions.map { SwiftMachines.Action(name: $0, implementation: String($1)) }
-            guard let settings = state.attributes.first(where: { $0.name == "settings" }) else {
-                throw ConversionError(message: "Missing required attributes states[\(index)].settings")
-            }
-            guard let vars = try state.attributes[0].attributes["state_variables"]?.tableValue.map(self.parseVariable) else {
-                throw ConversionError(message: "Missing required variable list state_variables")
+            let settings = state.attributes[1]
+            guard let vars = try state.attributes[0].attributes["state_variables"]?.tableValue.enumerated().map({ try self.parseVariable($1, path: Machine.path.states[index].attributes[0].attributes["state_variables"].wrappedValue.tableValue[$0]) }) else {
+                throw ConversionError(message: "Missing required variable list state_variables", path: Machine.path.states[index].attributes[0].attributes["state_variables"].wrappedValue)
             }
             let externalVariablesSet: Set<String>? = settings.attributes["external_variables"]?.enumerableCollectionValue
             let externalVariables: [SwiftMachines.Variable]? = externalVariablesSet?.compactMap { label in externalVariables.first { $0.label == label } }
@@ -450,16 +446,14 @@ struct SwiftfsmConverter: Converter, MachineValidator {
             )
         }
         guard let initialState = states.first(where: { $0.name == String(machine.initialState) }) else {
-            throw ConversionError(message: "Initial state does not exist in the states array")
+            throw ConversionError(message: "Initial state does not exist in the states array", path: Machine.path.initialState)
         }
-        let suspendState = machine.attributes[2].attributes["suspend_state"]?.enumeratedValue.map { stateName in
+        let suspendState = machine.attributes[4].attributes["suspend_state"]?.enumeratedValue.map { stateName in
             return states.first(where: { stateName == $0.name })
         } ?? nil
-        guard let moduleDependencies = machine.attributes.first(where: { $0.name == "module_dependencies" }) else {
-            throw ConversionError(message: "Missing required attributes module_dependencies")
-        }
+        let moduleDependencies = machine.attributes[3]
         let packageDependencies = try (moduleDependencies.attributes["packages"]?.collectionComplex?.enumerated().map {
-            try self.parsePackageDependencies($1, attributePath: "module_dependencies.packages[\($0)]")
+            try self.parsePackageDependencies($1, attributePath: Machine.path.attributes[3].attributes)
         }) ?? []
         return SwiftMachines.Machine(
             name: machine.name,
@@ -484,49 +478,50 @@ struct SwiftfsmConverter: Converter, MachineValidator {
         )
     }
     
-    private func parsePackageDependencies(_ attributes: [String: Attribute], attributePath: String) throws -> SwiftMachines.PackageDependency {
+    private func parsePackageDependencies<Path: ReadOnlyPathProtocol>(_ attributes: [String: Attribute], attributePath: Path) throws -> SwiftMachines.PackageDependency where Path.Root == Machine, Path.Value == [String: Attribute] {
         let products = attributes["products"]?.collectionLines?.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty } ?? []
         let qualifiers = attributes["qualifiers"]?.collectionLines?.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty } ?? []
         let targets = attributes["targets_to_import"]?.collectionLines?.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty } ?? []
         let url = attributes["url"]?.lineValue?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         if products.isEmpty {
-            throw ConversionError(message: "Missing required field \(attributePath).products")
+            throw ConversionError(message: "Missing required field", path: ReadOnlyPath(keyPath: attributePath.keyPath.appending(path: \.["products"]), ancestors: attributePath.fullPath))
         }
         if qualifiers.isEmpty {
-            throw ConversionError(message: "Missing required field \(attributePath).qualifiers")
+            throw ConversionError(message: "Missing required field", path: ReadOnlyPath(keyPath: attributePath.keyPath.appending(path: \.["qualifiers"]), ancestors: attributePath.fullPath))
         }
         if targets.isEmpty {
-            throw ConversionError(message: "Missing required field \(attributePath).targets")
+            throw ConversionError(message: "Missing required field \(attributePath)", path: ReadOnlyPath(keyPath: attributePath.keyPath.appending(path: \.["targets"]), ancestors: attributePath.fullPath))
         }
         if url.isEmpty {
-            throw ConversionError(message: "Missing required field \(attributePath).url")
+            throw ConversionError(message: "Missing required field \(attributePath)", path: ReadOnlyPath(keyPath: attributePath.keyPath.appending(path: \.["url"]), ancestors: attributePath.fullPath))
         }
         return SwiftMachines.PackageDependency(products: products, targets: targets, url: url, qualifiers: qualifiers)
     }
     
-    private func parseParameters(_ variable: [LineAttribute]) throws -> SwiftMachines.Variable {
+    private func parseParameters<Path: ReadOnlyPathProtocol>(_ variable: [LineAttribute], path: Path) throws -> SwiftMachines.Variable where Path.Root == Machine, Path.Value == [LineAttribute] {
         return try self.parseVariable(
             [
                 LineAttribute.enumerated(
                     SwiftMachines.Variable.AccessType.readOnly.rawValue,
                     validValues: Set(SwiftMachines.Variable.AccessType.allCases.map(\.rawValue))
                 )
-            ] + variable
+            ] + variable,
+            path: path
         )
     }
     
-    private func parseVariable(_ variable: [LineAttribute]) throws -> SwiftMachines.Variable {
+    private func parseVariable<Path: ReadOnlyPathProtocol>(_ variable: [LineAttribute], path: Path) throws -> SwiftMachines.Variable where Path.Root == Machine, Path.Value == [LineAttribute] {
         guard variable.count == 4 else {
-            throw ConversionError(message: "Missing required fields")
+            throw ConversionError(message: "Missing required fields", path: path)
         }
         guard let accessType = variable[0].enumeratedValue.flatMap({ SwiftMachines.Variable.AccessType(rawValue: $0) }) else {
-            throw ConversionError(message: "Missing required field")
+            throw ConversionError(message: "Invalid value", path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.[0]), ancestors: path.fullPath))
         }
         guard let label = variable[1].expressionValue.map({ String($0) }) else {
-            throw ConversionError(message: "Missing required field")
+            throw ConversionError(message: "Invalid value", path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.[1]), ancestors: path.fullPath))
         }
         guard let type = variable[2].expressionValue.map({ String($0) }) else {
-            throw ConversionError(message: "Missing required field")
+            throw ConversionError(message: "Invalid value", path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.[2]), ancestors: path.fullPath))
         }
         return SwiftMachines.Variable(accessType: accessType, label: label, type: type, initialValue: variable[3].expressionValue.map({ String($0) }))
     }
@@ -542,7 +537,7 @@ extension SwiftfsmConverter: MachineMutator {
     func newState(machine: inout Machine) throws {
         try perform(on: &machine) { machine in
             if machine.semantics != .swiftfsm {
-                throw ValidationError.unsupportedSemantics(machine.semantics)
+                throw MachinesError.unsupportedSemantics(machine.semantics)
             }
             let name = "State"
             if nil == machine.states.first(where: { $0.name == name }) {

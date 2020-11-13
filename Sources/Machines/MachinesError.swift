@@ -1,5 +1,5 @@
 /*
- * ValidationError.swift
+ * MachinesError.swift
  * Machines
  *
  * Created by Callum McColl on 3/11/20.
@@ -56,14 +56,33 @@
  *
  */
 
-public enum ValidationError: Error {
+import Attributes
+
+public enum MachinesError: Error {
     
     case unsupportedSemantics(Machine.Semantics)
+    case conversionError(ConversionError)
+    case validationError(ValidationError<Machine>)
     
     public var message: String {
         switch self {
         case .unsupportedSemantics(let semantics):
             return "Unsupported semantics \(semantics.rawValue)"
+        case .conversionError(let error):
+            return error.message
+        case .validationError(let error):
+            return error.message
+        }
+    }
+    
+    public var path: AnyPath<Machine> {
+        switch self {
+        case .unsupportedSemantics:
+            return AnyPath(Machine.path)
+        case .conversionError(let error):
+            return error.path
+        case .validationError(let error):
+            return error.path
         }
     }
     

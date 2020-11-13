@@ -58,9 +58,9 @@
 
 public struct AnyPath<Root> {
     
-    fileprivate let ancestors: [AnyPath<Root>]
+    public let ancestors: [AnyPath<Root>]
     
-    fileprivate let partialKeyPath: PartialKeyPath<Root>
+    public let partialKeyPath: PartialKeyPath<Root>
     
     public let isOptional: Bool
     

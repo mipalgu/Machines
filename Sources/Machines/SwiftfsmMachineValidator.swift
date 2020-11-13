@@ -62,7 +62,7 @@ struct SwiftfsmMachineValidator: MachineValidator {
     
     func validate(machine: Machine) throws {
         if machine.semantics != .swiftfsm {
-            throw ValidationError.unsupportedSemantics(machine.semantics)
+            throw MachinesError.unsupportedSemantics(machine.semantics)
         }
         try self.validate(machine)
     }

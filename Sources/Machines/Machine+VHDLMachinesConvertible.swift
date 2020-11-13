@@ -53,7 +53,7 @@ extension Machine: VHDLMachinesConvertible {
             children: <#[String : Machine]#>,
             links: <#[String : [String : [Variable]]]#>
         )*/
-        throw ConversionError(message: "Not Yet Implemented")
+        throw ConversionError(message: "Not Yet Implemented", path: Machine.path)
     }
     
     fileprivate func vhdlStateToState(vhdl: VHDLMachines.State) -> State {

@@ -56,8 +56,22 @@
  *
  */
 
-public struct ConversionError: Error, Hashable, Codable {
+import Attributes
+
+public struct ConversionError: Error, Hashable {
     
     public var message: String
+    
+    public var path: AnyPath<Machine>
+    
+    public init(message: String, path: AnyPath<Machine>) {
+        self.message = message
+        self.path = path
+    }
+    
+    public init<Path: ReadOnlyPathProtocol>(message: String, path: Path) where Path.Root == Machine {
+        self.message = message
+        self.path = AnyPath(path)
+    }
     
 }

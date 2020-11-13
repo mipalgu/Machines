@@ -9,9 +9,9 @@ struct VHDLMachineValidator: MachineValidator {
     
     func validate(machine: Machine) throws {
         if machine.semantics != .vhdl {
-            throw ValidationError.unsupportedSemantics(machine.semantics)
+            throw MachinesError.unsupportedSemantics(machine.semantics)
         }
-        throw ConversionError(message: "Not Yet Implemented")
+        throw ConversionError(message: "Not Yet Implemented", path: machine.path)
     }
     
 }

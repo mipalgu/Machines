@@ -56,18 +56,28 @@
  *
  */
 
-public struct ValidationError<Path: ReadOnlyPathProtocol>: Error {
+public struct ValidationError<Root>: Error {
     
     public var message: String
     
-    public var path: Path
+    public var path: AnyPath<Root>
+    
+    public init(message: String, path: AnyPath<Root>) {
+        self.message = message
+        self.path = path
+    }
+    
+    public init<Path: ReadOnlyPathProtocol>(message: String, path: Path) where Path.Root == Root {
+        self.message = message
+        self.path = AnyPath(path)
+    }
     
 }
 
 extension ValidationError: CustomStringConvertible {
     
     public var description: String {
-        return "\(self.path) " + self.message
+        return "\(self.path): " + self.message
     }
     
 }
