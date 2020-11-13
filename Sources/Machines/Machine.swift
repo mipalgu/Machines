@@ -391,6 +391,7 @@ extension Machine {
     }
     
     public func save() throws {
+        try self.validate()
         let generator = MachineGenerator()
         guard nil != generator.generate(self) else {
             throw MachinesError.conversionError(ConversionError(message: generator.lastError ?? "Unable to save machine", path: Machine.path))
