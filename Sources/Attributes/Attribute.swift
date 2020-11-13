@@ -223,12 +223,21 @@ public enum Attribute: Hashable {
         }
     }
     
-    public var tableValue: [[LineAttribute]]? {
-        switch self {
-        case .block(let value):
-            return value.tableValue
-        default:
-            return nil
+    public var tableValue: [[LineAttribute]] {
+        get {
+            switch self {
+            case .block(.table(let rows, _)):
+                return rows
+            default:
+                fatalError("Attempting to access table value of non table value attribute")
+            }
+        } set {
+            switch self.type {
+            case .block(.table(let cols)):
+                self = .block(.table(newValue, columns: cols))
+            default:
+                return
+            }
         }
     }
     

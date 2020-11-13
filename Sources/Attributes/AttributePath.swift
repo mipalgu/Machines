@@ -115,7 +115,7 @@ extension ReadOnlyPathProtocol where Value == Attribute {
         return ReadOnlyPath(keyPath: keyPath.appending(path: \.enumerableCollectionValue), ancestors: fullPath)
     }
     
-    public var tableValue: ReadOnlyPath<Root, [[LineAttribute]]?> {
+    public var tableValue: ReadOnlyPath<Root, [[LineAttribute]]> {
         return ReadOnlyPath(keyPath: keyPath.appending(path: \.tableValue), ancestors: fullPath)
     }
     
@@ -173,6 +173,10 @@ extension PathProtocol where Value == Attribute {
     
     public var blockAttribute: Path<Root, BlockAttribute> {
         return Path(path: path.appending(path: \.blockAttribute), ancestors: fullPath)
+    }
+    
+    public var tableValue: Path<Root, [[LineAttribute]]> {
+        return Path(path: path.appending(path: \.tableValue), ancestors: fullPath)
     }
     
 }
@@ -235,8 +239,8 @@ extension ValidationPath where Value == Attribute {
         return ValidationPath<ReadOnlyPath<Root, Set<String>?>>(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.enumerableCollectionValue), ancestors: path.fullPath))
     }
     
-    public var tableValue: ValidationPath<ReadOnlyPath<Root, [[LineAttribute]]?>> {
-        return ValidationPath<ReadOnlyPath<Root, [[LineAttribute]]?>>(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.tableValue), ancestors: path.fullPath))
+    public var tableValue: ValidationPath<ReadOnlyPath<Root, [[LineAttribute]]>> {
+        return ValidationPath<ReadOnlyPath<Root, [[LineAttribute]]>>(path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.tableValue), ancestors: path.fullPath))
     }
     
     public var collectionBools: ValidationPath<ReadOnlyPath<Root, [Bool]?>> {

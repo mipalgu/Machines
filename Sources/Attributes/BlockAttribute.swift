@@ -314,10 +314,7 @@ public enum BlockAttribute: Hashable {
             switch type {
             case .block(.table):
                 guard let values: [[[LineAttribute]]] = values.failMap({
-                    guard let elementValues = $0.tableValue else {
-                        return nil
-                    }
-                    return elementValues
+                    return $0.tableValue
                 }) else {
                     return nil
                 }

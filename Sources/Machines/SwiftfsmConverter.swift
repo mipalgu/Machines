@@ -399,7 +399,7 @@ struct SwiftfsmConverter: Converter, MachineValidator {
             guard let execute = ringletGroup.attributes["executes"]?.codeValue else {
                 throw ConversionError(message: "Missing required attribute ringlet.execute")
             }
-            guard let vars = try ringletGroup.attributes["ringlet_variables"]?.tableValue?.map(self.parseVariable) else {
+            guard let vars = try ringletGroup.attributes["ringlet_variables"]?.tableValue.map(self.parseVariable) else {
                 throw ConversionError(message: "Missing required variable list ringlet_variables")
             }
             model = SwiftMachines.Model(
@@ -410,13 +410,13 @@ struct SwiftfsmConverter: Converter, MachineValidator {
             model = nil
         }
         let resultType: String? = machine.attributes[1].attributes["result_type"]?.expressionValue.map { String($0) }
-        guard let externalVariables = try machine.attributes[0].attributes["external_variables"]?.tableValue?.map(self.parseVariable) else {
+        guard let externalVariables = try machine.attributes[0].attributes["external_variables"]?.tableValue.map(self.parseVariable) else {
             throw ConversionError(message: "Missing required variable list external_variables")
         }
         let parameters: [SwiftMachines.Variable]? = (machine.attributes[1].attributes["enable_parameters"]?.boolValue ?? false)
-            ? try machine.attributes[1].attributes["parameters"]?.tableValue?.map(self.parseParameters)
+            ? try machine.attributes[1].attributes["parameters"]?.tableValue.map(self.parseParameters)
             : nil
-        guard let fsmVars = try machine.attributes[0].attributes["fsm_vars"]?.tableValue?.map(self.parseVariable) else {
+        guard let fsmVars = try machine.attributes[0].attributes["fsm_vars"]?.tableValue.map(self.parseVariable) else {
             throw ConversionError(message: "Missing required variable list fsm_vars")
         }
         var transitions: [String: [SwiftMachines.Transition]] = [:]
@@ -435,7 +435,7 @@ struct SwiftfsmConverter: Converter, MachineValidator {
             guard let settings = state.attributes.first(where: { $0.name == "settings" }) else {
                 throw ConversionError(message: "Missing required attributes states[\(index)].settings")
             }
-            guard let vars = try state.attributes[0].attributes["state_variables"]?.tableValue?.map(self.parseVariable) else {
+            guard let vars = try state.attributes[0].attributes["state_variables"]?.tableValue.map(self.parseVariable) else {
                 throw ConversionError(message: "Missing required variable list state_variables")
             }
             let externalVariablesSet: Set<String>? = settings.attributes["external_variables"]?.enumerableCollectionValue
