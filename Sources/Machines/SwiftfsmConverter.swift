@@ -666,8 +666,8 @@ extension SwiftfsmConverter: MachineMutator {
     
     private func perform(on machine: inout Machine, _ f: (inout Machine) throws -> Void) throws {
         let backup = machine
-        try f(&machine)
         do {
+            try f(&machine)
             try self.validate(machine: machine)
         } catch let e {
             machine = backup

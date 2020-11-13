@@ -360,15 +360,20 @@ public struct Machine: PathContainer {
     }
     
     private mutating func perform(_ f: (inout Machine) throws -> Void) throws {
+        let backup = self
         do {
             try f(&self)
         } catch let e as ConversionError {
+            self = backup
             throw MachinesError.conversionError(e)
         } catch let e as ValidationError<Machine> {
+            self = backup
             throw MachinesError.validationError(e)
         } catch let e as MachinesError {
+            self = backup
             throw e
         } catch let e {
+            self = backup
             fatalError("Unsupported error: \(e)")
         }
     }
