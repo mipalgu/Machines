@@ -380,6 +380,25 @@ public struct Machine: PathContainer {
     
 }
 
+extension Machine {
+    
+    public init(filePath: URL) throws {
+        let parser = MachineParser()
+        guard let machine = parser.parseMachine(atPath: filePath.path) else {
+            throw MachinesError.conversionError(ConversionError(message: parser.lastError ?? "Unable to load machine at path \(filePath.path)", path: Machine.path))
+        }
+        self = machine
+    }
+    
+    public func save() throws {
+        let generator = MachineGenerator()
+        guard nil != generator.generate(self) else {
+            throw MachinesError.conversionError(ConversionError(message: generator.lastError ?? "Unable to save machine", path: Machine.path))
+        }
+    }
+    
+}
+
 extension Machine: Equatable {
     
     public static func == (lhs: Machine, rhs: Machine) -> Bool {
