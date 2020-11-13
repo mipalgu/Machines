@@ -56,11 +56,16 @@
  *
  */
 
+import Foundation
 import Attributes
 
-public struct State: Hashable, Codable {
+public struct State: Hashable, Codable, Identifiable {
     
-    public var name: String
+    public var id: StateName {
+        return self.name
+    }
+    
+    public var name: StateName
     
     public var actions: [String: Code]
     
@@ -73,6 +78,18 @@ public struct State: Hashable, Codable {
         self.actions = actions
         self.attributes = attributes
         self.metaData = metaData
+    }
+    
+    public func transitions(in machine: Machine) -> [Transition] {
+        return machine.transitions.filter { $0.source == name || $0.target == name }
+    }
+    
+    public func sourceTransitions(in machine: Machine) -> [Transition] {
+        return machine.transitions.filter { $0.source == name }
+    }
+    
+    public func targetTransitions(in machine: Machine) -> [Transition] {
+        return machine.transitions.filter { $0.target == name }
     }
     
 }

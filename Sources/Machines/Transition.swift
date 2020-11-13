@@ -56,6 +56,7 @@
  *
  */
 
+import Foundation
 import Attributes
 
 public struct Transition: Hashable, Codable {
@@ -76,6 +77,14 @@ public struct Transition: Hashable, Codable {
         self.target = target
         self.attributes = attributes
         self.metaData = metaData
+    }
+    
+    public func sourceState(in machine: Machine) -> State? {
+        return machine.states.first { $0.name == source }
+    }
+    
+    public func targetState(in machine: Machine) -> State? {
+        return machine.states.first { $0.name == target }
     }
     
 }
