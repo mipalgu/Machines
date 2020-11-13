@@ -98,6 +98,24 @@ public enum Attribute: Hashable {
         }
     }
     
+    public var lineAttribute: LineAttribute? {
+        switch self {
+        case .line(let attribute):
+            return attribute
+        default:
+            return nil
+        }
+    }
+    
+    public var blockAttribute: BlockAttribute? {
+        switch self {
+        case .block(let attribute):
+            return attribute
+        default:
+            return nil
+        }
+    }
+    
     public var boolValue: Bool? {
         switch self {
         case .line(let attribute):
