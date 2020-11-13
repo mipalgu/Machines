@@ -404,7 +404,7 @@ public enum Attribute: Hashable {
         return .block(.collection(text.map { Attribute.text($0) }, type: .text))
     }
     
-    public static func collection(complex: [[String: Attribute]], layout: [String: AttributeType]) -> Attribute {
+    public static func collection(complex: [[String: Attribute]], layout: [Field]) -> Attribute {
         return .block(.collection(complex.map { Attribute.complex($0, layout: layout) }, type: .complex(layout: layout)))
     }
     
@@ -428,7 +428,7 @@ public enum Attribute: Hashable {
         return .block(.collection(values, type: type))
     }
     
-    public static func complex(_ values: [String: Attribute], layout: [String: AttributeType]) -> Attribute {
+    public static func complex(_ values: [String: Attribute], layout: [Field]) -> Attribute {
         return .block(.complex(values, layout: layout))
     }
     

@@ -87,16 +87,6 @@ public enum AttributeType: Hashable {
         return .line(.line)
     }
     
-    //    case code(_ value: String, language: Language)
-    //
-    //    case text(_ value: String)
-    //
-    //    indirect case collection(_ values: [Attribute], type: AttributeType)
-    //
-    //    indirect case complex(_ data: [String: Attribute], layout: [String: AttributeType])
-    //
-    //    case enumerableCollection(_ values: Set<String>, validValues: Set<String>)
-    
     public static func code(language: Language) -> AttributeType {
         return .block(.code(language: language))
     }
@@ -109,7 +99,7 @@ public enum AttributeType: Hashable {
         return .block(.collection(type: type))
     }
     
-    public static func complex(layout: [String: AttributeType]) -> AttributeType {
+    public static func complex(layout: [Field]) -> AttributeType {
         return .block(.complex(layout: layout))
     }
     

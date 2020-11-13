@@ -76,7 +76,7 @@ public enum BlockAttributeType: Hashable {
     case code(language: Language)
     case text
     indirect case collection(type: AttributeType)
-    indirect case complex(layout: [String: AttributeType])
+    indirect case complex(layout: [Field])
     case enumerableCollection(validValues: Set<String>)
     case table(columns: [TableColumn])
     
@@ -156,7 +156,7 @@ extension BlockAttributeType: Codable {
         
         var xmiName: String? { "ComplexAttributeType" }
         
-        var layout: [String: AttributeType]
+        var layout: [Field]
         
     }
     

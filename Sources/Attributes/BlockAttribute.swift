@@ -67,7 +67,7 @@ public enum BlockAttribute: Hashable {
     
     indirect case collection(_ values: [Attribute], type: AttributeType)
     
-    indirect case complex(_ data: [String: Attribute], layout: [String: AttributeType])
+    indirect case complex(_ data: [String: Attribute], layout: [Field])
     
     case enumerableCollection(_ values: Set<String>, validValues: Set<String>)
     
@@ -422,7 +422,7 @@ extension BlockAttribute: Codable {
         
         var values: [String: Attribute]
         
-        var layout: [String: AttributeType]
+        var layout: [Field]
         
     }
     
