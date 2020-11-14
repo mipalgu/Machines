@@ -91,8 +91,7 @@ struct SwiftfsmMachineValidator: MachineValidator {
                             settings.fields[1].name.equals("imports")
                             settings.fields[1].type.equals(AttributeType.code(language: .swift))
                             settings.attributes["imports"].required()
-                            settings.attributes["imports"].wrappedValue.codeValue.required()
-                            settings.attributes["imports"].wrappedValue.codeValue.wrappedValue.maxLength(1024)
+                            settings.attributes["imports"].wrappedValue.codeValue.maxLength(1024)
                         }
                 }
             }
@@ -137,8 +136,8 @@ struct SwiftfsmMachineValidator: MachineValidator {
                     settings.fields[0].name.equals("suspend_state")
                     settings.fields[0].type.equals(AttributeType.enumerated(validValues: Set(machine.states.map { $0.name })))
                     settings.attributes["suspend_state"].required()
-                    settings.attributes["suspend_state"].wrappedValue.enumeratedValue.required()
-                    settings.attributes["suspend_state"].wrappedValue.enumeratedValue.wrappedValue.in(Machine.path.states, transform: { Set($0.map {$0.name}) })
+                    settings.attributes["suspend_state"].wrappedValue.enumeratedValue.notEmpty()
+                    settings.attributes["suspend_state"].wrappedValue.enumeratedValue.in(Machine.path.states, transform: { Set($0.map {$0.name}) })
                 }
             }
         }

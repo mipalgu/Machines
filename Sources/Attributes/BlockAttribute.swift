@@ -90,48 +90,98 @@ public enum BlockAttribute: Hashable {
         }
     }
     
-    public var codeValue: String? {
-        switch self {
-        case .code(let value, _):
-            return value
-        default:
-            return nil
+    public var codeValue: String {
+        get {
+            switch self {
+            case .code(let value, _):
+                return value
+            default:
+                fatalError("Attempting to fetch a code value on a block attribute which is not a code attribute") 
+            }
+        }
+        set {
+            switch self {
+            case .code(_, let language):
+                self = .code(newValue, language: language)
+            default:
+                fatalError("Attempting to set a code value on a block attribute which is not a code attribute")
+            }
         }
     }
     
-    public var textValue: String? {
-        switch self {
-        case .text(let value):
-            return value
-        default:
-            return nil
+    public var textValue: String {
+        get {
+            switch self {
+            case .text(let value):
+                return value
+            default:
+                fatalError("Attempting to fetch a text value on a block attribute which is not a text attribute")
+            }
+        }
+        set {
+            switch self {
+            case .text(_):
+                self = .text(newValue)
+            default:
+                fatalError("Attempting to set a text value on a block attribute which is not a text attribute")
+            }
         }
     }
     
-    public var collectionValue: [Attribute]? {
-        switch self {
-        case .collection(let value, _):
-            return value
-        default:
-            return nil
+    public var collectionValue: [Attribute] {
+        get {
+            switch self {
+            case .collection(let value, _):
+                return value
+            default:
+                fatalError("Attempting to fetch a collection value on a block attribute which is not a collection attribute")
+            }
+        }
+        set {
+            switch self {
+            case .collection(_, let type):
+                self = .collection(newValue, type: type)
+            default:
+                fatalError("Attempting to set a collection value on a block attribute which is not a collection attribute")
+            }
         }
     }
     
-    public var complexValue: [String: Attribute]? {
-        switch self {
-        case .complex(let values, _):
-            return values
-        default:
-            return nil
+    public var complexValue: [String: Attribute] {
+        get {
+            switch self {
+            case .complex(let values, _):
+                return values
+            default:
+                fatalError("Attempting to fetch a complex value on a block attribute which is not a complex attribute")
+            }
+        }
+        set {
+            switch self {
+            case .complex(_, let layout):
+                self = .complex(newValue, layout: layout)
+            default:
+                fatalError("Attempting to set a complex value on a block attribute which is not a complex attribute")
+            }
         }
     }
     
-    public var enumerableCollectionValue: Set<String>? {
-        switch self {
-        case .enumerableCollection(let values, _):
-            return values
-        default:
-            return nil
+    public var enumerableCollectionValue: Set<String> {
+        get {
+            switch self {
+            case .enumerableCollection(let values, _):
+                return values
+            default:
+                fatalError("Attempting to fetch an enumerable collection value on a block attribute which is not an enumerable collection attribute")
+            }
+        }
+        set {
+            switch self {
+            case .enumerableCollection(_, let validValues):
+                self = .enumerableCollection(newValue, validValues: validValues)
+            default:
+                fatalError("Attempting to set an enumerable collection value on a block attribute which is not an enumerable collection attribute")
+            }
         }
     }
     
@@ -153,186 +203,322 @@ public enum BlockAttribute: Hashable {
         }
     }
     
-    public var collectionBools: [Bool]? {
-        switch self {
-        case .collection(let values, type: let type):
-            switch type {
-            case .bool:
-                return values.failMap { $0.boolValue }
-            default:
-                return nil
-            }
-        default:
-            return nil
-        }
-    }
-    
-    public var collectionIntegers: [Int]? {
-        switch self {
-        case .collection(let values, type: let type):
-            switch type {
-            case .integer:
-                return values.failMap { $0.integerValue }
-            default:
-                return nil
-            }
-        default:
-            return nil
-        }
-    }
-    
-    public var collectionFloats: [Double]? {
-        switch self {
-        case .collection(let values, type: let type):
-            switch type {
-            case .float:
-                return values.failMap { $0.floatValue }
-            default:
-                return nil
-            }
-        default:
-            return nil
-        }
-    }
-    
-    public var collectionExpressions: [Expression]? {
-        switch self {
-        case .collection(let values, type: let type):
-            switch type {
-            case .line(.expression):
-                return values.failMap { $0.expressionValue }
-            default:
-                return nil
-            }
-        default:
-            return nil
-        }
-    }
-    
-    public var collectionEnumerated: [String]? {
-        switch self {
-        case .collection(let values, type: let type):
-            switch type {
-            case .line(.enumerated):
-                guard let values: [String] = values.failMap({
-                    guard let elementValue = $0.enumeratedValue else {
-                        return nil
-                    }
-                    return elementValue
-                }) else {
-                    return nil
+    public var collectionBools: [Bool] {
+        get {
+            switch self {
+            case .collection(let values, type: let type):
+                switch type {
+                case .bool:
+                    return values.map { $0.boolValue }
+                default:
+                    fatalError("Attempting to fetch a collection bool value on a block attribute which is not a collection bool attribute")
                 }
-                return values
             default:
-                return nil
+                fatalError("Attempting to fetch a collection bool value on a block attribute which is not a collection bool attribute")
             }
-        default:
-            return nil
         }
-    }
-    
-    public var collectionLines: [String]? {
-        switch self {
-        case .collection(let values, type: let type):
-            switch type {
-            case .line:
-                return values.failMap { $0.lineValue }
-            default:
-                return nil
-            }
-        default:
-            return nil
-        }
-    }
-    
-    public var collectionCode: [String]? {
-        switch self {
-        case .collection(let values, type: let type):
-            switch type {
-            case .block(.code):
-                return values.failMap { $0.codeValue }
-            default:
-                return nil
-            }
-        default:
-            return nil
-        }
-    }
-    
-    public var collectionText: [String]? {
-        switch self {
-        case .collection(let values, type: let type):
-            switch type {
-            case .text:
-                return values.failMap { $0.textValue }
-            default:
-                return nil
-            }
-        default:
-            return nil
-        }
-    }
-    
-    public var collectionComplex: [[String: Attribute]]? {
-        switch self {
-        case .collection(let values, type: let type):
-            switch type {
-            case .block(.complex):
-                guard let values: [[String: Attribute]] = values.failMap({
-                    guard let elementValues = $0.complexValue else {
-                        return nil
-                    }
-                    return elementValues
-                }) else {
-                    return nil
+        set {
+            switch self {
+            case .collection(_, let type):
+                switch type {
+                case .bool:
+                    self = .collection(newValue.map { Attribute.bool($0) }, type: type)
+                default:
+                    fatalError("Attempting to set a collection bool value on a block attribute which is not a collection bool attribute")
                 }
-                return values
             default:
-                return nil
+                fatalError("Attempting to fetch a collection bool value on a block attribute which is not a collection bool attribute")
             }
-        default:
-            return nil
         }
     }
     
-    public var collectionEnumerableCollection: [Set<String>]? {
-        switch self {
-        case .collection(let values, type: let type):
-            switch type {
-            case .block(.enumerableCollection):
-                guard let values: [Set<String>] = values.failMap({
-                    guard let elementValues = $0.enumerableCollectionValue else {
-                        return nil
-                    }
-                    return elementValues
-                }) else {
-                    return nil
+    public var collectionIntegers: [Int] {
+        get {
+            switch self {
+            case .collection(let values, type: let type):
+                switch type {
+                case .integer:
+                    return values.map { $0.integerValue }
+                default:
+                    fatalError("Attempting to fetch a collection integer value on a block attribute which is not a collection integer attribute")
                 }
-                return values
             default:
-                return nil
+                fatalError("Attempting to fetch a collection integer value on a block attribute which is not a collection integer attribute")
             }
-        default:
-            return nil
+        }
+        set {
+            switch self {
+            case .collection(_, let type):
+                switch type {
+                case .integer:
+                    self = .collection(newValue.map { Attribute.integer($0) }, type: type)
+                default:
+                    fatalError("Attempting to set a collection integer value on a block attribute which is not a collection integer attribute")
+                }
+            default:
+                fatalError("Attempting to set a collection integer value on a block attribute which is not a collection integer attribute")
+            }
         }
     }
     
-    public var collectionTable: [[[LineAttribute]]]? {
-        switch self {
-        case .collection(let values, type: let type):
-            switch type {
-            case .block(.table):
-                guard let values: [[[LineAttribute]]] = values.failMap({
-                    return $0.tableValue
-                }) else {
-                    return nil
+    public var collectionFloats: [Double] {
+        get {
+            switch self {
+            case .collection(let values, type: let type):
+                switch type {
+                case .float:
+                    return values.map { $0.floatValue }
+                default:
+                    fatalError("Attempting to fetch a collection float value on a block attribute which is not a collection float attribute")
                 }
-                return values
             default:
-                return nil
+                fatalError("Attempting to fetch a collection float value on a block attribute which is not a collection float attribute")
             }
-        default:
-            return nil
+        }
+        set {
+            switch self {
+            case .collection(_, let type):
+                switch type {
+                case .float:
+                    self = .collection(newValue.map { Attribute.float($0) }, type: type)
+                default:
+                    fatalError("Attempting to set a collection float value on a block attribute which is not a collection float attribute")
+                }
+            default:
+                fatalError("Attempting to set a collection float value on a block attribute which is not a collection float attribute")
+            }
+        }
+    }
+    
+    public var collectionExpressions: [Expression] {
+        get {
+            switch self {
+            case .collection(let values, type: let type):
+                switch type {
+                case .line(.expression):
+                    return values.map { $0.expressionValue }
+                default:
+                    fatalError("Attempting to fetch a collection expression value on a block attribute which is not a collection expression attribute")
+                }
+            default:
+                fatalError("Attempting to fetch a collection expression value on a block attribute which is not a collection expression attribute")
+            }
+        }
+        set {
+            switch self {
+            case .collection(_, let type):
+                switch type {
+                case .line(.expression(let language)):
+                    self = .collection(newValue.map { Attribute.expression($0, language: language) }, type: type)
+                default:
+                    fatalError("Attempting to set a collection expression value on a block attribute which is not a collection expression attribute")
+                }
+            default:
+                fatalError("Attempting to set a collection expression value on a block attribute which is not a collection expression attribute")
+            }
+        }
+    }
+    
+    public var collectionEnumerated: [String] {
+        get {
+            switch self {
+            case .collection(let values, type: let type):
+                switch type {
+                case .line(.enumerated):
+                    return values.map({$0.enumeratedValue})
+                default:
+                    fatalError("Attempting to fetch a collection enumerated value on a block attribute which is not a collection enumerated attribute")
+                }
+            default:
+                fatalError("Attempting to fetch a collection enumerated value on a block attribute which is not a collection enumerated attribute")
+            }
+        }
+        set {
+            switch self {
+            case .collection(_, let type):
+                switch type {
+                case .line(.enumerated(let validValues)):
+                    self = .collection(newValue.map { Attribute.enumerated($0, validValues: validValues) }, type: type)
+                default:
+                    fatalError("Attempting to set a collection enumerated value on a block attribute which is not a collection enumerated attribute")
+                }
+            default:
+                fatalError("Attempting to set a collection enumerated value on a block attribute which is not a collection enumerated attribute")
+            }
+        }
+    }
+    
+    public var collectionLines: [String] {
+        get {
+            switch self {
+            case .collection(let values, type: let type):
+                switch type {
+                case .line:
+                    return values.map { $0.lineValue }
+                default:
+                    fatalError("Attempting to fetch a collection lines value on a block attribute which is not a collection lines attribute")
+                }
+            default:
+                fatalError("Attempting to fetch a collection lines value on a block attribute which is not a collection lines attribute")
+            }
+        }
+        set {
+            switch self {
+            case .collection(_, let type):
+                switch type {
+                case .line(.line):
+                    self = .collection(newValue.map { Attribute.line($0) }, type: type)
+                default:
+                    fatalError("Attempting to set a collection lines value on a block attribute which is not a collection lines attribute")
+                }
+            default:
+                fatalError("Attempting to set a collection lines value on a block attribute which is not a collection lines attribute")
+            }
+        }
+    }
+    
+    public var collectionCode: [String] {
+        get {
+            switch self {
+            case .collection(let values, type: let type):
+                switch type {
+                case .block(.code):
+                    return values.map { $0.codeValue }
+                default:
+                    fatalError("Attempting to fetch a collection code value on a block attribute which is not a collection code attribute")
+                }
+            default:
+                fatalError("Attempting to fetch a collection code value on a block attribute which is not a collection code attribute")
+            }
+        }
+        set {
+            switch self {
+            case .collection(_, let type):
+                switch type {
+                case .block(.code(let language)):
+                    self = .collection(newValue.map { Attribute.code($0, language: language) }, type: type)
+                default:
+                    fatalError("Attempting to set a collection code value on a block attribute which is not a collection code attribute")
+                }
+            default:
+                fatalError("Attempting to set a collection code value on a block attribute which is not a collection code attribute")
+            }
+        }
+    }
+    
+    public var collectionText: [String] {
+        get {
+            switch self {
+            case .collection(let values, type: let type):
+                switch type {
+                case .text:
+                    return values.map { $0.textValue }
+                default:
+                    fatalError("Attempting to fetch a collection text value on a block attribute which is not a collection text attribute")
+                }
+            default:
+                fatalError("Attempting to fetch a collection text value on a block attribute which is not a collection text attribute")
+            }
+        }
+        set {
+            switch self {
+            case .collection(_, let type):
+                switch type {
+                case .block(.text):
+                    self = .collection(newValue.map { Attribute.text($0) }, type: type)
+                default:
+                    fatalError("Attempting to set a collection text value on a block attribute which is not a collection text attribute")
+                }
+            default:
+                fatalError("Attempting to set a collection text value on a block attribute which is not a collection text attribute")
+            }
+        }
+    }
+    
+    public var collectionComplex: [[String: Attribute]] {
+        get {
+            switch self {
+            case .collection(let values, type: let type):
+                switch type {
+                case .block(.complex):
+                    return values.map({$0.complexValue})
+                default:
+                    fatalError("Attempting to fetch a collection complex value on a block attribute which is not a collection complex attribute")
+                }
+            default:
+                fatalError("Attempting to fetch a collection complex value on a block attribute which is not a collection complex attribute")
+            }
+        }
+        set {
+            switch self {
+            case .collection(_, let type):
+                switch type {
+                case .block(.complex(let layout)):
+                    self = .collection(newValue.map { Attribute.complex($0, layout: layout) }, type: type)
+                default:
+                    fatalError("Attempting to set a collection complex value on a block attribute which is not a collection complex attribute")
+                }
+            default:
+                fatalError("Attempting to set a collection complex value on a block attribute which is not a collection complex attribute")
+            }
+        }
+    }
+    
+    public var collectionEnumerableCollection: [Set<String>] {
+        get {
+            switch self {
+            case .collection(let values, type: let type):
+                switch type {
+                case .block(.enumerableCollection):
+                    return values.map({ $0.enumerableCollectionValue })
+                default:
+                    fatalError("Attempting to fetch a collection enumerable collection value on a block attribute which is not a collection enumerable collection attribute")
+                }
+            default:
+                fatalError("Attempting to fetch a collection enumerable collection value on a block attribute which is not a collection enumerable collection attribute")
+            }
+        }
+        set {
+            switch self {
+            case .collection(_, let type):
+                switch type {
+                case .block(.enumerableCollection(let validValues)):
+                    self = .collection(newValue.map { Attribute.enumerableCollection($0, validValues: validValues) }, type: type)
+                default:
+                    fatalError("Attempting to set a collection enumerable collection value on a block attribute which is not a collection enumerable collection attribute")
+                }
+            default:
+                fatalError("Attempting to set a collection enumerable collection value on a block attribute which is not a collection enumerable collection attribute")
+            }
+        }
+    }
+    
+    public var collectionTable: [[[LineAttribute]]] {
+        get {
+            switch self {
+            case .collection(let values, type: let type):
+                switch type {
+                case .block(.table):
+                    return values.map({ $0.tableValue })
+                default:
+                    fatalError("Attempting to fetch a collection table value on a block attribute which is not a collection table attribute")
+                }
+            default:
+                fatalError("Attempting to fetch a collection table value on a block attribute which is not a collection table attribute")
+            }
+        }
+        set {
+            switch self {
+            case .collection(_, let type):
+                switch type {
+                case .block(.table(let columns)):
+                    self = .collection(newValue.map { Attribute.table($0, columns: columns.map { ($0.name, $0.type) }) }, type: type)
+                default:
+                    fatalError("Attempting to set a collection table value on a block attribute which is not a collection table attribute")
+                }
+            default:
+                fatalError("Attempting to set a collection table value on a block attribute which is not a collection table attribute")
+            }
         }
     }
     

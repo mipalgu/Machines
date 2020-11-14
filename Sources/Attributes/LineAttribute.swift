@@ -84,57 +84,117 @@ public enum LineAttribute: Hashable {
         }
     }
     
-    public var boolValue: Bool? {
-        switch self {
-        case .bool(let value):
-            return value
-        default:
-            return nil
+    public var boolValue: Bool {
+        get {
+            switch self {
+            case .bool(let value):
+                return value
+            default:
+                fatalError("Attempting to fetch a bool value on a line attribute which is not a bool attribute")
+            }
+        }
+        set {
+            switch self {
+            case .bool:
+                self = .bool(newValue)
+            default:
+                fatalError("Attempting to set a bool value on a line attribute which is not a bool attribute")
+            }
         }
     }
     
-    public var integerValue: Int? {
-        switch self {
-        case .integer(let value):
-            return value
-        default:
-            return nil
+    public var integerValue: Int {
+        get {
+            switch self {
+            case .integer(let value):
+                return value
+            default:
+                fatalError("Attempting to fetch an integer value on a line attribute which is not an integer attribute")
+            }
+        }
+        set {
+            switch self {
+            case .integer:
+                self = .integer(newValue)
+            default:
+                fatalError("Attempting to set an integer value on a line attribute which is not an integer attribute")
+            }
         }
     }
     
-    public var floatValue: Double? {
-        switch self {
-        case .float(let value):
-            return value
-        default:
-            return nil
+    public var floatValue: Double {
+        get {
+            switch self {
+            case .float(let value):
+                return value
+            default:
+                fatalError("Attempting to fetch a float value on a line attribute which is not a float attribute")
+            }
+        }
+        set {
+            switch self {
+            case .float:
+                self = .float(newValue)
+            default:
+                fatalError("Attempting to set a float value on a line attribute which is not a float attribute")
+            }
         }
     }
     
-    public var expressionValue: Expression? {
-        switch self {
-        case .expression(let value, _):
-            return value
-        default:
-            return nil
+    public var expressionValue: Expression {
+        get {
+            switch self {
+            case .expression(let value, _):
+                return value
+            default:
+                fatalError("Attempting to fetch an expression value on a line attribute which is not an expression attribute")
+            }
+        }
+        set {
+            switch self {
+            case .expression(_, let language):
+                self = .expression(newValue, language: language)
+            default:
+                fatalError("Attempting to set an expression value on a line attribute which is not an expression attribute")
+            }
         }
     }
     
-    public var enumeratedValue: String? {
-        switch self {
-        case .enumerated(let value, validValues: let validValues):
-            return value
-        default:
-            return nil
+    public var enumeratedValue: String {
+        get {
+            switch self {
+            case .enumerated(let value, _):
+                return value
+            default:
+                fatalError("Attempting to fetch an enumerated value on a line attribute which is not an enumerated attribute")
+            }
+        }
+        set {
+            switch self {
+            case .enumerated(_, let validValues):
+                self = .enumerated(newValue, validValues: validValues)
+            default:
+                fatalError("Attempting to set an enumerated value on a line attribute which is not an enumerated attribute")
+            }
         }
     }
     
-    public var lineValue: String? {
-        switch self {
-        case .line(let value):
-            return value
-        default:
-            return nil
+    public var lineValue: String {
+        get {
+            switch self {
+            case .line(let value):
+                return value
+            default:
+                fatalError("Attempting to fetch a line value on a line attribute which is not a line attribute")
+            }
+        }
+        set {
+            switch self {
+            case .line:
+                self = .line(newValue)
+            default:
+                fatalError("Attempting to set a line value on a line attribute which is not a line attribute")
+            }
         }
     }
     
