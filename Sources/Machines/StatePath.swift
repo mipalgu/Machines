@@ -58,7 +58,7 @@
 
 import Attributes
 
-extension Path where Value == State {
+public extension Path where Value == State {
     
     var name: Path<Root, StateName> {
         return Path<Root, StateName>(path: path.appending(path: \.name), ancestors: fullPath)
@@ -78,7 +78,7 @@ extension Path where Value == State {
     
 }
 
-extension ValidationPath where Value == State {
+public extension ValidationPath where Value == State {
     
     var name: ValidationPath<ReadOnlyPath<Root, StateName>> {
         return ValidationPath<ReadOnlyPath<Root, StateName>>(path: ReadOnlyPath<Root, StateName>(keyPath: path.keyPath.appending(path: \.name), ancestors: path.fullPath))
