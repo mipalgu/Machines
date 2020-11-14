@@ -135,12 +135,21 @@ public enum BlockAttribute: Hashable {
         }
     }
     
-    public var tableValue: [[LineAttribute]]? {
-        switch self {
-        case .table(let values, _):
-            return values
-        default:
-            return nil
+    public var tableValue: [[LineAttribute]] {
+        get {
+            switch self {
+            case .table(let values, _):
+                return values
+            default:
+                fatalError("Attempting to fetch table value on a block attribute which is not a table attribute")
+            }
+        } set {
+            switch self {
+            case .table(_, let columns):
+                self = .table(newValue, columns: columns)
+            default:
+                fatalError("Attempting to set table value on a block attribute which is not a table attribute")
+            }
         }
     }
     
