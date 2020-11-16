@@ -1,8 +1,8 @@
 /*
- * State.swift
+ * Action.swift
  * Machines
  *
- * Created by Callum McColl on 29/10/20.
+ * Created by Callum McColl on 16/11/20.
  * Copyright © 2020 Callum McColl. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,40 +56,20 @@
  *
  */
 
-import Foundation
 import Attributes
 
-public struct State: Hashable, Codable, Identifiable {
+public struct Action: Hashable, Codable {
     
-    public var id: StateName {
-        return self.name
-    }
+    var name: String
     
-    public var name: StateName
+    var implementation: Code
     
-    public var actions: [Action]
+    var language: Language
     
-    public var attributes: [AttributeGroup]
-    
-    public var metaData: [AttributeGroup]
-    
-    public init(name: String, actions: [Action], attributes: [AttributeGroup] = [], metaData: [AttributeGroup] = []) {
+    public init(name: String, implementation: Code, language: Language) {
         self.name = name
-        self.actions = actions
-        self.attributes = attributes
-        self.metaData = metaData
-    }
-    
-    public func transitions(in machine: Machine) -> [Transition] {
-        return machine.transitions.filter { $0.source == name || $0.target == name }
-    }
-    
-    public func sourceTransitions(in machine: Machine) -> [Transition] {
-        return machine.transitions.filter { $0.source == name }
-    }
-    
-    public func targetTransitions(in machine: Machine) -> [Transition] {
-        return machine.transitions.filter { $0.target == name }
+        self.implementation = implementation
+        self.language = language
     }
     
 }

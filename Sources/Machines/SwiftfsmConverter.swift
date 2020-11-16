@@ -84,7 +84,7 @@ struct SwiftfsmConverter: Converter, MachineValidator {
                 imports: "",
                 externalVariables: nil,
                 vars: [],
-                actions: [Action(name: "onEntry", implementation: ""), Action(name: "onExit", implementation: ""), Action(name: "main", implementation: "")],
+                actions: [SwiftMachines.Action(name: "onEntry", implementation: ""), SwiftMachines.Action(name: "onExit", implementation: ""), SwiftMachines.Action(name: "main", implementation: "")],
                 transitions: []
             ),
             suspendState: SwiftMachines.State(
@@ -92,7 +92,7 @@ struct SwiftfsmConverter: Converter, MachineValidator {
                 imports: "",
                 externalVariables: nil,
                 vars: [],
-                actions: [Action(name: "onEntry", implementation: ""), Action(name: "onExit", implementation: ""), Action(name: "main", implementation: "")],
+                actions: [SwiftMachines.Action(name: "onEntry", implementation: ""), SwiftMachines.Action(name: "onExit", implementation: ""), SwiftMachines.Action(name: "main", implementation: "")],
                 transitions: []
             ),
             states: [
@@ -101,7 +101,7 @@ struct SwiftfsmConverter: Converter, MachineValidator {
                     imports: "",
                     externalVariables: nil,
                     vars: [],
-                    actions: [Action(name: "onEntry", implementation: ""), Action(name: "onExit", implementation: ""), Action(name: "main", implementation: "")],
+                    actions: [SwiftMachines.Action(name: "onEntry", implementation: ""), SwiftMachines.Action(name: "onExit", implementation: ""), SwiftMachines.Action(name: "main", implementation: "")],
                     transitions: []
                 ),
                 SwiftMachines.State(
@@ -109,7 +109,7 @@ struct SwiftfsmConverter: Converter, MachineValidator {
                     imports: "",
                     externalVariables: nil,
                     vars: [],
-                    actions: [Action(name: "onEntry", implementation: ""), Action(name: "onExit", implementation: ""), Action(name: "main", implementation: "")],
+                    actions: [SwiftMachines.Action(name: "onEntry", implementation: ""), SwiftMachines.Action(name: "onExit", implementation: ""), SwiftMachines.Action(name: "main", implementation: "")],
                     transitions: []
                 )
             ],
@@ -328,7 +328,7 @@ struct SwiftfsmConverter: Converter, MachineValidator {
             }
             return State(
                 name: state.name,
-                actions: Dictionary(uniqueKeysWithValues: state.actions.map { ($0.name, $0.implementation) }),
+                actions: state.actions.map { Action(name: $0.name, implementation: Code($0.implementation), language: .swift) },
                 attributes: [
                     AttributeGroup(
                         name: "variables",
@@ -429,7 +429,7 @@ struct SwiftfsmConverter: Converter, MachineValidator {
             transitions[source]?.append(SwiftMachines.Transition(target: target, condition: $0.condition.map { String($0) }))
         }
         let states = try machine.states.enumerated().map { (index, state) -> SwiftMachines.State in
-            let actions = state.actions.map { SwiftMachines.Action(name: $0, implementation: String($1)) }
+            let actions = state.actions.map { SwiftMachines.Action(name: $0.name, implementation: String($0.implementation)) }
             let settings = state.attributes[1]
             guard let vars = try state.attributes[0].attributes["state_variables"]?.tableValue.enumerated().map({ try self.parseVariable($1, path: Machine.path.states[index].attributes[0].attributes["state_variables"].wrappedValue.tableValue[$0]) }) else {
                 throw ConversionError(message: "Missing required variable list state_variables", path: Machine.path.states[index].attributes[0].attributes["state_variables"].wrappedValue)
@@ -679,7 +679,7 @@ extension SwiftfsmConverter: MachineMutator {
         let actions = machine.attributes[2].attributes["actions"]?.collectionValue.failMap { $0.lineValue } ?? ["onEntry", "main", "onExit"]
         return State(
             name: name,
-            actions: Dictionary(uniqueKeysWithValues: actions.map { ($0, Code("")) }),
+            actions: actions.map { Action(name: $0, implementation: Code(""), language: .swift) },
             attributes: [
                 AttributeGroup(
                     name: "variables",
