@@ -617,11 +617,11 @@ extension SwiftfsmConverter: MachineMutator {
         try perform(on: &machine) { machine in
             switch attribute.path {
             case machine.path.attributes[2].attributes["use_custom_ringlet"].wrappedValue.path,
-                 machine.path.attributes[2].attributes["use_custom_ringlet"].wrappedValue.boolValue.keyPath:
-                guard let attr = value as? Attribute else {
-                    throw ValidationError(message: "Invalid value \(value)", path: Machine.path.attributes[2].attributes["use_custom_ringlet"].wrappedValue)
+                 machine.path.attributes[2].attributes["use_custom_ringlet"].wrappedValue.boolValue.keyPath,
+                 machine.path.attributes[2].attributes["use_custom_ringlet"].wrappedValue.lineAttribute.boolValue.keyPath:
+                guard let boolValue = (value as? Attribute)?.boolValue ?? (value as? LineAttribute)?.boolValue ?? (value as? Bool) else {
+                    throw ValidationError(message: "Invalid value \(value)", path: attribute)
                 }
-                let boolValue = attr.boolValue
                 self.toggleUseCustomRinglet(boolValue: boolValue, machine: &machine)
             default:
                 machine[keyPath: attribute.path] = value
