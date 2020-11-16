@@ -62,11 +62,11 @@ public struct AttributeGroup: Hashable, Codable {
     
     public var fields: [Field]
     
-    public var attributes: [String: Attribute]
+    public var attributes: [Label: Attribute]
     
-    public var metaData: [String: Attribute]
+    public var metaData: [Label: Attribute]
     
-    public init(name: String, fields: [Field] = [], attributes: [String: Attribute] = [:], metaData: [String: Attribute] = [:]) {
+    public init(name: String, fields: [Field] = [], attributes: [Label: Attribute] = [:], metaData: [Label: Attribute] = [:]) {
         self.name = name
         self.fields = fields
         self.attributes = attributes

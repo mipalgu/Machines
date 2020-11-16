@@ -67,7 +67,7 @@ public enum BlockAttribute: Hashable {
     
     indirect case collection(_ values: [Attribute], type: AttributeType)
     
-    indirect case complex(_ data: [String: Attribute], layout: [Field])
+    indirect case complex(_ data: [Label: Attribute], layout: [Field])
     
     case enumerableCollection(_ values: Set<String>, validValues: Set<String>)
     
@@ -147,7 +147,7 @@ public enum BlockAttribute: Hashable {
         }
     }
     
-    public var complexValue: [String: Attribute] {
+    public var complexValue: [Label: Attribute] {
         get {
             switch self {
             case .complex(let values, _):
@@ -435,7 +435,7 @@ public enum BlockAttribute: Hashable {
         }
     }
     
-    public var collectionComplex: [[String: Attribute]] {
+    public var collectionComplex: [[Label: Attribute]] {
         get {
             switch self {
             case .collection(let values, type: let type):

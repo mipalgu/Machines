@@ -295,7 +295,7 @@ public enum Attribute: Hashable {
         }
     }
     
-    public var complexValue: [String: Attribute] {
+    public var complexValue: [Label: Attribute] {
         get {
             switch self {
             case .block(let value):
@@ -583,7 +583,7 @@ public enum Attribute: Hashable {
         }
     }
     
-    public var collectionComplex: [[String: Attribute]] {
+    public var collectionComplex: [[Label: Attribute]] {
         get {
             switch self {
             case .block(.collection(let values, type: let type)):
@@ -734,7 +734,7 @@ public enum Attribute: Hashable {
         return .block(.collection(text.map { Attribute.text($0) }, type: .text))
     }
     
-    public static func collection(complex: [[String: Attribute]], layout: [Field]) -> Attribute {
+    public static func collection(complex: [[Label: Attribute]], layout: [Field]) -> Attribute {
         return .block(.collection(complex.map { Attribute.complex($0, layout: layout) }, type: .complex(layout: layout)))
     }
     
@@ -758,7 +758,7 @@ public enum Attribute: Hashable {
         return .block(.collection(values, type: type))
     }
     
-    public static func complex(_ values: [String: Attribute], layout: [Field]) -> Attribute {
+    public static func complex(_ values: [Label: Attribute], layout: [Field]) -> Attribute {
         return .block(.complex(values, layout: layout))
     }
     

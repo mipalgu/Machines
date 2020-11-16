@@ -1,8 +1,8 @@
 /*
- * Field.swift
+ * Label.swift
  * Attributes
  *
- * Created by Callum McColl on 13/11/20.
+ * Created by Callum McColl on 16/11/20.
  * Copyright © 2020 Callum McColl. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,23 +56,14 @@
  *
  */
 
-public struct Field: Hashable, Codable {
-    
-    public var name: Label
-    
-    public var type: AttributeType
-    
-    public init(name: String, type: AttributeType) {
-        self.name = name
-        self.type = type
-    }
-    
-}
+import Foundation
 
-extension Array: ExpressibleByDictionaryLiteral where Element == Field {
+public typealias Label = String
+
+extension Label {
     
-    public init(dictionaryLiteral elements: (String, AttributeType)...) {
-        self = elements.map { Field(name: $0, type: $1) }
+    public var pretty: String {
+        return self.replacingOccurrences(of: "_", with: " ").capitalized
     }
     
 }
