@@ -316,6 +316,14 @@ public struct Machine: PathContainer {
         }
     }
     
+    public mutating func deleteItems<Path: PathProtocol, T>(table attribute: Path, items: IndexSet) throws where Path.Root == Machine, Path.Value == [T] {
+        try perform { [mutator] machine in
+            items.sorted(by: >).forEach {
+                machine[keyPath: attribute.path].remove(at: $0)
+            }
+        }
+    }
+    
     /// Delete a set of states and transitions.
     public mutating func delete(states: IndexSet, transitions: IndexSet) throws {
         try perform { [mutator] machine in
