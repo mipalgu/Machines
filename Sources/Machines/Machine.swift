@@ -104,7 +104,7 @@ public struct Machine: PathContainer {
     private let mutator: MachineMutator
     
     /// The underlying semantics which this meta machine follows.
-    public internal(set) var semantics: Semantics
+    public var semantics: Semantics
     
     /// The name of the machine.
     public var name: String {
@@ -112,12 +112,12 @@ public struct Machine: PathContainer {
     }
     
     /// The path to the .machine directory on the file system.
-    public internal(set) var filePath: URL
+    public var filePath: URL
     
     /// The name of the initial state.
     ///
     /// The name should represent the name of a state within the `states` array.
-    public internal(set) var initialState: StateName
+    public var initialState: StateName
     
     /// The accepting states of the machine.
     ///
@@ -132,10 +132,10 @@ public struct Machine: PathContainer {
     }
     
     /// All states within the machine.
-    public internal(set) var states: [State]
+    public var states: [State]
     
     /// All transitions within the machine --- attached or unattached to states.
-    public internal(set) var transitions: [Transition]
+    public var transitions: [Transition]
     
     /// A list of attributes specifying additional fields that can change.
     ///
@@ -146,7 +146,7 @@ public struct Machine: PathContainer {
     /// (swiftfsm, clfsm for example). Obviously each scheduler has a different
     /// feature set. The features which are not common between schedulers
     /// should be facilitated through this attributes field.
-    public internal(set) var attributes: [AttributeGroup]
+    public var attributes: [AttributeGroup]
     
     /// A list of attributes specifying additional fields that do not change.
     ///
@@ -159,7 +159,7 @@ public struct Machine: PathContainer {
     ///
     /// - Attention: If you were to make a GUI using the meta model machines,
     /// then you should simply keep these values the same between modifications.
-    public internal(set) var metaData: [AttributeGroup]
+    public var metaData: [AttributeGroup]
     
     /// Fetches a keypath like structure for use when modifying and validating
     /// properties of machines.
