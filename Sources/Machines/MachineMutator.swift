@@ -63,6 +63,8 @@ public protocol MachineMutator {
     
     func addItem<Path: PathProtocol>(attribute: Path, machine: inout Machine) throws where Path.Root == Machine
     
+    func moveItems<Path: PathProtocol, T>(attribute: Path, machine: inout Machine, from source: IndexSet, to destination: Int) throws where Path.Root == Machine, Path.Value == [T]
+    
     func newState(machine: inout Machine) throws
     
     func newTransition(source: StateName, target: StateName, condition: Expression?, machine: inout Machine) throws

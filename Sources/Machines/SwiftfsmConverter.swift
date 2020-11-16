@@ -530,6 +530,18 @@ extension SwiftfsmConverter: MachineMutator {
         throw ValidationError(message: "addItem is not yet implemented", path: attribute)
     }
     
+    func moveItems<Path: PathProtocol, T>(attribute: Path, machine: inout Machine, from source: IndexSet, to destination: Int) throws where Path.Root == Machine, Path.Value == [T] {
+        let original = machine[keyPath: attribute.path]
+        var copy = original
+        let descending = source.sorted(by: >)
+        descending.forEach { index in copy.remove(at: index) }
+        let index = destination - source.filter { $0 < destination }.count
+        descending.forEach { source in
+            copy.insert(original[source], at: index)
+        }
+        machine[keyPath: attribute.path] = original
+    }
+    
     func newState(machine: inout Machine) throws {
         try perform(on: &machine) { machine in
             if machine.semantics != .swiftfsm {

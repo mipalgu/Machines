@@ -289,6 +289,12 @@ public struct Machine: PathContainer {
         }
     }
     
+    public mutating func moveItems<Path: PathProtocol, T>(table attribute: Path, from source: IndexSet, to destination: Int) throws where Path.Root == Machine, Path.Value == [T]  {
+        try perform { [mutator] machine in
+            try mutator.moveItems(attribute: attribute, machine: &machine, from: source, to: destination)
+        }
+    }
+    
     /// Add a new empty state to the machine.
     public mutating func newState() throws {
         try perform { [mutator] machine in
