@@ -62,7 +62,7 @@ public struct Field: Hashable, Codable {
     
     public var type: AttributeType
     
-    public init(name: String, type: AttributeType) {
+    public init(name: Label, type: AttributeType) {
         self.name = name
         self.type = type
     }
