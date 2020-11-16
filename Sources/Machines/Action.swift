@@ -60,11 +60,11 @@ import Attributes
 
 public struct Action: Hashable, Codable {
     
-    var name: String
+    public var name: String
     
-    var implementation: Code
+    public var implementation: Code
     
-    var language: Language
+    public var language: Language
     
     public init(name: String, implementation: Code, language: Language) {
         self.name = name
