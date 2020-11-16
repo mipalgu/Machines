@@ -60,10 +60,6 @@ import Foundation
 
 extension Path where Value: MutableCollection, Value.Index: Hashable {
     
-    public subscript(position: Value.Index) -> Path<Root, Value.Element> {
-        return Path<Root, Value.Element>(path: path.appending(path: \.[position]), ancestors: fullPath)
-    }
-    
     public func each<T>(_ f: @escaping (Path<Root, Value.Element>) -> T) -> (Root) -> [T] {
         return { root in
             root[keyPath: self.path].indices.map {
@@ -85,10 +81,6 @@ extension Path where Value: MutableCollection, Value.Index: Hashable {
 }
 
 extension ValidationPath where P.Value: MutableCollection, P.Value.Index: Hashable {
-    
-    public subscript(position: Value.Index) -> ValidationPath<ReadOnlyPath<P.Root, P.Value.Element>> {
-        return ValidationPath<ReadOnlyPath<P.Root, P.Value.Element>>(path: ReadOnlyPath<P.Root, P.Value.Element>(keyPath: path.keyPath.appending(path: \.[position]), ancestors: path.fullPath))
-    }
     
     public func each(@ValidatorBuilder<Root> builder: @escaping (ValidationPath<ReadOnlyPath<Root, Value.Element>>) -> [AnyValidator<Root>]) -> AnyValidator<Root> {
         return AnyValidator<Root>(validate: { root in

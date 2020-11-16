@@ -56,6 +56,7 @@
  *
  */
 
+@dynamicMemberLookup
 public struct ValidationPath<P: ReadOnlyPathProtocol>: _ValidationPath {
 
     public typealias PathType = P
@@ -75,6 +76,10 @@ public struct ValidationPath<P: ReadOnlyPathProtocol>: _ValidationPath {
     
     public func validate(@ValidatorBuilder<PathType.Root> builder: (Self) -> [AnyValidator<PathType.Root>]) -> AnyValidator<PathType.Root> {
         return AnyValidator(builder(self))
+    }
+    
+    public subscript<AppendedValue>(dynamicMember member: KeyPath<P.Value, AppendedValue>) -> ValidationPath<ReadOnlyPath<P.Root, AppendedValue>> {
+        return ValidationPath<ReadOnlyPath<P.Root, AppendedValue>>(path: ReadOnlyPath<Root, AppendedValue>(keyPath: path.keyPath.appending(path: member), ancestors: path.fullPath))
     }
     
 }

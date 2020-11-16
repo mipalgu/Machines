@@ -56,6 +56,7 @@
  *
  */
 
+@dynamicMemberLookup
 public struct ReadOnlyPath<Root, Value>: ReadOnlyPathProtocol {
     
     public var ancestors: [AnyPath<Root>]
@@ -67,8 +68,13 @@ public struct ReadOnlyPath<Root, Value>: ReadOnlyPathProtocol {
         self.keyPath = keyPath
     }
     
+    public subscript<AppendedValue>(dynamicMember member: KeyPath<Value, AppendedValue>) -> ReadOnlyPath<Root, AppendedValue> {
+        return ReadOnlyPath<Root, AppendedValue>(keyPath: keyPath.appending(path: member), ancestors: fullPath)
+    }
+    
 }
 
+@dynamicMemberLookup
 public struct Path<Root, Value>: PathProtocol {
     
     public var ancestors: [AnyPath<Root>]
@@ -82,6 +88,14 @@ public struct Path<Root, Value>: PathProtocol {
     
     public var readOnly: ReadOnlyPath<Root, Value> {
         return ReadOnlyPath(keyPath: self.path as KeyPath<Root, Value>, ancestors: self.ancestors)
+    }
+    
+    public subscript<AppendedValue>(dynamicMember member: KeyPath<Value, AppendedValue>) -> ReadOnlyPath<Root, AppendedValue> {
+        return ReadOnlyPath<Root, AppendedValue>(keyPath: path.appending(path: member), ancestors: fullPath)
+    }
+    
+    public subscript<AppendedValue>(dynamicMember member: WritableKeyPath<Value, AppendedValue>) -> Path<Root, AppendedValue> {
+        return Path<Root, AppendedValue>(path: path.appending(path: member), ancestors: fullPath)
     }
     
 }
