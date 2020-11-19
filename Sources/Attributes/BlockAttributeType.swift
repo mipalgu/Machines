@@ -62,7 +62,7 @@ public enum BlockAttributeType: Hashable {
     
     public struct TableColumn: Hashable, Codable {
         
-        public var name: String
+        public var name: Label
         
         public var type: LineAttributeType
         
