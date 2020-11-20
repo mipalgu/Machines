@@ -78,6 +78,14 @@ struct SwiftfsmMachineValidator: MachineValidator {
                     .alphadash()
                     .notEmpty()
                     .maxLength(64)
+                state.transitions.maxLength(128)
+                state.transitions.each { transition in
+                    transition.target.in(machine.path.states, transform: { Set($0.map { $0.name }) })
+                    transition.condition.if { $0 != nil } then: {
+                        transition.condition.wrappedValue.maxLength(1024)
+                    }
+                    transition.attributes.empty()
+                }
                 state.attributes.length(2)
                 state.attributes[1].validate { settings in
                     settings.name.equals("settings")
@@ -94,19 +102,6 @@ struct SwiftfsmMachineValidator: MachineValidator {
                             settings.attributes["imports"].wrappedValue.codeValue.maxLength(1024)
                         }
                 }
-            }
-            validator.transitions.maxLength(128)
-            validator.transitions.each { transition in
-                transition.source.if { $0 != nil } then: {
-                    transition.source.wrappedValue.in(machine.path.states, transform: { Set($0.map { $0.name }) })
-                }
-                transition.target.if { $0 != nil } then: {
-                    transition.target.wrappedValue.in(machine.path.states, transform: { Set($0.map { $0.name }) })
-                }
-                transition.condition.if { $0 != nil } then: {
-                    transition.condition.wrappedValue.maxLength(1024)
-                }
-                transition.attributes.empty()
             }
             validator.attributes.length(3)
             validator.attributes.validate { attributes in

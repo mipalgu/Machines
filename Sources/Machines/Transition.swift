@@ -63,28 +63,21 @@ public struct Transition: Hashable, Codable {
     
     public var condition: Expression?
     
-    public var source: StateName?
-    
-    public var target: StateName?
+    public var target: StateName
     
     public var attributes: [AttributeGroup]
     
     public var metaData: [AttributeGroup]
     
-    public init(condition: Code? = nil, source: StateName? = nil, target: StateName? = nil, attributes: [AttributeGroup] = [], metaData: [AttributeGroup] = []) {
+    public init(condition: Code? = nil, target: StateName, attributes: [AttributeGroup] = [], metaData: [AttributeGroup] = []) {
         self.condition = condition
-        self.source = source
         self.target = target
         self.attributes = attributes
         self.metaData = metaData
     }
     
-    public func sourceState(in machine: Machine) -> State? {
-        return machine.states.first { $0.name == source }
-    }
-    
-    public func targetState(in machine: Machine) -> State? {
-        return machine.states.first { $0.name == target }
+    public func targetState(in machine: Machine) -> State {
+        return machine.states.first { $0.name == target }!
     }
     
 }

@@ -91,11 +91,12 @@ extension Machine: VHDLMachinesConvertible {
     }
     
     fileprivate func vhdlTransitionsToTransition(vhdl: [String: [VHDLMachines.Transition]]) -> [Transition] {
-        vhdl.flatMap { (fromState, transitions) in
-            transitions.map {
-                Transition(condition: $0.expression, source: fromState, target: $0.to.name, attributes: [], metaData: [])
-            }
-        }
+//        vhdl.flatMap { (fromState, transitions) in
+//            transitions.map {
+//                Transition(condition: $0.expression, source: fromState, target: $0.to.name, attributes: [], metaData: [])
+//            }
+//        }
+        return []
     }
     
     

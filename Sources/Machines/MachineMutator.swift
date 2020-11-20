@@ -73,7 +73,7 @@ public protocol MachineMutator {
     
     func deleteState(atIndex index: Int, machine: inout Machine) throws
     
-    func deleteTransition(atIndex index: Int, machine: inout Machine) throws
+    func deleteTransition(atIndex index: Int, attachedTo sourceState: StateName, machine: inout Machine) throws
     
     func deleteItem<Path: PathProtocol>(attribute: Path, machine: inout Machine) throws where Path.Root == Machine
     

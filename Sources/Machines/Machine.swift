@@ -126,16 +126,11 @@ public struct Machine: PathContainer {
     /// - Complexity: O(n * m) where n is the length of the `states` array and
     /// m is the length of the `transitions` array.
     public var acceptingStates: [State] {
-        return self.states.filter { state in
-            nil != self.transitions.first { $0.source == state.name }
-        }
+        return self.states.filter { $0.transitions.isEmpty }
     }
     
     /// All states within the machine.
     public var states: [State]
-    
-    /// All transitions within the machine --- attached or unattached to states.
-    public var transitions: [Transition]
     
     /// A list of attributes specifying additional fields that can change.
     ///
@@ -184,9 +179,6 @@ public struct Machine: PathContainer {
     ///
     /// - Parameter states: All states within the machine.
     ///
-    /// - Parameter transitions: All transitions within the machine, even those
-    /// that aren't attached to states.
-    ///
     /// - Parameter attributes: All attributes of the meta machine that detail
     /// additional fields for custom semantics provided by a particular
     /// scheduler.
@@ -199,7 +191,6 @@ public struct Machine: PathContainer {
         filePath: URL,
         initialState: StateName,
         states: [State] = [],
-        transitions: [Transition] = [],
         attributes: [AttributeGroup],
         metaData: [AttributeGroup]
     ) {
@@ -217,7 +208,6 @@ public struct Machine: PathContainer {
         self.filePath = filePath
         self.initialState = initialState
         self.states = states
-        self.transitions = transitions
         self.attributes = attributes
         self.metaData = metaData
     }
@@ -234,9 +224,6 @@ public struct Machine: PathContainer {
     ///
     /// - Parameter states: All states within the machine.
     ///
-    /// - Parameter transitions: All transitions within the machine, even those
-    /// that aren't attached to states.
-    ///
     /// - Parameter attributes: All attributes of the meta machine that detail
     /// additional fields for custom semantics provided by a particular
     /// scheduler.
@@ -249,7 +236,6 @@ public struct Machine: PathContainer {
         filePath: URL,
         initialState: StateName,
         states: [State] = [],
-        transitions: [Transition] = [],
         attributes: [AttributeGroup],
         metaData: [AttributeGroup]
     ) {
@@ -258,7 +244,6 @@ public struct Machine: PathContainer {
         self.filePath = filePath
         self.initialState = initialState
         self.states = states
-        self.transitions = transitions
         self.attributes = attributes
         self.metaData = metaData
     }
@@ -339,9 +324,9 @@ public struct Machine: PathContainer {
     }
     
     /// Delete a transition at a specific index.
-    public mutating func deleteTransition(atIndex index: Int) throws {
+    public mutating func deleteTransition(atIndex index: Int, attachedTo sourceState: StateName) throws {
         try perform { [mutator] machine in
-            try mutator.deleteTransition(atIndex: index, machine: &machine)
+            try mutator.deleteTransition(atIndex: index, attachedTo: sourceState, machine: &machine)
         }
     }
     
@@ -421,7 +406,6 @@ extension Machine: Equatable {
             && lhs.filePath == rhs.filePath
             && lhs.initialState == rhs.initialState
             && lhs.states == rhs.states
-            && lhs.transitions == rhs.transitions
             && lhs.attributes == rhs.attributes
             && lhs.metaData == rhs.metaData
     }
@@ -435,7 +419,6 @@ extension Machine: Hashable {
         hasher.combine(self.filePath)
         hasher.combine(self.initialState)
         hasher.combine(self.states)
-        hasher.combine(self.transitions)
         hasher.combine(self.attributes)
         hasher.combine(self.metaData)
     }
@@ -462,7 +445,6 @@ extension Machine: Codable {
         let filePath = try container.decode(URL.self, forKey: .filePath)
         let initialState = try container.decode(StateName.self, forKey: .initialState)
         let states = try container.decode([State].self, forKey: .states)
-        let transitions = try container.decode([Transition].self, forKey: .transitions)
         let attributes = try container.decode([AttributeGroup].self, forKey: .attributes)
         let metaData = try container.decode([AttributeGroup].self, forKey: .metaData)
         self.init(
@@ -470,7 +452,6 @@ extension Machine: Codable {
             filePath: filePath,
             initialState: initialState,
             states: states,
-            transitions: transitions,
             attributes: attributes,
             metaData: metaData
         )
@@ -482,7 +463,6 @@ extension Machine: Codable {
         try container.encode(self.filePath, forKey: .filePath)
         try container.encode(self.initialState, forKey: .initialState)
         try container.encode(self.states, forKey: .states)
-        try container.encode(self.transitions, forKey: .transitions)
         try container.encode(self.attributes, forKey: .attributes)
         try container.encode(self.metaData, forKey: .metaData)
     }

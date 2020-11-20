@@ -69,27 +69,22 @@ public struct State: Hashable, Codable, Identifiable {
     
     public var actions: [Action]
     
+    public var transitions: [Transition]
+    
     public var attributes: [AttributeGroup]
     
     public var metaData: [AttributeGroup]
     
-    public init(name: String, actions: [Action], attributes: [AttributeGroup] = [], metaData: [AttributeGroup] = []) {
+    public init(name: String, actions: [Action], transitions: [Transition], attributes: [AttributeGroup] = [], metaData: [AttributeGroup] = []) {
         self.name = name
         self.actions = actions
+        self.transitions = transitions
         self.attributes = attributes
         self.metaData = metaData
     }
     
-    public func transitions(in machine: Machine) -> [Transition] {
-        return machine.transitions.filter { $0.source == name || $0.target == name }
-    }
-    
-    public func sourceTransitions(in machine: Machine) -> [Transition] {
-        return machine.transitions.filter { $0.source == name }
-    }
-    
     public func targetTransitions(in machine: Machine) -> [Transition] {
-        return machine.transitions.filter { $0.target == name }
+        return machine.states.flatMap{ $0.transitions.filter { $0.target == name } }
     }
     
 }

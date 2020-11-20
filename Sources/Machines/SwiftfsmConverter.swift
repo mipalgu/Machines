@@ -343,6 +343,7 @@ struct SwiftfsmConverter: Converter, MachineValidator {
             return State(
                 name: state.name,
                 actions: state.actions.map { Action(name: $0.name, implementation: Code($0.implementation), language: .swift) },
+                transitions: state.transitions.map { Transition(condition: $0.condition.map { Expression($0) }, target: StateName($0.target)) },
                 attributes: [
                     AttributeGroup(
                         name: "variables",
@@ -381,17 +382,11 @@ struct SwiftfsmConverter: Converter, MachineValidator {
                 ]
             )
         }
-        let transitions = swiftMachine.states.flatMap { state in
-            state.transitions.map {
-                Transition(condition: $0.condition, source: state.name, target: $0.target)
-            }
-        }
         return Machine(
             semantics: .swiftfsm,
             filePath: swiftMachine.filePath,
             initialState: swiftMachine.initialState.name,
             states: states,
-            transitions: transitions,
             attributes: attributes,
             metaData: []
         )
@@ -431,17 +426,6 @@ struct SwiftfsmConverter: Converter, MachineValidator {
         guard let fsmVars = try machine.attributes[0].attributes["machine_variables"]?.tableValue.enumerated().map({ try self.parseVariable($1, path: Machine.path.attributes[0].attributes["machine_variables"].wrappedValue.tableValue[$0]) }) else {
             throw ConversionError(message: "Missing required variable list machine_variables", path: Machine.path.attributes[0].attributes["machine_variables"].wrappedValue)
         }
-        var transitions: [String: [SwiftMachines.Transition]] = [:]
-        transitions.reserveCapacity(machine.transitions.count)
-        machine.transitions.forEach {
-            guard let source = $0.source, let target = $0.target else {
-                return
-            }
-            if nil == transitions[source] {
-                transitions[source] = []
-            }
-            transitions[source]?.append(SwiftMachines.Transition(target: target, condition: $0.condition.map { String($0) }))
-        }
         let states = try machine.states.enumerated().map { (index, state) -> SwiftMachines.State in
             let actions = state.actions.map { SwiftMachines.Action(name: $0.name, implementation: String($0.implementation)) }
             let settings = state.attributes[1]
@@ -450,13 +434,16 @@ struct SwiftfsmConverter: Converter, MachineValidator {
             }
             let externalVariablesSet: Set<String>? = settings.attributes["external_variables"]?.enumerableCollectionValue
             let externalVariables: [SwiftMachines.Variable]? = externalVariablesSet?.compactMap { label in externalVariables.first { $0.label == label } }
+            let transitions = state.transitions.map {
+                SwiftMachines.Transition(target: String($0.target), condition: $0.condition.map { String($0) })
+            }
             return SwiftMachines.State(
                 name: state.name,
                 imports: settings.attributes["imports"]?.codeValue ?? "",
                 externalVariables: externalVariables,
                 vars: vars,
                 actions: actions,
-                transitions: transitions[state.name] ?? []
+                transitions: transitions
             )
         }
         guard let initialState = states.first(where: { $0.name == String(machine.initialState) }) else {
@@ -578,16 +565,13 @@ extension SwiftfsmConverter: MachineMutator {
     
     func newTransition(source: StateName, target: StateName, condition: Expression? = nil, machine: inout Machine) throws {
         try perform(on: &machine) { machine in
-            guard nil != machine.states.first(where: { $0.name == source }), nil != machine.states.first(where: { $0.name == target }) else {
-                throw ValidationError(message: "You must attach a transition to a source and target state", path: Machine.path.transitions)
+            guard
+                let index = machine.states.indices.first(where: { machine.states[$0].name == source }),
+                nil != machine.states.first(where: { $0.name == target })
+            else {
+                throw ValidationError(message: "You must attach a transition to a source and target state", path: Machine.path)
             }
-            machine.transitions.append(
-                Transition(
-                    condition: condition,
-                    source: source,
-                    target: target
-                )
-            )
+            machine.states[index].transitions.append(Transition(condition: condition, target: target))
         }
     }
     
@@ -603,18 +587,7 @@ extension SwiftfsmConverter: MachineMutator {
             {
                 throw ValidationError(message: "You cannot delete the initial state", path: Machine.path.states[initialIndex])
             }
-            machine.transitions = machine.transitions.enumerated().filter { !transitions.contains($0.0) }.map { $1 }
             machine.states = machine.states.enumerated().filter { !states.contains($0.0) }.map { $1 }
-            let stateNames = Set(machine.states.map { $0.name })
-            machine.transitions.removeAll {
-                if let source = $0.source, stateNames.contains(source) {
-                    return true
-                }
-                if let target = $0.target, stateNames.contains(target) {
-                    return true
-                }
-                return false
-            }
             self.syncSuspendState(machine: &machine)
         }
     }
@@ -627,18 +600,20 @@ extension SwiftfsmConverter: MachineMutator {
             if machine.states[index].name == machine.initialState {
                 throw ValidationError(message: "Can't delete the initial state", path: Machine.path.states[index])
             }
-            machine.transitions.removeAll { $0.source == machine.states[index].name || $0.target == machine.states[index].name }
             machine.states.remove(at: index)
             self.syncSuspendState(machine: &machine)
         }
     }
     
-    func deleteTransition(atIndex index: Int, machine: inout Machine) throws {
+    func deleteTransition(atIndex index: Int, attachedTo sourceState: StateName, machine: inout Machine) throws {
         try perform(on: &machine) { machine in
-            guard machine.transitions.count >= index else {
-                throw ValidationError(message: "Cannot delete transition that does not exist", path: Machine.path.transitions)
+            guard let index = machine.states.indices.first(where: { machine.states[$0].name == sourceState }) else {
+                throw ValidationError(message: "Cannot delete a transition attached to a state that does not exist", path: Machine.path.states)
             }
-            machine.transitions.remove(at: index)
+            guard machine.states[index].transitions.count >= index else {
+                throw ValidationError(message: "Cannot delete transition that does not exist", path: Machine.path.states[index].transitions)
+            }
+            machine.states[index].transitions.remove(at: index)
         }
     }
     
@@ -681,19 +656,26 @@ extension SwiftfsmConverter: MachineMutator {
         let machinePaths = [
             AnyPath(machine.path.filePath),
             AnyPath(machine.path.initialState),
-            AnyPath(machine.path.transitions),
             AnyPath(machine.path.attributes[0].attributes),
             AnyPath(machine.path.attributes[1].attributes),
             AnyPath(machine.path.attributes[2].attributes)
         ]
-        let statePaths: [AnyPath] = machine.states.indices.flatMap { stateIndex in
-            return [
+        let statePaths: [AnyPath<Machine>] = machine.states.indices.flatMap { (stateIndex) -> [AnyPath<Machine>] in
+            let attributes = [
                 AnyPath(machine.path.states[stateIndex].name),
                 AnyPath(machine.path.states[stateIndex].attributes[0].attributes),
                 AnyPath(machine.path.states[stateIndex].attributes[1].attributes)
-            ] + machine.states[stateIndex].actions.indices.map {
+            ]
+            let actions = machine.states[stateIndex].actions.indices.map {
                 AnyPath(machine.path.states[stateIndex].actions[$0].implementation)
             }
+            let transitions = machine.states[stateIndex].transitions.indices.flatMap {
+                return [
+                    AnyPath(machine.path.states[stateIndex].transitions[$0].condition),
+                    AnyPath(machine.path.states[stateIndex].transitions[$0].target)
+                ]
+            }
+            return attributes + actions + transitions
         }
         return machinePaths + statePaths
     }
@@ -704,12 +686,6 @@ extension SwiftfsmConverter: MachineMutator {
         }
         let currentName = machine.states[index].name
         machine[keyPath: machine.path.states[index].name.path] = stateName
-        machine.transitions = machine.transitions.map {
-            if $0.source != currentName {
-                return $0
-            }
-            return Transition(condition: $0.condition, source: currentName, target: $0.target, attributes: $0.attributes, metaData: $0.metaData)
-        }
         if machine.initialState == currentName {
             machine.initialState = stateName
         }
@@ -810,6 +786,7 @@ extension SwiftfsmConverter: MachineMutator {
         return State(
             name: name,
             actions: actions.map { Action(name: $0, implementation: Code(""), language: .swift) },
+            transitions: [],
             attributes: [
                 AttributeGroup(
                     name: "variables",
