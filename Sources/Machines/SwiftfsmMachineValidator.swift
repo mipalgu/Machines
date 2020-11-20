@@ -128,12 +128,10 @@ struct SwiftfsmMachineValidator: MachineValidator {
                     settings.name.equals("settings")
                     settings.fields.length(2)
                     settings.fields[0].name.equals("suspend_state")
-                    settings.fields[0].type.equals(AttributeType.enumerated(validValues: Set(machine.states.map { $0.name })))
+                    settings.fields[0].type.equals(AttributeType.enumerated(validValues: Set(machine.states.map { $0.name } + [""])))
                     settings.attributes["suspend_state"].required()
                     settings.attributes["suspend_state"].wrappedValue.enumeratedValue.validate { suspendState in
-                        suspendState.if { $0 != "" } then: {
-                            suspendState.in(Machine.path.states, transform: { Set($0.map {$0.name}) })
-                        }
+                        suspendState.in(Machine.path.states, transform: { Set($0.map {$0.name} + [""]) })
                     }
                     settings.fields[1].name.equals("module_dependencies")
                 }
