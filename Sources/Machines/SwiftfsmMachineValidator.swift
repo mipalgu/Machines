@@ -73,13 +73,13 @@ struct SwiftfsmMachineValidator: MachineValidator {
             validator.initialState.in(machine.path.states, transform: { Set($0.map { $0.name }) })
             //validator.suspendState.in(machine.path.states, transform: { Set($0.map { $0.name }) })
             validator.states.maxLength(128)
-            validator.states.each { (state: ValidationPath<ReadOnlyPath<Machine, State>>) in
+            validator.states.each { (stateIndex, state: ValidationPath<ReadOnlyPath<Machine, State>>) in
                 state.name
                     .alphadash()
                     .notEmpty()
                     .maxLength(64)
                 state.transitions.maxLength(128)
-                state.transitions.each { transition in
+                state.transitions.each { (_, transition) in
                     transition.target.in(machine.path.states, transform: { Set($0.map { $0.name }) })
                     transition.condition.if { $0 != nil } then: {
                         transition.condition.wrappedValue.maxLength(1024)
@@ -87,6 +87,16 @@ struct SwiftfsmMachineValidator: MachineValidator {
                     transition.attributes.empty()
                 }
                 state.attributes.length(2)
+                state.attributes[0].validate { variables in
+                    variables.attributes["state_variables"].required()
+                    variables.attributes["state_variables"].wrappedValue.tableValue.each { (_, stateVariable) in
+                        stateVariable[0].enumeratedValue.in(["let", "var"])
+                        stateVariable[1].lineValue.unique(Machine.path.states[stateIndex].attributes[0].attributes["state_variables"].wrappedValue.tableValue) {
+                            $0.map { $0[1].lineValue }
+                        }
+                        stateVariable[2].expressionValue.notEmpty()
+                    }
+                }
                 state.attributes[1].validate { settings in
                     settings.name.equals("settings")
                     settings.fields.notEmpty()
@@ -108,7 +118,7 @@ struct SwiftfsmMachineValidator: MachineValidator {
                 attributes[0].validate { variables in
                     variables.name.equals("variables")
                     variables.attributes["external_variables"].required()
-                    variables.attributes["external_variables"].wrappedValue.tableValue.each { externalVariables in
+                    variables.attributes["external_variables"].wrappedValue.tableValue.each { (_, externalVariables) in
                         externalVariables[0].enumeratedValue.in(["actuator", "sensor", "external"])
                         externalVariables[1].lineValue.unique(Machine.path.attributes[0].attributes["external_variables"].wrappedValue.tableValue) {
                             $0.map { $0[1].lineValue }
@@ -117,9 +127,9 @@ struct SwiftfsmMachineValidator: MachineValidator {
                         externalVariables[3].expressionValue.notEmpty()
                     }
                     variables.attributes["machine_variables"].required()
-                    variables.attributes["machine_variables"].wrappedValue.tableValue.each { machineVariables in
+                    variables.attributes["machine_variables"].wrappedValue.tableValue.each { (_, machineVariables) in
                         machineVariables[0].enumeratedValue.in(["let", "var"])
-                        machineVariables[1].lineValue.unique(Machine.path.attributes[0].attributes["machineVariables"].wrappedValue.tableValue) {
+                        machineVariables[1].lineValue.unique(Machine.path.attributes[0].attributes["machine_variables"].wrappedValue.tableValue) {
                             $0.map { $0[1].lineValue }
                         }
                         machineVariables[2].expressionValue.notEmpty()
@@ -129,7 +139,7 @@ struct SwiftfsmMachineValidator: MachineValidator {
                         attributes["enable_parameters"].required()
                         attributes["enable_parameters"].wrappedValue.if { $0.boolValue } then: {
                             attributes["parameters"].required()
-                            attributes["parameters"].wrappedValue.tableValue.each { parameters in
+                            attributes["parameters"].wrappedValue.tableValue.each { (_, parameters) in
                                 parameters[0].lineValue.unique(Machine.path.attributes[0].attributes["parameters"].wrappedValue.complexValue["parameters"].wrappedValue.tableValue) {
                                     $0.map { $0[0].lineValue }
                                 }
