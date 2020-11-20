@@ -86,7 +86,7 @@ struct SwiftfsmMachineValidator: MachineValidator {
                     settings.fields[0].type.equals(AttributeType.bool)
                     settings.attributes["access_external_variables"].required()
                     settings.attributes["access_external_variables"].wrappedValue
-                        .if { $0.boolValue ?? false } then: {
+                        .if { $0.boolValue } then: {
                             settings.fields.minLength(2)
                             settings.fields[1].name.equals("imports")
                             settings.fields[1].type.equals(AttributeType.code(language: .swift))
