@@ -107,6 +107,38 @@ struct SwiftfsmMachineValidator: MachineValidator {
             validator.attributes.validate { attributes in
                 attributes[0].validate { variables in
                     variables.name.equals("variables")
+                    variables.attributes["external_variables"].required()
+                    variables.attributes["external_variables"].wrappedValue.tableValue.each { externalVariables in
+                        externalVariables[0].enumeratedValue.in(["actuator", "sensor", "external"])
+                        externalVariables[1].lineValue.unique(Machine.path.attributes[0].attributes["external_variables"].wrappedValue.tableValue) {
+                            $0.map { $0[1].lineValue }
+                        }
+                        externalVariables[2].expressionValue.notEmpty()
+                        externalVariables[3].expressionValue.notEmpty()
+                    }
+                    variables.attributes["machine_variables"].required()
+                    variables.attributes["machine_variables"].wrappedValue.tableValue.each { machineVariables in
+                        machineVariables[0].enumeratedValue.in(["let", "var"])
+                        machineVariables[1].lineValue.unique(Machine.path.attributes[0].attributes["machineVariables"].wrappedValue.tableValue) {
+                            $0.map { $0[1].lineValue }
+                        }
+                        machineVariables[2].expressionValue.notEmpty()
+                    }
+                    variables.attributes["parameters"].required()
+                    variables.attributes["parameters"].wrappedValue.complexValue.validate { attributes in
+                        attributes["enable_parameters"].required()
+                        attributes["enable_parameters"].wrappedValue.if { $0.boolValue } then: {
+                            attributes["parameters"].required()
+                            attributes["parameters"].wrappedValue.tableValue.each { parameters in
+                                parameters[0].lineValue.unique(Machine.path.attributes[0].attributes["parameters"].wrappedValue.complexValue["parameters"].wrappedValue.tableValue) {
+                                    $0.map { $0[0].lineValue }
+                                }
+                                parameters[1].expressionValue.notEmpty()
+                            }
+                            attributes["result_type"].required()
+                            attributes["result_type"].wrappedValue.expressionValue.notEmpty()
+                        }
+                    }
                 }
                 attributes[1].validate { ringlet in
                     ringlet.name.equals("ringlet")

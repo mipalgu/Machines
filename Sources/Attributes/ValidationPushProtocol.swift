@@ -162,6 +162,18 @@ extension ValidationPushProtocol where Value: Equatable {
         }
     }
     
+    public func unique<P: ReadOnlyPathProtocol, S: Sequence, S2: Collection>(_ p: P, transform: @escaping (S) -> S2) -> PushValidator where P.Root == Root, P.Value == S, S2.Element == Value, S2.Index == Int {
+        return push { (root, value) in
+            let collection = transform(root[keyPath: p.keyPath])
+            guard let firstIndex = collection.firstIndex(of: value) else {
+                return
+            }
+            if nil != collection.dropFirst(firstIndex).firstIndex(of: value) {
+                throw ValidationError(message: "Must be unique", path: path)
+            }
+        }
+    }
+    
 }
 
 extension ValidationPushProtocol where Value: Hashable {
