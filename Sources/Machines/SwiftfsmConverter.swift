@@ -748,15 +748,17 @@ extension SwiftfsmConverter: MachineMutator {
             "imports": .code(language: .swift),
             "execute": .code(language: .swift)
         ]
-        machine.attributes[1].attributes["actions"] = .collection(lines: ["onEntry", "main", "onExit"])
-        machine.attributes[1].attributes["ringlet_variables"] = .table([], columns: [
+        var attributes = machine.attributes[1].attributes
+        attributes["actions"] = attributes["actions"] ?? .collection(lines: ["onEntry", "main", "onExit"])
+        attributes["ringlet_variables"] = attributes["ringlet_variables"] ?? .table([], columns: [
             ("access_type", .enumerated(validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue }))),
             ("label", .line),
             ("type", .expression(language: .swift)),
             ("initial_value", .expression(language: .swift))
         ])
-        machine.attributes[1].attributes["imports"] = .code(Code(), language: .swift)
-        machine.attributes[1].attributes["execute"] = .code(Code(), language: .swift)
+        attributes["imports"] = attributes["imports"] ?? .code(Code(), language: .swift)
+        attributes["execute"] = attributes["execute"] ?? .code(Code(), language: .swift)
+        machine.attributes[1].attributes = attributes
     }
     
     private func toggleEnableParameters(boolValue: Bool, machine: inout Machine) throws {
