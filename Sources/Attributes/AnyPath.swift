@@ -87,16 +87,24 @@ public struct AnyPath<Root> {
         self.init(path, isOptional: true, isNil: { nil == $0[keyPath: path.keyPath] }, isSame: { $0 == path.keyPath || $0 == path.keyPath.appending(path: \.wrappedValue) })
     }
     
-    public func inChain(_ path: AnyPath<Root>) -> Bool {
-        return nil != self.ancestors.first(where: { $0.isSame(as: path) || self.isSame(as: path) })
+    public func isParent(of path: AnyPath<Root>) -> Bool {
+        return path.isChild(of: self)
     }
     
-    public func inChain(_ path: PartialKeyPath<Root>) -> Bool {
-        return nil != self.ancestors.first(where: { $0.isSame(as: path) || self.isSame(as: path) })
+    public func isParent<Path: ReadOnlyPathProtocol>(of path: Path) -> Bool where Path.Root == Root {
+        return self.isParent(of: AnyPath(path))
     }
     
-    public func inChain<Path: ReadOnlyPathProtocol>(_ path: Path) -> Bool where Path.Root == Root {
-        return nil != self.ancestors.first(where: { $0.isSame(as: path) || self.isSame(as: path) })
+    public func isChild(of path: AnyPath<Root>) -> Bool {
+        return self.isChild(of: path.partialKeyPath)
+    }
+    
+    public func isChild(of path: PartialKeyPath<Root>) -> Bool {
+        return nil != self.ancestors.first(where: { $0.isSame(as: path) })
+    }
+    
+    public func isChild<Path: ReadOnlyPathProtocol>(of path: Path) -> Bool where Path.Root == Root {
+        return self.isChild(of: path.keyPath)
     }
     
     public func hasValue(_ root: Root) -> Bool {

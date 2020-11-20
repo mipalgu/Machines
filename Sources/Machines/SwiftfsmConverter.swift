@@ -669,7 +669,7 @@ extension SwiftfsmConverter: MachineMutator {
                 }
                 try self.toggleEnableParameters(boolValue: boolValue, machine: &machine)
             default:
-                if nil == self.whitelist(forMachine: machine).first(where: { $0.inChain(attribute) }) {
+                if nil == self.whitelist(forMachine: machine).first(where: { $0.isParent(of: attribute) || $0.isSame(as: attribute) }) {
                     throw ValidationError(message: "Attempting to modify a value which is not allowed to be modified", path: attribute)
                 }
                 machine[keyPath: attribute.path] = value
