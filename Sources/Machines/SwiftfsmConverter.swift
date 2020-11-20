@@ -572,6 +572,7 @@ extension SwiftfsmConverter: MachineMutator {
                 num += 1
             } while (nil != machine.states.reversed().first(where: { $0.name == stateName }))
             try machine.states.append(self.createState(named: stateName, forMachine: machine))
+            self.syncSuspendState(machine: &machine)
         }
     }
     
@@ -614,6 +615,7 @@ extension SwiftfsmConverter: MachineMutator {
                 }
                 return false
             }
+            self.syncSuspendState(machine: &machine)
         }
     }
     
@@ -627,6 +629,7 @@ extension SwiftfsmConverter: MachineMutator {
             }
             machine.transitions.removeAll { $0.source == machine.states[index].name || $0.target == machine.states[index].name }
             machine.states.remove(at: index)
+            self.syncSuspendState(machine: &machine)
         }
     }
     
@@ -655,16 +658,24 @@ extension SwiftfsmConverter: MachineMutator {
         }
     }
     
+    private func syncSuspendState(machine: inout Machine) {
+        let validValues = Set(machine.states.map(\.name) + [""])
+        let currentValue = machine.attributes[2].attributes["suspend_state"]?.enumeratedValue ?? ""
+        let newValue = validValues.contains(currentValue) ? currentValue : ""
+        machine.attributes[2].fields[0].type = .enumerated(validValues: validValues)
+        machine.attributes[2].attributes["suspend_state"] = .enumerated(newValue, validValues: validValues)
+    }
+    
     private func toggleUseCustomRinglet(boolValue: Bool, machine: inout Machine) {
-        machine.attributes[2].attributes["use_custom_ringlet"] = .bool(boolValue)
+        machine.attributes[1].attributes["use_custom_ringlet"] = .bool(boolValue)
         if !boolValue {
-            machine.attributes[2].fields = machine.attributes[2].fields.filter { $0.name == "use_custom_ringlet" }
+            machine.attributes[1].fields = machine.attributes[1].fields.filter { $0.name == "use_custom_ringlet" }
             return
         }
-        if nil != machine.attributes[2].fields.first(where: { $0.name == "actions" }) {
+        if nil != machine.attributes[1].fields.first(where: { $0.name == "actions" }) {
             return
         }
-        machine.attributes[2].fields = [
+        machine.attributes[1].fields = [
             "use_custom_ringlet": .bool,
             "actions": .collection(type: .line),
             "ringlet_variables": .table(columns: [
@@ -676,15 +687,15 @@ extension SwiftfsmConverter: MachineMutator {
             "imports": .code(language: .swift),
             "execute": .code(language: .swift)
         ]
-        machine.attributes[2].attributes["actions"] = .collection(lines: ["onEntry", "main", "onExit"])
-        machine.attributes[2].attributes["ringlet_variables"] = .table([], columns: [
+        machine.attributes[1].attributes["actions"] = .collection(lines: ["onEntry", "main", "onExit"])
+        machine.attributes[1].attributes["ringlet_variables"] = .table([], columns: [
             ("access_type", .enumerated(validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue }))),
             ("label", .line),
             ("type", .expression(language: .swift)),
             ("initial_value", .expression(language: .swift))
         ])
-        machine.attributes[2].attributes["imports"] = .code(Code(), language: .swift)
-        machine.attributes[2].attributes["execute"] = .code(Code(), language: .swift)
+        machine.attributes[1].attributes["imports"] = .code(Code(), language: .swift)
+        machine.attributes[1].attributes["execute"] = .code(Code(), language: .swift)
     }
     
     private func perform(on machine: inout Machine, _ f: (inout Machine) throws -> Void) throws {
