@@ -130,7 +130,7 @@ struct SwiftfsmConverter: Converter, MachineValidator {
                     ("type", .expression(language: .swift)),
                     ("value", .expression(language: .swift))
                 ]),
-                "fsm_variables": .table(columns: [
+                "machine_variables": .table(columns: [
                     ("access_type", .enumerated(validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue }))),
                     ("label", .line),
                     ("type", .expression(language: .swift)),
