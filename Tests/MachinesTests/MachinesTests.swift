@@ -25,6 +25,7 @@ final class MachinesTests: XCTestCase {
         let machine = Machine.initialSwiftMachine
         do {
             try machine.validate()
+            _ = try SwiftfsmConverter().convert(machine)
         } catch let e {
             XCTFail("Failed to validate: \(e)")
         }

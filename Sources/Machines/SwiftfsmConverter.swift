@@ -428,8 +428,8 @@ struct SwiftfsmConverter: Converter, MachineValidator {
         let parameters: [SwiftMachines.Variable]? = (machine.attributes[0].attributes["parameters"]?.complexValue["enable_parameters"]?.boolValue ?? false)
             ? try machine.attributes[0].attributes["parameters"]?.complexValue["parameters"]?.tableValue.enumerated().map({ try self.parseParameters($1, path: Machine.path.attributes[0].attributes["parameters"].wrappedValue.complexValue["parameters"].wrappedValue.tableValue[$0]) })
             : nil
-        guard let fsmVars = try machine.attributes[0].attributes["fsm_vars"]?.tableValue.enumerated().map({ try self.parseVariable($1, path: Machine.path.attributes[0].attributes["fsm_vars"].wrappedValue.tableValue[$0]) }) else {
-            throw ConversionError(message: "Missing required variable list fsm_vars", path: Machine.path.attributes[0].attributes["fsm_vars"].wrappedValue)
+        guard let fsmVars = try machine.attributes[0].attributes["fsm_variables"]?.tableValue.enumerated().map({ try self.parseVariable($1, path: Machine.path.attributes[0].attributes["fsm_variables"].wrappedValue.tableValue[$0]) }) else {
+            throw ConversionError(message: "Missing required variable list fsm_variables", path: Machine.path.attributes[0].attributes["fsm_variables"].wrappedValue)
         }
         var transitions: [String: [SwiftMachines.Transition]] = [:]
         transitions.reserveCapacity(machine.transitions.count)
