@@ -670,6 +670,15 @@ extension SwiftfsmConverter: MachineMutator {
         }
         let currentName = machine.states[index].name
         machine[keyPath: machine.path.states[index].name.path] = stateName
+        machine.transitions = machine.transitions.map {
+            if $0.source != currentName {
+                return $0
+            }
+            return Transition(condition: $0.condition, source: currentName, target: $0.target, attributes: $0.attributes, metaData: $0.metaData)
+        }
+        if machine.initialState == currentName {
+            machine.initialState = stateName
+        }
         if machine.attributes[2].attributes["suspend_state"]!.enumeratedValue == currentName {
             machine.attributes[2].attributes["suspend_state"]!.enumeratedValue = stateName
         }

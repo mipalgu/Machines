@@ -133,7 +133,7 @@ extension AnyPath: Hashable {
 extension AnyPath: CustomStringConvertible {
     
     public var description: String {
-        return "\(self.partialKeyPath)"
+        return (self.ancestors.map { String(describing: $0.partialKeyPath) } + [String(describing: self.partialKeyPath)]).joined(separator: ", ")
     }
     
 }

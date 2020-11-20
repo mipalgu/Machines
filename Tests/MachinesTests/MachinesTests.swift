@@ -22,10 +22,13 @@ final class MachinesTests: XCTestCase {
     }
     
     func test_validation() {
-        let machine = Machine.initialSwiftMachine
+        var machine = Machine.initialSwiftMachine
         do {
             try machine.validate()
             _ = try SwiftfsmConverter().convert(machine)
+            try machine.modify(attribute: machine.path.states[0].name, value: StateName("Hello"))
+        } catch let e as MachinesError {
+            XCTFail(e.message + ": " + e.path.description)
         } catch let e {
             XCTFail("Failed to validate: \(e)")
         }
