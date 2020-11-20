@@ -660,7 +660,10 @@ extension SwiftfsmConverter: MachineMutator {
                 self.toggleUseCustomRinglet(boolValue: boolValue, machine: &machine)
             case machine.path.attributes[0].attributes["parameters"].wrappedValue.complexValue["enable_parameters"].wrappedValue.path,
                  machine.path.attributes[0].attributes["parameters"].wrappedValue.complexValue["enable_parameters"].wrappedValue.boolValue.keyPath,
-                 machine.path.attributes[0].attributes["parameters"].wrappedValue.complexValue["enable_parameters"].wrappedValue.lineAttribute.boolValue.keyPath:
+                 machine.path.attributes[0].attributes["parameters"].wrappedValue.complexValue["enable_parameters"].wrappedValue.lineAttribute.boolValue.keyPath,
+                 machine.path.attributes[0].attributes["parameters"].wrappedValue.blockAttribute.complexValue["enable_parameters"].wrappedValue.path,
+                 machine.path.attributes[0].attributes["parameters"].wrappedValue.blockAttribute.complexValue["enable_parameters"].wrappedValue.boolValue.keyPath,
+                 machine.path.attributes[0].attributes["parameters"].wrappedValue.blockAttribute.complexValue["enable_parameters"].wrappedValue.lineAttribute.boolValue.keyPath:
                 guard let boolValue = (value as? Attribute)?.boolValue ?? (value as? LineAttribute)?.boolValue ?? (value as? Bool) else {
                     throw ValidationError(message: "Invalid value \(value)", path: attribute)
                 }
