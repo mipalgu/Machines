@@ -658,6 +658,13 @@ extension SwiftfsmConverter: MachineMutator {
                     throw ValidationError(message: "Invalid value \(value)", path: attribute)
                 }
                 self.toggleUseCustomRinglet(boolValue: boolValue, machine: &machine)
+            case machine.path.attributes[0].attributes["parameters"].wrappedValue.complexValue["enable_parameters"].wrappedValue.path,
+                 machine.path.attributes[0].attributes["parameters"].wrappedValue.complexValue["enable_parameters"].wrappedValue.boolValue.keyPath,
+                 machine.path.attributes[0].attributes["parameters"].wrappedValue.complexValue["enable_parameters"].wrappedValue.lineAttribute.boolValue.keyPath:
+                guard let boolValue = (value as? Attribute)?.boolValue ?? (value as? LineAttribute)?.boolValue ?? (value as? Bool) else {
+                    throw ValidationError(message: "Invalid value \(value)", path: attribute)
+                }
+                try self.toggleEnableParameters(boolValue: boolValue, machine: &machine)
             default:
                 machine[keyPath: attribute.path] = value
             }
@@ -723,6 +730,36 @@ extension SwiftfsmConverter: MachineMutator {
         ])
         machine.attributes[1].attributes["imports"] = .code(Code(), language: .swift)
         machine.attributes[1].attributes["execute"] = .code(Code(), language: .swift)
+    }
+    
+    private func toggleEnableParameters(boolValue: Bool, machine: inout Machine) throws {
+        machine.attributes[0].attributes["parameters"].wrappedValue.complexValue["enable_parameters"] = .bool(boolValue)
+        guard let fields = machine.attributes[0].attributes["parameters"]?.complexFields else {
+            throw ValidationError(message: "Unable to fetch fields of parameters", path: machine.path.attributes[0].attributes["parameters"].wrappedValue.complexFields)
+        }
+        if !boolValue {
+            machine.attributes[0].attributes["parameters"]!.complexFields = fields.filter { $0.name == "enable_parameters" }
+            return
+        }
+        machine.attributes[0].attributes["parameters"]!.complexFields = [
+            "enable_parameters": .bool,
+            "parameters": .table(columns: [
+                ("label", .line),
+                ("type", .expression(language: .swift)),
+                ("default_value", .expression(language: .swift))
+            ]),
+            "result_type": .expression(language: .swift)
+        ]
+        guard var attributes = machine.attributes[0].attributes["parameters"]?.complexValue else {
+            throw ValidationError(message: "Unable to fetch attributes of parameters", path: Machine.path.attributes[0].attributes["parameters"].wrappedValue.complexValue)
+        }
+        attributes["parameters"] = attributes["parameters"] ?? .table([], columns: [
+            ("label", .line),
+            ("type", .expression(language: .swift)),
+            ("default_value", .expression(language: .swift))
+        ])
+        attributes["result_type"] = attributes["result_type"] ?? .expression("Void", language: .swift)
+        machine.attributes[0].attributes["parameters"]!.complexValue = attributes
     }
     
     private func perform(on machine: inout Machine, _ f: (inout Machine) throws -> Void) throws {

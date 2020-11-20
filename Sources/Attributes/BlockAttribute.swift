@@ -147,6 +147,25 @@ public enum BlockAttribute: Hashable {
         }
     }
     
+    public var complexFields: [Field] {
+        get {
+            switch self {
+            case .complex(_, let fields):
+                return fields
+            default:
+                fatalError("Attempting to fetch a complex value on a block attribute which is not a complex attribute")
+            }
+        }
+        set {
+            switch self {
+            case .complex(let values, _):
+                self = .complex(values, layout: newValue)
+            default:
+                fatalError("Attempting to set a complex value on a block attribute which is not a complex attribute")
+            }
+        }
+    }
+    
     public var complexValue: [Label: Attribute] {
         get {
             switch self {
