@@ -135,6 +135,15 @@ struct SwiftfsmConverter: Converter, MachineValidator {
                     ("label", .line),
                     ("type", .expression(language: .swift)),
                     ("initial_value", .expression(language: .swift))
+                ]),
+                "parameters": .complex(layout: swiftMachine.parameters == nil ? ["enable_parameters": .bool] : [
+                    "enable_parameters": .bool,
+                    "parameters": .table(columns: [
+                        ("label", .line),
+                        ("type", .expression(language: .swift)),
+                        ("default_value", .expression(language: .swift))
+                    ]),
+                    "result_type": .expression(language: .swift)
                 ])
             ],
             attributes: [
@@ -170,40 +179,35 @@ struct SwiftfsmConverter: Converter, MachineValidator {
                         ("initial_value", .expression(language: .swift))
                     ]
                 ),
-            ]
-        )
-        attributes.append(variables)
-        let parameters = AttributeGroup(
-            name: "parameters",
-            fields: swiftMachine.parameters == nil ? ["enable_parameters": .bool] : [
-                "enable_parameters": .bool,
-                "parameters": .table(columns: [
-                    ("label", .line),
-                    ("type", .expression(language: .swift)),
-                    ("default_value", .expression(language: .swift))
-                ]),
-                "result_type": .expression(language: .swift)
-            ],
-            attributes: swiftMachine.parameters == nil ? ["enable_parameters": .bool(false)] : [
-                "enable_parameters": .bool(true),
-                "parameters": .table(
-                    (swiftMachine.parameters ?? []).map {
-                        [
-                            .line($0.label),
-                            .expression(Expression($0.type), language: .swift),
-                            .expression(Expression($0.initialValue ?? ""), language: .swift)
+                "parameters": .complex(swiftMachine.parameters == nil ? ["enable_parameters": .bool(false)] : [
+                    "enable_parameters": .bool(true),
+                    "parameters": .table(
+                        (swiftMachine.parameters ?? []).map {
+                            [
+                                .line($0.label),
+                                .expression(Expression($0.type), language: .swift),
+                                .expression(Expression($0.initialValue ?? ""), language: .swift)
+                            ]
+                        },
+                        columns: [
+                            ("label", .line),
+                            ("type", .expression(language: .swift)),
+                            ("default_value", .expression(language: .swift))
                         ]
-                    },
-                    columns: [
+                    ),
+                    "result_type": .expression(Expression(swiftMachine.returnType ?? ""), language: .swift)
+                ], layout: swiftMachine.parameters == nil ? ["enable_parameters": .bool] : [
+                    "enable_parameters": .bool,
+                    "parameters": .table(columns: [
                         ("label", .line),
                         ("type", .expression(language: .swift)),
                         ("default_value", .expression(language: .swift))
-                    ]
-                ),
-                "result_type": .expression(Expression(swiftMachine.returnType ?? ""), language: .swift)
+                    ]),
+                    "result_type": .expression(language: .swift)
+                ])
             ]
         )
-        attributes.append(parameters)
+        attributes.append(variables)
         if let model = swiftMachine.model {
             let group = AttributeGroup(
                 name: "ringlet",
@@ -255,52 +259,62 @@ struct SwiftfsmConverter: Converter, MachineValidator {
             )
             attributes.append(group)
         }
-        let moduleDependencies = AttributeGroup(
-            name: "module_dependencies",
+        let settings = AttributeGroup(
+            name: "settings",
             fields: [
-                "packages": .collection(type: .complex(layout: [
-                    "products": .collection(type: .line),
-                    "qualifiers": .collection(type: .line),
-                    "targets_to_import": .collection(type: .line),
-                    "url": .line
-                ])),
-                "system_imports": .code(language: .swift),
-                "system_includes": .code(language: .c),
-                "swift_search_paths": .collection(type: .line),
-                "c_header_search_paths": .collection(type: .line),
-                "linker_search_paths": .collection(type: .line)
-            ],
-            attributes: [
-                "packages": .collection(
-                    complex: swiftMachine.packageDependencies.map {
-                        [
-                            "products": .collection(lines: $0.products),
-                            "qualifiers": .collection(lines: $0.qualifiers),
-                            "targets_to_import": .collection(lines: $0.targets),
-                            "url": .line($0.url)
-                        ]
-                    },
-                    layout: [
+                "suspend_state": .enumerated(validValues: Set(swiftMachine.states.map(\.name) + [""])),
+                "module_dependencies": .complex(layout: [
+                    "packages": .collection(type: .complex(layout: [
                         "products": .collection(type: .line),
                         "qualifiers": .collection(type: .line),
                         "targets_to_import": .collection(type: .line),
                         "url": .line
-                    ]
-                ),
-                "system_imports": .code(swiftMachine.imports, language: .swift),
-                "system_includes": .code(swiftMachine.includes ?? "", language: .c),
-                "swift_search_paths": .collection(lines: swiftMachine.swiftIncludeSearchPaths),
-                "c_header_search_paths": .collection(lines: swiftMachine.includeSearchPaths),
-                "linker_search_paths": .collection(lines: swiftMachine.libSearchPaths)
-            ]
-        )
-        attributes.append(moduleDependencies)
-        let settings = AttributeGroup(
-            name: "settings",
-            fields: [
-                "suspend_state": .enumerated(validValues: Set(swiftMachine.states.map(\.name)))
+                    ])),
+                    "system_imports": .code(language: .swift),
+                    "system_includes": .code(language: .c),
+                    "swift_search_paths": .collection(type: .line),
+                    "c_header_search_paths": .collection(type: .line),
+                    "linker_search_paths": .collection(type: .line)
+                ])
             ],
-            attributes: swiftMachine.suspendState.map { ["suspend_state": Attribute.enumerated($0.name, validValues: Set(swiftMachine.states.map(\.name)))] } ?? [:],
+            attributes: [
+                "suspend_state": Attribute.enumerated(swiftMachine.suspendState?.name ?? "", validValues: Set(swiftMachine.states.map(\.name) + [""])),
+                "module_dependencies": .complex([
+                    "packages": .collection(
+                        complex: swiftMachine.packageDependencies.map {
+                            [
+                                "products": .collection(lines: $0.products),
+                                "qualifiers": .collection(lines: $0.qualifiers),
+                                "targets_to_import": .collection(lines: $0.targets),
+                                "url": .line($0.url)
+                            ]
+                        },
+                        layout: [
+                            "products": .collection(type: .line),
+                            "qualifiers": .collection(type: .line),
+                            "targets_to_import": .collection(type: .line),
+                            "url": .line
+                        ]
+                    ),
+                    "system_imports": .code(swiftMachine.imports, language: .swift),
+                    "system_includes": .code(swiftMachine.includes ?? "", language: .c),
+                    "swift_search_paths": .collection(lines: swiftMachine.swiftIncludeSearchPaths),
+                    "c_header_search_paths": .collection(lines: swiftMachine.includeSearchPaths),
+                    "linker_search_paths": .collection(lines: swiftMachine.libSearchPaths)
+                ], layout: [
+                    "packages": .collection(type: .complex(layout: [
+                        "products": .collection(type: .line),
+                        "qualifiers": .collection(type: .line),
+                        "targets_to_import": .collection(type: .line),
+                        "url": .line
+                    ])),
+                    "system_imports": .code(language: .swift),
+                    "system_includes": .code(language: .c),
+                    "swift_search_paths": .collection(type: .line),
+                    "c_header_search_paths": .collection(type: .line),
+                    "linker_search_paths": .collection(type: .line)
+                ])
+            ],
             metaData: [:]
         )
         attributes.append(settings)
@@ -628,9 +642,9 @@ extension SwiftfsmConverter: MachineMutator {
     func modify<Path>(attribute: Path, value: Path.Value, machine: inout Machine) throws where Path : PathProtocol, Path.Root == Machine {
         try perform(on: &machine) { machine in
             switch attribute.path {
-            case machine.path.attributes[2].attributes["use_custom_ringlet"].wrappedValue.path,
-                 machine.path.attributes[2].attributes["use_custom_ringlet"].wrappedValue.boolValue.keyPath,
-                 machine.path.attributes[2].attributes["use_custom_ringlet"].wrappedValue.lineAttribute.boolValue.keyPath:
+            case machine.path.attributes[1].attributes["use_custom_ringlet"].wrappedValue.path,
+                 machine.path.attributes[1].attributes["use_custom_ringlet"].wrappedValue.boolValue.keyPath,
+                 machine.path.attributes[1].attributes["use_custom_ringlet"].wrappedValue.lineAttribute.boolValue.keyPath:
                 guard let boolValue = (value as? Attribute)?.boolValue ?? (value as? LineAttribute)?.boolValue ?? (value as? Bool) else {
                     throw ValidationError(message: "Invalid value \(value)", path: attribute)
                 }

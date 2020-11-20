@@ -108,15 +108,12 @@ struct SwiftfsmMachineValidator: MachineValidator {
                 }
                 transition.attributes.empty()
             }
-            validator.attributes.length(5)
+            validator.attributes.length(3)
             validator.attributes.validate { attributes in
                 attributes[0].validate { variables in
                     variables.name.equals("variables")
                 }
-                attributes[1].validate { parameters in
-                    parameters.name.equals("parameters")
-                }
-                attributes[2].validate { ringlet in
+                attributes[1].validate { ringlet in
                     ringlet.name.equals("ringlet")
                     ringlet.attributes["use_custom_ringlet"].required()
                         .if { $0?.boolValue ?? false }
@@ -127,17 +124,18 @@ struct SwiftfsmMachineValidator: MachineValidator {
 //                            }
                         }
                 }
-                attributes[3].validate { moduleDependencies in
-                    moduleDependencies.name.equals("module_dependencies")
-                }
-                attributes[4].validate { settings in
+                attributes[2].validate { settings in
                     settings.name.equals("settings")
-                    settings.fields.notEmpty()
+                    settings.fields.length(2)
                     settings.fields[0].name.equals("suspend_state")
                     settings.fields[0].type.equals(AttributeType.enumerated(validValues: Set(machine.states.map { $0.name })))
                     settings.attributes["suspend_state"].required()
-                    settings.attributes["suspend_state"].wrappedValue.enumeratedValue.notEmpty()
-                    settings.attributes["suspend_state"].wrappedValue.enumeratedValue.in(Machine.path.states, transform: { Set($0.map {$0.name}) })
+                    settings.attributes["suspend_state"].wrappedValue.enumeratedValue.validate { suspendState in
+                        suspendState.if { $0 != "" } then: {
+                            suspendState.in(Machine.path.states, transform: { Set($0.map {$0.name}) })
+                        }
+                    }
+                    settings.fields[1].name.equals("module_dependencies")
                 }
             }
         }
