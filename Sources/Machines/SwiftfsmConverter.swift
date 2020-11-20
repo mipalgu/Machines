@@ -669,9 +669,33 @@ extension SwiftfsmConverter: MachineMutator {
                 }
                 try self.toggleEnableParameters(boolValue: boolValue, machine: &machine)
             default:
+                if nil == self.whitelist(forMachine: machine).first(where: { $0.inChain(attribute) }) {
+                    throw ValidationError(message: "Attempting to modify a value which is not allowed to be modified", path: attribute)
+                }
                 machine[keyPath: attribute.path] = value
             }
         }
+    }
+    
+    private func whitelist(forMachine machine: Machine) -> [AnyPath<Machine>] {
+        let machinePaths = [
+            AnyPath(machine.path.filePath),
+            AnyPath(machine.path.initialState),
+            AnyPath(machine.path.transitions),
+            AnyPath(machine.path.attributes[0].attributes),
+            AnyPath(machine.path.attributes[1].attributes),
+            AnyPath(machine.path.attributes[2].attributes)
+        ]
+        let statePaths: [AnyPath] = machine.states.indices.flatMap { stateIndex in
+            return [
+                AnyPath(machine.path.states[stateIndex].name),
+                AnyPath(machine.path.states[stateIndex].attributes[0].attributes),
+                AnyPath(machine.path.states[stateIndex].attributes[1].attributes)
+            ] + machine.states[stateIndex].actions.indices.map {
+                AnyPath(machine.path.states[stateIndex].actions[$0].implementation)
+            }
+        }
+        return machinePaths + statePaths
     }
     
     private func changeName(ofState index: Int, to stateName: StateName, machine: inout Machine) throws {
