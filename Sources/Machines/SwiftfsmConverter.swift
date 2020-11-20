@@ -644,6 +644,12 @@ extension SwiftfsmConverter: MachineMutator {
     
     func modify<Path>(attribute: Path, value: Path.Value, machine: inout Machine) throws where Path : PathProtocol, Path.Root == Machine {
         try perform(on: &machine) { machine in
+            if let index = machine.states.indices.first(where: { Machine.path.states[$0].name.path == attribute.path }) {
+                guard let stateName = value as? StateName else {
+                    throw ValidationError(message: "Invalid value \(value)", path: attribute)
+                }
+                try self.changeName(ofState: index, to: stateName, machine: &machine)
+            }
             switch attribute.path {
             case machine.path.attributes[1].attributes["use_custom_ringlet"].wrappedValue.path,
                  machine.path.attributes[1].attributes["use_custom_ringlet"].wrappedValue.boolValue.keyPath,
@@ -656,6 +662,18 @@ extension SwiftfsmConverter: MachineMutator {
                 machine[keyPath: attribute.path] = value
             }
         }
+    }
+    
+    private func changeName(ofState index: Int, to stateName: StateName, machine: inout Machine) throws {
+        if Set(machine.states.map(\.name)).contains(stateName) {
+            throw ValidationError(message: "Cannot rename state to '\(stateName)' since a state with that name already exists", path: machine.path.states[index].name)
+        }
+        let currentName = machine.states[index].name
+        machine[keyPath: machine.path.states[index].name.path] = stateName
+        if machine.attributes[2].attributes["suspend_state"]!.enumeratedValue == currentName {
+            machine.attributes[2].attributes["suspend_state"]!.enumeratedValue = stateName
+        }
+        self.syncSuspendState(machine: &machine)
     }
     
     private func syncSuspendState(machine: inout Machine) {
