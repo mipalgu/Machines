@@ -72,12 +72,21 @@ extension Path where Value: MutableCollection, Value.Index: Hashable {
 
 extension ValidationPath where P.Value: Collection, P.Value.Index: Hashable {
     
-    public func each(@ValidatorBuilder<Root> builder: @escaping (P.Value.Index, ValidationPath<ReadOnlyPath<Root, Value.Element>>) -> [AnyValidator<Root>]) -> AnyValidator<Root> {
-        return AnyValidator<Root>(validate: { root in
-            return try AnyValidator<Root>(root[keyPath: self.path.keyPath].indices.flatMap { index in
-                return builder(index, self[index])
-            }).performValidation(root)
-        })
+    public func each(@ValidatorBuilder<Root> builder: @escaping (Value.Index, ValidationPath<ReadOnlyPath<Root, Value.Element>>) -> [AnyValidator<Root>]) -> PushValidator {
+        return push { (root, value) in
+            let validators: [AnyValidator<Root>] = value.indices.flatMap { (index) -> [AnyValidator<Root>] in
+                return builder(
+                    index,
+                    ValidationPath<ReadOnlyPath<Root, Value.Element>>(
+                        path: ReadOnlyPath<Root, Value.Element>(
+                            keyPath: self.path.keyPath.appending(path: \.[index]),
+                            ancestors: self.path.fullPath
+                        )
+                    )
+                )
+            }
+            return try AnyValidator<Root>(validators).performValidation(root)
+        }
     }
     
 }

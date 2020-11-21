@@ -58,8 +58,8 @@
 
 public protocol ValidationPushProtocol: ReadOnlyPathContainer {
     
-    associatedtype Root
-    associatedtype Value
+    associatedtype Root = Path.Root
+    associatedtype Value = Path.Value
     associatedtype PushValidator: PathValidator
     
     func push(_ f: @escaping (Root, Value) throws -> Void) -> PushValidator
