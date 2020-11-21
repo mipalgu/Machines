@@ -151,6 +151,11 @@ struct SwiftfsmMachineValidator: MachineValidator {
                     ringlet.attributes["use_custom_ringlet"].required()
                         .if { $0.boolValue }
                         then: {
+                            ringlet.attributes["actions"].required()
+                            ringlet.attributes["actions"].wrappedValue.collectionValue.unique { $0.map(\.lineValue) }
+                            ringlet.attributes["actions"].wrappedValue.collectionValue.each { (_, action) in
+                                action.lineValue.alphadash().notEmpty().maxLength(128)
+                            }
                             ringlet.attributes["ringlet_variables"].required()
                             ringlet.attributes["ringlet_variables"].wrappedValue.tableValue.validate { table in
                                 table.unique() { $0.map { $0[1].lineValue } }
@@ -161,6 +166,10 @@ struct SwiftfsmMachineValidator: MachineValidator {
                                     ringletVariables[3].expressionValue.maxLength(128)
                                 }
                             }
+                            ringlet.attributes["imports"].required()
+                            ringlet.attributes["imports"].wrappedValue.codeValue.maxLength(10240)
+                            ringlet.attributes["execute"].required()
+                            ringlet.attributes["execute"].wrappedValue.codeValue.maxLength(10240)
                         }
                 }
                 attributes[2].validate { settings in
