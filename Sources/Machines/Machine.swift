@@ -103,6 +103,8 @@ public struct Machine: PathContainer {
     
     private let mutator: MachineMutator
     
+    public private(set) var id: UUID = UUID()
+    
     /// The underlying semantics which this meta machine follows.
     public var semantics: Semantics
     
