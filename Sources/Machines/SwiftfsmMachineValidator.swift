@@ -136,8 +136,7 @@ struct SwiftfsmMachineValidator: MachineValidator {
                     }
                     variables.attributes["parameters"].required()
                     variables.attributes["parameters"].wrappedValue.complexValue.validate { attributes in
-                        attributes["enable_parameters"].required()
-                        attributes["enable_parameters"].wrappedValue.if { $0.boolValue } then: {
+                        attributes["enable_parameters"].required().if { $0.boolValue } then: {
                             attributes["parameters"].required()
                             attributes["parameters"].wrappedValue.tableValue.each { (_, parameters) in
                                 parameters[0].lineValue.unique(Machine.path.attributes[0].attributes["parameters"].wrappedValue.complexValue["parameters"].wrappedValue.tableValue) {
