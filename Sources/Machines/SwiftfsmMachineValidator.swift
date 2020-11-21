@@ -93,7 +93,7 @@ struct SwiftfsmMachineValidator: MachineValidator {
                         table.unique() { $0.map { $0[1].lineValue } }
                         table.each { (_, stateVariable) in
                             stateVariable[0].enumeratedValue.in(["let", "var"])
-                            stateVariable[1].lineValue.maxLength(128)
+                            stateVariable[1].lineValue.notEmpty().maxLength(128)
                             stateVariable[2].expressionValue.notEmpty().maxLength(128)
                             stateVariable[3].expressionValue.maxLength(128)
                         }
@@ -122,7 +122,7 @@ struct SwiftfsmMachineValidator: MachineValidator {
                         table.unique { $0.map { $0[1].lineValue } }
                         table.each { (_, externalVariables) in
                             externalVariables[0].enumeratedValue.in(["actuator", "sensor", "external"])
-                            externalVariables[1].lineValue.maxLength(128)
+                            externalVariables[1].lineValue.notEmpty().maxLength(128)
                             externalVariables[2].expressionValue.notEmpty().maxLength(128)
                             externalVariables[3].expressionValue.notEmpty().maxLength(128)
                         }
@@ -132,7 +132,7 @@ struct SwiftfsmMachineValidator: MachineValidator {
                         table.unique() { $0.map { $0[1].lineValue } }
                         table.each { (_, machineVariables) in
                             machineVariables[0].enumeratedValue.in(["let", "var"])
-                            machineVariables[1].lineValue.maxLength(128)
+                            machineVariables[1].lineValue.notEmpty().maxLength(128)
                             machineVariables[2].expressionValue.notEmpty().maxLength(128)
                             machineVariables[3].expressionValue.maxLength(128)
                         }
@@ -144,7 +144,7 @@ struct SwiftfsmMachineValidator: MachineValidator {
                             attributes["parameters"].wrappedValue.tableValue.validate { table in
                                 table.unique() { $0.map { $0[0].lineValue } }
                                 table.each { (_, parameters) in
-                                    parameters[0].lineValue.maxLength(128)
+                                    parameters[0].lineValue.notEmpty().maxLength(128)
                                     parameters[1].expressionValue.notEmpty().maxLength(128)
                                     parameters[2].expressionValue.maxLength(128)
                                 }
@@ -163,7 +163,7 @@ struct SwiftfsmMachineValidator: MachineValidator {
                                 table.unique() { $0.map { $0[1].lineValue } }
                                 table.each { (_, ringletVariables) in
                                     ringletVariables[0].enumeratedValue.in(["let", "var"])
-                                    ringletVariables[1].lineValue.maxLength(128)
+                                    ringletVariables[1].lineValue.notEmpty().maxLength(128)
                                     ringletVariables[2].expressionValue.notEmpty().maxLength(128)
                                     ringletVariables[3].expressionValue.maxLength(128)
                                 }
