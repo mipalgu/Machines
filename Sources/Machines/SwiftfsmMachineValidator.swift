@@ -60,17 +60,10 @@ import Attributes
 
 struct SwiftfsmMachineValidator: MachineValidator {
     
-    func validate(machine: Machine) throws {
-        if machine.semantics != .swiftfsm {
-            throw MachinesError.unsupportedSemantics(machine.semantics)
-        }
-        try self.validate(machine)
-    }
-    
-    private func validate(_ machine: Machine) throws {
-        try machine.validate { (validator: ValidationPath<Path<Machine, Machine>>) in
+    private let validator: AnyValidator<Machine> = {
+        Machine.path.validate { validator in
             validator.name.alphadash().notEmpty().maxLength(64)
-            validator.initialState.in(machine.path.states, transform: { Set($0.map { $0.name }) })
+            validator.initialState.in(Machine.path.states, transform: { Set($0.map { $0.name }) })
             //validator.suspendState.in(machine.path.states, transform: { Set($0.map { $0.name }) })
             validator.states.maxLength(128)
             validator.states.each { (stateIndex, state: ValidationPath<ReadOnlyPath<Machine, State>>) in
@@ -80,7 +73,7 @@ struct SwiftfsmMachineValidator: MachineValidator {
                     .maxLength(64)
                 state.transitions.maxLength(128)
                 state.transitions.each { (_, transition) in
-                    transition.target.in(machine.path.states, transform: { Set($0.map { $0.name }) })
+                    transition.target.in(Machine.path.states, transform: { Set($0.map { $0.name }) })
                     transition.condition.if { $0 != nil } then: {
                         transition.condition.wrappedValue.maxLength(1024)
                     }
@@ -229,6 +222,13 @@ struct SwiftfsmMachineValidator: MachineValidator {
                 }
             }
         }
+    }()
+    
+    func validate(machine: Machine) throws {
+        if machine.semantics != .swiftfsm {
+            throw MachinesError.unsupportedSemantics(machine.semantics)
+        }
+        try self.validator.performValidation(machine)
     }
     
 }

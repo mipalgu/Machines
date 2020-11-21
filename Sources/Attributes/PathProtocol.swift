@@ -94,14 +94,6 @@ extension PathProtocol {
 
 extension PathProtocol {
     
-    public func validate(@ValidatorBuilder<Self> builder: (Validator<Self>) -> [AnyValidator<Self.Root>]) throws -> AnyValidator<Self.Root> {
-        return AnyValidator(builder(Validator(path: self)))
-    }
-    
-}
-
-extension PathProtocol {
-    
     public static func == (lhs: Self, rhs: Self) -> Bool {
         return lhs.path == rhs.path
     }
