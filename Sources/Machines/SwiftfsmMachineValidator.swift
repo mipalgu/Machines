@@ -93,22 +93,15 @@ struct SwiftfsmMachineValidator: MachineValidator {
                         stateVariable[0].enumeratedValue.in(["let", "var"])
                         stateVariable[1].lineValue.unique(Machine.path.states[stateIndex].attributes[0].attributes["state_variables"].wrappedValue.tableValue) {
                             $0.map { $0[1].lineValue }
-                        }
+                        }.maxLength(128)
                         stateVariable[2].expressionValue.notEmpty().maxLength(128)
                         stateVariable[3].expressionValue.maxLength(128)
                     }
                 }
                 state.attributes[1].validate { settings in
-                    settings.name.equals("settings")
-                    settings.fields.notEmpty()
-                    settings.fields[0].name.equals("access_external_variables")
-                    settings.fields[0].type.equals(AttributeType.bool)
                     settings.attributes["access_external_variables"].required()
                     settings.attributes["access_external_variables"].wrappedValue
                         .if { $0.boolValue } then: {
-                            settings.fields.minLength(2)
-                            settings.fields[1].name.equals("imports")
-                            settings.fields[1].type.equals(AttributeType.code(language: .swift))
                             settings.attributes["imports"].required()
                             settings.attributes["imports"].wrappedValue.codeValue.maxLength(1024)
                         }
@@ -117,13 +110,12 @@ struct SwiftfsmMachineValidator: MachineValidator {
             validator.attributes.length(3)
             validator.attributes.validate { attributes in
                 attributes[0].validate { variables in
-                    variables.name.equals("variables")
                     variables.attributes["external_variables"].required()
                     variables.attributes["external_variables"].wrappedValue.tableValue.each { (_, externalVariables) in
                         externalVariables[0].enumeratedValue.in(["actuator", "sensor", "external"])
                         externalVariables[1].lineValue.unique(Machine.path.attributes[0].attributes["external_variables"].wrappedValue.tableValue) {
                             $0.map { $0[1].lineValue }
-                        }
+                        }.maxLength(128)
                         externalVariables[2].expressionValue.notEmpty().maxLength(128)
                         externalVariables[3].expressionValue.notEmpty().maxLength(128)
                     }
@@ -132,7 +124,7 @@ struct SwiftfsmMachineValidator: MachineValidator {
                         machineVariables[0].enumeratedValue.in(["let", "var"])
                         machineVariables[1].lineValue.unique(Machine.path.attributes[0].attributes["machine_variables"].wrappedValue.tableValue) {
                             $0.map { $0[1].lineValue }
-                        }
+                        }.maxLength(128)
                         machineVariables[2].expressionValue.notEmpty().maxLength(128)
                         machineVariables[3].expressionValue.maxLength(128)
                     }
@@ -144,12 +136,12 @@ struct SwiftfsmMachineValidator: MachineValidator {
                             attributes["parameters"].wrappedValue.tableValue.each { (_, parameters) in
                                 parameters[0].lineValue.unique(Machine.path.attributes[0].attributes["parameters"].wrappedValue.complexValue["parameters"].wrappedValue.tableValue) {
                                     $0.map { $0[0].lineValue }
-                                }
+                                }.maxLength(128)
                                 parameters[1].expressionValue.notEmpty().maxLength(128)
                                 parameters[2].expressionValue.maxLength(128)
                             }
                             attributes["result_type"].required()
-                            attributes["result_type"].wrappedValue.expressionValue.notEmpty()
+                            attributes["result_type"].wrappedValue.expressionValue.notEmpty().maxLength(128)
                         }
                     }
                 }
@@ -162,22 +154,17 @@ struct SwiftfsmMachineValidator: MachineValidator {
                                 ringletVariables[0].enumeratedValue.in(["let", "var"])
                                 ringletVariables[1].lineValue.unique(Machine.path.attributes[1].attributes["ringlet_variables"].wrappedValue.tableValue) {
                                     $0.map { $0[1].lineValue }
-                                }
+                                }.maxLength(128)
                                 ringletVariables[2].expressionValue.notEmpty().maxLength(128)
                                 ringletVariables[3].expressionValue.maxLength(128)
                             }
                         }
                 }
                 attributes[2].validate { settings in
-                    settings.name.equals("settings")
-                    settings.fields.length(2)
-                    settings.fields[0].name.equals("suspend_state")
-                    settings.fields[0].type.equals(AttributeType.enumerated(validValues: Set(machine.states.map { $0.name } + [""])))
                     settings.attributes["suspend_state"].required()
                     settings.attributes["suspend_state"].wrappedValue.enumeratedValue.validate { suspendState in
                         suspendState.in(Machine.path.states, transform: { Set($0.map {$0.name} + [""]) })
                     }
-                    settings.fields[1].name.equals("module_dependencies")
                 }
             }
         }
