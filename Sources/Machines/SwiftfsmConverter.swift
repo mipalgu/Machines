@@ -126,12 +126,13 @@ struct SwiftfsmConverter: Converter, MachineValidator {
             name: "variables",
             fields: [
                 "external_variables": .table(columns: [
+                    ("access_type", .enumerated(validValues: ["sensor", "actuator", "external"])),
                     ("label", .line),
                     ("type", .expression(language: .swift)),
                     ("value", .expression(language: .swift))
                 ]),
                 "machine_variables": .table(columns: [
-                    ("access_type", .enumerated(validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue }))),
+                    ("access_type", .enumerated(validValues: ["let", "var"])),
                     ("label", .line),
                     ("type", .expression(language: .swift)),
                     ("initial_value", .expression(language: .swift))
@@ -150,14 +151,14 @@ struct SwiftfsmConverter: Converter, MachineValidator {
                 "external_variables": .table(
                     swiftMachine.externalVariables.map {
                         [
-                            .enumerated($0.accessType.rawValue, validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue })),
+                            .enumerated($0.accessType.rawValue, validValues: ["sensor", "actuator", "external"]),
                             .line($0.label),
                             .expression(Expression($0.type), language: .swift),
                             .expression(Expression($0.initialValue ?? ""), language: .swift)
                         ]
                     },
                     columns: [
-                        ("access_type", .enumerated(validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue }))),
+                        ("access_type", .enumerated(validValues: ["sensor", "actuator", "external"])),
                         ("label", .line),
                         ("type", .expression(language: .swift)),
                         ("value", .expression(language: .swift))
@@ -166,14 +167,14 @@ struct SwiftfsmConverter: Converter, MachineValidator {
                 "machine_variables": .table(
                     swiftMachine.vars.map {
                         [
-                            .enumerated($0.accessType.rawValue, validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue })),
+                            .enumerated($0.accessType.rawValue, validValues: ["let", "var"]),
                             .line($0.label),
                             .expression(Expression($0.type), language: .swift),
                             .expression(Expression($0.initialValue ?? ""), language: .swift)
                         ]
                     },
                     columns: [
-                        ("access_type", .enumerated(validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue }))),
+                        ("access_type", .enumerated(validValues: ["let", "var"])),
                         ("label", .line),
                         ("type", .expression(language: .swift)),
                         ("initial_value", .expression(language: .swift))
@@ -215,7 +216,7 @@ struct SwiftfsmConverter: Converter, MachineValidator {
                     "use_custom_ringlet": .bool,
                     "actions": .collection(type: .line),
                     "ringlet_variables": .table(columns: [
-                        ("access_type", .enumerated(validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue }))),
+                        ("access_type", .enumerated(validValues: ["let", "var"])),
                         ("label", .line),
                         ("type", .expression(language: .swift)),
                         ("initial_value", .expression(language: .swift))
@@ -229,14 +230,14 @@ struct SwiftfsmConverter: Converter, MachineValidator {
                     "ringlet_variables": .table(
                         model.ringlet.vars.map {
                             [
-                                .enumerated($0.accessType.rawValue, validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue })),
+                                .enumerated($0.accessType.rawValue, validValues: ["let", "var"]),
                                 .line($0.label),
                                 .expression(Expression($0.type), language: .swift),
                                 .expression(Expression($0.initialValue ?? ""), language: .swift)
                             ]
                         },
                         columns: [
-                            ("access_type", .enumerated(validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue }))),
+                            ("access_type", .enumerated(validValues: ["let", "var"])),
                             ("label", .line),
                             ("type", .expression(language: .swift)),
                             ("initial_value", .expression(language: .swift))
@@ -349,7 +350,7 @@ struct SwiftfsmConverter: Converter, MachineValidator {
                         name: "variables",
                         fields: [
                             "state_variables": .table(columns: [
-                                ("access_type", .enumerated(validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue }))),
+                                ("access_type", .enumerated(validValues: ["let", "var"])),
                                 ("label", .line),
                                 ("type", .expression(language: .swift)),
                                 ("initial_value", .expression(language: .swift))
@@ -359,14 +360,14 @@ struct SwiftfsmConverter: Converter, MachineValidator {
                             "state_variables": .table(
                                 state.vars.map {
                                     [
-                                        .enumerated($0.accessType.rawValue, validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue })),
+                                        .enumerated($0.accessType.rawValue, validValues: ["let", "var"]),
                                         .line($0.label),
                                         .expression(Expression($0.type), language: .swift),
                                         .expression(Expression($0.initialValue ?? ""), language: .swift)
                                     ]
                                 },
                                 columns: [
-                                    ("access_type", .enumerated(validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue }))),
+                                    ("access_type", .enumerated(validValues: ["let", "var"])),
                                     ("label", .line),
                                     ("type", .expression(language: .swift)),
                                     ("initial_value", .expression(language: .swift))
@@ -515,12 +516,25 @@ struct SwiftfsmConverter: Converter, MachineValidator {
         guard variable.count == 4 else {
             throw ConversionError(message: "Missing required fields", path: path)
         }
-        guard let accessType = SwiftMachines.Variable.AccessType(rawValue: variable[0].enumeratedValue) else {
+        guard let accessType = SwiftMachines.Variable.AccessType(rawValue: variable[0].enumeratedValue) ?? self.parseExternalAccessType(variable[0].enumeratedValue) else {
             throw ConversionError(message: "Invalid value", path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.[0]), ancestors: path.fullPath))
         }
         let label = String(variable[1].expressionValue)
         let type = String(variable[2].expressionValue)
         return SwiftMachines.Variable(accessType: accessType, label: label, type: type, initialValue: String(variable[3].expressionValue))
+    }
+    
+    private func parseExternalAccessType(_ value: String) -> SwiftMachines.Variable.AccessType? {
+        switch value {
+        case "actuator":
+            return .writeOnly
+        case "sensor":
+            return .readOnly
+        case "external":
+            return .readAndWrite
+        default:
+            return nil
+        }
     }
     
 }
