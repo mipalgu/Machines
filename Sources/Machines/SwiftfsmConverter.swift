@@ -326,12 +326,12 @@ struct SwiftfsmConverter: Converter, MachineValidator {
                 settingsFields = [
                     "access_external_variables": .bool,
                     "external_variables": .enumerableCollection(validValues: Set(swiftMachine.externalVariables.map { $0.label })),
-                    "imports": .text
+                    "imports": .code(language: .swift)
                 ]
                 settingsAttributes = [
                     "access_external_variables": .bool(true),
                     "external_variables": .enumerableCollection(Set(externals.map { $0.label }), validValues: Set(swiftMachine.externalVariables.map { $0.label })),
-                    "imports": .text(state.imports)
+                    "imports": .code(Code(state.imports), language: .swift)
                 ]
             } else {
                 settingsFields = [
@@ -773,11 +773,11 @@ extension SwiftfsmConverter: MachineMutator {
         machine.states[stateIndex].attributes[1].fields = [
             "access_external_variables": .bool,
             "external_variables": .enumerableCollection(validValues: Set(machine.attributes[0].attributes["external_variables"]?.tableValue.map { $0[1].lineValue } ?? [])),
-            "imports": .text
+            "imports": .code(language: .swift)
         ]
         machine.states[stateIndex].attributes[1].attributes["access_external_variables"] = .bool(true)
         machine.states[stateIndex].attributes[1].attributes["external_variables"] = machine.states[stateIndex].attributes[1].attributes["external_variables"] ?? .enumerableCollection(Set(), validValues: Set(machine.attributes[0].attributes["external_variables"]?.tableValue.map { $0[1].lineValue } ?? []))
-        machine.states[stateIndex].attributes[1].attributes["imports"] = machine.states[stateIndex].attributes[1].attributes["imports"] ?? .text("")
+        machine.states[stateIndex].attributes[1].attributes["imports"] = machine.states[stateIndex].attributes[1].attributes["imports"] ?? .code("", language: .swift)
     }
     
     private func toggleUseCustomRinglet(boolValue: Bool, machine: inout Machine) {
