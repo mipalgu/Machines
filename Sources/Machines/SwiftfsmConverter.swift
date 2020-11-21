@@ -727,10 +727,13 @@ extension SwiftfsmConverter: MachineMutator {
     }
     
     private func changeName(ofState index: Int, to stateName: StateName, machine: inout Machine) throws {
+        let currentName = machine.states[index].name
+        if currentName == stateName {
+            return
+        }
         if Set(machine.states.map(\.name)).contains(stateName) {
             throw ValidationError(message: "Cannot rename state to '\(stateName)' since a state with that name already exists", path: machine.path.states[index].name)
         }
-        let currentName = machine.states[index].name
         machine[keyPath: machine.path.states[index].name.path] = stateName
         if machine.initialState == currentName {
             machine.initialState = stateName
@@ -742,10 +745,13 @@ extension SwiftfsmConverter: MachineMutator {
     }
     
     private func changeName(ofExternal index: Int, to externalName: String, machine: inout Machine) throws {
+        let currentName = machine.attributes[0].attributes["external_variables"]!.tableValue[index][1].lineValue
+        if currentName == externalName {
+            return
+        }
         if Set(machine.attributes[0].attributes["external_variables"]!.tableValue.map(\.[1].lineValue)).contains(externalName) {
             throw ValidationError(message: "Cannot rename external variable to '\(externalName)' since an external variable with that name already exists", path: machine.path.attributes[0].attributes["external_variables"].wrappedValue.tableValue[index][1])
         }
-        let currentName = machine.attributes[0].attributes["external_variables"]!.tableValue[index][1].lineValue
         machine[keyPath: machine.path.attributes[0].attributes["external_variables"].wrappedValue.tableValue[index][1].path].lineValue = externalName
         machine.states = machine.states.map { state in
             guard var attribute = state.attributes[1].attributes["external_variables"] else {
