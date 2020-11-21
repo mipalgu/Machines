@@ -68,19 +68,9 @@ extension Path where Value: MutableCollection, Value.Index: Hashable {
         }
     }
     
-    public func validateEach(@ValidatorBuilder<Root> builder: @escaping (Path<Root, Value.Element>) -> [AnyValidator<Root>]) -> (Root) -> AnyValidator<Root> {
-        return { root in
-            AnyValidator<Root>(
-                root[keyPath: self.path].indices.map {
-                    return AnyValidator(builder(self[$0]))
-                }
-            )
-        }
-    }
-    
 }
 
-extension ValidationPath where P.Value: MutableCollection, P.Value.Index: Hashable {
+extension ValidationPath where P.Value: Collection, P.Value.Index: Hashable {
     
     public func each(@ValidatorBuilder<Root> builder: @escaping (P.Value.Index, ValidationPath<ReadOnlyPath<Root, Value.Element>>) -> [AnyValidator<Root>]) -> AnyValidator<Root> {
         return AnyValidator<Root>(validate: { root in
