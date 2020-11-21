@@ -204,6 +204,25 @@ public enum BlockAttribute: Hashable {
         }
     }
     
+    public var enumerableCollectionValidValues: Set<String> {
+        get {
+            switch self {
+            case .enumerableCollection(_, let validValues):
+                return validValues
+            default:
+                fatalError("Attempting to fetch enumerable collection valid values on a block attribute which is not an enumerable collection attribute")
+            }
+        }
+        set {
+            switch self {
+            case .enumerableCollection(let values, _):
+                self = .enumerableCollection(values, validValues: newValue)
+            default:
+                fatalError("Attempting to set enumerable collection valid values on a block attribute which is not an enumerable collection attribute")
+            }
+        }
+    }
+    
     public var tableValue: [[LineAttribute]] {
         get {
             switch self {

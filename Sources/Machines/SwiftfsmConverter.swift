@@ -639,6 +639,18 @@ extension SwiftfsmConverter: MachineMutator {
                 }
                 try self.changeName(ofState: index, to: stateName, machine: &machine)
             }
+            if let index = machine.attributes[0].attributes["external_variables"].wrappedValue.tableValue.indices.first(where: { (index) -> Bool in
+                let externalsPath = Machine.path.attributes[0].attributes["external_variables"].wrappedValue
+                return externalsPath.tableValue[index][1].path == attribute.path
+                    || externalsPath.tableValue[index][1].lineValue.path == attribute.path
+                    || externalsPath.blockAttribute.tableValue[index][1].path == attribute.path
+                    || externalsPath.blockAttribute.tableValue[index][1].lineValue.path == attribute.path
+            }) {
+                guard let name = (value as? Attribute)?.lineValue ?? (value as? LineAttribute)?.lineValue ?? (value as? String) else {
+                    throw ValidationError(message: "Invalid value \(value)", path: attribute)
+                }
+                try self.changeName(ofExternal: index, to: name, machine: &machine)
+            }
             switch attribute.path {
             case machine.path.attributes[1].attributes["use_custom_ringlet"].wrappedValue.path,
                  machine.path.attributes[1].attributes["use_custom_ringlet"].wrappedValue.boolValue.keyPath,
@@ -707,6 +719,32 @@ extension SwiftfsmConverter: MachineMutator {
             machine.attributes[2].attributes["suspend_state"]!.enumeratedValue = stateName
         }
         self.syncSuspendState(machine: &machine)
+    }
+    
+    private func changeName(ofExternal index: Int, to externalName: String, machine: inout Machine) throws {
+        if Set(machine.attributes[0].attributes["external_variables"]!.tableValue.map(\.[1].lineValue)).contains(externalName) {
+            throw ValidationError(message: "Cannot rename external variable to '\(externalName)' since an external variable with that name already exists", path: machine.path.attributes[0].attributes["external_variables"].wrappedValue.tableValue[index][1])
+        }
+        let currentName = machine.attributes[0].attributes["external_variables"]!.tableValue[index][1].lineValue
+        machine[keyPath: machine.path.attributes[0].attributes["external_variables"].wrappedValue.tableValue[index][1].path].lineValue = externalName
+        machine.states = machine.states.map { state in
+            guard var attribute = state.attributes[1].attributes["external_variables"] else {
+                return state
+            }
+            var state = state
+            if attribute.enumerableCollectionValue.contains(currentName) {
+                attribute.enumerableCollectionValue.remove(currentName)
+                attribute.enumerableCollectionValue.insert(externalName)
+            }
+            attribute.enumerableCollectionValidValues.remove(currentName)
+            attribute.enumerableCollectionValidValues.insert(externalName)
+            state.attributes[1].attributes["external_variables"] = attribute
+            guard let fieldIndex = state.attributes[1].fields.firstIndex(where: { $0.name == "external_variables" }) else {
+                return state
+            }
+            state.attributes[1].fields[fieldIndex].type = .enumerableCollection(validValues: attribute.enumerableCollectionValidValues)
+            return state
+        }
     }
     
     private func syncSuspendState(machine: inout Machine) {
