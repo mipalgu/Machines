@@ -639,6 +639,15 @@ extension SwiftfsmConverter: MachineMutator {
                 }
                 try self.changeName(ofState: index, to: stateName, machine: &machine)
             }
+            if let index = machine.states.indices.first(where: {
+                machine.path.states[$0].attributes[1].attributes["access_external_variables"].wrappedValue.boolValue.path == attribute.path
+                    || machine.path.states[$0].attributes[1].attributes["access_external_variables"].wrappedValue.lineAttribute.boolValue.path == attribute.path
+            }) {
+                guard let boolValue = (value as? Attribute)?.boolValue ?? (value as? LineAttribute)?.boolValue ?? (value as? Bool) else {
+                    throw ValidationError(message: "Invalid value \(value)", path: attribute)
+                }
+                self.toggleAccessExternalVariables(boolValue: boolValue, forState: index, machine: &machine)
+            }
             if let index = machine.attributes[0].attributes["external_variables"].wrappedValue.tableValue.indices.first(where: { (index) -> Bool in
                 let externalsPath = Machine.path.attributes[0].attributes["external_variables"].wrappedValue
                 return externalsPath.tableValue[index][1].path == attribute.path
@@ -753,6 +762,22 @@ extension SwiftfsmConverter: MachineMutator {
         let newValue = validValues.contains(currentValue) ? currentValue : ""
         machine.attributes[2].fields[0].type = .enumerated(validValues: validValues)
         machine.attributes[2].attributes["suspend_state"] = .enumerated(newValue, validValues: validValues)
+    }
+    
+    private func toggleAccessExternalVariables(boolValue: Bool, forState stateIndex: Int, machine: inout Machine) {
+        if !boolValue {
+            machine.states[stateIndex].attributes[1].fields = machine.states[stateIndex].attributes[1].fields.filter { $0.name == "access_external_variables" }
+            machine.states[stateIndex].attributes[1].attributes["access_external_variables"] = .bool(true)
+            return
+        }
+        machine.states[stateIndex].attributes[1].fields = [
+            "access_external_variables": .bool,
+            "external_variables": .enumerableCollection(validValues: Set(machine.attributes[0].attributes["external_variables"]?.tableValue.map { $0[1].lineValue } ?? [])),
+            "imports": .text
+        ]
+        machine.states[stateIndex].attributes[1].attributes["access_external_variables"] = .bool(true)
+        machine.states[stateIndex].attributes[1].attributes["external_variables"] = machine.states[stateIndex].attributes[1].attributes["external_variables"] ?? .enumerableCollection(Set(), validValues: Set(machine.attributes[0].attributes["external_variables"]?.tableValue.map { $0[1].lineValue } ?? []))
+        machine.states[stateIndex].attributes[1].attributes["imports"] = machine.states[stateIndex].attributes[1].attributes["imports"] ?? .text("")
     }
     
     private func toggleUseCustomRinglet(boolValue: Bool, machine: inout Machine) {
