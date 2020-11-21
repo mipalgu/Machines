@@ -171,6 +171,53 @@ struct SwiftfsmMachineValidator: MachineValidator {
                     settings.attributes["suspend_state"].wrappedValue.enumeratedValue.validate { suspendState in
                         suspendState.in(Machine.path.states, transform: { Set($0.map {$0.name} + [""]) })
                     }
+                    settings.attributes["module_dependencies"].required()
+                    settings.attributes["module_dependencies"].wrappedValue.complexValue.validate { moduleDependencies in
+                        moduleDependencies["packages"].required()
+                        moduleDependencies["packages"].wrappedValue.collectionValue.each { (packageIndex, packageRow) in
+                            packageRow.complexValue.validate { package in
+                                package["products"].required()
+                                package["products"].wrappedValue.collectionValue.each { (_, product) in
+                                    product.lineValue.unique(Machine.path.attributes[2].attributes["module_dependencies"].wrappedValue.complexValue["packages"].wrappedValue.collectionValue[packageIndex].complexValue["products"].wrappedValue.collectionValue) {
+                                        $0.map { $0.lineValue }
+                                    }.maxLength(128)
+                                }
+                                package["qualifiers"].wrappedValue.collectionValue.each { (_, product) in
+                                    product.lineValue.unique(Machine.path.attributes[2].attributes["module_dependencies"].wrappedValue.complexValue["packages"].wrappedValue.collectionValue[packageIndex].complexValue["qualifiers"].wrappedValue.collectionValue) {
+                                        $0.map { $0.lineValue }
+                                    }.maxLength(128)
+                                }
+                                package["targets_to_import"].wrappedValue.collectionValue.each { (_, product) in
+                                    product.lineValue.unique(Machine.path.attributes[2].attributes["module_dependencies"].wrappedValue.complexValue["packages"].wrappedValue.collectionValue[packageIndex].complexValue["targets_to_import"].wrappedValue.collectionValue) {
+                                        $0.map { $0.lineValue }
+                                    }.maxLength(128)
+                                }
+                                package["url"].wrappedValue.collectionValue.each { (_, product) in
+                                    product.lineValue.unique(Machine.path.attributes[2].attributes["module_dependencies"].wrappedValue.complexValue["packages"].wrappedValue.collectionValue[packageIndex].complexValue["url"].wrappedValue.collectionValue) {
+                                        $0.map { $0.lineValue }
+                                    }.maxLength(128)
+                                }
+                            }
+                        }
+                        moduleDependencies.validate { moduleDependencies in
+                            moduleDependencies["system_imports"].required()
+                            moduleDependencies["system_imports"].wrappedValue.codeValue.maxLength(10240)
+                            moduleDependencies["system_includes"].required()
+                            moduleDependencies["system_includes"].wrappedValue.codeValue.maxLength(10240)
+                            moduleDependencies["swift_search_paths"].required()
+                            moduleDependencies["swift_search_paths"].wrappedValue.collectionValue.each { (_, swiftSearchPath) in
+                                swiftSearchPath.lineValue.notEmpty().maxLength(1024)
+                            }
+                            moduleDependencies["c_header_search_paths"].required()
+                            moduleDependencies["c_header_search_paths"].wrappedValue.collectionValue.each { (_, cHeaderSearchPaths) in
+                                cHeaderSearchPaths.lineValue.notEmpty().maxLength(1024)
+                            }
+                            moduleDependencies["linker_search_paths"].required()
+                            moduleDependencies["linker_search_paths"].wrappedValue.collectionValue.each { (_, linkerSearchPaths) in
+                                linkerSearchPaths.lineValue.notEmpty().maxLength(1024)
+                            }
+                        }
+                    }
                 }
             }
         }
