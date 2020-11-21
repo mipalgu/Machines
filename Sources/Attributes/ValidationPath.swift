@@ -83,3 +83,16 @@ public struct ValidationPath<P: ReadOnlyPathProtocol>: _ValidationPath {
     }
     
 }
+
+
+extension ValidationPath where Value: Nilable {
+    
+    public func required() -> RequiredValidator<P> {
+        return RequiredValidator(path: self.path)
+    }
+    
+    public func optional() -> OptionalValidator<P> {
+        return OptionalValidator(path: self.path)
+    }
+    
+}

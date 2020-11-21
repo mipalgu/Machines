@@ -58,8 +58,8 @@
 
 public protocol ValidationPushProtocol: ReadOnlyPathContainer {
     
-    associatedtype Root = Path.Root
-    associatedtype Value = Path.Value
+    associatedtype Root
+    associatedtype Value
     associatedtype PushValidator: PathValidator
     
     func push(_ f: @escaping (Root, Value) throws -> Void) -> PushValidator
@@ -338,18 +338,6 @@ extension ValidationPushProtocol where Value: Collection {
         return push {
             if $1.count > length {
                 throw ValidationError(message: "Must provide no more than \(length) values.", path: path)
-            }
-        }
-    }
-    
-}
-
-extension ValidationPushProtocol where Value: Nilable {
-    
-    public func required() -> PushValidator {
-        return push {
-            if $1.isNil {
-                throw ValidationError(message: "Required.", path: path)
             }
         }
     }

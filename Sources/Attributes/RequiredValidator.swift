@@ -1,8 +1,8 @@
 /*
- * PathValidator.swift
+ * RequiredValidator.swift
  * Attributes
  *
- * Created by Callum McColl on 6/11/20.
+ * Created by Callum McColl on 21/11/20.
  * Copyright © 2020 Callum McColl. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,39 +56,44 @@
  *
  */
 
-internal protocol _Push {
+public struct RequiredValidator<P: ReadOnlyPathProtocol>: PathValidator where P.Value: Nilable {
     
-    associatedtype PathType: ReadOnlyPathProtocol
+    public typealias Root = P.Root
     
-    var path: PathType { get }
-    var _validate: (PathType.Root, PathType.Value) throws -> Void { get }
+    public typealias Value = P.Value.Wrapped
     
-    init(_ path: PathType, _validate: @escaping (PathType.Root, PathType.Value) throws -> Void)
+    public typealias PathType = P
     
-}
-
-extension _Push {
+    public let path: PathType
     
-    public func push(_ f: @escaping (PathType.Root, PathType.Value) throws -> Void) -> Self {
-        return Self(self.path) {
+    internal let _validate: (Root, Value) throws -> Void
+    
+    public init(path: PathType) {
+        self.init(path) { (_, _) in }
+    }
+    
+    internal init(_ path: PathType, _validate: @escaping (Root, Value) throws -> Void) {
+        self.path = path
+        self._validate = _validate
+    }
+    
+    public func performValidation(_ root: PathType.Root) throws {
+        let value = root[keyPath: self.path.keyPath]
+        if value.isNil {
+            throw ValidationError(message: "Required", path: self.path)
+        }
+        _ = try self._validate(root, value.wrappedValue)
+    }
+    
+    public func push(_ f: @escaping (Root, Value) throws -> Void) -> RequiredValidator<P> {
+        return RequiredValidator(self.path) {
             try self._validate($0, $1)
             try f($0, $1)
         }
     }
     
-}
-
-internal typealias _PathValidator = _Push & PathValidator
-
-public protocol PathValidator: ValidatorProtocol, ValidationPushProtocol {
-    
-    associatedtype PathType: ReadOnlyPathProtocol
-    associatedtype PushValidator = Self
-    
-    var path: PathType { get }
-    
-    init(path: PathType)
-    
-    func push(_ f: @escaping (Root, Value) throws -> Void) -> Self
+    public func validate(@ValidatorBuilder<PathType.Root> builder: (Self) -> [AnyValidator<PathType.Root>]) -> AnyValidator<PathType.Root> {
+        return AnyValidator(builder(self))
+    }
     
 }

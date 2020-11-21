@@ -153,7 +153,7 @@ struct SwiftfsmMachineValidator: MachineValidator {
                 }
                 attributes[1].validate { ringlet in
                     ringlet.attributes["use_custom_ringlet"].required()
-                        .if { $0?.boolValue ?? false }
+                        .if { $0.boolValue }
                         then: {
                             ringlet.attributes["ringlet_variables"].required()
                             ringlet.attributes["ringlet_variables"].wrappedValue.tableValue.each { (_, ringletVariables) in
