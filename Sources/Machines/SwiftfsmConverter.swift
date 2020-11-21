@@ -151,7 +151,7 @@ struct SwiftfsmConverter: Converter, MachineValidator {
                 "external_variables": .table(
                     swiftMachine.externalVariables.map {
                         [
-                            .enumerated($0.accessType.rawValue, validValues: ["sensor", "actuator", "external"]),
+                            .enumerated(self.externalLabel(forAccessType: $0.accessType), validValues: ["sensor", "actuator", "external"]),
                             .line($0.label),
                             .expression(Expression($0.type), language: .swift),
                             .expression(Expression($0.initialValue ?? ""), language: .swift)
@@ -478,6 +478,17 @@ struct SwiftfsmConverter: Converter, MachineValidator {
             callableMachines: [],
             invocableMachines: []
         )
+    }
+    
+    private func externalLabel(forAccessType accessType: SwiftMachines.Variable.AccessType) -> Label {
+        switch accessType {
+        case .readOnly:
+            return "sensor"
+        case .writeOnly:
+            return "actuator"
+        case .readAndWrite:
+            return "external"
+        }
     }
     
     private func parsePackageDependencies<Path: ReadOnlyPathProtocol>(_ attributes: [String: Attribute], attributePath: Path) throws -> SwiftMachines.PackageDependency where Path.Root == Machine, Path.Value == [String: Attribute] {
