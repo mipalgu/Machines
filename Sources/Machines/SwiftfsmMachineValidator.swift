@@ -94,7 +94,8 @@ struct SwiftfsmMachineValidator: MachineValidator {
                         stateVariable[1].lineValue.unique(Machine.path.states[stateIndex].attributes[0].attributes["state_variables"].wrappedValue.tableValue) {
                             $0.map { $0[1].lineValue }
                         }
-                        stateVariable[2].expressionValue.notEmpty()
+                        stateVariable[2].expressionValue.notEmpty().maxLength(128)
+                        stateVariable[3].expressionValue.maxLength(128)
                     }
                 }
                 state.attributes[1].validate { settings in
@@ -123,8 +124,8 @@ struct SwiftfsmMachineValidator: MachineValidator {
                         externalVariables[1].lineValue.unique(Machine.path.attributes[0].attributes["external_variables"].wrappedValue.tableValue) {
                             $0.map { $0[1].lineValue }
                         }
-                        externalVariables[2].expressionValue.notEmpty()
-                        externalVariables[3].expressionValue.notEmpty()
+                        externalVariables[2].expressionValue.notEmpty().maxLength(128)
+                        externalVariables[3].expressionValue.notEmpty().maxLength(128)
                     }
                     variables.attributes["machine_variables"].required()
                     variables.attributes["machine_variables"].wrappedValue.tableValue.each { (_, machineVariables) in
@@ -132,7 +133,8 @@ struct SwiftfsmMachineValidator: MachineValidator {
                         machineVariables[1].lineValue.unique(Machine.path.attributes[0].attributes["machine_variables"].wrappedValue.tableValue) {
                             $0.map { $0[1].lineValue }
                         }
-                        machineVariables[2].expressionValue.notEmpty()
+                        machineVariables[2].expressionValue.notEmpty().maxLength(128)
+                        machineVariables[3].expressionValue.maxLength(128)
                     }
                     variables.attributes["parameters"].required()
                     variables.attributes["parameters"].wrappedValue.complexValue.validate { attributes in
@@ -143,7 +145,8 @@ struct SwiftfsmMachineValidator: MachineValidator {
                                 parameters[0].lineValue.unique(Machine.path.attributes[0].attributes["parameters"].wrappedValue.complexValue["parameters"].wrappedValue.tableValue) {
                                     $0.map { $0[0].lineValue }
                                 }
-                                parameters[1].expressionValue.notEmpty()
+                                parameters[1].expressionValue.notEmpty().maxLength(128)
+                                parameters[2].expressionValue.maxLength(128)
                             }
                             attributes["result_type"].required()
                             attributes["result_type"].wrappedValue.expressionValue.notEmpty()
@@ -151,14 +154,18 @@ struct SwiftfsmMachineValidator: MachineValidator {
                     }
                 }
                 attributes[1].validate { ringlet in
-                    ringlet.name.equals("ringlet")
                     ringlet.attributes["use_custom_ringlet"].required()
                         .if { $0?.boolValue ?? false }
                         then: {
                             ringlet.attributes["ringlet_variables"].required()
-//                            ringlet.attributes["ringlet_variables"].wrappedValue.validate { table in
-//                                list.enabled.equalsTrue()
-//                            }
+                            ringlet.attributes["ringlet_variables"].wrappedValue.tableValue.each { (_, ringletVariables) in
+                                ringletVariables[0].enumeratedValue.in(["let", "var"])
+                                ringletVariables[1].lineValue.unique(Machine.path.attributes[1].attributes["ringlet_variables"].wrappedValue.tableValue) {
+                                    $0.map { $0[1].lineValue }
+                                }
+                                ringletVariables[2].expressionValue.notEmpty().maxLength(128)
+                                ringletVariables[3].expressionValue.maxLength(128)
+                            }
                         }
                 }
                 attributes[2].validate { settings in
