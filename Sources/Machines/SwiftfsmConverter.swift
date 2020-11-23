@@ -552,8 +552,8 @@ struct SwiftfsmConverter: Converter, MachineValidator {
 
 extension SwiftfsmConverter: MachineMutator {
 
-    func addItem<Path>(attribute: Path, machine: inout Machine) throws where Path : PathProtocol, Path.Root == Machine {
-        throw ValidationError(message: "addItem is not yet implemented", path: attribute)
+    func addItem<Path, T>(_ item: T, to attribute: Path, machine: inout Machine) throws where Path : PathProtocol, Path.Root == Machine, Path.Value == [T] {
+        machine[keyPath: attribute.path].append(item)
     }
     
     func moveItems<Path: PathProtocol, T>(attribute: Path, machine: inout Machine, from source: IndexSet, to destination: Int) throws where Path.Root == Machine, Path.Value == [T] {

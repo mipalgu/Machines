@@ -61,7 +61,7 @@ import Foundation
 
 public protocol MachineMutator {
     
-    func addItem<Path: PathProtocol>(attribute: Path, machine: inout Machine) throws where Path.Root == Machine
+    func addItem<Path, T>(_ item: T, to attribute: Path, machine: inout Machine) throws where Path : PathProtocol, Path.Root == Machine, Path.Value == [T]
     
     func moveItems<Path: PathProtocol, T>(attribute: Path, machine: inout Machine, from source: IndexSet, to destination: Int) throws where Path.Root == Machine, Path.Value == [T]
     

@@ -270,9 +270,9 @@ public struct Machine: PathContainer {
     }
     
     /// Add a new item to a table attribute.
-    public mutating func addItem<Path: PathProtocol>(table attribute: Path) throws where Path.Root == Machine {
+    public mutating func addItem<Path: PathProtocol, T>(_ item: T, to attribute: Path) throws where Path.Root == Machine, Path.Value == [T] {
         try perform { [mutator] machine in
-            try mutator.addItem(attribute: attribute, machine: &machine)
+            try mutator.addItem(item, to: attribute, machine: &machine)
         }
     }
     
