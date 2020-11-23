@@ -771,8 +771,8 @@ extension SwiftfsmConverter: MachineMutator {
         guard let useCustomRinglet = machine.attributes[1].attributes["use_custom_ringlet"]?.boolValue, useCustomRinglet == true else {
             throw ValidationError(message: "You can only add actions when custom ringlets have been enabled", path: Machine.path.attributes[1].attributes["use_custom_ringlet"].wrappedValue)
         }
-        let actions = Set(machine.attributes[1].attributes["actions"]?.collectionValue.map(\.lineValue) ?? ["onEntry", "main", "onExit"])
-        if actions.contains(action) {
+        let actions = machine.attributes[1].attributes["actions"]?.collectionValue.map(\.lineValue) ?? ["onEntry", "main", "onExit"]
+        if Set(actions).contains(action) {
             throw ValidationError(message: "Cannot add new action '\(action)' since an action with that name already exists", path: Machine.path.attributes[1].attributes["actions"].wrappedValue)
         }
         machine.attributes[1].attributes["actions"] = .collection(lines: actions + [action])
