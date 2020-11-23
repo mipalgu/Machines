@@ -615,7 +615,7 @@ extension SwiftfsmConverter: MachineMutator {
     
     func deleteItem<Path, T>(attribute: Path, atIndex index: Int, machine: inout Machine) throws where Path : PathProtocol, Path.Root == Machine, Path.Value == [T] {
         try perform(on: &machine) { machine in
-            if machine[keyPath: attribute.path].count >= index || index < 0 {
+            if machine[keyPath: attribute.path].count <= index || index < 0 {
                 throw ValidationError(message: "Invalid index '\(index)'", path: attribute)
             }
             switch attribute.path {
