@@ -152,9 +152,12 @@ struct SwiftfsmMachineValidator: MachineValidator {
                         .if { $0.boolValue }
                         then: {
                             ringlet.attributes["actions"].required()
-                            ringlet.attributes["actions"].wrappedValue.collectionValue.unique { $0.map(\.lineValue) }
-                            ringlet.attributes["actions"].wrappedValue.collectionValue.each { (_, action) in
-                                action.lineValue.alphadash().notEmpty().maxLength(128)
+                            ringlet.attributes["actions"].wrappedValue.collectionValue.validate { collection in
+                                collection.notEmpty()
+                                collection.unique { $0.map(\.lineValue) }
+                                collection.each { (_, action) in
+                                    action.lineValue.alphadash().notEmpty().maxLength(128)
+                                }
                             }
                             ringlet.attributes["ringlet_variables"].required()
                             ringlet.attributes["ringlet_variables"].wrappedValue.tableValue.validate { table in
