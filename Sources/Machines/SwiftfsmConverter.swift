@@ -672,6 +672,17 @@ extension SwiftfsmConverter: MachineMutator {
     
     func modify<Path>(attribute: Path, value: Path.Value, machine: inout Machine) throws where Path : PathProtocol, Path.Root == Machine {
         try perform(on: &machine) { machine in
+            if let index = machine.attributes[1].attributes["actions"]?.collectionValue.indices.first(where: { (index: Int) -> Bool in
+                Machine.path.attributes[1].attributes["actions"].wrappedValue.collectionValue[index].path == attribute.path
+                    || Machine.path.attributes[1].attributes["actions"].wrappedValue.collectionValue[index].lineValue.path == attribute.path
+                    || Machine.path.attributes[1].attributes["actions"].wrappedValue.collectionValue[index].lineAttribute.path == attribute.path
+                    || Machine.path.attributes[1].attributes["actions"].wrappedValue.collectionValue[index].lineAttribute.lineValue.path == attribute.path
+            }) {
+                guard let actionName = (value as? Attribute)?.lineValue ?? (value as? LineAttribute)?.lineValue ?? (value as? String) else {
+                    throw ValidationError(message: "Invalid value \(value)", path: attribute)
+                }
+                try self.changeName(ofAction: index, to: actionName, machine: &machine)
+            }
             if let index = machine.states.indices.first(where: { Machine.path.states[$0].name.path == attribute.path }) {
                 guard let stateName = value as? StateName else {
                     throw ValidationError(message: "Invalid value \(value)", path: attribute)
@@ -781,6 +792,9 @@ extension SwiftfsmConverter: MachineMutator {
         machine.states.indices.forEach {
             machine.states[$0].actions.removeAll(where: { $0.name == action })
         }
+    }
+    
+    private func changeName(ofAction index: Int, to actionName: StateName, machine: inout Machine) throws {
     }
     
     private func changeName(ofState index: Int, to stateName: StateName, machine: inout Machine) throws {
