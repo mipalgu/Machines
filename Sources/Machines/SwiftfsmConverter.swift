@@ -554,7 +554,16 @@ extension SwiftfsmConverter: MachineMutator {
 
     func addItem<Path, T>(_ item: T, to attribute: Path, machine: inout Machine) throws where Path : PathProtocol, Path.Root == Machine, Path.Value == [T] {
         try perform(on: &machine) { machine in
-            machine[keyPath: attribute.path].append(item)
+            switch attribute.path {
+            case Machine.path.attributes[1].attributes["actions"].wrappedValue.collectionValue.path,
+                 Machine.path.attributes[1].attributes["actions"].wrappedValue.blockAttribute.collectionValue.path:
+                guard let action = (item as? Attribute)?.lineValue ?? (item as? LineAttribute)?.lineValue ?? (item as? String) else {
+                    throw ValidationError(message: "Invalid value \(item)", path: attribute)
+                }
+                try self.addNewAction(action: action, machine: &machine)
+            default:
+                machine[keyPath: attribute.path].append(item)
+            }
         }
     }
     
@@ -733,6 +742,20 @@ extension SwiftfsmConverter: MachineMutator {
             return attributes + actions + transitions
         }
         return machinePaths + statePaths
+    }
+    
+    private func addNewAction(action: String, machine: inout Machine) throws {
+        guard let useCustomRinglet = machine.attributes[1].attributes["use_custom_ringlet"]?.boolValue, useCustomRinglet == true else {
+            throw ValidationError(message: "You can only add actions when custom ringlets has been enabled", path: Machine.path.attributes[1].attributes["use_custom_ringlet"].wrappedValue)
+        }
+        let actions = Set(machine.attributes[1].attributes["actions"]?.collectionValue.map(\.lineValue) ?? ["onEntry", "main", "onExit"])
+        if actions.contains(action) {
+            throw ValidationError(message: "Cannot add new action '\(action)' since an action with that name already exists", path: Machine.path.attributes[1].attributes["actions"].wrappedValue)
+        }
+        machine.attributes[1].attributes["actions"]! = .collection(lines: actions + [action])
+        machine.states.indices.forEach {
+            machine.states[$0].actions.append(Action(name: action, implementation: Code(""), language: .swift))
+        }
     }
     
     private func changeName(ofState index: Int, to stateName: StateName, machine: inout Machine) throws {
