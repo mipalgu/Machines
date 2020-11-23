@@ -600,8 +600,11 @@ extension SwiftfsmConverter: MachineMutator {
         }
     }
     
-    func deleteItem<Path>(attribute: Path, machine: inout Machine) throws where Path : PathProtocol, Path.Root == Machine {
-        throw ValidationError(message: "deleteItem is not yet implemented", path: attribute)
+    func deleteItem<Path, T>(attribute: Path, atIndex index: Int, machine: inout Machine) throws where Path : PathProtocol, Path.Root == Machine, Path.Value == [T] {
+        if machine[keyPath: attribute.path].count >= index || index < 0 {
+            throw ValidationError(message: "Invalid index '\(index)'", path: attribute)
+        }
+        machine[keyPath: attribute.path].remove(at: index)
     }
     
     func delete(states: IndexSet, transitions: IndexSet, machine: inout Machine) throws {

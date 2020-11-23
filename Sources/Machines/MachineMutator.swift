@@ -75,10 +75,20 @@ public protocol MachineMutator {
     
     func deleteTransition(atIndex index: Int, attachedTo sourceState: StateName, machine: inout Machine) throws
     
-    func deleteItem<Path: PathProtocol>(attribute: Path, machine: inout Machine) throws where Path.Root == Machine
+    func deleteItems<Path: PathProtocol, T>(table attribute: Path, items: IndexSet, machine: inout Machine) throws where Path.Root == Machine, Path.Value == [T]
+    
+    func deleteItem<Path: PathProtocol, T>(attribute: Path, atIndex: Int, machine: inout Machine) throws where Path.Root == Machine, Path.Value == [T]
     
     func modify<Path: PathProtocol>(attribute: Path, value: Path.Value, machine: inout Machine) throws where Path.Root == Machine
     
     func validate(machine: Machine) throws
+    
+}
+
+extension MachineMutator {
+    
+    public func deleteItems<Path: PathProtocol, T>(table attribute: Path, items: IndexSet, machine: inout Machine) throws where Path.Root == Machine, Path.Value == [T] {
+        try items.sorted(by: >).forEach { try self.deleteItem(attribute: attribute, atIndex: $0, machine: &machine) }
+    }
     
 }

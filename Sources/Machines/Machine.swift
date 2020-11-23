@@ -297,17 +297,15 @@ public struct Machine: PathContainer {
     }
     
     /// Delete a specific item in a table attribute.
-    public mutating func deleteItem<Path: PathProtocol>(table attribute: Path) throws where Path.Root == Machine {
+    public mutating func deleteItem<Path: PathProtocol, T>(table attribute: Path, atIndex index: Int) throws where Path.Root == Machine, Path.Value == [T] {
         try perform { [mutator] machine in
-            try mutator.deleteItem(attribute: attribute, machine: &machine)
+            try mutator.deleteItem(attribute: attribute, atIndex: index, machine: &machine)
         }
     }
     
     public mutating func deleteItems<Path: PathProtocol, T>(table attribute: Path, items: IndexSet) throws where Path.Root == Machine, Path.Value == [T] {
         try perform { [mutator] machine in
-            items.sorted(by: >).forEach {
-                machine[keyPath: attribute.path].remove(at: $0)
-            }
+            try mutator.deleteItems(table: attribute, items: items, machine: &machine)
         }
     }
     
