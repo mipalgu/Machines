@@ -553,19 +553,23 @@ struct SwiftfsmConverter: Converter, MachineValidator {
 extension SwiftfsmConverter: MachineMutator {
 
     func addItem<Path, T>(_ item: T, to attribute: Path, machine: inout Machine) throws where Path : PathProtocol, Path.Root == Machine, Path.Value == [T] {
-        machine[keyPath: attribute.path].append(item)
+        try perform(on: &machine) { machine in
+            machine[keyPath: attribute.path].append(item)
+        }
     }
     
     func moveItems<Path: PathProtocol, T>(attribute: Path, machine: inout Machine, from source: IndexSet, to destination: Int) throws where Path.Root == Machine, Path.Value == [T] {
-        let original = machine[keyPath: attribute.path]
-        var copy = original
-        let descending = source.sorted(by: >)
-        descending.forEach { index in copy.remove(at: index) }
-        let index = destination - source.filter { $0 < destination }.count
-        descending.forEach { source in
-            copy.insert(original[source], at: index)
+        try perform(on: &machine) { machine in
+            let original = machine[keyPath: attribute.path]
+            var copy = original
+            let descending = source.sorted(by: >)
+            descending.forEach { index in copy.remove(at: index) }
+            let index = destination - source.filter { $0 < destination }.count
+            descending.forEach { source in
+                copy.insert(original[source], at: index)
+            }
+            machine[keyPath: attribute.path] = original
         }
-        machine[keyPath: attribute.path] = original
     }
     
     func newState(machine: inout Machine) throws {
@@ -601,10 +605,12 @@ extension SwiftfsmConverter: MachineMutator {
     }
     
     func deleteItem<Path, T>(attribute: Path, atIndex index: Int, machine: inout Machine) throws where Path : PathProtocol, Path.Root == Machine, Path.Value == [T] {
-        if machine[keyPath: attribute.path].count >= index || index < 0 {
-            throw ValidationError(message: "Invalid index '\(index)'", path: attribute)
+        try perform(on: &machine) { machine in
+            if machine[keyPath: attribute.path].count >= index || index < 0 {
+                throw ValidationError(message: "Invalid index '\(index)'", path: attribute)
+            }
+            machine[keyPath: attribute.path].remove(at: index)
         }
-        machine[keyPath: attribute.path].remove(at: index)
     }
     
     func delete(states: IndexSet, transitions: IndexSet, machine: inout Machine) throws {
