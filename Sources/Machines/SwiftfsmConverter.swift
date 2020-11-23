@@ -618,7 +618,17 @@ extension SwiftfsmConverter: MachineMutator {
             if machine[keyPath: attribute.path].count >= index || index < 0 {
                 throw ValidationError(message: "Invalid index '\(index)'", path: attribute)
             }
-            machine[keyPath: attribute.path].remove(at: index)
+            switch attribute.path {
+            case Machine.path.attributes[1].attributes["actions"].wrappedValue.collectionValue.path,
+                 Machine.path.attributes[1].attributes["actions"].wrappedValue.blockAttribute.collectionValue.path:
+                let item = machine[keyPath: attribute.keyPath][index]
+                guard let action = (item as? Attribute)?.lineValue ?? (item as? LineAttribute)?.lineValue ?? (item as? String) else {
+                    throw ValidationError(message: "Invalid value \(item)", path: attribute)
+                }
+                try self.deleteAction(action: action, machine: &machine)
+            default:
+                machine[keyPath: attribute.path].remove(at: index)
+            }
         }
     }
     
@@ -755,6 +765,21 @@ extension SwiftfsmConverter: MachineMutator {
         machine.attributes[1].attributes["actions"]! = .collection(lines: actions + [action])
         machine.states.indices.forEach {
             machine.states[$0].actions.append(Action(name: action, implementation: Code(""), language: .swift))
+        }
+    }
+    
+    private func deleteAction(action: String, machine: inout Machine) throws {
+        guard let useCustomRinglet = machine.attributes[1].attributes["use_custom_ringlet"]?.boolValue, useCustomRinglet == true else {
+            throw ValidationError(message: "You can only add actions when custom ringlets has been enabled", path: Machine.path.attributes[1].attributes["use_custom_ringlet"].wrappedValue)
+        }
+        var actions = machine.attributes[1].attributes["actions"]?.collectionValue.map(\.lineValue) ?? ["onEntry", "main", "onExit"]
+        guard let index = actions.firstIndex(of: action) else {
+            throw ValidationError(message: "Cannot delete action '\(action)' since it is not in the actions list", path: Machine.path.attributes[1].attributes["actions"].wrappedValue)
+        }
+        actions.remove(at: index)
+        machine.attributes[1].attributes["actions"]! = .collection(lines: actions)
+        machine.states.indices.forEach {
+            machine.states[$0].actions.removeAll(where: { $0.name == action })
         }
     }
     
