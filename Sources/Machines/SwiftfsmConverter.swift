@@ -60,6 +60,12 @@ import Attributes
 import SwiftMachines
 import Foundation
 
+#if canImport(TokamakShim)
+import TokamakShim
+#else
+import SwiftUI
+#endif
+
 struct SwiftfsmConverter: Converter, MachineValidator {
     
     private let validator = SwiftfsmMachineValidator()
@@ -480,7 +486,7 @@ struct SwiftfsmConverter: Converter, MachineValidator {
         )
     }
     
-    private func externalLabel(forAccessType accessType: SwiftMachines.Variable.AccessType) -> Label {
+    private func externalLabel(forAccessType accessType: SwiftMachines.Variable.AccessType) -> Attributes.Label {
         switch accessType {
         case .readOnly:
             return "sensor"
@@ -569,15 +575,13 @@ extension SwiftfsmConverter: MachineMutator {
     
     func moveItems<Path: PathProtocol, T>(attribute: Path, machine: inout Machine, from source: IndexSet, to destination: Int) throws where Path.Root == Machine, Path.Value == [T] {
         try perform(on: &machine) { machine in
-            let original = machine[keyPath: attribute.path]
-            var copy = original
-            let descending = source.sorted(by: >)
-            descending.forEach { index in copy.remove(at: index) }
-            let index = destination - source.filter { $0 < destination }.count
-            descending.forEach { source in
-                copy.insert(original[source], at: index)
+            switch attribute.path {
+            case Machine.path.attributes[1].attributes["actions"].wrappedValue.collectionValue.path,
+                 Machine.path.attributes[1].attributes["actions"].wrappedValue.blockAttribute.collectionValue.path:
+                try self.moveActions(from: source, to: destination, machine: &machine)
+            default:
+                machine[keyPath: attribute.path].move(fromOffsets: source, toOffset: destination)
             }
-            machine[keyPath: attribute.path] = original
         }
     }
     
@@ -771,7 +775,7 @@ extension SwiftfsmConverter: MachineMutator {
         guard let useCustomRinglet = machine.attributes[1].attributes["use_custom_ringlet"]?.boolValue, useCustomRinglet == true else {
             throw ValidationError(message: "You can only add actions when custom ringlets have been enabled", path: Machine.path.attributes[1].attributes["use_custom_ringlet"].wrappedValue)
         }
-        let actions = machine.attributes[1].attributes["actions"]?.collectionValue.map(\.lineValue) ?? ["onEntry", "main", "onExit"]
+        let actions = machine.attributes[1].attributes["actions"]?.collectionValue.map(\.lineValue) ?? ["onEntry", "onExit", "main"]
         if Set(actions).contains(action) {
             throw ValidationError(message: "Cannot add new action '\(action)' since an action with that name already exists", path: Machine.path.attributes[1].attributes["actions"].wrappedValue)
         }
@@ -785,7 +789,7 @@ extension SwiftfsmConverter: MachineMutator {
         guard let useCustomRinglet = machine.attributes[1].attributes["use_custom_ringlet"]?.boolValue, useCustomRinglet == true else {
             throw ValidationError(message: "You can only delete actions when custom ringlets have been enabled", path: Machine.path.attributes[1].attributes["use_custom_ringlet"].wrappedValue)
         }
-        var actions = machine.attributes[1].attributes["actions"]?.collectionValue.map(\.lineValue) ?? ["onEntry", "main", "onExit"]
+        var actions = machine.attributes[1].attributes["actions"]?.collectionValue.map(\.lineValue) ?? ["onEntry", "onExit", "main"]
         guard let index = actions.firstIndex(of: action) else {
             throw ValidationError(message: "Cannot delete action '\(action)' since it is not in the actions list", path: Machine.path.attributes[1].attributes["actions"].wrappedValue)
         }
@@ -796,11 +800,26 @@ extension SwiftfsmConverter: MachineMutator {
         }
     }
     
+    private func moveActions(from source: IndexSet, to destination: Int, machine: inout Machine) throws {
+        guard let useCustomRinglet = machine.attributes[1].attributes["use_custom_ringlet"]?.boolValue, useCustomRinglet == true else {
+            throw ValidationError(message: "You can only re-order actions when custom ringlets have been enabled", path: Machine.path.attributes[1].attributes["use_custom_ringlet"].wrappedValue)
+        }
+        var actions = machine.attributes[1].attributes["actions"]?.collectionValue.map(\.lineValue) ?? ["onEntry", "onExit", "main"]
+        if destination > actions.count {
+            throw ValidationError(message: "Invalid index for actions", path: Machine.path.attributes[1].attributes["actions"].wrappedValue)
+        }
+        actions.move(fromOffsets: source, toOffset: destination)
+        machine.attributes[1].attributes["actions"] = .collection(lines: actions)
+        machine.states.indices.forEach {
+            machine.states[$0].actions.move(fromOffsets: source, toOffset: destination)
+        }
+    }
+    
     private func changeName(ofAction index: Int, to actionName: StateName, machine: inout Machine) throws {
         guard let useCustomRinglet = machine.attributes[1].attributes["use_custom_ringlet"]?.boolValue, useCustomRinglet == true else {
             throw ValidationError(message: "You can only change the name of actions when custom ringlets have been enabled", path: Machine.path.attributes[1].attributes["use_custom_ringlet"].wrappedValue)
         }
-        var actions = machine.attributes[1].attributes["actions"]?.collectionValue.map(\.lineValue) ?? ["onEntry", "main", "onExit"]
+        var actions = machine.attributes[1].attributes["actions"]?.collectionValue.map(\.lineValue) ?? ["onEntry", "onExit", "main"]
         if index >= actions.count {
             throw ValidationError(message: "Invalid index for action", path: Machine.path.attributes[1].attributes["actions"].wrappedValue)
         }
@@ -907,7 +926,7 @@ extension SwiftfsmConverter: MachineMutator {
             "execute": .code(language: .swift)
         ]
         var attributes = machine.attributes[1].attributes
-        attributes["actions"] = attributes["actions"] ?? .collection(lines: ["onEntry", "main", "onExit"])
+        attributes["actions"] = attributes["actions"] ?? .collection(lines: ["onEntry", "onExit", "main"])
         attributes["ringlet_variables"] = attributes["ringlet_variables"] ?? .table([], columns: [
             ("access_type", .enumerated(validValues: Set(SwiftMachines.Variable.AccessType.allCases.map { $0.rawValue }))),
             ("label", .line),
@@ -964,7 +983,7 @@ extension SwiftfsmConverter: MachineMutator {
         guard machine.attributes.count >= 3 else {
             throw ValidationError(message: "Missing attributes in machine", path: Machine.path.attributes)
         }
-        let actions = machine.attributes[2].attributes["actions"]?.collectionValue.failMap { $0.lineValue } ?? ["onEntry", "main", "onExit"]
+        let actions = machine.attributes[2].attributes["actions"]?.collectionValue.failMap { $0.lineValue } ?? ["onEntry", "onExit", "main"]
         return State(
             name: name,
             actions: actions.map { Action(name: $0, implementation: Code(""), language: .swift) },
