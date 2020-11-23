@@ -80,6 +80,26 @@ public enum BlockAttributeType: Hashable {
     case enumerableCollection(validValues: Set<String>)
     case table(columns: [TableColumn])
     
+    public var defaultValue: BlockAttribute {
+        switch self {
+        case .code(let language):
+            return .code("", language: language)
+        case .collection(let type):
+            return .collection([], type: type)
+        case .complex(let fields):
+            let values = Dictionary(uniqueKeysWithValues: fields.map { (field) -> (Label, Attribute) in
+                return (field.name, field.type.defaultValue)
+            })
+            return .complex(values, layout: fields)
+        case .enumerableCollection(let validValues):
+            return .enumerableCollection(Set(), validValues: validValues)
+        case .table(let columns):
+            return .table([], columns: columns)
+        case .text:
+            return .text("")
+        }
+    }
+    
 }
 
 extension BlockAttributeType: Codable {

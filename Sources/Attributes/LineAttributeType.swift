@@ -67,6 +67,23 @@ public enum LineAttributeType: Hashable {
     case enumerated(validValues: Set<String>)
     case line
     
+    public var defaultValue: LineAttribute {
+        switch self {
+        case .bool:
+            return .bool(false)
+        case .enumerated(let validValues):
+            return .enumerated(validValues.first ?? "", validValues: validValues)
+        case .expression(let language):
+            return .expression("", language: language)
+        case .float:
+            return .float(0.0)
+        case .integer:
+            return .integer(0)
+        case .line:
+            return .line("")
+        }
+    }
+    
 }
 
 extension LineAttributeType: Codable {
