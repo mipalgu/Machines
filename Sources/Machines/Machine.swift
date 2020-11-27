@@ -134,6 +134,9 @@ public struct Machine: PathContainer {
     /// All states within the machine.
     public var states: [State]
     
+    /// All machines that this machine depends on
+    public var dependencies: [MachineDependency]
+    
     /// A list of attributes specifying additional fields that can change.
     ///
     /// The attribute list usually details extra fields necessary for additional
@@ -193,6 +196,7 @@ public struct Machine: PathContainer {
         filePath: URL,
         initialState: StateName,
         states: [State] = [],
+        dependencies: [MachineDependency] = [],
         attributes: [AttributeGroup],
         metaData: [AttributeGroup]
     ) {
@@ -210,6 +214,7 @@ public struct Machine: PathContainer {
         self.filePath = filePath
         self.initialState = initialState
         self.states = states
+        self.dependencies = dependencies
         self.attributes = attributes
         self.metaData = metaData
     }
@@ -238,6 +243,7 @@ public struct Machine: PathContainer {
         filePath: URL,
         initialState: StateName,
         states: [State] = [],
+        dependencies: [MachineDependency] = [],
         attributes: [AttributeGroup],
         metaData: [AttributeGroup]
     ) {
@@ -246,6 +252,7 @@ public struct Machine: PathContainer {
         self.filePath = filePath
         self.initialState = initialState
         self.states = states
+        self.dependencies = dependencies
         self.attributes = attributes
         self.metaData = metaData
     }
