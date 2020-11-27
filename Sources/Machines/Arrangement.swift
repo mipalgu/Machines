@@ -62,6 +62,10 @@ public struct Arrangement: Hashable, Codable {
     
     public var rootMachines: [MachineDependency]
     
+    public init(rootMachines: [MachineDependency]) {
+        self.rootMachines = rootMachines
+    }
+    
     public func allMachines() throws -> [URL: Machine] {
         var dict: [URL: Machine] = [:]
         dict.reserveCapacity(rootMachines.count)
