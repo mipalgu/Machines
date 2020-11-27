@@ -66,6 +66,10 @@ public struct Arrangement: Hashable, Codable {
         self.rootMachines = rootMachines
     }
     
+    public init(filePath: URL) throws {
+        fatalError("Not yet implemented")
+    }
+    
     public func allMachines() throws -> [URL: Machine] {
         var dict: [URL: Machine] = [:]
         dict.reserveCapacity(rootMachines.count)
