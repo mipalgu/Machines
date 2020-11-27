@@ -60,13 +60,23 @@ import Foundation
 
 public struct Arrangement: Hashable, Codable {
     
+    /// The name of the arrangement.
+    public var name: String {
+        return self.filePath.lastPathComponent.components(separatedBy: ".")[0]
+    }
+    
+    /// The location of the arrangement on the file system.
+    public var filePath: URL
+    
+    /// The root machines of the arrangement.
     public var rootMachines: [MachineDependency]
     
-    public init(rootMachines: [MachineDependency]) {
+    public init(filePath: URL, rootMachines: [MachineDependency]) {
+        self.filePath = filePath
         self.rootMachines = rootMachines
     }
     
-    public init(filePath: URL) throws {
+    public init(loadAtFilePath: URL) throws {
         fatalError("Not yet implemented")
     }
     
