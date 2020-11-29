@@ -71,6 +71,32 @@ public struct MachineDependency: Hashable, Codable {
     
     public var metaData: [Label: Attribute]
     
+    public var complexAttribute: Attribute {
+        get {
+            return .complex(
+                [
+                    "name": .line(name),
+                    "filePath": .line(filePath.path),
+                    "attributes": .complex(attributes, layout: fields)
+                ],
+                layout: [
+                    "name": .line,
+                    "filePath": .line,
+                    "attributes": .complex(layout: fields)
+                ]
+            )
+        } set {
+            switch newValue {
+            case .block(.complex(let values, _)):
+                self.name = values["name"]?.lineValue ?? self.name
+                self.filePath = (values["filePath"]?.lineValue).flatMap { URL(string: $0) } ?? self.filePath
+                self.attributes = values["attributes"]?.complexValue ?? self.attributes
+            default:
+                return
+            }
+        }
+    }
+    
     public init(name: String, filePath: URL, fields: [Field] = [], attributes: [Label: Attribute] = [:], metaData: [Label: Attribute] = [:]) {
         self.name = name
         self.filePath = filePath

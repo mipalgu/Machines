@@ -137,6 +137,18 @@ public struct Machine: PathContainer {
     /// All machines that this machine depends on
     public var dependencies: [MachineDependency]
     
+    public var dependencyAttributes: [Attribute] {
+        get {
+            self.dependencies.map(\.complexAttribute)
+        } set {
+            self.dependencies = zip(self.dependencies, newValue).map {
+                var dep = $0
+                dep.complexAttribute = $1
+                return dep
+            }
+        }
+    }
+    
     /// A list of attributes specifying additional fields that can change.
     ///
     /// The attribute list usually details extra fields necessary for additional
