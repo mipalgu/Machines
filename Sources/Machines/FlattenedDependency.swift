@@ -1,8 +1,9 @@
+//
 /*
- * Arrangement.swift
+ * FlattenedDependency.swift
  * Machines
  *
- * Created by Callum McColl on 28/11/20.
+ * Created by Callum McColl on 30/11/20.
  * Copyright © 2020 Callum McColl. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,55 +57,12 @@
  *
  */
 
-import Foundation
-
-public struct Arrangement: Hashable, Codable {
+public struct FlattenedDependency {
     
-    /// The name of the arrangement.
-    public var name: String {
-        return self.filePath.lastPathComponent.components(separatedBy: ".")[0]
-    }
+    public var name: String
     
-    /// The location of the arrangement on the file system.
-    public var filePath: URL
+    public var machine: Machine
     
-    /// The root machines of the arrangement.
-    public var rootMachines: [MachineDependency]
-    
-    public init(filePath: URL, rootMachines: [MachineDependency]) {
-        self.filePath = filePath
-        self.rootMachines = rootMachines
-    }
-    
-    public init(loadAtFilePath: URL) throws {
-        fatalError("Not yet implemented")
-    }
-    
-    public func flattenedDependencies() throws -> [FlattenedDependency] {
-        let allMachines = try self.allMachines()
-        func process(_ dependency: MachineDependency) throws -> FlattenedDependency {
-            guard let machine = allMachines[dependency.filePath] else {
-                throw MachinesError.conversionError(ConversionError(message: "Unable to parse all dependent machines", path: Machine.path.dependencies))
-            }
-            let dependencies = try machine.dependencies.map(process)
-            return FlattenedDependency(name: dependency.name, machine: machine, dependencies: dependencies)
-        }
-        return try rootMachines.map(process)
-    }
-    
-    public func allMachines() throws -> [URL: Machine] {
-        var dict: [URL: Machine] = [:]
-        dict.reserveCapacity(rootMachines.count)
-        func recurse(_ dependency: MachineDependency) throws {
-            if nil != dict[dependency.filePath.resolvingSymlinksInPath().absoluteURL] {
-                return
-            }
-            let machine = try Machine(filePath: dependency.filePath.resolvingSymlinksInPath().absoluteURL)
-            dict[dependency.filePath.resolvingSymlinksInPath().absoluteURL] = machine
-            try machine.dependencies.forEach(recurse)
-        }
-        try rootMachines.forEach(recurse)
-        return dict
-    }
+    public var dependencies: [FlattenedDependency]
     
 }
