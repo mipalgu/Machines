@@ -56,6 +56,8 @@
  *
  */
 
+import Attributes
+
 protocol Converter {
     
     associatedtype ConcreteMachine

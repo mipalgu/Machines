@@ -71,6 +71,14 @@ public struct MachineDependency: Hashable, Codable {
     
     public var metaData: [Label: Attribute]
     
+    public var complexAttributeType: AttributeType {
+        return .complex(layout: [
+            "name": .line,
+            "filePath": .line,
+            "attributes": .complex(layout: fields)
+        ])
+    }
+    
     public var complexAttribute: Attribute {
         get {
             return .complex(

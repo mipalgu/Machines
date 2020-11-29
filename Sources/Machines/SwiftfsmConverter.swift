@@ -126,6 +126,10 @@ struct SwiftfsmConverter: Converter, MachineValidator {
         return metaMachine(of: swiftMachine)
     }
     
+    var dependencyLayout: [Field] {
+        return []
+    }
+    
     func metaMachine(of swiftMachine: SwiftMachines.Machine) -> Machine {
         var attributes: [AttributeGroup] = []
         let variables = AttributeGroup(
