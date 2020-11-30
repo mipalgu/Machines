@@ -57,8 +57,17 @@
  */
 
 import Foundation
+import Attributes
 
-public struct Arrangement: Hashable, Codable {
+public struct Arrangement: Hashable, Codable, PathContainer {
+    
+    public static var path: Path<Arrangement, Arrangement> {
+        return Attributes.Path<Arrangement, Arrangement>(path: \.self, ancestors: [])
+    }
+    
+    public var path: Path<Arrangement, Arrangement> {
+        return Arrangement.path
+    }
     
     /// The name of the arrangement.
     public var name: String {
