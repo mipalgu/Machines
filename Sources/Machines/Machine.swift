@@ -77,7 +77,7 @@ import Attributes
 /// for swiftfsm machines for example.
 ///
 /// - SeeAlso: `SwiftMachinesConvertible`.
-public struct Machine: PathContainer {
+public struct Machine: PathContainer, Modifiable {
     
     public enum Semantics: String, Hashable, Codable, CaseIterable {
         case other
