@@ -70,6 +70,18 @@ struct SwiftfsmConverter: Converter, MachineValidator {
     
     private let validator = SwiftfsmMachineValidator()
     
+    var initialArrangement: Arrangement {
+        return Arrangement(
+            filePath: URL(fileURLWithPath: "/tmp/Untitled.arrangement", isDirectory: true),
+            rootMachines: [
+                MachineDependency(
+                    name: "Untitled",
+                    filePath: URL(fileURLWithPath: "/tmp/Untitled.machine", isDirectory: true)
+                )
+            ]
+        )
+    }
+    
     var initial: Machine {
         let swiftMachine = SwiftMachines.Machine(
             name: "Untitled",
@@ -128,6 +140,11 @@ struct SwiftfsmConverter: Converter, MachineValidator {
     
     var dependencyLayout: [Field] {
         return []
+    }
+    
+    func metaArrangement(of swiftArrangement: SwiftMachines.Arrangement) -> Arrangement {
+        let rootFsms = swiftArrangement.dependencies.map { MachineDependency(name: $0.callName, filePath: $0.filePath) }
+        return Arrangement(filePath: swiftArrangement.filePath, rootMachines: rootFsms)
     }
     
     func metaMachine(of swiftMachine: SwiftMachines.Machine) -> Machine {
@@ -401,6 +418,16 @@ struct SwiftfsmConverter: Converter, MachineValidator {
             attributes: attributes,
             metaData: []
         )
+    }
+    
+    func convert(_ arrangement: Arrangement) throws -> SwiftMachines.Arrangement {
+        let dependencies = try arrangement.rootMachines.map { (dep: MachineDependency) -> SwiftMachines.Machine.Dependency in
+            guard let dependency = SwiftMachines.Machine.Dependency(name: dep.name, filePath: dep.filePath) else {
+                throw ConversionError(message: "Unable to create dependency", path: Machine.path)
+            }
+            return dependency
+        }
+        return SwiftMachines.Arrangement(name: arrangement.name, filePath: arrangement.filePath, dependencies: dependencies)
     }
     
     func convert(_ machine: Machine) throws -> SwiftMachines.Machine {
