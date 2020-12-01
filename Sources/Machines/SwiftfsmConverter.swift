@@ -73,12 +73,7 @@ struct SwiftfsmConverter: Converter, MachineValidator {
     var initialArrangement: Arrangement {
         return Arrangement(
             filePath: URL(fileURLWithPath: "/tmp/Untitled.arrangement", isDirectory: true),
-            rootMachines: [
-                MachineDependency(
-                    name: "Untitled",
-                    filePath: URL(fileURLWithPath: "/tmp/Untitled.machine", isDirectory: true)
-                )
-            ]
+            rootMachines: []
         )
     }
     
