@@ -86,7 +86,11 @@ public struct Arrangement: Hashable, Codable, PathContainer {
     }
     
     public init(loadAtFilePath: URL) throws {
-        fatalError("Not yet implemented")
+        let parser = SwiftMachines.MachineArrangementParser()
+        guard let arrangement = parser.parseArrangement(atDirectory: url) else {
+            throw ConversionError(message: parser.errors.last ?? "Unable to parse arrangement at \(url.path)", path: Machine.path)
+        }
+        self = SwiftfsmConverter().metaArrangement(of: arrangement)
     }
     
     public func flattenedDependencies() throws -> [FlattenedDependency] {
@@ -114,6 +118,14 @@ public struct Arrangement: Hashable, Codable, PathContainer {
         }
         try rootMachines.forEach(recurse)
         return dict
+    }
+    
+    public func save() throws {
+        let swiftArrangement = try SwiftfsmConverter().convert(self)
+        let generator = SwiftMachines.MachineArrangementGenerator()
+        guard nil != generator.generateArrangement(swiftArrangement) else {
+            throw ConversionError(message: generator.errors.last ?? "Unable to save arrangement", path: Machine.path)
+        }
     }
     
 }
