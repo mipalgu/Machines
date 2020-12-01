@@ -58,6 +58,7 @@
 
 import Foundation
 import Attributes
+import SwiftMachines
 
 public struct Arrangement: Hashable, Codable, PathContainer {
     
@@ -85,7 +86,7 @@ public struct Arrangement: Hashable, Codable, PathContainer {
         self.rootMachines = rootMachines
     }
     
-    public init(loadAtFilePath: URL) throws {
+    public init(loadAtFilePath url: URL) throws {
         let parser = SwiftMachines.MachineArrangementParser()
         guard let arrangement = parser.parseArrangement(atDirectory: url) else {
             throw ConversionError(message: parser.errors.last ?? "Unable to parse arrangement at \(url.path)", path: Machine.path)
