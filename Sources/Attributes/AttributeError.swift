@@ -67,4 +67,16 @@ public struct AttributeError<Root: Modifiable>: Error {
         self.path = path
     }
     
+    public func isError<P: PathProtocol>(forPath path: P) -> Bool where P.Root == Root {
+        self.isError(forPath: AnyPath(path))
+    }
+    
+    public func isError<P: ReadOnlyPathProtocol>(forPath path: P) -> Bool where P.Root == Root {
+        self.isError(forPath: AnyPath(path))
+    }
+    
+    public func isError(forPath path: AnyPath<Root>) -> Bool {
+        self.path.isSame(as: path) || path.isParent(of: self.path)
+    }
+    
 }
