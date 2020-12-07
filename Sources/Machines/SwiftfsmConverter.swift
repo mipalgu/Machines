@@ -70,17 +70,21 @@ struct SwiftfsmConverter: Converter, MachineValidator {
     
     private let validator = SwiftfsmMachineValidator()
     
-    var initialArrangement: Arrangement {
+    var dependencyLayout: [Field] {
+        return []
+    }
+    
+    func initialArrangement(filePath: URL) -> Arrangement {
         return Arrangement(
-            filePath: URL(fileURLWithPath: "/tmp/Untitled.arrangement", isDirectory: true),
+            filePath: filePath,
             rootMachines: []
         )
     }
     
-    var initial: Machine {
+    func initial(filePath: URL) -> Machine {
         let swiftMachine = SwiftMachines.Machine(
-            name: "Untitled",
-            filePath: URL(fileURLWithPath: "/tmp/Untitled.machine"),
+            name: filePath.lastPathComponent.hasSuffix(".machine") ? filePath.lastPathComponent.components(separatedBy: ".").dropLast().joined(separator: ".") : filePath.lastPathComponent,
+            filePath: filePath,
             externalVariables: [],
             packageDependencies: [],
             swiftIncludeSearchPaths: [],
@@ -131,10 +135,6 @@ struct SwiftfsmConverter: Converter, MachineValidator {
             invocableMachines: []
         )
         return metaMachine(of: swiftMachine)
-    }
-    
-    var dependencyLayout: [Field] {
-        return []
     }
     
     func metaArrangement(of swiftArrangement: SwiftMachines.Arrangement) -> Arrangement {

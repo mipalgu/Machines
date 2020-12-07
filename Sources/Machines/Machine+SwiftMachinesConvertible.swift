@@ -61,8 +61,8 @@ import SwiftMachines
 
 extension Machine: SwiftMachinesConvertible {
     
-    public static var initialSwiftMachine: Machine {
-        return SwiftfsmConverter().initial
+    public static func initialSwiftMachine(filePath: URL = URL(fileURLWithPath: "/tmp/Untitled.machine", isDirectory: true)) -> Machine {
+        return SwiftfsmConverter().initial(filePath: filePath)
     }
     
     /// Convert a `SwiftMachines.Machine` to a `Machine`.

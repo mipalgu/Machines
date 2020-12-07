@@ -57,10 +57,11 @@
  */
 
 import SwiftMachines
+import Foundation
 
 public protocol SwiftArrangementConvertible {
     
-    static var initialSwiftArrangement: Self { get }
+    static func initialSwiftArrangement(filePath: URL) -> Self
     
     init(from swiftArrangement: SwiftMachines.Arrangement)
     

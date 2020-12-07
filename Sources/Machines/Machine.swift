@@ -283,12 +283,12 @@ public struct Machine: PathContainer, Modifiable {
     ///
     /// - Warning: The value of `semantics` should exist in the
     /// `supportedSemantics` array.
-    public static func initialMachine(forSemantics semantics: Machine.Semantics) -> Machine {
+    public static func initialMachine(forSemantics semantics: Machine.Semantics, filePath: URL = URL(fileURLWithPath: "/tmp/Untitled.machine", isDirectory: true)) -> Machine {
         switch semantics {
         case .clfsm:
             fatalError("clfsm semantics have not been implemented")
         case .swiftfsm:
-            return SwiftfsmConverter().initial
+            return SwiftfsmConverter().initial(filePath: filePath)
         case .vhdl:
             fatalError("vhdl semantics have not been implemented")
         case .other:

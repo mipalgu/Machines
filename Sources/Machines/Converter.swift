@@ -57,12 +57,13 @@
  */
 
 import Attributes
+import Foundation
 
 protocol Converter {
     
     associatedtype ConcreteMachine
     
-    var initial: Machine { get }
+    func initial(filePath: URL) -> Machine
     
     func metaMachine(of: ConcreteMachine) -> Machine
     

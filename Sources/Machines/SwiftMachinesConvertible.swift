@@ -57,10 +57,11 @@
  */
 
 import SwiftMachines
+import Foundation
 
 public protocol SwiftMachinesConvertible {
     
-    static var initialSwiftMachine: Self { get }
+    static func initialSwiftMachine(filePath: URL) -> Self
     
     init(from swiftMachine: SwiftMachines.Machine)
     
