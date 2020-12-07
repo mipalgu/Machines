@@ -56,7 +56,7 @@
  *
  */
 
-public struct AttributeError<Root: Modifiable>: Error {
+public struct AttributeError<Root>: Error {
     
     public let message: String
     
@@ -65,6 +65,14 @@ public struct AttributeError<Root: Modifiable>: Error {
     public init(message: String, path: AnyPath<Root>) {
         self.message = message
         self.path = path
+    }
+    
+    public init<P: ReadOnlyPathProtocol>(message: String, path: P) where P.Root == Root {
+        self.init(message: message, path: AnyPath(path))
+    }
+    
+    public init<P: PathProtocol>(message: String, path: P) where P.Root == Root {
+        self.init(message: message, path: AnyPath(path))
     }
     
     public func isError<P: PathProtocol>(forPath path: P) -> Bool where P.Root == Root {
@@ -77,6 +85,14 @@ public struct AttributeError<Root: Modifiable>: Error {
     
     public func isError(forPath path: AnyPath<Root>) -> Bool {
         self.path.isSame(as: path) || path.isParent(of: self.path)
+    }
+    
+}
+
+extension AttributeError: CustomStringConvertible {
+    
+    public var description: String {
+        return "\(self.path): " + self.message
     }
     
 }

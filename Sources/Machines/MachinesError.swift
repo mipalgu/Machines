@@ -58,32 +58,12 @@
 
 import Attributes
 
-public enum MachinesError: Error {
+public typealias MachinesError = AttributeError<Machine>
+
+extension AttributeError where Root == Machine {
     
-    case unsupportedSemantics(Machine.Semantics)
-    case conversionError(ConversionError)
-    case validationError(ValidationError<Machine>)
-    
-    public var message: String {
-        switch self {
-        case .unsupportedSemantics(let semantics):
-            return "Unsupported semantics \(semantics.rawValue)"
-        case .conversionError(let error):
-            return error.message
-        case .validationError(let error):
-            return error.message
-        }
-    }
-    
-    public var path: AnyPath<Machine> {
-        switch self {
-        case .unsupportedSemantics:
-            return AnyPath(Machine.path)
-        case .conversionError(let error):
-            return error.path
-        case .validationError(let error):
-            return error.path
-        }
+    public static func unsupportedSemantics(_ semantics: Machine.Semantics) -> AttributeError<Machine> {
+        return AttributeError(message: "Unsupported semantics \(semantics)", path: Machine.path.semantics)
     }
     
 }

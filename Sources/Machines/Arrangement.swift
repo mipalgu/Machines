@@ -98,7 +98,7 @@ public struct Arrangement: Hashable, Codable, PathContainer {
         let allMachines = try self.allMachines()
         func process(_ dependency: MachineDependency) throws -> FlattenedDependency {
             guard let machine = allMachines[dependency.filePath] else {
-                throw MachinesError.conversionError(ConversionError(message: "Unable to parse all dependent machines", path: Machine.path.dependencies))
+                throw ConversionError(message: "Unable to parse all dependent machines", path: Machine.path.dependencies)
             }
             let dependencies = try machine.dependencies.map(process)
             return FlattenedDependency(name: dependency.name, machine: machine, dependencies: dependencies)

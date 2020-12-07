@@ -75,7 +75,7 @@ public struct ErrorBag<Root> {
     public init() {}
     
     public func error(forPath path: AnyPath<Machine>) -> MachinesError? {
-        guard let index = self.sortedCollection.anyIndex(of: MachinesError.conversionError(ConversionError(message: "", path: path))) else {
+        guard let index = self.sortedCollection.anyIndex(of: ConversionError(message: "", path: path)) else {
             return nil
         }
         return self.sortedCollection[index]

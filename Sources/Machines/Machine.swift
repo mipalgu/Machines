@@ -374,11 +374,7 @@ public struct Machine: PathContainer, Modifiable {
     private func perform(_ f: (Machine) throws -> Void) throws {
         do {
             try f(self)
-        } catch let e as ConversionError {
-            throw MachinesError.conversionError(e)
-        } catch let e as ValidationError<Machine> {
-            throw MachinesError.validationError(e)
-        } catch let e as MachinesError {
+        } catch let e as AttributeError<Machine> {
             throw e
         } catch let e {
             fatalError("Unsupported error: \(e)")
@@ -389,13 +385,7 @@ public struct Machine: PathContainer, Modifiable {
         let backup = self
         do {
             try f(&self)
-        } catch let e as ConversionError {
-            self = backup
-            throw MachinesError.conversionError(e)
-        } catch let e as ValidationError<Machine> {
-            self = backup
-            throw MachinesError.validationError(e)
-        } catch let e as MachinesError {
+        } catch let e as AttributeError<Machine> {
             self = backup
             throw e
         } catch let e {
@@ -411,7 +401,7 @@ extension Machine {
     public init(filePath: URL) throws {
         let parser = MachineParser()
         guard let machine = parser.parseMachine(atPath: filePath.path) else {
-            throw MachinesError.conversionError(ConversionError(message: parser.lastError ?? "Unable to load machine at path \(filePath.path)", path: Machine.path))
+            throw ConversionError(message: parser.lastError ?? "Unable to load machine at path \(filePath.path)", path: Machine.path)
         }
         self = machine
     }
@@ -420,7 +410,7 @@ extension Machine {
         try self.validate()
         let generator = MachineGenerator()
         guard nil != generator.generate(self) else {
-            throw MachinesError.conversionError(ConversionError(message: generator.lastError ?? "Unable to save machine", path: Machine.path))
+            throw ConversionError(message: generator.lastError ?? "Unable to save machine", path: Machine.path)
         }
     }
     
