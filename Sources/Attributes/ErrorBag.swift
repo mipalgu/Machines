@@ -62,13 +62,13 @@ import swift_helpers
 public struct ErrorBag<Root> {
     
     private var sortedCollection = SortedCollection(compare: { (lhs: AttributeError<Root>, rhs: AttributeError<Root>) -> ComparisonResult in
-        if lhs.path.isSame(as: rhs.path) || lhs.path.isParent(of: rhs.path) {
+        if lhs.path.isSame(as: rhs.path) {
             return .orderedSame
         }
-        if lhs.path.ancestors.count <= rhs.path.ancestors.count {
-            return .orderedAscending
+        if lhs.path.isParent(of: rhs.path) {
+            return .orderedDescending
         }
-        return .orderedDescending
+        return .orderedAscending
     })
     
     public init() {}
@@ -77,20 +77,23 @@ public struct ErrorBag<Root> {
         self.sortedCollection.empty()
     }
     
+    public func errors(includingDescendantsForPath path: AnyPath<Root>) -> [AttributeError<Root>] {
+        let elements = self.sortedCollection.right(ofAndIncluding: AttributeError(message: "", path: path))
+        let index = elements.firstIndex { !path.isParent(of: $0.path) } ?? sortedCollection.count
+        return Array(elements[0..<index])
+    }
+    
+    public func errors<Path: ReadOnlyPathProtocol>(includingDescendantsForPath path: Path) -> [AttributeError<Root>] where Path.Root == Root {
+        return self.errors(includingDescendantsForPath: AnyPath(path))
+    }
+    
     public func errors(forPath path: AnyPath<Root>) -> [AttributeError<Root>] {
-        let indexRange = self.sortedCollection.range(of: AttributeError(message: "", path: path))
-        return Array(self.sortedCollection[indexRange])
+        let range = sortedCollection.range(of: AttributeError(message: "", path: path))
+        return Array(self.sortedCollection[range])
     }
     
-    public func error(forPath path: AnyPath<Root>) -> AttributeError<Root>? {
-        guard let index = self.sortedCollection.anyIndex(of: AttributeError(message: "", path: path)) else {
-            return nil
-        }
-        return self.sortedCollection[index]
-    }
-    
-    public func error<Path: ReadOnlyPathProtocol>(forPath path: Path) -> AttributeError<Root>? where Path.Root == Root {
-        return self.error(forPath: AnyPath(path))
+    public func error<Path: ReadOnlyPathProtocol>(forPath path: Path) -> [AttributeError<Root>] where Path.Root == Root {
+        return self.errors(forPath: AnyPath(path))
     }
     
     public mutating func insert(_ error: AttributeError<Root>) {
