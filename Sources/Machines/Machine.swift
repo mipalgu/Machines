@@ -390,7 +390,7 @@ public struct Machine: PathContainer, Modifiable {
             self.errorBag.empty()
         } catch let e as AttributeError<Machine> {
             self = backup
-            self.errorBag.empty()
+            self.errorBag.remove(includingDescendantsForPath: e.path)
             self.errorBag.insert(e)
             throw e
         } catch let e {
