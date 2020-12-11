@@ -56,13 +56,12 @@
  *
  */
 
-import Attributes
 import Foundation
 import swift_helpers
 
 public struct ErrorBag<Root> {
     
-    private var sortedCollection = SortedCollection(compare: { (lhs: MachinesError, rhs: MachinesError) -> ComparisonResult in
+    private var sortedCollection = SortedCollection(compare: { (lhs: AttributeError<Root>, rhs: AttributeError<Root>) -> ComparisonResult in
         if lhs.path.isSame(as: rhs.path) {
             return .orderedSame
         }
@@ -74,14 +73,14 @@ public struct ErrorBag<Root> {
     
     public init() {}
     
-    public func error(forPath path: AnyPath<Machine>) -> MachinesError? {
-        guard let index = self.sortedCollection.anyIndex(of: ConversionError(message: "", path: path)) else {
+    public func error(forPath path: AnyPath<Root>) -> AttributeError<Root>? {
+        guard let index = self.sortedCollection.anyIndex(of: AttributeError(message: "", path: path)) else {
             return nil
         }
         return self.sortedCollection[index]
     }
     
-    public func error<Path: ReadOnlyPathProtocol>(forPath path: Path) -> MachinesError? where Path.Root == Machine {
+    public func error<Path: ReadOnlyPathProtocol>(forPath path: Path) -> AttributeError<Root>? where Path.Root == Root {
         return self.error(forPath: AnyPath(path))
     }
     
