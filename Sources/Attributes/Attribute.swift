@@ -98,6 +98,24 @@ public enum Attribute: Hashable {
         }
     }
     
+    public var isLine: Bool {
+        switch self {
+        case .line:
+            return true
+        default:
+            return false
+        }
+    }
+    
+    public var isBlock: Bool {
+        switch self {
+        case .block:
+            return true
+        default:
+            return false
+        }
+    }
+    
     public var lineAttribute: LineAttribute {
         get {
             switch self {

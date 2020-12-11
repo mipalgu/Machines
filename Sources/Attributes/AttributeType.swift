@@ -63,6 +63,24 @@ public enum AttributeType: Hashable {
     case line(LineAttributeType)
     case block(BlockAttributeType)
     
+    public var isLine: Bool {
+        switch self {
+        case .line:
+            return true
+        default:
+            return false
+        }
+    }
+    
+    public var isBlock: Bool {
+        switch self {
+        case .block:
+            return true
+        default:
+            return false
+        }
+    }
+    
     public var defaultValue: Attribute {
         switch self {
         case .line(let lineAttribute):
