@@ -89,12 +89,20 @@ public struct ErrorBag<Root> {
         return self.errors(includingDescendantsForPath: AnyPath(path))
     }
     
+    public func errors<Path: PathProtocol>(includingDescendantsForPath path: Path) -> [AttributeError<Root>] where Path.Root == Root {
+        return self.errors(includingDescendantsForPath: AnyPath(path))
+    }
+    
     public func errors(forPath path: AnyPath<Root>) -> [AttributeError<Root>] {
         let range = sortedCollection.range(of: AttributeError(message: "", path: path))
         return Array(self.sortedCollection[range])
     }
     
     public func error<Path: ReadOnlyPathProtocol>(forPath path: Path) -> [AttributeError<Root>] where Path.Root == Root {
+        return self.errors(forPath: AnyPath(path))
+    }
+    
+    public func error<Path: PathProtocol>(forPath path: Path) -> [AttributeError<Root>] where Path.Root == Root {
         return self.errors(forPath: AnyPath(path))
     }
     
@@ -106,11 +114,19 @@ public struct ErrorBag<Root> {
         self.remove(includingDescendantsForPath: AnyPath(path))
     }
     
+    public mutating func remove<Path: PathProtocol>(includingDescendantsForPath path: Path) where Path.Root == Root {
+        self.remove(includingDescendantsForPath: AnyPath(path))
+    }
+    
     public mutating func remove(forPath path: AnyPath<Root>) {
         sortedCollection.removeAll(AttributeError(message: "", path: path))
     }
     
     public mutating func remove<Path: ReadOnlyPathProtocol>(forPath path: Path) where Path.Root == Root {
+        self.remove(forPath: AnyPath(path))
+    }
+    
+    public mutating func remove<Path: PathProtocol>(forPath path: Path) where Path.Root == Root {
         self.remove(forPath: AnyPath(path))
     }
     
