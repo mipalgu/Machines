@@ -60,6 +60,8 @@ import Foundation
 
 public protocol Modifiable {
     
+    var errorBag: ErrorBag<Self> { get }
+    
     /// Add a new item to a table/collection attribute.
     mutating func addItem<Path: PathProtocol, T>(_ item: T, to attribute: Path) throws where Path.Root == Self, Path.Value == [T]
     

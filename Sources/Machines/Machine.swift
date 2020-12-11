@@ -103,6 +103,8 @@ public struct Machine: PathContainer, Modifiable {
     
     private let mutator: MachineMutator
     
+    public private(set) var errorBag: ErrorBag<Machine> = ErrorBag()
+    
     public private(set) var id: UUID = UUID()
     
     /// The underlying semantics which this meta machine follows.
@@ -385,11 +387,13 @@ public struct Machine: PathContainer, Modifiable {
         let backup = self
         do {
             try f(&self)
+            self.errorBag.empty()
         } catch let e as AttributeError<Machine> {
             self = backup
+            self.errorBag.empty()
+            self.errorBag.insert(e)
             throw e
         } catch let e {
-            self = backup
             fatalError("Unsupported error: \(e)")
         }
     }

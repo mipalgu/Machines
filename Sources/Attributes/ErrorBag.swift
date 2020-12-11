@@ -62,7 +62,7 @@ import swift_helpers
 public struct ErrorBag<Root> {
     
     private var sortedCollection = SortedCollection(compare: { (lhs: AttributeError<Root>, rhs: AttributeError<Root>) -> ComparisonResult in
-        if lhs.path.isSame(as: rhs.path) {
+        if lhs.path.isSame(as: rhs.path) || lhs.path.isParent(of: rhs.path) {
             return .orderedSame
         }
         if lhs.path.ancestors.count <= rhs.path.ancestors.count {
@@ -73,6 +73,15 @@ public struct ErrorBag<Root> {
     
     public init() {}
     
+    public mutating func empty() {
+        self.sortedCollection.empty()
+    }
+    
+    public func errors(forPath path: AnyPath<Root>) -> [AttributeError<Root>] {
+        let indexRange = self.sortedCollection.range(of: AttributeError(message: "", path: path))
+        return Array(self.sortedCollection[indexRange])
+    }
+    
     public func error(forPath path: AnyPath<Root>) -> AttributeError<Root>? {
         guard let index = self.sortedCollection.anyIndex(of: AttributeError(message: "", path: path)) else {
             return nil
@@ -82,6 +91,10 @@ public struct ErrorBag<Root> {
     
     public func error<Path: ReadOnlyPathProtocol>(forPath path: Path) -> AttributeError<Root>? where Path.Root == Root {
         return self.error(forPath: AnyPath(path))
+    }
+    
+    public mutating func insert(_ error: AttributeError<Root>) {
+        self.sortedCollection.insert(error)
     }
     
 }
