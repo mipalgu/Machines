@@ -78,9 +78,7 @@ public struct ErrorBag<Root> {
     }
     
     public func errors(includingDescendantsForPath path: AnyPath<Root>) -> [AttributeError<Root>] {
-        let elements = self.sortedCollection.right(ofAndIncluding: AttributeError(message: "", path: path))
-        let index = elements.firstIndex { !path.isParent(of: $0.path) } ?? sortedCollection.count
-        return Array(elements[0..<index])
+        return Array(sortedCollection[index(includingDescendantsForPath: path)])
     }
     
     public func errors<Path: ReadOnlyPathProtocol>(includingDescendantsForPath path: Path) -> [AttributeError<Root>] where Path.Root == Root {
@@ -96,8 +94,30 @@ public struct ErrorBag<Root> {
         return self.errors(forPath: AnyPath(path))
     }
     
+    public mutating func remove(includingDescendantsForPath path: AnyPath<Root>) {
+        sortedCollection.removeSubrange(self.index(includingDescendantsForPath: path))
+    }
+    
+    public mutating func remove<Path: ReadOnlyPathProtocol>(includingDescendantsForPath path: Path) where Path.Root == Root {
+        self.remove(includingDescendantsForPath: AnyPath(path))
+    }
+    
+    public mutating func remove(forPath path: AnyPath<Root>) {
+        sortedCollection.removeAll(AttributeError(message: "", path: path))
+    }
+    
+    public mutating func remove<Path: ReadOnlyPathProtocol>(forPath path: Path) where Path.Root == Root {
+        self.remove(forPath: AnyPath(path))
+    }
+    
     public mutating func insert(_ error: AttributeError<Root>) {
         self.sortedCollection.insert(error)
+    }
+    
+    private func index(includingDescendantsForPath path: AnyPath<Root>) -> Range<Int> {
+        let elements = self.sortedCollection.right(ofAndIncluding: AttributeError(message: "", path: path))
+        let index = elements.firstIndex { !path.isParent(of: $0.path) } ?? elements.endIndex
+        return elements.startIndex..<index
     }
     
 }
