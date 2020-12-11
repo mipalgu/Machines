@@ -66,10 +66,14 @@ public struct ErrorBag<Root> {
             return .orderedSame
         }
         if lhs.path.isParent(of: rhs.path) {
-            return .orderedDescending
+            return .orderedAscending
         }
-        return .orderedAscending
+        return .orderedDescending
     })
+    
+    public var allErrors: [AttributeError<Root>] {
+        return Array(sortedCollection)
+    }
     
     public init() {}
     
