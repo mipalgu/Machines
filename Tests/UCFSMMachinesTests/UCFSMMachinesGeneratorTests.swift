@@ -8,6 +8,7 @@
 @testable import UCFSMMachines
 import XCTest
 import CXXBase
+import CLFSMMachines
 
 
 public class UCFSMMachinesGeneratorTests: XCTestCase {
@@ -38,10 +39,9 @@ public class UCFSMMachinesGeneratorTests: XCTestCase {
     
 //    func test_write2() {
 //        let path = URL(fileURLWithPath: "/Users/morgan/src/MiPal/GUNao/fsms/nao/DefaultMachines/WiFiSelector.machine")
-//        let machine = parser.parseMachine(location: path)
+//        let machine = Machine(clfsmMachineAtPath: path)
 //        XCTAssertNotNil(machine)
-//        let generator = CXXGenerator()
-//        let result = generator.generate(machine: machine!)
+//        let result = machine!.write()
 //        XCTAssert(result)
 //    }
 

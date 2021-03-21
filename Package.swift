@@ -48,6 +48,10 @@ let package = Package(
             dependencies: ["CXXBase"]
         ),
         .target(
+            name: "CLFSMMachines",
+            dependencies: ["CXXBase"]
+        ),
+        .target(
             name: "Machines",
             dependencies: ["swift_helpers", .product(name: "IO", package: "swift_helpers"), .product(name: "Functional", package: "swift_helpers"), "SwiftMachines", "CXXMachines", "XMI", "VHDLMachines", "Attributes", "UCFSMMachines"]
         ),
@@ -58,7 +62,7 @@ let package = Package(
         ),
         .testTarget(
             name: "UCFSMMachinesTests",
-            dependencies: ["UCFSMMachines"]
+            dependencies: ["UCFSMMachines", "CLFSMMachines"]
         ),
         .testTarget(name: "MachinesTests",
             dependencies: ["Machines", "XMI"]
