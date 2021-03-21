@@ -30,11 +30,11 @@ public struct CXXGenerator {
     
     func comment(filename: String) -> String {
         """
-            //
-            // \(filename)
-            //
-            // This is a generated file - do not change manually.
-            //
+         //
+         // \(filename)
+         //
+         // This is a generated file - do not change manually.
+         //
          """
     }
     
@@ -67,6 +67,7 @@ public struct CXXGenerator {
     
     func stateHFile(machineName: String, state: String, actions: [String], transitions: [Transition], states: [State], numberOfTransitions: Int) -> String {
         """
+         \(comment(filename: "State_\(state).h"))
          #ifndef clfsm_\(machineName)_State_\(state)_h
          #define clfsm_\(machineName)_State_\(state)_h
 
@@ -185,15 +186,15 @@ public struct CXXGenerator {
     
     func stateVarRef(state: String) -> String {
         """
-          \(comment(filename: "State_\(state)_VarRefs.mm"))
-          #pragma clang diagnostic push
-          #pragma clang diagnostic ignored "-Wunused-variable"
-          #pragma clang diagnostic ignored "-Wshadow"
+         \(comment(filename: "State_\(state)_VarRefs.mm"))
+         #pragma clang diagnostic push
+         #pragma clang diagnostic ignored "-Wunused-variable"
+         #pragma clang diagnostic ignored "-Wshadow"
           
-          \(state) *_s = static_cast<\(state) *>(_state);
+         \(state) *_s = static_cast<\(state) *>(_state);
           
           
-          #pragma clang diagnostic pop
+         #pragma clang diagnostic pop
          """
     }
     
@@ -208,7 +209,7 @@ public struct CXXGenerator {
             let _ = self.helpers.createFile("State_\(state.name)_Methods.h", inDirectory: root, withContents: ""),
             let _ = self.helpers.createFile("State_\(state.name)_Variables.h", inDirectory: root, withContents: ""),
             transitions.compactMap({ self.helpers.createFile("State_\(state.name)_Transition_\($0.priority).expr", inDirectory: root, withContents: $0.condition) }).count == transitions.count,
-            actions.enumerated().compactMap({ self.helpers.createFile("State_\(state.name)_\($0.0).mm", inDirectory: root, withContents: $0.1)  }).count == actions.count
+            state.actions.compactMap({ self.helpers.createFile("State_\(state.name)_\($0.0).mm", inDirectory: root, withContents: $0.1)  }).count == actions.count
 //            for transition in transitions {
 //                transition.condition.write(toFile: root.appendingPathComponent("State_\(state.name)_Transition_\(transition.priority).expr").absoluteString, atomically: true, encoding: .utf8)
 //            }
