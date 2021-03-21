@@ -40,8 +40,16 @@ let package = Package(
             dependencies: ["swift_helpers"]
         ),
         .target(
+            name: "CXXBase",
+            dependencies: []
+        ),
+        .target(
+            name: "UCFSMMachines",
+            dependencies: ["CXXBase"]
+        ),
+        .target(
             name: "Machines",
-            dependencies: ["swift_helpers", .product(name: "IO", package: "swift_helpers"), .product(name: "Functional", package: "swift_helpers"), "SwiftMachines", "CXXMachines", "XMI", "VHDLMachines", "Attributes"]
+            dependencies: ["swift_helpers", .product(name: "IO", package: "swift_helpers"), .product(name: "Functional", package: "swift_helpers"), "SwiftMachines", "CXXMachines", "XMI", "VHDLMachines", "Attributes", "UCFSMMachines"]
         ),
         .testTarget(name: "AttributesTests", dependencies: ["Attributes"]),
         .testTarget(
