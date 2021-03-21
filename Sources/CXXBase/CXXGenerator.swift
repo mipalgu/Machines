@@ -8,15 +8,15 @@
 import Foundation
 import IO
 
-public struct CXXGenerator {
+struct CXXGenerator {
     
     var helpers: FileHelpers
     
-    public init(helpers: FileHelpers = FileHelpers()) {
+    init(helpers: FileHelpers = FileHelpers()) {
         self.helpers = helpers
     }
     
-    public func generate(machine: Machine) -> Bool {
+    func generate(machine: Machine) -> Bool {
         guard
             helpers.deleteItem(atPath: machine.path),
             helpers.createDirectory(atPath: machine.path),

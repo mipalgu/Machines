@@ -31,4 +31,9 @@ public struct Machine: Codable, Hashable {
 //        self.initialState = initialState
 //    }
     
+    public func write() -> Bool {
+        let generator = CXXGenerator()
+        return generator.generate(machine: self)
+    }
+    
 }

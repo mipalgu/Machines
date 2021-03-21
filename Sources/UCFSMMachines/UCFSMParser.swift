@@ -12,11 +12,11 @@ struct UCFSMParser {
     
     var parser: CXXParser
     
-    public func parseMachine(location: URL) -> Machine? {
+    func parseMachine(location: URL) -> Machine? {
         parser.parseMachine(location: location)
     }
     
-    public init() {
+    init() {
         parser = CXXParser(actions: ["OnEntry", "OnExit", "Internal"])
     }
     

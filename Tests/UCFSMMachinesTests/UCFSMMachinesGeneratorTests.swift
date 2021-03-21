@@ -21,22 +21,18 @@ public class UCFSMMachinesGeneratorTests: XCTestCase {
 
     private let packageRootPath = URL(fileURLWithPath: #file).pathComponents.prefix(while: { $0 != "Tests" }).joined(separator: "/").dropFirst()
 
-    private var parser: UCFSMParser!
-
     public override func setUp() {
         super.setUp()
-        self.parser = UCFSMParser()
     }
     
     func test_write() {
         let path = URL(fileURLWithPath: "\(packageRootPath)/machines/UltrasonicDiscrete.machine")
-        let machine = parser.parseMachine(location: path)
+        let machine = Machine(ucfsmMachineAtPath: path)
         XCTAssertNotNil(machine)
         let path2 = URL(fileURLWithPath: "\(packageRootPath)/machines/UltrasonicDiscrete_Written.machine")
         var machine2 = machine!
         machine2.path = path2
-        let generator = CXXGenerator()
-        let result = generator.generate(machine: machine2)
+        let result = machine2.write()
         XCTAssert(result)
     }
     
