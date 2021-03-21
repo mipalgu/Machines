@@ -41,7 +41,7 @@ let package = Package(
         ),
         .target(
             name: "CXXBase",
-            dependencies: []
+            dependencies: ["swift_helpers", .product(name: "IO", package: "swift_helpers")]
         ),
         .target(
             name: "UCFSMMachines",

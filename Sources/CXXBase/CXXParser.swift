@@ -18,14 +18,16 @@ public struct CXXParser {
     public func parseMachine(location: URL) -> Machine? {
         guard let stateNames = getStateNames(location: location),
               let states = createStates(root: location, states: stateNames),
+              let includePaths = getIncludePaths(root: location),
               let name = getName(location: location),
               let includes = getIncludes(root: location, machineName: name),
               let funcRefs = getFuncRefs(root: location, machineName: name),
-              let variables = createVariables(root: location, machineName: name) else {
+              let variables = createVariables(root: location, machineName: name),
+              let initialState = getInitialState(root: location, machineName: name, states: states) else {
             return nil
         }
         let transitions = createTransitions(root: location, states: states)
-        return Machine(name: name, path: location, includes: includes, funcRefs: funcRefs, states: states, transitions: transitions, machineVariables: variables)
+        return Machine(name: name, path: location, includes: includes, includePaths: includePaths, funcRefs: funcRefs, states: states, transitions: transitions, machineVariables: variables, initialState: initialState)
     }
     
     func getName(location: URL) -> String? {
@@ -175,6 +177,27 @@ public struct CXXParser {
             allTransitions += createTransitionsForState(root: root, state: i, states: states)
         }
         return allTransitions
+    }
+    
+    func getIncludePaths(root: URL) -> [String]? {
+        guard let contents = try? String(contentsOf: root.appendingPathComponent("IncludePath")) else {
+            return nil
+        }
+        return contents.components(separatedBy: "\n")
+    }
+    
+    func getInitialState(root: URL, machineName: String, states: [State]) -> Int? {
+        let contents = try? String(contentsOf: root.appendingPathComponent("\(machineName).mm"))
+        guard
+            let components = contents?.components(separatedBy: "setInitialState(_states["),
+            components.count == 2,
+            let indexStr = components[1].components(separatedBy: "]").first,
+            let index = Int(indexStr),
+            index < states.count && index >= 0
+        else {
+            return nil
+        }
+        return index
     }
     
 }
