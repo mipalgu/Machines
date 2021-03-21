@@ -681,11 +681,13 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         // Dictionary Convertible.
         if shouldIncludeDictionaryConvertible {
-            str += "    public required convenience init(fromDictionary dictionary: [String: Any]) {\n"
+            str += "    public required convenience init(fromDictionary dictionary: [String: Any?]) {\n"
             str += "        self.init()\n"
             for v in vars {
                 str += """
-                        guard let \(v.label) = dictionary[\"\(v.label)\"] as? \(v.type) else {
+                        guard
+                            let \(v.label)_val: Any? = dictionary[\"\(v.label)\"],
+                            let \(v.label): \(v.type) = \(v.label)_val as? \(v.type) else {
                             fatalError("Unable to convert dictionary[\\"\(v.label)\\"] to \(v.type) when attempting to initialise \(name)")
                         }
                         self.\(v.label) = \(v.label)\n
