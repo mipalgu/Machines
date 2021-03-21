@@ -14,7 +14,8 @@ public class UCFSMMachinesGeneratorTests: XCTestCase {
 
     public static var allTests: [(String, (UCFSMMachinesGeneratorTests) -> () throws -> Void)] {
         return [
-            ("test_write", test_write)
+            ("test_write", test_write),
+            ("test_write2", test_write2)
         ]
     }
 
@@ -38,5 +39,14 @@ public class UCFSMMachinesGeneratorTests: XCTestCase {
         let result = generator.generate(machine: machine2)
         XCTAssert(result)
     }
+    
+//    func test_write2() {
+//        let path = URL(fileURLWithPath: "/Users/morgan/src/MiPal/GUNao/fsms/nao/DefaultMachines/WiFiSelector.machine")
+//        let machine = parser.parseMachine(location: path)
+//        XCTAssertNotNil(machine)
+//        let generator = CXXGenerator()
+//        let result = generator.generate(machine: machine!)
+//        XCTAssert(result)
+//    }
 
 }
