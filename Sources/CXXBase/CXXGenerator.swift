@@ -18,6 +18,7 @@ public struct CXXGenerator {
     
     public func generate(machine: Machine) -> Bool {
         guard
+            helpers.deleteItem(atPath: machine.path),
             helpers.createDirectory(atPath: machine.path),
             createIncludePaths(root: machine.path, paths: machine.includePaths),
             createStatesFiles(root: machine.path, machineName: machine.name, states: machine.states, allTransitions: machine.transitions),
@@ -40,7 +41,7 @@ public struct CXXGenerator {
     
     func createIncludePaths(root: URL, paths: [String]) -> Bool {
         let contents = paths.joined(separator: "\n")
-        let success = self.helpers.createFile("IncludePaths", inDirectory: root, withContents: contents)
+        let success = self.helpers.createFile("IncludePath", inDirectory: root, withContents: contents)
         return success != nil
     }
     
@@ -58,7 +59,7 @@ public struct CXXGenerator {
                              class Transition_\(priority): public CLTransition
                              {
                                  public:
-                                     Transition_\(priority)(int toState = \(target): CLTransition(toState) {}
+                                     Transition_\(priority)(int toState = \(target)): CLTransition(toState) {}
 
                                      virtual bool check(CLMachine *, CLState *) const;
                              };
@@ -94,7 +95,9 @@ public struct CXXGenerator {
             return transitionDefinition(priority: $0.priority, target: targetIndex)
          }.joined(separator: "\n\n"))
 
+                             \(numberOfTransitions == 0 ? "#pragma clang diagnostic ignored \"-Wzero-length-array\"" : "")
                              CLTransition *_transitions[\(numberOfTransitions)];
+                             \(numberOfTransitions == 0 ? "#pragma clang diagnostic pop" : "")
           
                              public:
                                  \(state)(const char *name = "\(state)");
