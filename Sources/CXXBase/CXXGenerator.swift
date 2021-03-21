@@ -112,6 +112,7 @@ public struct CXXGenerator {
          }
           
          #endif
+         
          """
     }
     
@@ -164,18 +165,19 @@ public struct CXXGenerator {
          
          \(state)::\(state)(const char *name): CLState(name, \(actions.map { "*new \(state)::\($0)" }.joined(separator: ", ")))
          {
-             \(transitions.map { "_transitions[\($0.priority)] = new Transition_\($0.priority)();" }.joined(separator: "\n"))
+             \(transitions.map { "_transitions[\($0.priority)] = new Transition_\($0.priority)();" }.joined(separator: "\n    "))
          }
          
          \(state)::~\(state)()
          {
-             \(actions.map{ "delete &\($0.lowercased())Action();" }.joined(separator: "\n    "))
+             \(actions.map{ "delete &\($0.prefix(1).lowercased() + $0.dropFirst())Action();" }.joined(separator: "\n    "))
              \(transitions.map { "delete _transitions[\($0.priority)];" }.joined(separator: "\n    "))
          }
          
          \(actions.map { actionPerform(machineName: machineName, state: state, action: $0) }.joined(separator: "\n\n"))
          
          \(transitions.map { transitionCheck(machineName: machineName, state: state, transition: $0) }.joined(separator: "\n\n"))
+         
          """
     }
     
@@ -195,6 +197,7 @@ public struct CXXGenerator {
           
           
          #pragma clang diagnostic pop
+         
          """
     }
     
@@ -208,7 +211,7 @@ public struct CXXGenerator {
             let _ = self.helpers.createFile("State_\(state.name)_Includes.h", inDirectory: root, withContents: ""),
             let _ = self.helpers.createFile("State_\(state.name)_Methods.h", inDirectory: root, withContents: ""),
             let _ = self.helpers.createFile("State_\(state.name)_Variables.h", inDirectory: root, withContents: ""),
-            transitions.compactMap({ self.helpers.createFile("State_\(state.name)_Transition_\($0.priority).expr", inDirectory: root, withContents: $0.condition) }).count == transitions.count,
+            transitions.compactMap({ self.helpers.createFile("State_\(state.name)_Transition_\($0.priority).expr", inDirectory: root, withContents: "\($0.condition)\n") }).count == transitions.count,
             state.actions.compactMap({ self.helpers.createFile("State_\(state.name)_\($0.0).mm", inDirectory: root, withContents: $0.1)  }).count == actions.count
 //            for transition in transitions {
 //                transition.condition.write(toFile: root.appendingPathComponent("State_\(state.name)_Transition_\(transition.priority).expr").absoluteString, atomically: true, encoding: .utf8)
@@ -268,6 +271,7 @@ public struct CXXGenerator {
          }
          
          #endif // defined(clfsm_machine_\(machineName)_)
+         
          """
     }
     
@@ -292,15 +296,16 @@ public struct CXXGenerator {
          
          \(machineName)::\(machineName)(int mid, const char *name): CLMachine(mid, name)
          {
-             \(states.indices.map { "_states[\($0)] = new FSM\(machineName)::State::\(states[$0].name);" }.joined(separator: "\n"))
+             \(states.indices.map { "_states[\($0)] = new FSM\(machineName)::State::\(states[$0].name);" }.joined(separator: "\n    "))
          
              setInitialState(_states[\(initialState)]);            // set initial state
          }
          
          \(machineName)::~\(machineName)()
          {
-             \(states.indices.map { "delete _states[\($0)];" }.joined(separator: "\n"))
+             \(states.indices.map { "delete _states[\($0)];" }.joined(separator: "\n    "))
          }
+         
          """
     }
     
@@ -313,9 +318,10 @@ public struct CXXGenerator {
          
          \(machineName) *_m = static_cast<\(machineName) *>(_machine);
          
-         \(variables.map { "\($0.type) \($0.name) = _m->\($0.name); ///< \($0.comment)" }.joined(separator: "\n"))
+         \(variables.map { "\($0.type)\t&\($0.name) = _m->\($0.name);\t///< \($0.comment)" }.joined(separator: "\n"))
          
          #pragma clang diagnostic pop
+         
          """
     }
     
@@ -323,6 +329,7 @@ public struct CXXGenerator {
         """
          \(comment(filename: "\(machineName)_Variables.h"))
          \(variables.map { "\($0.type)\t\($0.name);\t///< \($0.comment)" }.joined(separator: "\n"))
+         
          """
     }
     
