@@ -15,7 +15,7 @@ public class UCFSMMachinesGeneratorTests: XCTestCase {
     public static var allTests: [(String, (UCFSMMachinesGeneratorTests) -> () throws -> Void)] {
         return [
             ("test_write", test_write),
-            ("test_write2", test_write2)
+//            ("test_write2", test_write2)
         ]
     }
 
