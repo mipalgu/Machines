@@ -56,6 +56,10 @@ let package = Package(
             name: "SwiftMachinesTests",
             dependencies: ["SwiftMachines"]
         ),
+        .testTarget(
+            name: "UCFSMMachinesTests",
+            dependencies: ["UCFSMMachines"]
+        ),
         .testTarget(name: "MachinesTests",
             dependencies: ["Machines", "XMI"]
         )

@@ -85,10 +85,12 @@ public struct CXXParser {
     
     func createVariable(variable: String) -> Variable? {
         let components = variable.components(separatedBy: "\t")
-        let name = components[1]
-        guard components.count != 3,
-              let type = components.first,
-              let comment = getComment(commentStr: components.last ?? "") else {
+        if components.count != 3 {
+            return nil
+        }
+        let name = components[1].components(separatedBy: ";")[0]
+        let type = components[0]
+        guard let comment = getComment(commentStr: components.last ?? "") else {
             return nil
         }
         return Variable(type: type, name: name, comment: comment)
@@ -99,8 +101,15 @@ public struct CXXParser {
     }
     
     func createVariables(root: URL, machineName: String) -> [Variable]? {
-        guard let variableStrings = getVariables(root: root, machineName: machineName) else {
+        guard let data = getVariables(root: root, machineName: machineName) else {
             return nil
+        }
+        let variableStrings = data.filter {
+            if $0.hasPrefix("//") {
+                return false
+                
+            }
+            return $0.trimmingCharacters(in: .whitespacesAndNewlines) != ""
         }
         var variables: [Variable] = []
         for variable in variableStrings {
@@ -113,15 +122,15 @@ public struct CXXParser {
     }
     
     func readTransitionExpression(root: URL, state: String, number: UInt) -> String? {
-        try? String(contentsOf: root.appendingPathComponent("State_" + state + "_Transition_" + String(number) + ".expr"))
+        (try? String(contentsOf: root.appendingPathComponent("State_" + state + "_Transition_" + String(number) + ".expr")))?.trimmingCharacters(in: .whitespacesAndNewlines)
     }
     
     func readStateFile(root: URL, state: String) -> String? {
-        try? String(contentsOf: root.appendingPathComponent(state + ".h"))
+        try? String(contentsOf: root.appendingPathComponent("State_" + state + ".h"))
     }
     
     fileprivate func getTransitionTarget(root: URL, state: Int, number: UInt, states: [State]) -> State? {
-        guard state >= states.count,
+        guard state < states.count,
               let contents = readStateFile(root: root, state: states[Int(state)].name) else {
             return nil
         }
@@ -142,7 +151,7 @@ public struct CXXParser {
               let expression = readTransitionExpression(root: root, state: source.name, number: number) else {
             return nil
         }
-        return Transition(source: source, target: target, condition: expression)
+        return Transition(source: source, target: target, condition: expression, priority: number)
     }
     
     func createTransitionsForState(root: URL, state: Int, states: [State]) -> [Transition] {

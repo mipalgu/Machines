@@ -10,5 +10,6 @@ public struct Transition: Codable, Hashable {
     var source: State
     var target: State
     var condition: String
+    var priority: UInt
     
 }
