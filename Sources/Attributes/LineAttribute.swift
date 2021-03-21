@@ -58,7 +58,11 @@
 
 import XMI
 
-public enum LineAttribute: Hashable {
+public enum LineAttribute: Hashable, Identifiable {
+    
+    public var id: Int {
+        LineAttributeIDCache.id(for: self)
+    }
     
     case bool(Bool)
     case integer(Int)

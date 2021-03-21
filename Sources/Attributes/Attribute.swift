@@ -58,7 +58,11 @@
 
 import XMI
 
-public enum Attribute: Hashable {
+public enum Attribute: Hashable, Identifiable {
+    
+    public var id: Int {
+        AttributeIDCache.id(for: self)
+    }
     
     case line(LineAttribute)
     case block(BlockAttribute)

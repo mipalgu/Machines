@@ -59,7 +59,11 @@
 import XMI
 import swift_helpers
 
-public enum BlockAttribute: Hashable {
+public enum BlockAttribute: Hashable, Identifiable {
+    
+    public var id: Int {
+        BlockAttributeIDCache.id(for: self)
+    }
     
     case code(_ value: String, language: Language)
     
