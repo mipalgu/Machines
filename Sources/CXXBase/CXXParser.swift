@@ -23,11 +23,28 @@ public struct CXXParser {
               let includes = getIncludes(root: location, machineName: name),
               let funcRefs = getFuncRefs(root: location, machineName: name),
               let variables = createVariables(root: location, machineName: name),
-              let initialState = getInitialState(root: location, machineName: name, states: states) else {
+              let initialState = getInitialState(root: location, machineName: name, states: states)
+        else {
             return nil
         }
+        let suspendedState = getSuspendedState(location: location, machineName: name, states: states)
         let transitions = createTransitions(root: location, states: states)
-        return Machine(name: name, path: location, includes: includes, includePaths: includePaths, funcRefs: funcRefs, states: states, transitions: transitions, machineVariables: variables, initialState: initialState)
+        return Machine(name: name, path: location, includes: includes, includePaths: includePaths, funcRefs: funcRefs, states: states, transitions: transitions, machineVariables: variables, initialState: initialState, suspendedState: suspendedState)
+    }
+    
+    func getSuspendedState(location: URL, machineName: String, states: [State]) -> Int? {
+        let data = try? String(contentsOf: location.appendingPathComponent("\(machineName).mm"))
+        guard let components = data?.components(separatedBy: "setSuspendState(_states["),
+              components.count > 1
+        else {
+            return nil //states.firstIndex(where: { $0.name.lowercased() == "suspended" || $0.name.lowercased() == "suspend" })
+        }
+        let rhs = components[1]
+        let rhsComponents = rhs.components(separatedBy: "]")
+        guard rhsComponents.count > 1 else {
+            return nil
+        }
+        return Int(rhsComponents[0])
     }
     
     func getName(location: URL) -> String? {

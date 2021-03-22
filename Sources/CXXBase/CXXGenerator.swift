@@ -278,7 +278,12 @@ struct CXXGenerator {
          """
     }
     
-    func machineMMFile(machineName: String, states: [State], initialState: Int) -> String {
+    func machineMMFile(machineName: String, states: [State], initialState: Int, suspendState: Int?) -> String {
+        var suspendCode: String = ""
+        if suspendState != nil {
+            suspendCode = "setSuspendState(_states[\(suspendState!)]);            // set suspend state"
+        }
+        return (
         """
          \(comment(filename: "\(machineName).mm"))
          #include "\(machineName)_Includes.h"
@@ -301,6 +306,7 @@ struct CXXGenerator {
          {
              \(states.indices.map { "_states[\($0)] = new FSM\(machineName)::State::\(states[$0].name);" }.joined(separator: "\n    "))
          
+             \(suspendCode)
              setInitialState(_states[\(initialState)]);            // set initial state
          }
          
@@ -310,6 +316,7 @@ struct CXXGenerator {
          }
          
          """
+        )
     }
     
     func machineVarRefs(machineName: String, variables: [Variable]) -> String {
@@ -342,7 +349,8 @@ struct CXXGenerator {
             let _ = self.helpers.createFile("\(machine.name).mm", inDirectory: root, withContents: machineMMFile(
                 machineName: machine.name,
                 states: machine.states,
-                initialState: machine.initialState
+                initialState: machine.initialState,
+                suspendState: machine.suspendedState
             )),
             let _ = self.helpers.createFile("\(machine.name)_FuncRefs.mm", inDirectory: root, withContents: machine.funcRefs),
             let _ = self.helpers.createFile("\(machine.name)_Includes.h", inDirectory: root, withContents: machine.includes),

@@ -18,6 +18,7 @@ public struct Machine: Codable, Hashable {
     var transitions: [Transition]
     var machineVariables: [Variable]
     var initialState: Int
+    var suspendedState: Int?
     
 //    public init(name: String, path: URL, includes: String, includePaths: [String], funcRefs: String, states: [State], transitions: [Transition], machineVariables: [Variable], initialState: Int) {
 //        self.name = name
