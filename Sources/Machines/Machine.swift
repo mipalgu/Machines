@@ -84,6 +84,7 @@ public struct Machine: PathContainer, Modifiable {
         case swiftfsm
         case clfsm
         case vhdl
+        case ucfsm
     }
     
     /// The semantics that are fully supported by this module.
@@ -228,6 +229,8 @@ public struct Machine: PathContainer, Modifiable {
             fatalError("clfsm semantics are not yet implemented.")
         case .swiftfsm:
             self.mutator = SwiftfsmConverter()
+        case .ucfsm:
+            fatalError("ucfsm semantics are not yet implemented.")
         case .vhdl:
             fatalError("vhdl semantics are not yet implemented.")
         case .other:
@@ -289,6 +292,8 @@ public struct Machine: PathContainer, Modifiable {
         switch semantics {
         case .clfsm:
             fatalError("clfsm semantics have not been implemented")
+        case .ucfsm:
+            fatalError("ucfsm semantics have not been implemented")
         case .swiftfsm:
             return SwiftfsmConverter().initial(filePath: filePath)
         case .vhdl:
