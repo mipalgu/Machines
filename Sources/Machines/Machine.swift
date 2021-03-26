@@ -226,11 +226,11 @@ public struct Machine: PathContainer, Modifiable {
         self.semantics = semantics
         switch semantics {
         case .clfsm:
-            fatalError("clfsm semantics are not yet implemented.")
+            self.mutator = CXXBaseConverter()
         case .swiftfsm:
             self.mutator = SwiftfsmConverter()
         case .ucfsm:
-            fatalError("ucfsm semantics are not yet implemented.")
+            self.mutator = CXXBaseConverter()
         case .vhdl:
             fatalError("vhdl semantics are not yet implemented.")
         case .other:
