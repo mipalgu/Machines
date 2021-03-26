@@ -311,6 +311,8 @@ extension CXXBaseConverter: MachineMutator {
             let name = "State"
             if nil == machine.states.first(where: { $0.name == name }) {
                 try machine.states.append(self.createState(named: name, forMachine: machine))
+                self.syncSuspendState(machine: &machine)
+                return
             }
             var num = 0
             var stateName: String
