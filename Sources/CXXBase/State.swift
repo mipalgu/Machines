@@ -6,6 +6,13 @@
 //
 
 public struct State: Codable, Hashable {
-    var name: String
-    var actions: [String: String]
+    public var name: String
+    public var variables: [Variable]
+    public var actions: [String: String]
+    
+    public init(name: String, variables: [Variable], actions: [String: String]) {
+        self.name = name
+        self.variables = variables
+        self.actions = actions
+    }
 }

@@ -9,28 +9,29 @@ import Foundation
 
 public struct Machine: Codable, Hashable {
     
-    var name: String
+    public var name: String
     public var path: URL
-    var includes: String
-    var includePaths: [String]
-    var funcRefs: String
-    var states: [State]
-    var transitions: [Transition]
-    var machineVariables: [Variable]
-    var initialState: Int
-    var suspendedState: Int?
+    public var includes: String
+    public var includePaths: [String]
+    public var funcRefs: String
+    public var states: [State]
+    public var transitions: [Transition]
+    public var machineVariables: [Variable]
+    public var initialState: Int
+    public var suspendedState: Int?
     
-//    public init(name: String, path: URL, includes: String, includePaths: [String], funcRefs: String, states: [State], transitions: [Transition], machineVariables: [Variable], initialState: Int) {
-//        self.name = name
-//        self.path = path
-//        self.includes = includes
-//        self.includePaths = includePaths
-//        self.funcRefs = funcRefs
-//        self.states = states
-//        self.transitions = transitions
-//        self.machineVariables = machineVariables
-//        self.initialState = initialState
-//    }
+    public init(name: String, path: URL, includes: String, includePaths: [String], funcRefs: String, states: [State], transitions: [Transition], machineVariables: [Variable], initialState: Int, suspendedState: Int?) {
+        self.name = name
+        self.path = path
+        self.includes = includes
+        self.includePaths = includePaths
+        self.funcRefs = funcRefs
+        self.states = states
+        self.transitions = transitions
+        self.machineVariables = machineVariables
+        self.initialState = initialState
+        self.suspendedState = suspendedState
+    }
     
     public func write() -> Bool {
         let generator = CXXGenerator()

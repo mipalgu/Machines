@@ -9,8 +9,16 @@ import Foundation
 
 public struct Variable: Codable, Hashable {
     
-    var type: String
-    var name: String
-    var comment: String
+    public var type: String
+    public var name: String
+    public var value: String?
+    public var comment: String
+    
+    public init(type: String, name: String, value: String?, comment: String) {
+        self.type = type
+        self.name = name
+        self.value = value
+        self.comment = comment
+    }
     
 }

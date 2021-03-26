@@ -22,7 +22,7 @@ public struct CXXParser {
               let name = getName(location: location),
               let includes = getIncludes(root: location, machineName: name),
               let funcRefs = getFuncRefs(root: location, machineName: name),
-              let variables = createVariables(root: location, machineName: name),
+              let variables = createVariables(root: location, fileName: name),
               let initialState = getInitialState(root: location, machineName: name, states: states)
         else {
             return nil
@@ -73,10 +73,13 @@ public struct CXXParser {
     }
     
     func createState(root: URL, name: String) -> State? {
-        guard let actions = getActions(root: root, state: name) else {
+        guard
+            let actions = getActions(root: root, state: name),
+            let variables = createVariables(root: root, fileName: "State_" + name)
+        else {
             return nil;
         }
-        return State(name: name, actions: actions)
+        return State(name: name, variables: variables, actions: actions)
     }
     
     func createStates(root: URL, states: [String]) -> [State]? {
@@ -98,8 +101,8 @@ public struct CXXParser {
         try? String(contentsOf: root.appendingPathComponent(machineName + "_FuncRefs.mm"))
     }
     
-    func getVariables(root: URL, machineName: String) -> [String]? {
-        (try? String(contentsOf: root.appendingPathComponent(machineName + "_Variables.h")))?.components(separatedBy: "\n")
+    func getVariables(root: URL, fileName: String) -> [String]? {
+        (try? String(contentsOf: root.appendingPathComponent(fileName + "_Variables.h")))?.components(separatedBy: "\n")
     }
     
     func createVariable(variable: String) -> Variable? {
@@ -107,20 +110,22 @@ public struct CXXParser {
         if components.count != 3 {
             return nil
         }
-        let name = components[1].components(separatedBy: ";")[0]
+        let nameAndValue = components[1].components(separatedBy: "=")
+        let name = nameAndValue[0]
+        let value = nameAndValue.count == 2 ? nameAndValue[1] : nil
         let type = components[0]
         guard let comment = getComment(commentStr: components.last ?? "") else {
             return nil
         }
-        return Variable(type: type, name: name, comment: comment)
+        return Variable(type: type, name: name, value: value, comment: comment)
     }
     
     func getComment(commentStr: String) -> String? {
         commentStr.components(separatedBy: "///<").last?.trimmingCharacters(in: .whitespaces)
     }
     
-    func createVariables(root: URL, machineName: String) -> [Variable]? {
-        guard let data = getVariables(root: root, machineName: machineName) else {
+    func createVariables(root: URL, fileName: String) -> [Variable]? {
+        guard let data = getVariables(root: root, fileName: fileName) else {
             return nil
         }
         let variableStrings = data.filter {
