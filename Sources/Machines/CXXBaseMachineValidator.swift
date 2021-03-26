@@ -85,7 +85,7 @@ struct CXXBaseMachineValidator: MachineValidator {
     }()
     
     func validate(machine: Machine) throws {
-        if machine.semantics != .ucfsm || machine.semantics != .clfsm {
+        if machine.semantics != .ucfsm && machine.semantics != .clfsm {
             throw MachinesError.unsupportedSemantics(machine.semantics)
         }
         try self.validator.performValidation(machine)
