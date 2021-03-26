@@ -8,15 +8,15 @@
 import Foundation
 import CXXBase
 
-struct UCFSMParser {
+public struct UCFSMParser {
     
     var parser: CXXParser
     
-    func parseMachine(location: URL) -> Machine? {
+    public func parseMachine(location: URL) -> Machine? {
         parser.parseMachine(location: location)
     }
     
-    init() {
+    public init() {
         parser = CXXParser(actions: ["OnEntry", "OnExit", "Internal"])
     }
     
