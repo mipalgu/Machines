@@ -79,11 +79,9 @@ struct CXXBaseConverter {
         let settings = AttributeGroup(
             name: "settings",
             fields: [
-                Field(name: "initial_state", type: .enumerated(validValues: Set(machine.states.map(\.name)))),
                 Field(name: "suspended_state", type: .enumerated(validValues: Set([""] + machine.states.map(\.name))))
             ],
             attributes: [
-                "initial_state": .enumerated(machine.states[machine.initialState].name, validValues: Set(machine.states.map(\.name))),
                 "suspended_state": .enumerated(machine.suspendedState.map { machine.states[$0].name } ?? "", validValues: Set([""] + machine.states.map(\.name)))
             ],
             metaData: [:]
