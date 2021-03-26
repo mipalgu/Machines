@@ -291,9 +291,9 @@ public struct Machine: PathContainer, Modifiable {
     public static func initialMachine(forSemantics semantics: Machine.Semantics, filePath: URL = URL(fileURLWithPath: "/tmp/Untitled.machine", isDirectory: true)) -> Machine {
         switch semantics {
         case .clfsm:
-            fatalError("clfsm semantics have not been implemented")
+            return CLFSMConverter().initialCLFSMMachine(filePath: filePath)
         case .ucfsm:
-            fatalError("ucfsm semantics have not been implemented")
+            return UCFSMConverter().initialUCFSMMachine(filePath: filePath)
         case .swiftfsm:
             return SwiftfsmConverter().initial(filePath: filePath)
         case .vhdl:

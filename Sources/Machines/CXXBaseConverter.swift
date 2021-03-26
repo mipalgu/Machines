@@ -13,19 +13,6 @@ import Attributes
 
 struct CXXBaseConverter {
     
-    func initial(filePath: URL, semantics: Machine.Semantics) -> Machine? {
-        var parsedMachine: CXXBase.Machine?
-        switch semantics {
-            case .clfsm: parsedMachine = CXXBase.Machine(clfsmMachineAtPath: filePath)
-            case .ucfsm: parsedMachine = CXXBase.Machine(ucfsmMachineAtPath: filePath)
-            default: parsedMachine = nil
-        }
-        guard let machine = parsedMachine else {
-            return nil
-        }
-        return toMachine(machine: machine, semantics: semantics)
-    }
-    
     func machineAttributes(machine: CXXBase.Machine) -> [AttributeGroup] {
         var attributes: [AttributeGroup] = []
         let variables = AttributeGroup(
