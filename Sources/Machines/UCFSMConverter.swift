@@ -33,7 +33,8 @@ struct UCFSMConverter {
             transitions: [],
             machineVariables: [],
             initialState: 0,
-            suspendedState: 1
+            suspendedState: 1,
+            actionDisplayOrder: ["OnEntry", "OnExit", "Internal"]
         )
         let converter = CXXBaseConverter()
         return converter.toMachine(machine: ucfsmMachine, semantics: .ucfsm)

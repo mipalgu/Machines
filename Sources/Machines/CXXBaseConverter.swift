@@ -206,6 +206,12 @@ struct CXXBaseConverter {
         let suspendedState = machine.attributes.first { $0.name == "settings" }?.attributes["suspended_state"]?.enumeratedValue
         let suspendedStateName = suspendedState == "" ? nil : suspendedState
         let suspendedIndex = suspendedStateName == nil ? nil : cxxStates.firstIndex { $0.name == suspendedStateName! }
+        var actionDisplayOrder: [String] = []
+        if machine.semantics == .clfsm {
+            actionDisplayOrder = ["OnEntry", "OnExit", "Internal", "OnSuspend", "OnResume"]
+        } else if machine.semantics == .ucfsm {
+            actionDisplayOrder = ["OnEntry", "OnExit", "Internal"]
+        }
         return CXXBase.Machine(
             name: machine.name,
             path: machine.filePath,
@@ -216,7 +222,8 @@ struct CXXBaseConverter {
             transitions: machine.states.flatMap { toTransitions(state: $0, states: cxxStates) },
             machineVariables: machine.attributes.first { $0.name == "variables" }?.attributes["machine_variables"]?.tableValue.compactMap(toVariable) ?? [],
             initialState: cxxStates.firstIndex { $0.name == machine.initialState } ?? 0,
-            suspendedState: suspendedIndex
+            suspendedState: suspendedIndex,
+            actionDisplayOrder: actionDisplayOrder
         )
     }
     

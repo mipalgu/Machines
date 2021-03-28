@@ -36,7 +36,8 @@ struct CLFSMConverter {
             transitions: [],
             machineVariables: [],
             initialState: 0,
-            suspendedState: 1
+            suspendedState: 1,
+            actionDisplayOrder: ["OnEntry", "OnExit", "Internal", "OnSuspend", "OnResume"]
         )
         let converter = CXXBaseConverter()
         return converter.toMachine(machine: clfsmMachine, semantics: .clfsm)

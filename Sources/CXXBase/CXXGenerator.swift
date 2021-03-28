@@ -21,7 +21,7 @@ public struct CXXGenerator {
             helpers.deleteItem(atPath: machine.path),
             helpers.createDirectory(atPath: machine.path),
             createIncludePaths(root: machine.path, paths: machine.includePaths),
-            createStatesFiles(root: machine.path, machineName: machine.name, states: machine.states, allTransitions: machine.transitions),
+            createStatesFiles(root: machine.path, machineName: machine.name, states: machine.states, allTransitions: machine.transitions, actions: machine.actionDisplayOrder),
             createMachineFiles(root: machine.path, machine: machine),
             createTransitionFiles(root: machine.path, transitions: machine.transitions)
         else {
@@ -154,6 +154,26 @@ public struct CXXGenerator {
          """
     }
     
+    func actionConstructor(actions: [String], state: String) -> String {
+        if actions.count == 3 {
+            return "\(actions.map { "*new \(state)::\($0)" }.joined(separator: ", "))"
+        }
+        if actions.count == 5 {
+            return "\(actions[0...2].map { "*new \(state)::\($0)" }.joined(separator: ", ")), NULLPTR, \(actions[3...4].map { "new \(state)::\($0)" }.joined(separator: ", "))"
+        }
+        return "*new \(state)::OnEntry, *new \(state)::OnExit, *new \(state)::Internal"
+    }
+    
+    func actionDestructor(actions: [String]) -> String {
+        if actions.count == 3 {
+            return "\(actions.map{ "delete &\($0.prefix(1).lowercased() + $0.dropFirst())Action();" }.joined(separator: "\n    "))"
+        }
+        if actions.count == 5 {
+            return "\(actions[0...2].map{ "delete &\($0.prefix(1).lowercased() + $0.dropFirst())Action();" }.joined(separator: "\n    "))\n    \(actions[3...4].map{ "delete \($0.prefix(1).lowercased() + $0.dropFirst())Action();" }.joined(separator: "\n    "))"
+        }
+        return "delete &onEntryAction();\n    delete &onExitAction();\n    delete &internalAction();"
+    }
+    
     func stateMMString(machineName: String, state: String, transitions: [Transition], actions: [String]) -> String {
         """
          \(comment(filename: "State_\(state).mm"))
@@ -167,14 +187,14 @@ public struct CXXGenerator {
          using namespace FSM\(machineName);
          using namespace State;
          
-         \(state)::\(state)(const char *name): CLState(name, \(actions.map { "*new \(state)::\($0)" }.joined(separator: ", ")))
+         \(state)::\(state)(const char *name): CLState(name, \(actionConstructor(actions: actions, state: state)))
          {
              \(transitions.map { "_transitions[\($0.priority)] = new Transition_\($0.priority)();" }.joined(separator: "\n    "))
          }
          
          \(state)::~\(state)()
          {
-             \(actions.map{ "delete &\($0.prefix(1).lowercased() + $0.dropFirst())Action();" }.joined(separator: "\n    "))
+             \(actionDestructor(actions: actions))
              \(transitions.map { "delete _transitions[\($0.priority)];" }.joined(separator: "\n    "))
          }
          
@@ -205,8 +225,7 @@ public struct CXXGenerator {
          """
     }
     
-    func createStateFiles(root: URL, machineName: String, state: State, transitions: [Transition], states: [State]) -> Bool {
-        let actions: [String] = Array<String>(state.actions.keys)
+    func createStateFiles(root: URL, machineName: String, state: State, transitions: [Transition], states: [State], actions: [String]) -> Bool {
         guard
             let _ = createStateHFile(root: root, machineName: machineName, state: state.name, actions: actions, transitions: transitions, states: states),
             let _ = createStateMMFile(root: root, machineName: machineName, state: state.name, transitions: transitions, actions: actions),
@@ -229,10 +248,10 @@ public struct CXXGenerator {
         return true
     }
     
-    func createStatesFiles(root: URL, machineName: String, states: [State], allTransitions: [Transition]) -> Bool {
+    func createStatesFiles(root: URL, machineName: String, states: [State], allTransitions: [Transition], actions: [String]) -> Bool {
         for state in states {
             let transitions = allTransitions.filter { $0.source == state.name }
-            if !createStateFiles(root: root, machineName: machineName, state: state, transitions: transitions, states: states) {
+            if !createStateFiles(root: root, machineName: machineName, state: state, transitions: transitions, states: states, actions: actions) {
                 return false
             }
         }

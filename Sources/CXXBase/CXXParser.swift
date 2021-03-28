@@ -29,7 +29,7 @@ public struct CXXParser {
         }
         let suspendedState = getSuspendedState(location: location, machineName: name, states: states)
         let transitions = createTransitions(root: location, states: states)
-        return Machine(name: name, path: location, includes: includes, includePaths: includePaths, funcRefs: funcRefs, states: states, transitions: transitions, machineVariables: variables, initialState: initialState, suspendedState: suspendedState)
+        return Machine(name: name, path: location, includes: includes, includePaths: includePaths, funcRefs: funcRefs, states: states, transitions: transitions, machineVariables: variables, initialState: initialState, suspendedState: suspendedState, actionDisplayOrder: actions)
     }
     
     func getSuspendedState(location: URL, machineName: String, states: [State]) -> Int? {
