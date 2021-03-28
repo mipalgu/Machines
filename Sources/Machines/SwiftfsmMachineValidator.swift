@@ -82,7 +82,7 @@ struct SwiftfsmMachineValidator: MachineValidator {
                 state.attributes.length(2)
                 state.attributes[0].validate { variables in
                     variables.attributes["state_variables"].required()
-                    variables.attributes["state_variables"].wrappedValue.tableValue.validate { table in
+                    variables.attributes["state_variables"].wrappedValue.blockAttribute.tableValue.validate { table in
                         table.unique() { $0.map { $0[1].lineValue } }
                         table.each { (_, stateVariable) in
                             stateVariable[0].enumeratedValue.in(["let", "var"])
@@ -97,13 +97,13 @@ struct SwiftfsmMachineValidator: MachineValidator {
                     settings.attributes["access_external_variables"].wrappedValue
                         .if { $0.boolValue } then: {
                             settings.attributes["external_variables"].required()
-                            settings.attributes["external_variables"].wrappedValue.enumerableCollectionValue.each { (_, external) in
+                            settings.attributes["external_variables"].wrappedValue.blockAttribute.enumerableCollectionValue.each { (_, external) in
                                 external.in(Machine.path.attributes[0].attributes["external_variables"].wrappedValue.tableValue) {
                                     Set($0.map { $0[1].lineValue })
                                 }
                             }
                             settings.attributes["imports"].required()
-                            settings.attributes["imports"].wrappedValue.codeValue.maxLength(10240)
+                            settings.attributes["imports"].wrappedValue.blockAttribute.codeValue.maxLength(10240)
                         }
                 }
             }
@@ -111,7 +111,7 @@ struct SwiftfsmMachineValidator: MachineValidator {
             validator.attributes.validate { attributes in
                 attributes[0].validate { variables in
                     variables.attributes["external_variables"].required()
-                    variables.attributes["external_variables"].wrappedValue.tableValue.validate { table in
+                    variables.attributes["external_variables"].wrappedValue.blockAttribute.tableValue.validate { table in
                         table.unique { $0.map { $0[1].lineValue } }
                         table.each { (_, externalVariables) in
                             externalVariables[0].enumeratedValue.in(["actuator", "sensor", "external"])
@@ -121,7 +121,7 @@ struct SwiftfsmMachineValidator: MachineValidator {
                         }
                     }
                     variables.attributes["machine_variables"].required()
-                    variables.attributes["machine_variables"].wrappedValue.tableValue.validate { table in
+                    variables.attributes["machine_variables"].wrappedValue.blockAttribute.tableValue.validate { table in
                         table.unique() { $0.map { $0[1].lineValue } }
                         table.each { (_, machineVariables) in
                             machineVariables[0].enumeratedValue.in(["let", "var"])
@@ -131,10 +131,10 @@ struct SwiftfsmMachineValidator: MachineValidator {
                         }
                     }
                     variables.attributes["parameters"].required()
-                    variables.attributes["parameters"].wrappedValue.complexValue.validate { attributes in
+                    variables.attributes["parameters"].wrappedValue.blockAttribute.complexValue.validate { attributes in
                         attributes["enable_parameters"].required().if { $0.boolValue } then: {
                             attributes["parameters"].required()
-                            attributes["parameters"].wrappedValue.tableValue.validate { table in
+                            attributes["parameters"].wrappedValue.blockAttribute.tableValue.validate { table in
                                 table.unique() { $0.map { $0[0].lineValue } }
                                 table.each { (_, parameters) in
                                     parameters[0].lineValue.notEmpty().maxLength(128)
@@ -143,16 +143,16 @@ struct SwiftfsmMachineValidator: MachineValidator {
                                 }
                             }
                             attributes["result_type"].required()
-                            attributes["result_type"].wrappedValue.expressionValue.notEmpty().maxLength(128)
+                            attributes["result_type"].wrappedValue.lineAttribute.expressionValue.notEmpty().maxLength(128)
                         }
                     }
                 }
                 attributes[1].validate { ringlet in
                     ringlet.attributes["use_custom_ringlet"].required()
-                        .if { $0.boolValue }
+                        .if { $0.lineAttribute.boolValue }
                         then: {
                             ringlet.attributes["actions"].required()
-                            ringlet.attributes["actions"].wrappedValue.collectionValue.validate { collection in
+                            ringlet.attributes["actions"].wrappedValue.blockAttribute.collectionValue.validate { collection in
                                 collection.notEmpty()
                                 collection.unique { $0.map(\.lineValue) }
                                 collection.each { (_, action) in
@@ -160,7 +160,7 @@ struct SwiftfsmMachineValidator: MachineValidator {
                                 }
                             }
                             ringlet.attributes["ringlet_variables"].required()
-                            ringlet.attributes["ringlet_variables"].wrappedValue.tableValue.validate { table in
+                            ringlet.attributes["ringlet_variables"].wrappedValue.blockAttribute.tableValue.validate { table in
                                 table.unique() { $0.map { $0[1].lineValue } }
                                 table.each { (_, ringletVariables) in
                                     ringletVariables[0].enumeratedValue.in(["let", "var"])
@@ -170,64 +170,64 @@ struct SwiftfsmMachineValidator: MachineValidator {
                                 }
                             }
                             ringlet.attributes["imports"].required()
-                            ringlet.attributes["imports"].wrappedValue.codeValue.maxLength(10240)
+                            ringlet.attributes["imports"].wrappedValue.blockAttribute.codeValue.maxLength(10240)
                             ringlet.attributes["execute"].required()
-                            ringlet.attributes["execute"].wrappedValue.codeValue.maxLength(10240)
+                            ringlet.attributes["execute"].wrappedValue.blockAttribute.codeValue.maxLength(10240)
                         }
                 }
                 attributes[2].validate { settings in
                     settings.attributes["suspend_state"].required()
-                    settings.attributes["suspend_state"].wrappedValue.enumeratedValue.validate { suspendState in
+                    settings.attributes["suspend_state"].wrappedValue.lineAttribute.enumeratedValue.validate { suspendState in
                         suspendState.in(Machine.path.states, transform: { Set($0.map {$0.name} + [""]) })
                     }
                     settings.attributes["module_dependencies"].required()
-                    settings.attributes["module_dependencies"].wrappedValue.complexValue.validate { moduleDependencies in
+                    settings.attributes["module_dependencies"].wrappedValue.blockAttribute.complexValue.validate { moduleDependencies in
                         moduleDependencies["packages"].required()
-                        moduleDependencies["packages"].wrappedValue.collectionValue.each { (packageIndex, packageRow) in
+                        moduleDependencies["packages"].wrappedValue.blockAttribute.collectionValue.each { (packageIndex, packageRow) in
                             packageRow.complexValue.validate { package in
                                 package["products"].required()
-                                package["products"].wrappedValue.collectionValue.validate { collection in
+                                package["products"].wrappedValue.blockAttribute.collectionValue.validate { collection in
                                     collection.unique() { $0.map { $0.lineValue } }
                                     collection.each { (_, product) in
-                                        product.lineValue.notEmpty().maxLength(128)
+                                        product.lineAttribute.lineValue.notEmpty().maxLength(128)
                                     }
                                 }
-                                package["qualifiers"].wrappedValue.collectionValue.validate { collection in
+                                package["qualifiers"].wrappedValue.blockAttribute.collectionValue.validate { collection in
                                     collection.unique() { $0.map(\.lineValue) }
                                     collection.each { (_, product) in
-                                        product.lineValue.notEmpty().maxLength(128)
+                                        product.lineAttribute.lineValue.notEmpty().maxLength(128)
                                     }
                                 }
-                                package["targets_to_import"].wrappedValue.collectionValue.validate { collection in
+                                package["targets_to_import"].wrappedValue.blockAttribute.collectionValue.validate { collection in
                                     collection.unique() { $0.map(\.lineValue) }
                                     collection.each { (_, product) in
-                                        product.lineValue.notEmpty().maxLength(128)
+                                        product.lineAttribute.lineValue.notEmpty().maxLength(128)
                                     }
                                 }
-                                package["url"].wrappedValue.collectionValue.validate { collection in
+                                package["url"].wrappedValue.blockAttribute.collectionValue.validate { collection in
                                     collection.unique() { $0.map(\.lineValue) }
                                     collection.each { (_, product) in
-                                        product.lineValue.notEmpty().maxLength(128)
+                                        product.lineAttribute.lineValue.notEmpty().maxLength(128)
                                     }
                                 }
                             }
                         }
                         moduleDependencies.validate { moduleDependencies in
                             moduleDependencies["system_imports"].required()
-                            moduleDependencies["system_imports"].wrappedValue.codeValue.maxLength(10240)
+                            moduleDependencies["system_imports"].wrappedValue.blockAttribute.codeValue.maxLength(10240)
                             moduleDependencies["system_includes"].required()
-                            moduleDependencies["system_includes"].wrappedValue.codeValue.maxLength(10240)
+                            moduleDependencies["system_includes"].wrappedValue.blockAttribute.codeValue.maxLength(10240)
                             moduleDependencies["swift_search_paths"].required()
-                            moduleDependencies["swift_search_paths"].wrappedValue.collectionValue.each { (_, swiftSearchPath) in
-                                swiftSearchPath.lineValue.notEmpty().maxLength(1024)
+                            moduleDependencies["swift_search_paths"].wrappedValue.blockAttribute.collectionValue.each { (_, swiftSearchPath) in
+                                swiftSearchPath.lineAttribute.lineValue.notEmpty().maxLength(1024)
                             }
                             moduleDependencies["c_header_search_paths"].required()
-                            moduleDependencies["c_header_search_paths"].wrappedValue.collectionValue.each { (_, cHeaderSearchPaths) in
-                                cHeaderSearchPaths.lineValue.notEmpty().maxLength(1024)
+                            moduleDependencies["c_header_search_paths"].wrappedValue.blockAttribute.collectionValue.each { (_, cHeaderSearchPaths) in
+                                cHeaderSearchPaths.lineAttribute.lineValue.notEmpty().maxLength(1024)
                             }
                             moduleDependencies["linker_search_paths"].required()
-                            moduleDependencies["linker_search_paths"].wrappedValue.collectionValue.each { (_, linkerSearchPaths) in
-                                linkerSearchPaths.lineValue.notEmpty().maxLength(1024)
+                            moduleDependencies["linker_search_paths"].wrappedValue.blockAttribute.collectionValue.each { (_, linkerSearchPaths) in
+                                linkerSearchPaths.lineAttribute.lineValue.notEmpty().maxLength(1024)
                             }
                         }
                     }
