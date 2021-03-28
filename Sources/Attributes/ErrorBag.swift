@@ -94,15 +94,27 @@ public struct ErrorBag<Root> {
     }
     
     public func errors(forPath path: AnyPath<Root>) -> [AttributeError<Root>] {
-        let range = sortedCollection.range(of: AttributeError(message: "", path: path))
-        return Array(self.sortedCollection[range])
+        func isAttributeType(_ type: Any.Type) -> Bool {
+            return type == Attribute.self || type == BlockAttribute.self || type == LineAttribute.self
+        }
+        // Do we have an ancestor who is an attribute type?
+        let ancestorIndex = path.ancestors.lastIndex(where: { isAttributeType($0.targetType) })
+        // Is path an attribute type or does it have an ancestor which is an attribute type?
+        guard isAttributeType(path.targetType) || nil != ancestorIndex else {
+            let range = sortedCollection.range(of: AttributeError(message: "", path: path))
+            return Array(self.sortedCollection[range])
+        }
+        // Operate with the path that is the attribute type.
+        let path = isAttributeType(path.targetType) ? path : path.ancestors[ancestorIndex!]
+        // Treat all subpaths of the attribute type as the same when fetching the errors.
+        return self.errors(includingDescendantsForPath: path)
     }
     
-    public func error<Path: ReadOnlyPathProtocol>(forPath path: Path) -> [AttributeError<Root>] where Path.Root == Root {
+    public func errors<Path: ReadOnlyPathProtocol>(forPath path: Path) -> [AttributeError<Root>] where Path.Root == Root {
         return self.errors(forPath: AnyPath(path))
     }
     
-    public func error<Path: PathProtocol>(forPath path: Path) -> [AttributeError<Root>] where Path.Root == Root {
+    public func errors<Path: PathProtocol>(forPath path: Path) -> [AttributeError<Root>] where Path.Root == Root {
         return self.errors(forPath: AnyPath(path))
     }
     

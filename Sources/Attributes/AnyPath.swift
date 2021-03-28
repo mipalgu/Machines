@@ -64,6 +64,8 @@ public struct AnyPath<Root> {
     
     public let isOptional: Bool
     
+    public let targetType: Any.Type
+    
     let _value: (Root) -> Any
     
     let _isNil: (Root) -> Bool
@@ -73,6 +75,7 @@ public struct AnyPath<Root> {
     private init<P: ReadOnlyPathProtocol>(_ path: P, isOptional: Bool, isNil: @escaping (Root) -> Bool, isSame: @escaping (PartialKeyPath<Root>) -> Bool) where P.Root == Root {
         self.ancestors = path.ancestors
         self.partialKeyPath = path.keyPath
+        self.targetType = P.Value.self
         self._value = { $0[keyPath: path.keyPath] as Any }
         self.isOptional = isOptional || (path.ancestors.last?.isOptional ?? false)
         self._isNil = { root in (path.ancestors.last?.isNil(root) ?? false) || isNil(root) }
