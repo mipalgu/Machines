@@ -64,7 +64,7 @@ public struct ReadOnlyPath<Root, Value>: ReadOnlyPathProtocol {
     public var keyPath: KeyPath<Root, Value>
     
     public init(keyPath: KeyPath<Root, Value>, ancestors: [AnyPath<Root>]) {
-        self.ancestors = ancestors
+        self.ancestors = ancestors.reversed().drop { $0.partialKeyPath == keyPath }.reversed()
         self.keyPath = keyPath
     }
     
@@ -82,7 +82,7 @@ public struct Path<Root, Value>: PathProtocol {
     public var path: WritableKeyPath<Root, Value>
     
     public init(path: WritableKeyPath<Root, Value>, ancestors: [AnyPath<Root>]) {
-        self.ancestors = ancestors
+        self.ancestors = ancestors.reversed().drop { $0.partialKeyPath == path }.reversed()
         self.path = path
     }
     
