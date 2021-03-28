@@ -58,6 +58,7 @@
 
 import Foundation
 import SwiftMachines
+import CXXBase
 
 public final class MachineGenerator {
     
@@ -92,6 +93,22 @@ public final class MachineGenerator {
                 return nil
             }
             return results
+        case .clfsm, .ucfsm:
+            let cxxMachine: CXXBase.Machine
+            do {
+                cxxMachine = try CXXBaseConverter().convert(machine: machine)
+            } catch let e as ConversionError<Machine> {
+                self.errors.append(e.message)
+                return nil
+            } catch let e {
+                self.errors.append("\(e)")
+                return nil
+            }
+            guard CXXGenerator().generate(machine: cxxMachine) else {
+                self.errors = []
+                return nil
+            }
+            return (cxxMachine.path, [])
         default:
             self.errors.append("\(machine.semantics) Machines are currently not supported")
             return nil
