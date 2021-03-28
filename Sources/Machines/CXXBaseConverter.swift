@@ -82,7 +82,7 @@ struct CXXBaseConverter {
             semantics: semantics,
             filePath: machine.path,
             initialState: machine.states[machine.initialState].name,
-            states: machine.states.map { state in toState(state: state, transitionsForState: machine.transitions.filter { $0.source == state.name }.sorted(by: { $0.priority < $1.priority }) ) },
+            states: machine.states.map { state in toState(state: state, transitionsForState: machine.transitions.filter { $0.source == state.name }.sorted(by: { $0.priority < $1.priority }), actionOrder: machine.actionDisplayOrder ) },
             dependencies: [],
             attributes: machineAttributes(machine: machine),
             metaData: []
@@ -127,10 +127,13 @@ struct CXXBaseConverter {
         return attributes
     }
     
-    func toState(state: CXXBase.State, transitionsForState: [CXXBase.Transition]) -> State {
+    func toState(state: CXXBase.State, transitionsForState: [CXXBase.Transition], actionOrder: [String]) -> State {
+        let actions = actionOrder.map {
+            toAction(actionName: $0, code: state.actions[$0] ?? "")
+        }
         return State(
             name: state.name,
-            actions: state.actions.map{ toAction(actionName: $0.0, code: $0.1) },
+            actions: actions,
             transitions: transitionsForState.map(toTransition),
             attributes: stateAttributes(state: state),
             metaData: []
