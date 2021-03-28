@@ -53,8 +53,8 @@ struct CXXBaseMachineValidator: MachineValidator {
                         table.each { (_, stateVariable) in
                             stateVariable[0].expressionValue.notEmpty().maxLength(128)
                             stateVariable[1].lineValue.notEmpty().maxLength(128)
-                            stateVariable[2].expressionValue.notEmpty().maxLength(128)
-                            stateVariable[3].expressionValue.maxLength(128)
+                            stateVariable[2].expressionValue.maxLength(128)
+                            stateVariable[3].lineValue.maxLength(128)
                         }
                     }
                 }
@@ -76,7 +76,7 @@ struct CXXBaseMachineValidator: MachineValidator {
                 attributes[1].attributes["func_refs"].required()
                 attributes[1].attributes["func_refs"].wrappedValue.codeValue.maxLength(2048)
                 attributes[2].attributes["include_paths"].required()
-                attributes[2].attributes["include_paths"].wrappedValue.lineValue.maxLength(2048)
+                attributes[2].attributes["include_paths"].wrappedValue.textValue.maxLength(2048)
                 attributes[2].attributes["includes"].required()
                 attributes[2].attributes["includes"].wrappedValue.codeValue.maxLength(2048)
                 attributes[3].attributes["suspended_state"].wrappedValue.enumeratedValue.in(Machine.path.states, transform: { Set([""] + $0.map { $0.name }) })
