@@ -82,7 +82,7 @@ struct CXXBaseConverter {
             semantics: semantics,
             filePath: machine.path,
             initialState: machine.states[machine.initialState].name,
-            states: machine.states.map { state in toState(state: state, transitionsForState: machine.transitions.filter { $0.source.name == state.name }.sorted(by: { $0.priority < $1.priority }) ) },
+            states: machine.states.map { state in toState(state: state, transitionsForState: machine.transitions.filter { $0.source == state.name }.sorted(by: { $0.priority < $1.priority }) ) },
             dependencies: [],
             attributes: machineAttributes(machine: machine),
             metaData: []
@@ -144,7 +144,7 @@ struct CXXBaseConverter {
     func toTransition(transition: CXXBase.Transition) -> Transition {
         Transition(
             condition: transition.condition,
-            target: transition.target.name,
+            target: transition.target,
             attributes: [],
             metaData: []
         )
@@ -188,8 +188,8 @@ struct CXXBaseConverter {
             fatalError("U dun goofed!")
         }
         return CXXBase.Transition(
-            source: toState(state: source),
-            target: target,
+            source: source.name,
+            target: target.name,
             condition: transition.condition ?? "true",
             priority: UInt(index)
         )

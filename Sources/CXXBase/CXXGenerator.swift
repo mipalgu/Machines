@@ -89,11 +89,11 @@ public struct CXXGenerator {
                          {
          \(actions.map(actionDefinition).joined(separator: "\n\n"))
                              
-         \(transitions.compactMap {
-            guard let targetIndex = states.firstIndex(of: $0.target) else {
+         \(transitions.compactMap { transition in
+            guard let targetIndex = states.firstIndex(where: { $0.name == transition.target }) else {
                 return nil
             }
-            return transitionDefinition(priority: $0.priority, target: targetIndex)
+            return transitionDefinition(priority: transition.priority, target: targetIndex)
          }.joined(separator: "\n\n"))
 
                              \(numberOfTransitions == 0 ? "#pragma clang diagnostic ignored \"-Wzero-length-array\"" : "")
@@ -231,7 +231,7 @@ public struct CXXGenerator {
     
     func createStatesFiles(root: URL, machineName: String, states: [State], allTransitions: [Transition]) -> Bool {
         for state in states {
-            let transitions = allTransitions.filter { $0.source == state }
+            let transitions = allTransitions.filter { $0.source == state.name }
             if !createStateFiles(root: root, machineName: machineName, state: state, transitions: transitions, states: states) {
                 return false
             }
@@ -366,7 +366,7 @@ public struct CXXGenerator {
     
     func createTransitionFiles(root: URL, transitions: [Transition]) -> Bool {
         let success: [Bool] = transitions.map {
-            guard let _ = self.helpers.createFile("State_\($0.source.name)_Transition_\($0.priority).expr", inDirectory: root, withContents: $0.condition) else {
+            guard let _ = self.helpers.createFile("State_\($0.source)_Transition_\($0.priority).expr", inDirectory: root, withContents: $0.condition) else {
                 return false
             }
             return true

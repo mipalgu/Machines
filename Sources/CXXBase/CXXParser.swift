@@ -175,7 +175,7 @@ public struct CXXParser {
               let expression = readTransitionExpression(root: root, state: source.name, number: number) else {
             return nil
         }
-        return Transition(source: source, target: target, condition: expression, priority: number)
+        return Transition(source: source.name, target: target.name, condition: expression, priority: number)
     }
     
     func createTransitionsForState(root: URL, state: Int, states: [State]) -> [Transition] {
