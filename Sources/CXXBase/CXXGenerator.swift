@@ -22,7 +22,8 @@ public struct CXXGenerator {
             helpers.createDirectory(atPath: machine.path),
             createIncludePaths(root: machine.path, paths: machine.includePaths),
             createStatesFiles(root: machine.path, machineName: machine.name, states: machine.states, allTransitions: machine.transitions),
-            createMachineFiles(root: machine.path, machine: machine)
+            createMachineFiles(root: machine.path, machine: machine),
+            createTransitionFiles(root: machine.path, transitions: machine.transitions)
         else {
             return false
         }
@@ -361,6 +362,16 @@ public struct CXXGenerator {
             return false
         }
         return true
+    }
+    
+    func createTransitionFiles(root: URL, transitions: [Transition]) -> Bool {
+        let success: [Bool] = transitions.map {
+            guard let _ = self.helpers.createFile("State_\($0.source.name)_Transition_\($0.priority).expr", inDirectory: root, withContents: $0.condition) else {
+                return false
+            }
+            return true
+        }
+        return success.reduce(true) { $0 && $1 }
     }
     
 }
