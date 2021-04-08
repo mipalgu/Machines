@@ -52,6 +52,10 @@ let package = Package(
             dependencies: ["CXXBase"]
         ),
         .target(
+            name: "SpartanFSMMachines",
+            dependencies: ["CXXBase"]
+        ),
+        .target(
             name: "Machines",
             dependencies: ["swift_helpers", .product(name: "IO", package: "swift_helpers"), .product(name: "Functional", package: "swift_helpers"), "SwiftMachines", "CXXMachines", "XMI", "VHDLMachines", "Attributes", "CXXBase", "UCFSMMachines", "CLFSMMachines"]
         ),
