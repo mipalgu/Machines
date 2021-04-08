@@ -75,7 +75,7 @@ public final class PackageInitializer {
         guard true == self.helpers.createDirectory(atPath: path) else {
             return nil
         }
-        let bin = "swift"
+        let bin = "/usr/bin/swift"
         let args = ["package", "init", "--type", type.rawValue]
         let package = path.appendingPathComponent("Package.swift", isDirectory: false)
         guard
