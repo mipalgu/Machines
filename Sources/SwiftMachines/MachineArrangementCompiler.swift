@@ -127,8 +127,8 @@ public final class MachineArrangementCompiler {
             self.makeCompilerFlags(forMachine: $0)
         }
         let args = arrangementArgs + machineArgs
-        print(args.reduce("env") { "\($0) \($1)" })
-        guard true == self.invoker.run("/usr/bin/env", withArguments: args) else {
+        print(args.reduce("swift build") { "\($0) \($1)" })
+        guard true == self.invoker.run("/usr/bin/swift", withArguments: ["build"] + args) else {
             let _ = fm.changeCurrentDirectoryPath(cwd)
             return nil
         }
@@ -171,7 +171,7 @@ public final class MachineArrangementCompiler {
         andSwiftCompilerFlags swiftCompilerFlags: [String],
         andSwiftBuildFlags swiftBuildFlags: [String]
     ) -> [String] {
-        var args: [String] = ["swift", "build"]
+        var args: [String] = []
         args.append(contentsOf: ["-c", swiftBuildConfig.rawValue])
         args.append(contentsOf: swiftBuildFlags)
         args.append(contentsOf: swiftCompilerFlags.flatMap { ["-Xswiftc", $0] })
