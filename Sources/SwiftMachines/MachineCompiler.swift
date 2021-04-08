@@ -146,7 +146,7 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
         )
         print(args.reduce("env") { "\($0) \($1)" })
         defer { _ = fm.changeCurrentDirectoryPath(cwd) }
-        guard true == self.invoker.run("/usr/bin/env", withArguments: args) else {
+        guard true == self.invoker.run("swift", withArguments: args) else {
             return false
         }
         return true
@@ -165,7 +165,7 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
         let includeSearchPaths = machine.includeSearchPaths.map { "-I\(self.expand($0, withMachine: machine))" }
         let libSearchPaths = machine.libSearchPaths.map { "-L\(self.expand($0, withMachine: machine))" }
         let mandatoryFlags = ["-Xlinker", "-lFSM"]
-        var args: [String] = ["swift", "build"]
+        var args: [String] = ["build"]
         args.append(contentsOf: ["-c", swiftBuildConfig.rawValue])
         args.append(contentsOf: swiftBuildFlags)
         args.append(contentsOf: swiftCompilerFlags.flatMap { ["-Xswiftc", $0] })
