@@ -201,6 +201,7 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
         _ machine: Machine,
         withBuildDir buildDir: String,
         libExtension: String,
+        swiftBuildConfig: SwiftBuildConfig = .debug,
         withCCompilerFlags cCompilerFlags: [String],
         andCXXCompilerFlags cxxCompilerFlags: [String],
         andLinkerFlags linkerFlags: [String],
@@ -223,6 +224,7 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
         print("Compiling at path: \(buildPath.path)")
         let args = self.makeCompilerFlags(
             forMachine: machine,
+            swiftBuildConfig: swiftBuildConfig,
             withCCompilerFlags: cCompilerFlags,
             andCXXCompilerFlags: cxxCompilerFlags,
             andLinkerFlags: linkerFlags,
@@ -243,6 +245,7 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
 
     private func makeCompilerFlags(
         forMachine machine: Machine,
+        swiftBuildConfig: SwiftBuildConfig,
         withCCompilerFlags cCompilerFlags: [String],
         andCXXCompilerFlags cxxCompilerFlags: [String],
         andLinkerFlags linkerFlags: [String],
@@ -254,6 +257,7 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
         let libSearchPaths = machine.libSearchPaths.map { "-L\(self.expand($0, withMachine: machine))" }
         let mandatoryFlags = ["-Xlinker", "-lFSM"]
         var args: [String] = ["swift", "build"]
+        args.append(contentsOf: ["-c", swiftBuildConfig.rawValue])
         args.append(contentsOf: swiftBuildFlags)
         args.append(contentsOf: swiftCompilerFlags.flatMap { ["-Xswiftc", $0] })
         args.append(contentsOf: swiftIncludeSearchPaths.flatMap { ["-Xswiftc", $0] })
