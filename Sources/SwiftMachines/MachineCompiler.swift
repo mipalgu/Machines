@@ -237,13 +237,7 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
         let _ = fm.changeCurrentDirectoryPath(cwd)
         let compileDir = buildPath.appendingPathComponent(".build", isDirectory: true).appendingPathComponent("release", isDirectory: true)
         let outputURL = self.outputURL(forMachine: machine, builtInDirectory: buildDir, libExtension: libExtension)
-        do {
-            _ = try self.copyOutPath(outputURL, toFolder: buildDirPath)
-        } catch let e {
-            self.errors.append("\(e)")
-            print(e)
-            return nil
-        }
+        _ = try? self.copyOutPath(outputURL, toFolder: buildDirPath)
         return (compileDir, outputURL)
     }
 
