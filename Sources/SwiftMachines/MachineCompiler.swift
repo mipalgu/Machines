@@ -146,7 +146,8 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
         )
         print(args.reduce("env") { "\($0) \($1)" })
         defer { _ = fm.changeCurrentDirectoryPath(cwd) }
-        guard true == self.invoker.run("/usr/bin/swift", withArguments: args) else {
+        let swiftExecutable = String(pathToExecutable: "swift", foundInEnvironmentVariables: ["SWIFT"]) ?? "/usr/bin/swift"
+        guard true == self.invoker.run(swiftExecutable, withArguments: args) else {
             return false
         }
         return true

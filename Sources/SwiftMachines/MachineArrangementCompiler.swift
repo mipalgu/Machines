@@ -59,6 +59,7 @@
 import Foundation
 
 import IO
+import swift_helpers
 
 @available(macOS 10.11, *)
 public final class MachineArrangementCompiler {
@@ -128,7 +129,8 @@ public final class MachineArrangementCompiler {
         }
         let args = arrangementArgs + machineArgs
         print(args.reduce("swift build") { "\($0) \($1)" })
-        guard true == self.invoker.run("/usr/bin/swift", withArguments: ["build"] + args) else {
+        let swiftExecutable = String(pathToExecutable: "swift", foundInEnvironmentVariables: ["SWIFT"]) ?? "/usr/bin/swift"
+        guard true == self.invoker.run(swiftExecutable, withArguments: ["build"] + args) else {
             let _ = fm.changeCurrentDirectoryPath(cwd)
             return nil
         }
