@@ -13,6 +13,8 @@ public struct State {
     
     public var actions: [ActionName: String]
     
+    public var actionOrder: [[ActionName]]
+    
     public var signals: [MachineSignal]
     
     public var variables: [VHDLVariable]

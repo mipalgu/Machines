@@ -172,6 +172,14 @@ struct VHDLMachinesConverter {
         ]
     }
     
+    func toLineAttribute(actionOrder: [[String]]) -> [[LineAttribute]] {
+        actionOrder.indices.map { timeslot in
+            actionOrder[timeslot].flatMap { action in
+                [LineAttribute.integer(timeslot), LineAttribute.line(action)]
+            }
+        }
+    }
+    
     func stateAttributes(state: VHDLMachines.State, machine: VHDLMachines.Machine) -> [AttributeGroup] {
         var attributes: [AttributeGroup] = []
         let variables = AttributeGroup(
@@ -217,11 +225,34 @@ struct VHDLMachinesConverter {
             metaData: [:]
         )
         attributes.append(variables)
+        let order = AttributeGroup(
+            name: "actions",
+            fields: [
+                Field(name: "action_names", type: .table(columns: [
+                    ("name", .line)
+                ])),
+                Field(name: "action_order", type: .table(columns: [
+                    ("timeslot", .integer),
+                    ("action", .enumerated(validValues: Set(state.actions.keys)))
+                ]))
+            ],
+            attributes: [
+                "action_names": .table(state.actions.keys.map { [LineAttribute.line($0)] }, columns: [
+                    ("name", .line)
+                ]),
+                "action_order": .table(toLineAttribute(actionOrder: state.actionOrder), columns: [
+                    ("timeslot", .integer),
+                    ("action", .enumerated(validValues: Set(state.actions.keys)))
+                ])
+            ],
+            metaData: [:]
+        )
+        attributes.append(order)
         return attributes
     }
 
     func toState(state: VHDLMachines.State, machine: VHDLMachines.Machine) -> State {
-        let actions = machine.actionOrder.map {
+        let actions = state.actionOrder.reduce([]){ $0 + $1 }.map {
             toAction(actionName: $0, code: state.actions[$0] ?? "")
         }
         guard let stateIndex = machine.states.firstIndex(where: { $0.name == state.name }) else {

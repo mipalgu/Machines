@@ -36,6 +36,4 @@ public struct Machine {
     public var initialState: Int
     
     public var suspendedState: Int?
-    
-    public var actionOrder: [[ActionName]]
 }
