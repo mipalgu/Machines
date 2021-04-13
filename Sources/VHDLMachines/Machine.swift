@@ -1,39 +1,39 @@
 //
-//  Machine.swift
-//  VHDLMachines
+//  File.swift
+//  
 //
-//  Created by Morgan McColl on 3/11/20.
+//  Created by Morgan McColl on 14/4/21.
 //
 
 import Foundation
 
 public struct Machine {
     
-    public var name: String
+    public var name: MachineName
     
     public var path: URL
     
-    public var initialState: State
+    public var includes: [String]
     
-    public var suspendedState: State
+    public var externalSignals: [ExternalSignal]
     
-    public var otherStates: [State]
+    public var externalVariables: [VHDLVariable]
     
-    /// State name is the key
-    public var transitions: [String: [Transition]]
+    public var clocks: [Clock]
     
-    /// Variable name is the key
-    public var externalVariables: [String: VHDLExternalVariable]
+    public var drivingClock: Int
     
-    /// Variable name is the key
-    public var parameters: [String: Parameter]
+    public var dependentMachines: [MachineName: URL]
     
-    /// Variable name is the key
-    public var returnableVariables: [String: ReturnableVariable]
+    public var machineVariables: [VHDLVariable]
     
-    /// Variable name is the key
-    public var machineVariables: [String: VHDLVariable]
+    public var machineSignals: [MachineSignal]
     
-    public var includes: String
+    public var states: [State]
     
+    public var transitions: [Transition]
+    
+    public var initialState: Int
+    
+    public var suspendedState: Int?
 }

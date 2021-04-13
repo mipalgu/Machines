@@ -1,18 +1,19 @@
 //
-//  Variable.swift
-//  VHDLMachines
+//  File.swift
+//  
 //
-//  Created by Morgan McColl on 3/11/20.
+//  Created by Morgan McColl on 14/4/21.
 //
 
-public struct Variable: VHDLVariable {
- 
-    public var signalType: VhdlSignalType
+import Foundation
+
+public protocol Variable {
     
-    public var name: String
+    var type: SignalType {get set}
     
-    public var type: VhdlType
+    var name: String {get set}
     
-    public var initial: String
+    var defaultValue: String? {get set}
     
+    var comment: String? {get set}
 }

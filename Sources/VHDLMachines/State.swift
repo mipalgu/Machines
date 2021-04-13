@@ -1,17 +1,24 @@
 //
-//  State.swift
-//  VHDLMachines
+//  File.swift
+//  
 //
-//  Created by Morgan McColl on 3/11/20.
+//  Created by Morgan McColl on 14/4/21.
 //
+
+import Foundation
 
 public struct State {
     
     public var name: String
     
-    /// List of timeslots with a list of actions in each time slot.
-    public var ringlet: [[Action]]
+    public var actions: [ActionName: String]
     
-    public var variables: [Variable]
+    public var actionOrder: [[ActionName]]
+    
+    public var signals: [MachineSignal]
+    
+    public var variables: [VHDLVariable]
+    
+    public var externalVariables: [String]
     
 }
