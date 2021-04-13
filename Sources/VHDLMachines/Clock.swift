@@ -7,14 +7,10 @@
 
 import Foundation
 
-struct VHDLVariable {
-    
-    var type: VariableType
+struct Clock {
     
     var name: String
     
-    var defaultValue: String?
-    
-    var range: (Int, Int)?
+    var frequency: UInt
     
 }

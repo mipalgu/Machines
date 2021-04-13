@@ -7,14 +7,12 @@
 
 import Foundation
 
-struct VHDLVariable {
+struct MachineSignal: Signal {
     
-    var type: VariableType
+    var type: SignalType
     
     var name: String
     
     var defaultValue: String?
-    
-    var range: (Int, Int)?
-    
+
 }

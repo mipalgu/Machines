@@ -1,16 +1,20 @@
 //
-//  Arrangement.swift
-//  VHDLMachines
+//  File.swift
+//  
 //
-//  Created by Morgan McColl on 3/11/20.
+//  Created by Morgan McColl on 14/4/21.
 //
+
+import Foundation
 
 struct Arrangement {
     
-    var name: String
+    var machines: [URL]
     
-    var machines: [ParentMachine]
+    var externalSignals: [ExternalSignal]
     
-    var externalVariables: [ExternalVariable]
+    var externalVariables: [VHDLVariable]
+    
+    var clocks: [Clock]
     
 }

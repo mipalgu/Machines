@@ -1,11 +1,16 @@
 //
-//  Aliases.swift
-//  VHDLMachines
+//  File.swift
+//  
 //
-//  Created by Morgan McColl on 3/11/20.
+//  Created by Morgan McColl on 14/4/21.
 //
 
-public typealias VhdlLabel = String
-public typealias VhdlType = String
-public typealias VhdlMode = String
-public typealias VhdlSignalType = String
+import Foundation
+
+typealias MachineName = String
+
+typealias ActionName = String
+
+typealias SignalType = String
+
+typealias VariableType = String

@@ -1,14 +1,18 @@
 //
-//  Transition.swift
-//  VHDLMachines
+//  File.swift
+//  
 //
-//  Created by Morgan McColl on 3/11/20.
+//  Created by Morgan McColl on 14/4/21.
 //
+
+import Foundation
 
 public struct Transition {
     
-    public var to: State
+    var condition: String
     
-    public var expression: String
+    var source: Int
+    
+    var target: Int
     
 }
