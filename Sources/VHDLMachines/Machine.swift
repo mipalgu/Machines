@@ -17,7 +17,7 @@ public struct Machine {
     
     public var externalSignals: [ExternalSignal]
     
-    public var externalGenerics: [VHDLVariable]
+    public var externalVariables: [VHDLVariable]
     
     public var clocks: [Clock]
     
@@ -36,4 +36,6 @@ public struct Machine {
     public var initialState: Int
     
     public var suspendedState: Int?
+    
+    public var actionOrder: [[ActionName]]
 }

@@ -9,12 +9,12 @@ import Foundation
 
 public struct ExternalSignal: Variable {
     
-    public enum Mode{
+    public enum Mode: String, CaseIterable {
         
-        case input
-        case output
-        case inputoutput
-        case buffer
+        case input = "in"
+        case output = "out"
+        case inputoutput = "inout"
+        case buffer = "buffer"
     }
     
     public var type: SignalType

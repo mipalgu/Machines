@@ -16,6 +16,23 @@ struct VHDLMachinesConverter {
         let variables = AttributeGroup(
             name: "variables",
             fields: [
+                Field(name: "clocks", type: .table(columns: [
+                    ("name", .line),
+                    ("frequency", .integer)
+                ])),
+                Field(name: "external_signals", type: .table(columns: [
+                    ("mode", .enumerated(validValues: Set(VHDLMachines.ExternalSignal.Mode.allCases.map { $0.rawValue }))),
+                    ("type", .expression(language: .vhdl)),
+                    ("name", .line),
+                    ("value", .expression(language: .vhdl)),
+                    ("comment", .line)
+                ])),
+                Field(name: "external_variables", type: .table(columns: [
+                    ("type", .expression(language: .vhdl)),
+                    ("name", .line),
+                    ("value", .expression(language: .vhdl)),
+                    ("comment", .line)
+                ])),
                 Field(name: "machine_signals", type: .table(columns: [
                     ("type", .expression(language: .vhdl)),
                     ("name", .line),
@@ -27,42 +44,66 @@ struct VHDLMachinesConverter {
                     ("name", .line),
                     ("value", .expression(language: .vhdl)),
                     ("comment", .line)
-                ]))
+                ])),
+                Field(name: "driving_clock", type: .enumerated(validValues: Set(machine.clocks.map { $0.name })))
             ],
             attributes: [
+                "clocks": .table(
+                    machine.clocks.map(toLineAttribute),
+                    columns: [
+                        ("name", .line),
+                        ("frequency", .integer)
+                    ]
+                ),
+                "external_signals": .table(
+                    machine.externalSignals.map(toLineAttribute),
+                    columns: [
+                        ("mode", .enumerated(validValues: Set(VHDLMachines.ExternalSignal.Mode.allCases.map { $0.rawValue }))),
+                        ("type", .expression(language: .vhdl)),
+                        ("name", .line),
+                        ("value", .expression(language: .vhdl)),
+                        ("comment", .line)
+                    ]
+                ),
+                "external_variables": .table(
+                    machine.externalVariables.map(toLineAttribute),
+                    columns: [
+                        ("type", .expression(language: .vhdl)),
+                        ("name", .line),
+                        ("value", .expression(language: .vhdl)),
+                        ("comment", .line)
+                    ]
+                ),
                 "machine_signals": .table(
                     machine.machineSignals.map(toLineAttribute),
                     columns: [
-                        ("type", .expression(language: .cxx)),
+                        ("type", .expression(language: .vhdl)),
                         ("name", .line),
-                        ("value", .expression(language: .cxx)),
+                        ("value", .expression(language: .vhdl)),
                         ("comment", .line)
                     ]
-                )
+                ),
+                "machine_variables": .table(
+                    machine.machineVariables.map(toLineAttribute),
+                    columns: [
+                        ("type", .expression(language: .vhdl)),
+                        ("name", .line),
+                        ("value", .expression(language: .vhdl)),
+                        ("comment", .line)
+                    ]
+                ),
+                "driving_clock": .enumerated(machine.clocks[machine.drivingClock].name, validValues: Set(machine.clocks.map { $0.name }))
             ],
             metaData: [:]
         )
         attributes.append(variables)
-        let funcRefs = AttributeGroup(
-            name: "func_refs",
-            fields: [
-                Field(name: "func_refs", type: .code(language: .cxx))
-            ],
-            attributes: [
-                "func_refs": .code(machine.funcRefs, language: .cxx)
-            ],
-            metaData: [:]
-        )
-        attributes.append(funcRefs)
         let includes = AttributeGroup(
             name: "includes",
             fields: [
-                Field(name: "include_paths", type: .text),
-                Field(name: "includes", type: .code(language: .cxx))
+                Field(name: "includes", type: .code(language: .vhdl))
             ],
             attributes: [
-                "include_paths": .text(machine.includePaths.reduce("") { $0 == "" ? $1 : $0 + "\n" + $1 }),
-                "includes": .code(machine.includes, language: .cxx)
+                "includes": .code(machine.includes.reduce("", addNewline), language: .vhdl)
             ],
             metaData: [:]
         )
@@ -70,9 +111,11 @@ struct VHDLMachinesConverter {
         let settings = AttributeGroup(
             name: "settings",
             fields: [
+                Field(name: "initial_state", type: .enumerated(validValues: Set([""] + machine.states.map(\.name)))),
                 Field(name: "suspended_state", type: .enumerated(validValues: Set([""] + machine.states.map(\.name))))
             ],
             attributes: [
+                "initial_state": .enumerated(machine.states[machine.initialState].name, validValues: Set(machine.states.map(\.name))),
                 "suspended_state": .enumerated(machine.suspendedState.map { machine.states[$0].name } ?? "", validValues: Set([""] + machine.states.map(\.name)))
             ],
             metaData: [:]
@@ -81,17 +124,27 @@ struct VHDLMachinesConverter {
         return attributes
     }
     
-//    func toMachine(machine: VHDLMachines.Machine, semantics: Machine.Semantics) -> Machine {
-//        Machine(
-//            semantics: semantics,
-//            filePath: machine.path,
-//            initialState: machine.states[machine.initialState].name,
-//            states: machine.states.map { state in toState(state: state, transitionsForState: machine.transitions.filter { $0.source == state.name }.sorted(by: { $0.priority < $1.priority }), actionOrder: machine.actionDisplayOrder ) },
-//            dependencies: [],
-//            attributes: machineAttributes(machine: machine),
-//            metaData: []
-//        )
-//    }
+    func toMachine(machine: VHDLMachines.Machine) -> Machine {
+        Machine(
+            semantics: .vhdl,
+            filePath: machine.path,
+            initialState: machine.states[machine.initialState].name,
+            states: machine.states.map { toState(state: $0, machine: machine) },
+            dependencies: [],
+            attributes: machineAttributes(machine: machine),
+            metaData: []
+        )
+    }
+    
+    func addNewline(lhs: String, rhs: String) -> String {
+        if lhs == "" {
+            return rhs
+        }
+        if rhs == "" {
+            return lhs
+        }
+        return lhs + "\n" + rhs
+    }
     
     func toLineAttribute(variable: VHDLMachines.Variable) -> [LineAttribute] {
         [
@@ -101,61 +154,100 @@ struct VHDLMachinesConverter {
             .line(variable.comment ?? "")
         ]
     }
-//
-//    func stateAttributes(state: CXXBase.State) -> [AttributeGroup] {
-//        var attributes: [AttributeGroup] = []
-//        let variables = AttributeGroup(
-//            name: "variables",
-//            fields: [
-//                Field(name: "state_variables", type: .table(columns: [
-//                    ("type", .expression(language: .cxx)),
-//                    ("name", .line),
-//                    ("value", .expression(language: .cxx)),
-//                    ("comment", .line)
-//                ]))
-//            ],
-//            attributes: [
-//                "state_variables": .table(
-//                    state.variables.map(toLineAttribute),
-//                    columns: [
-//                        ("type", .expression(language: .cxx)),
-//                        ("name", .line),
-//                        ("value", .expression(language: .cxx)),
-//                        ("comment", .line)
-//                    ]
-//                )
-//            ],
-//            metaData: [:]
-//        )
-//        attributes.append(variables)
-//        return attributes
-//    }
-//
-//    func toState(state: CXXBase.State, transitionsForState: [CXXBase.Transition], actionOrder: [String]) -> State {
-//        let actions = actionOrder.map {
-//            toAction(actionName: $0, code: state.actions[$0] ?? "")
-//        }
-//        return State(
-//            name: state.name,
-//            actions: actions,
-//            transitions: transitionsForState.map(toTransition),
-//            attributes: stateAttributes(state: state),
-//            metaData: []
-//        )
-//    }
-//
-//    func toAction(actionName: String, code: String) -> Action {
-//        Action(name: actionName, implementation: code, language: .cxx)
-//    }
-//
-//    func toTransition(transition: CXXBase.Transition) -> Transition {
-//        Transition(
-//            condition: transition.condition,
-//            target: transition.target,
-//            attributes: [],
-//            metaData: []
-//        )
-//    }
+    
+    func toLineAttribute(variable: VHDLMachines.ExternalSignal) -> [LineAttribute] {
+        [
+            .enumerated(variable.mode.rawValue, validValues: Set(VHDLMachines.ExternalSignal.Mode.allCases.map { $0.rawValue })),
+            .expression(variable.type, language: .vhdl),
+            .line(variable.name),
+            .expression(variable.defaultValue ?? "", language: .vhdl),
+            .line(variable.comment ?? "")
+        ]
+    }
+    
+    func toLineAttribute(variable: VHDLMachines.Clock) -> [LineAttribute] {
+        [
+            .line(variable.name),
+            .integer(Int(variable.frequency))
+        ]
+    }
+    
+    func stateAttributes(state: VHDLMachines.State, machine: VHDLMachines.Machine) -> [AttributeGroup] {
+        var attributes: [AttributeGroup] = []
+        let variables = AttributeGroup(
+            name: "variables",
+            fields: [
+                Field(name: "externals", type: .table(columns: [
+                    ("name", .enumerated(validValues: Set(machine.externalSignals.map(\.name) + machine.externalVariables.map(\.name))))
+                ])),
+                Field(name: "state_signals", type: .table(columns: [
+                    ("type", .expression(language: .vhdl)),
+                    ("name", .line),
+                    ("value", .expression(language: .vhdl)),
+                    ("comment", .line)
+                ])),
+                Field(name: "state_variables", type: .table(columns: [
+                    ("type", .expression(language: .vhdl)),
+                    ("name", .line),
+                    ("value", .expression(language: .vhdl)),
+                    ("comment", .line)
+                ]))
+            ],
+            attributes: [
+                "externals": .table(state.externalVariables.map { [LineAttribute.line($0)] }, columns: [("name", .line)]),
+                "state_signals": .table(
+                    state.signals.map(toLineAttribute),
+                    columns: [
+                        ("type", .expression(language: .vhdl)),
+                        ("name", .line),
+                        ("value", .expression(language: .vhdl)),
+                        ("comment", .line)
+                    ]
+                ),
+                "state_variables": .table(
+                    state.variables.map(toLineAttribute),
+                    columns: [
+                        ("type", .expression(language: .vhdl)),
+                        ("name", .line),
+                        ("value", .expression(language: .vhdl)),
+                        ("comment", .line)
+                    ]
+                )
+            ],
+            metaData: [:]
+        )
+        attributes.append(variables)
+        return attributes
+    }
+
+    func toState(state: VHDLMachines.State, machine: VHDLMachines.Machine) -> State {
+        let actions = machine.actionOrder.map {
+            toAction(actionName: $0, code: state.actions[$0] ?? "")
+        }
+        guard let stateIndex = machine.states.firstIndex(where: { $0.name == state.name }) else {
+            fatalError("Cannot find state with name: \(state.name).")
+        }
+        return State(
+            name: state.name,
+            actions: actions,
+            transitions: machine.transitions.filter({ $0.source == stateIndex }).map({ toTransition(transition: $0, machine: machine) }),
+            attributes: stateAttributes(state: state, machine: machine),
+            metaData: []
+        )
+    }
+
+    func toAction(actionName: String, code: String) -> Action {
+        Action(name: actionName, implementation: code, language: .vhdl)
+    }
+
+    func toTransition(transition: VHDLMachines.Transition, machine: VHDLMachines.Machine) -> Transition {
+        Transition(
+            condition: transition.condition,
+            target: machine.states[transition.target].name,
+            attributes: [],
+            metaData: []
+        )
+    }
 //
 //    func toVariable(variable: [LineAttribute]) -> Variable? {
 //        guard

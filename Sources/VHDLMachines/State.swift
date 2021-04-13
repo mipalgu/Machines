@@ -9,11 +9,13 @@ import Foundation
 
 public struct State {
     
+    public var name: String
+    
     public var actions: [ActionName: String]
     
-    public var actionOrder: [[ActionName]]
+    public var signals: [MachineSignal]
     
-    public var variables: [String]
+    public var variables: [VHDLVariable]
     
     public var externalVariables: [String]
     
