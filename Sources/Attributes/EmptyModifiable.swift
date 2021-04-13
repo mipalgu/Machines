@@ -62,6 +62,8 @@ import Foundation
 /// structs that use an attributes and meta data array.
 public struct EmptyModifiable: Modifiable {
     
+    public static var path: Path<EmptyModifiable, EmptyModifiable> = Path(path: \.self, ancestors: [])
+    
     public var attributes: [AttributeGroup]
     
     public var metaData: [AttributeGroup]
