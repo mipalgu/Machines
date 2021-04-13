@@ -1667,11 +1667,11 @@ public final class MachineAssembler: Assembler, ErrorContainer {
     }
 
     private func createAndTagGitRepo(inDirectory dir: URL) -> Bool {
-        let bin = "/usr/bin/env"
-        let initArgs = ["git", "init"]
-        let addArgs = ["git", "add", "."]
-        let commitArgs = ["git", "commit", "-am", "\"Initial Commit\""]
-        let tagArgs = ["git", "tag", "0.1.0"]
+        let bin = String(pathToExecutable: "git", foundInEnvironmentVariables: ["GIT"]) ?? "/usr/bin/git"
+        let initArgs = ["init"]
+        let addArgs = ["add", "."]
+        let commitArgs = ["commit", "-am", "\"Initial Commit\""]
+        let tagArgs = ["tag", "0.1.0"]
         guard
             let cwd = self.helpers.cwd,
             true == self.helpers.changeCWD(toPath: dir),

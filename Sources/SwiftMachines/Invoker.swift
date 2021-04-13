@@ -77,9 +77,19 @@ public final class Invoker {
                 $0.activate()
             }
         }
-        process.launch()
+        defer {
+            sources.forEach { $0.cancel() }
+        }
+        do {
+            if #available(macOS 10.13, *) {
+                try process.run()
+            } else {
+                process.launch()
+            }
+        } catch {
+            return false
+        }
         process.waitUntilExit()
-        sources.forEach { $0.cancel() }
         return EXIT_SUCCESS == process.terminationStatus
     }
 
