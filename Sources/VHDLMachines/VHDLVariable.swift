@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct VHDLVariable {
+struct VHDLVariable: Variable {
     
     var type: VariableType
     
@@ -16,5 +16,7 @@ struct VHDLVariable {
     var defaultValue: String?
     
     var range: (Int, Int)?
+    
+    var comment: String?
     
 }

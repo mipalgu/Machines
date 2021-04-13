@@ -11,6 +11,6 @@ typealias MachineName = String
 
 typealias ActionName = String
 
-typealias SignalType = String
+public typealias SignalType = String
 
 typealias VariableType = String

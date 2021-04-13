@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct ExternalSignal: Signal {
+struct ExternalSignal: Variable {
     
     enum Mode{
         
@@ -22,6 +22,8 @@ struct ExternalSignal: Signal {
     var name: String
     
     var defaultValue: String?
+    
+    var comment: String?
     
     var mode: Mode
 }

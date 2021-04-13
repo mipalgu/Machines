@@ -7,11 +7,13 @@
 
 import Foundation
 
-protocol Signal {
+public protocol Variable {
     
     var type: SignalType {get set}
     
     var name: String {get set}
     
     var defaultValue: String? {get set}
+    
+    var comment: String? {get set}
 }
