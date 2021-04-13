@@ -1,9 +1,9 @@
 /*
- * PackageInitializer.swift 
- * Sources 
+ * EmptyModifiable.swift
+ * 
  *
- * Created by Callum McColl on 02/04/2017.
- * Copyright © 2017 Callum McColl. All rights reserved.
+ * Created by Callum McColl on 14/4/21.
+ * Copyright © 2021 Callum McColl. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -56,38 +56,49 @@
  *
  */
 
-import IO
 import Foundation
 
-public final class PackageInitializer {
-
-    private let helpers: FileHelpers
-
-    private let invoker: Invoker
-
-    public init(helpers: FileHelpers = FileHelpers(), invoker: Invoker = Invoker()) {
-        self.helpers = helpers
-        self.invoker = invoker
+/// A useful utility struct which enables quick testing of modifiable
+/// structs that use an attributes and meta data array.
+public struct EmptyModifiable: Modifiable {
+    
+    public static var path: Path<EmptyModifiable, EmptyModifiable> = Path(path: \.self, ancestors: [])
+    
+    public var attributes: [AttributeGroup]
+    
+    public var metaData: [AttributeGroup]
+    
+    public var errorBag: ErrorBag<EmptyModifiable>
+    
+    public init(attributes: [AttributeGroup] = [], metaData: [AttributeGroup] = [], errorBag: ErrorBag<EmptyModifiable> = ErrorBag()) {
+        self.attributes = attributes
+        self.metaData = metaData
+        self.errorBag = errorBag
     }
-
-    public func initialize(withName name: String, andType type: PackageType = .Empty, inDirectory path: URL) -> URL?{
-        let path = path.appendingPathComponent("\(name)", isDirectory: true)
-        guard true == self.helpers.createDirectory(atPath: path) else {
-            return nil
-        }
-        let bin = String(pathToExecutable: "swift", foundInEnvironmentVariables: ["SWIFT"]) ?? "/usr/bin/swift"
-        let args = ["package", "init", "--type", type.rawValue]
-        let package = path.appendingPathComponent("Package.swift", isDirectory: false)
-        guard
-            let cwd = self.helpers.cwd,
-            true == self.helpers.changeCWD(toPath: path),
-            true == self.invoker.run(bin, withArguments: args),
-            true == self.helpers.changeCWD(toPath: cwd),
-            let _ = try? String(contentsOf: package, encoding: .utf8).replacingOccurrences(of: ",\n)", with: "\n)").write(to: package, atomically: true, encoding: .utf8)
-        else {
-            return nil
-        }
-        return path
+    
+    public mutating func addItem<Path, T>(_ item: T, to attribute: Path) throws where EmptyModifiable == Path.Root, Path : PathProtocol, Path.Value == [T] {
+        self[keyPath: attribute.path].append(item)
     }
-
+    
+    public mutating func moveItems<Path, T>(table attribute: Path, from source: IndexSet, to destination: Int) throws where EmptyModifiable == Path.Root, Path : PathProtocol, Path.Value == [T] {
+        self[keyPath: attribute.path].move(fromOffsets: source, toOffset: destination)
+    }
+    
+    public mutating func deleteItem<Path, T>(table attribute: Path, atIndex index: Int) throws where EmptyModifiable == Path.Root, Path : PathProtocol, Path.Value == [T] {
+        self[keyPath: attribute.path].remove(at: index)
+    }
+    
+    public mutating func deleteItems<Path, T>(table attribute: Path, items: IndexSet) throws where EmptyModifiable == Path.Root, Path : PathProtocol, Path.Value == [T] {
+        items.sorted().reversed().forEach {
+            self[keyPath: attribute.path].remove(at: $0)
+        }
+    }
+    
+    public mutating func modify<Path>(attribute: Path, value: Path.Value) throws where EmptyModifiable == Path.Root, Path : PathProtocol {
+        self[keyPath: attribute.path] = value
+    }
+    
+    public func validate() throws {}
+    
+    
 }

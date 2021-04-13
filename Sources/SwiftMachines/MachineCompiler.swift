@@ -81,68 +81,27 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
         self.invoker = invoker
     }
 
-    public func outputPath(forMachine machine: Machine, builtInDirectory buildDir: String, libExtension: String) -> String {
-        return self.outputURL(forMachine: machine, builtInDirectory: buildDir, libExtension: libExtension).path
-    }
-    
-    public func outputURL(forMachine machine: Machine, builtInDirectory buildDir: String, libExtension: String) -> URL {
-        let ext = libExtension
-        let buildDirPath = machine.filePath.appendingPathComponent(buildDir, isDirectory: true)
-        return URL(fileURLWithPath: self.assembler.packagePath(forMachine: machine, builtInDirectory: buildDirPath), isDirectory: true)
-            .appendingPathComponent(".build", isDirectory: true)
-            .appendingPathComponent("release", isDirectory: true)
-            .appendingPathComponent("lib" + machine.name + "Machine." + ext, isDirectory: false)
-    }
-
     public func shouldCompile(_ machine: Machine, inDirectory buildDir: String, libExtension: String) -> Bool {
-        let fm = FileManager.default
-        return false == fm.fileExists(atPath: self.outputPath(forMachine: machine, builtInDirectory: buildDir, libExtension: libExtension))
+        return true
     }
 
     public func compile(
         _ machine: Machine,
         withBuildDir buildDir: String,
         libExtension: String,
+        swiftBuildConfig: SwiftBuildConfig = .debug,
         withCCompilerFlags cCompilerFlags: [String] = [],
         andCXXCompilerFlags cxxCompilerFlags: [String] = [],
         andLinkerFlags linkerFlags: [String] = [],
         andSwiftCompilerFlags swiftCompilerFlags: [String] = [],
         andSwiftBuildFlags swiftBuildFlags: [String] = []
-    ) -> String? {
+    ) -> Bool {
         self.errors = []
-        guard
-            let (_, outputPath) = self.compileMachine(
-                    machine,
-                    withBuildDir: buildDir,
-                    libExtension: libExtension,
-                    withCCompilerFlags: cCompilerFlags,
-                    andCXXCompilerFlags: cxxCompilerFlags,
-                    andLinkerFlags: linkerFlags,
-                    andSwiftCompilerFlags: swiftCompilerFlags,
-                    andSwiftBuildFlags: swiftBuildFlags
-                )
-        else {
-            return nil
-        }
-        return outputPath.path
-    }
-    
-    public func compileTree(
-        _ machine: Machine,
-        withBuildDir buildDir: String,
-        libExtension: String,
-        withCCompilerFlags cCompilerFlags: [String] = [],
-        andCXXCompilerFlags cxxCompilerFlags: [String] = [],
-        andLinkerFlags linkerFlags: [String] = [],
-        andSwiftCompilerFlags swiftCompilerFlags: [String] = [],
-        andSwiftBuildFlags swiftBuildFlags: [String] = []
-    ) -> [String]? {
-        self.errors = []
-        self.compiledMachines = [:]
-        return self.compileTreeReal(
+        return self.compileMachine(
             machine,
             withBuildDir: buildDir,
             libExtension: libExtension,
+            swiftBuildConfig: swiftBuildConfig,
             withCCompilerFlags: cCompilerFlags,
             andCXXCompilerFlags: cxxCompilerFlags,
             andLinkerFlags: linkerFlags,
@@ -150,79 +109,35 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
             andSwiftBuildFlags: swiftBuildFlags
         )
     }
-    
-    fileprivate func compileTreeReal(
-        _ machine: Machine,
-        withBuildDir buildDir: String,
-        libExtension: String,
-        withCCompilerFlags cCompilerFlags: [String] = [],
-        andCXXCompilerFlags cxxCompilerFlags: [String] = [],
-        andLinkerFlags linkerFlags: [String] = [],
-        andSwiftCompilerFlags swiftCompilerFlags: [String] = [],
-        andSwiftBuildFlags swiftBuildFlags: [String] = [],
-        subdirs: [String] = []
-    ) -> [String]? {
-        let absolutePath = machine.filePath.resolvingSymlinksInPath().absoluteString
-        if let outputPath = self.compiledMachines[absolutePath] {
-            return [outputPath]
-        }
-        guard
-            let dependentMachines = machine.dependencies.map { $0.machine }.failMap({
-                self.compileTreeReal(
-                    $0,
-                    withBuildDir: buildDir,
-                    libExtension: libExtension,
-                    withCCompilerFlags: cCompilerFlags,
-                    andCXXCompilerFlags: cxxCompilerFlags,
-                    andLinkerFlags: linkerFlags,
-                    andSwiftCompilerFlags: swiftCompilerFlags,
-                    andSwiftBuildFlags: swiftBuildFlags,
-                    subdirs: subdirs + [$0.name]
-                )
-            })?.flatMap({ $0 }),
-            let (_, outputPath) = self.compileMachine(
-                machine,
-                withBuildDir: buildDir,
-                libExtension: libExtension,
-                withCCompilerFlags: cCompilerFlags,
-                andCXXCompilerFlags: cxxCompilerFlags,
-                andLinkerFlags: linkerFlags,
-                andSwiftCompilerFlags: swiftCompilerFlags,
-                andSwiftBuildFlags: swiftBuildFlags
-            )
-        else {
-            return nil
-        }
-        self.compiledMachines[absolutePath] = outputPath.path
-        return [outputPath.path]
-    }
 
     private func compileMachine(
         _ machine: Machine,
         withBuildDir buildDir: String,
         libExtension: String,
+        swiftBuildConfig: SwiftBuildConfig = .debug,
         withCCompilerFlags cCompilerFlags: [String],
         andCXXCompilerFlags cxxCompilerFlags: [String],
         andLinkerFlags linkerFlags: [String],
         andSwiftCompilerFlags swiftCompilerFlags: [String],
         andSwiftBuildFlags swiftBuildFlags: [String]
-    ) -> (URL, URL)? {
+    ) -> Bool {
         print("Compile: \(machine.name)")
         let buildDirPath = machine.filePath.appendingPathComponent(buildDir, isDirectory: true)
         guard let (buildPath, _) = self.assembler.assemble(machine, inDirectory: buildDirPath) else {
             self.errors = self.assembler.errors
-            return nil
+            return false
         }
         print("Compiling \(machine.name) with Package at path: \(buildPath.path)")
         let fm = FileManager.default
         let cwd = fm.currentDirectoryPath
         guard true == fm.changeCurrentDirectoryPath(buildPath.path) else {
             self.errors.append("Unable to change into directory \(buildPath.path)")
-            return nil
+            return false
         }
         print("Compiling at path: \(buildPath.path)")
         let args = self.makeCompilerFlags(
             forMachine: machine,
+            swiftBuildConfig: swiftBuildConfig,
             withCCompilerFlags: cCompilerFlags,
             andCXXCompilerFlags: cxxCompilerFlags,
             andLinkerFlags: linkerFlags,
@@ -230,25 +145,17 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
             andSwiftBuildFlags: swiftBuildFlags
         )
         print(args.reduce("env") { "\($0) \($1)" })
-        guard true == self.invoker.run("/usr/bin/env", withArguments: args) else {
-            let _ = fm.changeCurrentDirectoryPath(cwd)
-            return nil
+        defer { _ = fm.changeCurrentDirectoryPath(cwd) }
+        let swiftExecutable = String(pathToExecutable: "swift", foundInEnvironmentVariables: ["SWIFT"]) ?? "/usr/bin/swift"
+        guard true == self.invoker.run(swiftExecutable, withArguments: args) else {
+            return false
         }
-        let _ = fm.changeCurrentDirectoryPath(cwd)
-        let compileDir = buildPath.appendingPathComponent(".build", isDirectory: true).appendingPathComponent("release", isDirectory: true)
-        let outputURL = self.outputURL(forMachine: machine, builtInDirectory: buildDir, libExtension: libExtension)
-        do {
-            _ = try self.copyOutPath(outputURL, toFolder: buildDirPath)
-        } catch let e {
-            self.errors.append("\(e)")
-            print(e)
-            return nil
-        }
-        return (compileDir, outputURL)
+        return true
     }
 
     private func makeCompilerFlags(
         forMachine machine: Machine,
+        swiftBuildConfig: SwiftBuildConfig,
         withCCompilerFlags cCompilerFlags: [String],
         andCXXCompilerFlags cxxCompilerFlags: [String],
         andLinkerFlags linkerFlags: [String],
@@ -259,7 +166,8 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
         let includeSearchPaths = machine.includeSearchPaths.map { "-I\(self.expand($0, withMachine: machine))" }
         let libSearchPaths = machine.libSearchPaths.map { "-L\(self.expand($0, withMachine: machine))" }
         let mandatoryFlags = ["-Xlinker", "-lFSM"]
-        var args: [String] = ["swift", "build"]
+        var args: [String] = ["build"]
+        args.append(contentsOf: ["-c", swiftBuildConfig.rawValue])
         args.append(contentsOf: swiftBuildFlags)
         args.append(contentsOf: swiftCompilerFlags.flatMap { ["-Xswiftc", $0] })
         args.append(contentsOf: swiftIncludeSearchPaths.flatMap { ["-Xswiftc", $0] })
@@ -281,17 +189,6 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
             return path
         }
         return URL(fileURLWithPath: path, relativeTo: machine.filePath).path
-    }
-    
-    fileprivate func copyOutPath(_ outPath: URL, toFolder dir: URL) throws -> Bool {
-        let fm = FileManager.default
-        var components = String(outPath.lastPathComponent.dropFirst(3)).components(separatedBy: ".")
-        if components.count >= 2 && components[components.count - 2].hasSuffix("Machine") {
-            components[components.count - 2] = String(components[components.count - 2].dropLast(7))
-        }
-        let name = components.combine("") { $0 + "." + $1 }
-        try fm.copyItem(at: outPath, to: dir.appendingPathComponent(name, isDirectory: false))
-        return true
     }
 
 }
