@@ -58,6 +58,8 @@
 
 import Foundation
 
+/// A useful utility struct which enables quick testing of modifiable
+/// structs that use an attributes and meta data array.
 public struct EmptyModifiable: Modifiable {
     
     public var attributes: [AttributeGroup]
