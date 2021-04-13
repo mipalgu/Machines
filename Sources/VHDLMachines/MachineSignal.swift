@@ -7,14 +7,14 @@
 
 import Foundation
 
-struct MachineSignal: Variable {
+public struct MachineSignal: Variable {
     
-    var type: SignalType
+    public var type: SignalType
     
-    var name: String
+    public var name: String
     
-    var defaultValue: String?
+    public var defaultValue: String?
     
-    var comment: String?
+    public var comment: String?
 
 }

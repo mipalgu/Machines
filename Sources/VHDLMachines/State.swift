@@ -9,12 +9,12 @@ import Foundation
 
 public struct State {
     
-    var actions: [ActionName: String]
+    public var actions: [ActionName: String]
     
-    var actionOrder: [[ActionName]]
+    public var actionOrder: [[ActionName]]
     
-    var variables: [String]
+    public var variables: [String]
     
-    var externalVariables: [String]
+    public var externalVariables: [String]
     
 }

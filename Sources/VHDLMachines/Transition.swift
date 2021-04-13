@@ -9,10 +9,10 @@ import Foundation
 
 public struct Transition {
     
-    var condition: String
+    public var condition: String
     
-    var source: Int
+    public var source: Int
     
-    var target: Int
+    public var target: Int
     
 }

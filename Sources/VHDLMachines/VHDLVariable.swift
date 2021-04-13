@@ -7,16 +7,16 @@
 
 import Foundation
 
-struct VHDLVariable: Variable {
+public struct VHDLVariable: Variable {
     
-    var type: VariableType
+    public var type: VariableType
     
-    var name: String
+    public var name: String
     
-    var defaultValue: String?
+    public var defaultValue: String?
     
-    var range: (Int, Int)?
+    public var range: (Int, Int)?
     
-    var comment: String?
+    public var comment: String?
     
 }

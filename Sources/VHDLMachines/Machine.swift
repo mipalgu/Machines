@@ -9,31 +9,31 @@ import Foundation
 
 public struct Machine {
     
-    var name: MachineName
+    public var name: MachineName
     
-    var path: URL
+    public var path: URL
     
-    var includes: [String]
+    public var includes: [String]
     
-    var externalSignals: [ExternalSignal]
+    public var externalSignals: [ExternalSignal]
     
-    var externalGenerics: [VHDLVariable]
+    public var externalGenerics: [VHDLVariable]
     
-    var clocks: [Clock]
+    public var clocks: [Clock]
     
-    var drivingClock: Int
+    public var drivingClock: Int
     
-    var dependentMachines: [MachineName: URL]
+    public var dependentMachines: [MachineName: URL]
     
-    var machineVariables: [VHDLVariable]
+    public var machineVariables: [VHDLVariable]
     
-    var machineSignals: [MachineSignal]
+    public var machineSignals: [MachineSignal]
     
-    var states: [State]
+    public var states: [State]
     
-    var transitions: [Transition]
+    public var transitions: [Transition]
     
-    var initialState: Int
+    public var initialState: Int
     
-    var suspendedState: Int?
+    public var suspendedState: Int?
 }

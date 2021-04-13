@@ -7,10 +7,10 @@
 
 import Foundation
 
-typealias MachineName = String
+public typealias MachineName = String
 
-typealias ActionName = String
+public typealias ActionName = String
 
 public typealias SignalType = String
 
-typealias VariableType = String
+public typealias VariableType = String

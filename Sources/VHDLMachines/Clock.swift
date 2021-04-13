@@ -7,10 +7,10 @@
 
 import Foundation
 
-struct Clock {
+public struct Clock {
     
-    var name: String
+    public var name: String
     
-    var frequency: UInt
+    public var frequency: UInt
     
 }

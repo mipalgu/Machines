@@ -7,9 +7,9 @@
 
 import Foundation
 
-struct ExternalSignal: Variable {
+public struct ExternalSignal: Variable {
     
-    enum Mode{
+    public enum Mode{
         
         case input
         case output
@@ -17,13 +17,13 @@ struct ExternalSignal: Variable {
         case buffer
     }
     
-    var type: SignalType
+    public var type: SignalType
     
-    var name: String
+    public var name: String
     
-    var defaultValue: String?
+    public var defaultValue: String?
     
-    var comment: String?
+    public var comment: String?
     
-    var mode: Mode
+    public var mode: Mode
 }
