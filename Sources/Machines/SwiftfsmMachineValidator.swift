@@ -204,12 +204,7 @@ struct SwiftfsmMachineValidator: MachineValidator {
                                         product.lineAttribute.lineValue.notEmpty().maxLength(128)
                                     }
                                 }
-                                package["url"].wrappedValue.blockAttribute.collectionValue.validate { collection in
-                                    collection.unique() { $0.map(\.lineValue) }
-                                    collection.each { (_, product) in
-                                        product.lineAttribute.lineValue.notEmpty().maxLength(128)
-                                    }
-                                }
+                                package["url"].wrappedValue.lineAttribute.lineValue.notEmpty().maxLength(128)
                             }
                         }
                         moduleDependencies.validate { moduleDependencies in
