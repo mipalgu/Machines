@@ -36,4 +36,37 @@ public struct Machine {
     public var initialState: Int
     
     public var suspendedState: Int?
+    
+    public init(
+        name: MachineName,
+        path: URL,
+        includes: [String],
+        externalSignals: [ExternalSignal],
+        externalVariables: [VHDLVariable],
+        clocks: [Clock],
+        drivingClock: Int,
+        dependentMachines: [MachineName: URL],
+        machineVariables: [VHDLVariable],
+        machineSignals: [MachineSignal],
+        states: [State],
+        transitions: [Transition],
+        initialState: Int,
+        suspendedState: Int?
+    ) {
+        self.name = name
+        self.path = path
+        self.includes = includes
+        self.externalSignals = externalSignals
+        self.externalVariables = externalVariables
+        self.clocks = clocks
+        self.drivingClock = drivingClock
+        self.dependentMachines = dependentMachines
+        self.machineVariables = machineVariables
+        self.machineSignals = machineSignals
+        self.states = states
+        self.transitions = transitions
+        self.initialState = initialState
+        self.suspendedState = suspendedState
+    }
+    
 }
