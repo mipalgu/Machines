@@ -562,7 +562,7 @@ struct SwiftfsmConverter: Converter, MachineValidator {
         guard let accessType = SwiftMachines.Variable.AccessType(rawValue: variable[0].enumeratedValue) ?? self.parseExternalAccessType(variable[0].enumeratedValue) else {
             throw ConversionError(message: "Invalid value", path: ReadOnlyPath(keyPath: path.keyPath.appending(path: \.[0]), ancestors: path.fullPath))
         }
-        let label = String(variable[1].expressionValue)
+        let label = String(variable[1].lineValue)
         let type = String(variable[2].expressionValue)
         return SwiftMachines.Variable(accessType: accessType, label: label, type: type, initialValue: String(variable[3].expressionValue))
     }
