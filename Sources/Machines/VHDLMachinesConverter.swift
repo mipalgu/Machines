@@ -18,7 +18,8 @@ struct VHDLMachinesConverter {
             fields: [
                 Field(name: "clocks", type: .table(columns: [
                     ("name", .line),
-                    ("frequency", .integer)
+                    ("frequency", .integer),
+                    ("unit", .enumerated(validValues: Set(VHDLMachines.Clock.FrequencyUnit.allCases.map { $0.rawValue })))
                 ])),
                 Field(name: "external_signals", type: .table(columns: [
                     ("mode", .enumerated(validValues: Set(VHDLMachines.ExternalSignal.Mode.allCases.map { $0.rawValue }))),
@@ -52,7 +53,8 @@ struct VHDLMachinesConverter {
                     machine.clocks.map(toLineAttribute),
                     columns: [
                         ("name", .line),
-                        ("frequency", .integer)
+                        ("frequency", .integer),
+                        ("unit", .enumerated(validValues: Set(VHDLMachines.Clock.FrequencyUnit.allCases.map { $0.rawValue })))
                     ]
                 ),
                 "external_signals": .table(
@@ -168,7 +170,8 @@ struct VHDLMachinesConverter {
     func toLineAttribute(variable: VHDLMachines.Clock) -> [LineAttribute] {
         [
             .line(variable.name),
-            .integer(Int(variable.frequency))
+            .integer(Int(variable.frequency)),
+            .enumerated(variable.unit.rawValue, validValues: Set(VHDLMachines.Clock.FrequencyUnit.allCases.map { $0.rawValue }))
         ]
     }
     

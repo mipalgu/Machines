@@ -1,0 +1,132 @@
+//
+//  File.swift
+//  
+//
+//  Created by Morgan McColl on 16/4/21.
+//
+
+import Foundation
+import Attributes
+
+struct VHDLMachinesValidator: MachineValidator {
+    
+    private var validator: AnyValidator<Machine> = {
+        Machine.path.validate { validator in
+            validator.name.alphadash().notEmpty().maxLength(64)
+            validator.initialState.in(Machine.path.states, transform: { Set($0.map { $0.name }) })
+            validator.states.maxLength(128)
+            validator.states.each { (stateIndex, state: ValidationPath<ReadOnlyPath<Machine, State>>) in
+                state.name
+                    .alphadash()
+                    .notEmpty()
+                    .maxLength(64)
+                state.actions.unique() { $0.map { $0.name } }
+                state.actions.length(5)
+                state.actions.each { (_, action) in
+                    action.name.in(["OnEntry", "OnExit", "Internal", "OnSuspend", "OnResume"])
+                }
+                state.actions.each { (_, action) in
+                    action.implementation.maxLength(2048)
+                    action.language.equals(.vhdl)
+                }
+                state.transitions.maxLength(128)
+                state.transitions.each { (_, transition) in
+                    transition.target.in(Machine.path.states, transform: { Set($0.map { $0.name }) })
+                    transition.condition.if { $0 != nil } then: {
+                        transition.condition.wrappedValue.maxLength(1024)
+                    }
+                    transition.attributes.empty()
+                }
+                state.attributes.length(2)
+                state.attributes[0].validate { variables in
+                    variables.attributes["externals"].required()
+                    variables.attributes["externals"].wrappedValue.tableValue.validate {table in
+                        table.unique() { $0.map { $0[0].enumeratedValue } }
+                        table.each { (_, external) in
+                            external[0].enumeratedValue.notEmpty().maxLength(128)
+                            external[0].enumeratedValue.alphanumeric()
+                        }
+                    }
+                    variables.attributes["state_signals"].required()
+                    variables.attributes["state_signals"].wrappedValue.tableValue.validate { table in
+                        table.unique() { $0.map { $0[1].lineValue } }
+                        table.each { (_, stateSignal) in
+                            stateSignal[0].expressionValue.notEmpty().maxLength(128)
+                            stateSignal[1].lineValue.notEmpty().maxLength(128)
+                            stateSignal[2].expressionValue.maxLength(128)
+                            stateSignal[3].lineValue.maxLength(128)
+                        }
+                    }
+                    variables.attributes["state_variables"].required()
+                    variables.attributes["state_variables"].wrappedValue.tableValue.validate { table in
+                        table.unique() { $0.map { $0[3].lineValue } }
+                        table.each { (_, stateVariable) in
+                            stateVariable[0].expressionValue.notEmpty().maxLength(128)
+                            stateVariable[1].lineValue.numeric()
+                            stateVariable[2].lineValue.numeric()
+                            stateVariable[3].lineValue.notEmpty().maxLength(128)
+                            stateVariable[4].expressionValue.maxLength(128)
+                            stateVariable[5].lineValue.maxLength(128)
+                        }
+                    }
+                }
+                state.attributes[1].validate { actions in
+                    actions.attributes["action_names"].required()
+                    actions.attributes["action_names"].wrappedValue.tableValue.validate { table in
+                        table.unique() { $0.map { $0[0].lineValue } }
+                        table.each { (_, actionName) in
+                            actionName[0].lineValue.notEmpty().maxLength(128)
+                            actionName[0].lineValue.alpha()
+                        }
+                    }
+                    actions.attributes["action_order"].required()
+                    actions.attributes["action_order"].wrappedValue.tableValue.validate { table in
+                        table.unique() { $0.map { $0[1].enumeratedValue } }
+                        table.each { (_, actionSlot) in
+                            actionSlot[0].integerValue.between(min: 0, max: 128)
+                            actionSlot[1].enumeratedValue.notEmpty().alpha().maxLength(128)
+                        }
+                    }
+                }
+            }
+            validator.attributes.length(3)
+            validator.attributes.validate { attributes in
+                attributes[0].validate { variables in
+                    variables.attributes["clocks"].required()
+                    variables.attributes["clocks"].wrappedValue.tableValue.validate { table in
+                        table.unique() { $0.map { $0[0].lineValue } }
+                        table.each { (_, clock) in
+                            clock[0].lineValue.notEmpty().alphanumeric().maxLength(128)
+                            clock[1].integerValue.between(min: 0, max: 999)
+                            clock[2].enumeratedValue.notEmpty().alpha().maxLength(3)
+                        }
+                    }
+                    variables.attributes["external_signals"].required()
+                    variables.attributes["external_variables"].required()
+                    variables.attributes["machine_signals"].required()
+                    variables.attributes["machine_variables"].required()
+                    variables.attributes["driving_clock"].required()
+                }
+                attributes[1].validate { includes in
+                    includes.attributes["includes"].required()
+                    includes.attributes["includes"].wrappedValue.codeValue.maxLength(2048)
+                }
+                attributes[2].validate { settings in
+                    settings.attributes["initial_state"].required()
+                    settings.attributes["initial_state"].wrappedValue.enumeratedValue.notEmpty().alphanumeric().maxLength(128)
+                    settings.attributes["suspended_state"].required()
+                    settings.attributes["suspended_state"].wrappedValue.enumeratedValue.alphanumeric().maxLength(128)
+                }
+            }
+        }
+    }()
+    
+    func validate(machine: Machine) throws {
+        if machine.semantics != .vhdl {
+            throw MachinesError.unsupportedSemantics(machine.semantics)
+        }
+        try self.validator.performValidation(machine)
+    }
+    
+    
+}

@@ -21,7 +21,7 @@ struct CXXBaseMachineValidator: MachineValidator {
                     .notEmpty()
                     .maxLength(64)
                 state.actions.unique() { $0.map { $0.name } }
-                validator.semantics.if { $0 == .clfsm } then: {
+                validator.semantics.if { $0 == .clfsm || $0 == .spartanfsm } then: {
                     state.actions.length(5)
                     state.actions.each { (_, action) in
                         action.name.in(["OnEntry", "OnExit", "Internal", "OnSuspend", "OnResume"])
@@ -85,7 +85,7 @@ struct CXXBaseMachineValidator: MachineValidator {
     }()
     
     func validate(machine: Machine) throws {
-        if machine.semantics != .ucfsm && machine.semantics != .clfsm {
+        if machine.semantics != .ucfsm && machine.semantics != .clfsm && machine.semantics != .spartanfsm {
             throw MachinesError.unsupportedSemantics(machine.semantics)
         }
         try self.validator.performValidation(machine)
