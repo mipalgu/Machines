@@ -102,10 +102,48 @@ struct VHDLMachinesValidator: MachineValidator {
                         }
                     }
                     variables.attributes["external_signals"].required()
+                    variables.attributes["external_signals"].wrappedValue.tableValue.validate { table in
+                        table.unique() { $0.map { $0[2].lineValue } }
+                        table.each { (_, signal) in
+                            signal[0].enumeratedValue.notEmpty().alpha().maxLength(6)
+                            signal[1].expressionValue.notEmpty().alphadash().maxLength(128)
+                            signal[2].lineValue.notEmpty().alphanumeric().maxLength(128)
+                            signal[3].expressionValue.maxLength(128)
+                            signal[4].lineValue.maxLength(128)
+                        }
+                    }
                     variables.attributes["external_variables"].required()
+                    variables.attributes["external_variables"].wrappedValue.tableValue.validate { table in
+                        table.unique() { $0.map { $0[1].lineValue } }
+                        table.each { (_, variable) in
+                            variable[0].expressionValue.notEmpty().maxLength(128)
+                            variable[1].lineValue.notEmpty().alphanumeric().maxLength(128)
+                            variable[2].expressionValue.maxLength(128)
+                            variable[3].lineValue.maxLength(128)
+                        }
+                    }
                     variables.attributes["machine_signals"].required()
+                    variables.attributes["machine_signals"].wrappedValue.tableValue.validate { table in
+                        table.unique() { $0.map { $0[1].lineValue } }
+                        table.each { (_, variable) in
+                            variable[0].expressionValue.notEmpty().maxLength(128)
+                            variable[1].lineValue.notEmpty().alphanumeric().maxLength(128)
+                            variable[2].expressionValue.maxLength(128)
+                            variable[3].lineValue.maxLength(128)
+                        }
+                    }
                     variables.attributes["machine_variables"].required()
+                    variables.attributes["machine_variables"].wrappedValue.tableValue.validate { table in
+                        table.unique() { $0.map { $0[1].lineValue } }
+                        table.each { (_, variable) in
+                            variable[0].expressionValue.notEmpty().maxLength(128)
+                            variable[1].lineValue.notEmpty().alphanumeric().maxLength(128)
+                            variable[2].expressionValue.maxLength(128)
+                            variable[3].lineValue.maxLength(128)
+                        }
+                    }
                     variables.attributes["driving_clock"].required()
+                    variables.attributes["driving_clock"].wrappedValue.enumeratedValue.notEmpty().alphanumeric().maxLength(128)
                 }
                 attributes[1].validate { includes in
                     includes.attributes["includes"].required()
