@@ -196,6 +196,8 @@ struct VHDLMachinesConverter {
                 ])),
                 Field(name: "state_variables", type: .table(columns: [
                     ("type", .expression(language: .vhdl)),
+                    ("lower_range", .line),
+                    ("upper_range", .line),
                     ("name", .line),
                     ("value", .expression(language: .vhdl)),
                     ("comment", .line)
@@ -216,6 +218,8 @@ struct VHDLMachinesConverter {
                     state.variables.map(toLineAttribute),
                     columns: [
                         ("type", .expression(language: .vhdl)),
+                        ("lower_range", .line),
+                        ("upper_range", .line),
                         ("name", .line),
                         ("value", .expression(language: .vhdl)),
                         ("comment", .line)
@@ -279,39 +283,91 @@ struct VHDLMachinesConverter {
             metaData: []
         )
     }
-//
-//    func toVariable(variable: [LineAttribute]) -> Variable? {
-//        guard
-//            variable.count == 4,
-//            variable[0].type == .expression(language: .cxx),
-//            variable[1].type == .line,
-//            variable[2].type == .expression(language: .cxx),
-//            variable[3].type == .line
-//        else {
-//            return nil
-//        }
-//        return Variable(
-//            type: variable[0].expressionValue,
-//            name: variable[1].lineValue,
-//            value: variable[2].expressionValue == "" ? nil : variable[2].expressionValue,
-//            comment: variable[3].lineValue
-//        )
-//    }
-//
-//    func fromAction(action: Action) -> (String, String) {
-//        (
-//            action.name,
-//            action.implementation
-//        )
-//    }
-//
-//    func toState(state: State) -> CXXBase.State {
-//        CXXBase.State(
-//            name: state.name,
-//            variables: state.attributes.first { $0.name == "variables" }?.attributes["state_variables"]?.tableValue.compactMap(toVariable) ?? [],
-//            actions: Dictionary<String, String>(uniqueKeysWithValues: state.actions.map(fromAction))
-//        )
-//    }
+
+
+    func fromAction(action: Action) -> (String, String) {
+        (
+            action.name,
+            action.implementation
+        )
+    }
+    
+    func actionOrder(state: State) -> [[VHDLMachines.ActionName]] {
+        guard let order = state.attributes.first(where: { $0.name == "actions" })?.attributes["action_order"] else {
+            fatalError("Failed to retrieve action attributes.")
+        }
+        if order.tableValue.isEmpty {
+            return [[]]
+        }
+        let maxIndex = order.tableValue.reduce(0) {
+            max($0, $1[0].integerValue)
+        }
+        var actionOrder: [[VHDLMachines.ActionName]] = Array(repeating: [], count: maxIndex + 1)
+        actionOrder.indices.forEach { timeslot in
+            actionOrder[timeslot] = order.tableValue.compactMap { row in
+                if row[0].integerValue == timeslot {
+                    return row[1].enumeratedValue.trimmingCharacters(in: .whitespaces)
+                }
+                return nil
+            }
+        }
+        return actionOrder
+    }
+    
+    func stateSignals(state: State) -> [VHDLMachines.MachineSignal] {
+        guard let rows = state.attributes.first(where: { $0.name == "variables" })?.attributes["state_signals"]?.tableValue else {
+            return []
+        }
+        return rows.map {
+            VHDLMachines.MachineSignal(
+                type: $0[0].expressionValue.trimmingCharacters(in: .whitespaces),
+                name: $0[1].lineValue.trimmingCharacters(in: .whitespaces),
+                defaultValue: $0[2].expressionValue.trimmingCharacters(in: .whitespaces) == "" ? nil : $0[2].expressionValue.trimmingCharacters(in: .whitespaces),
+                comment: $0[3].lineValue.trimmingCharacters(in: .whitespaces) == "" ? nil : $0[3].lineValue.trimmingCharacters(in: .whitespaces)
+            )
+        }
+    }
+    
+    func stateVariables(state: State) -> [VHDLMachines.VHDLVariable] {
+        guard let rows = state.attributes.first(where: { $0.name == "variables" })?.attributes["state_variables"]?.tableValue else {
+            return []
+        }
+        return rows.map {
+            let lowerRange = Int($0[1].lineValue.trimmingCharacters(in: .whitespaces))
+            let upperRange = Int($0[2].lineValue.trimmingCharacters(in: .whitespaces))
+            return VHDLMachines.VHDLVariable(
+                type: $0[0].expressionValue.trimmingCharacters(in: .whitespaces),
+                name: $0[3].lineValue.trimmingCharacters(in: .whitespaces),
+                defaultValue: $0[4].expressionValue.trimmingCharacters(in: .whitespaces) == "" ? nil : $0[4].expressionValue.trimmingCharacters(in: .whitespaces),
+                range: lowerRange == nil || upperRange == nil ? nil : (lowerRange!, upperRange!),
+                comment: $0[5].lineValue.trimmingCharacters(in: .whitespaces) == "" ? nil : $0[5].lineValue.trimmingCharacters(in: .whitespaces)
+            )
+        }
+    }
+    
+    func externalVariables(state: State) -> [String] {
+        guard let rows = state.attributes.first(where: { $0.name == "variables" })?.attributes["externals"]?.tableValue else {
+            return []
+        }
+        return rows.compactMap {
+            let data = $0[0].lineValue.trimmingCharacters(in: .whitespaces)
+            if data == "" {
+                return nil
+            }
+            return data
+        }
+    }
+
+    func toState(state: State) -> VHDLMachines.State {
+        VHDLMachines.State(
+            name: state.name,
+            actions: Dictionary(uniqueKeysWithValues: state.actions.map(fromAction)),
+            actionOrder: actionOrder(state: state),
+            signals: stateSignals(state: state),
+            variables: stateVariables(state: state),
+            externalVariables: externalVariables(state: state)
+        )
+    }
 //
 //    func toTransition(source: State, transition: Transition, states: [CXXBase.State], index: Int) -> CXXBase.Transition {
 //        guard let target = (states.first { $0.name == transition.target }) else {

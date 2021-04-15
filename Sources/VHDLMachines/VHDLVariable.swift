@@ -19,4 +19,12 @@ public struct VHDLVariable: Variable {
     
     public var comment: String?
     
+    public init(type: VariableType, name: String, defaultValue: String?, range: (Int, Int)?, comment: String?) {
+        self.type = type
+        self.name = name
+        self.defaultValue = defaultValue
+        self.range = range
+        self.comment = comment
+    }
+    
 }

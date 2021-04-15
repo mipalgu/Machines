@@ -16,5 +16,12 @@ public struct MachineSignal: Variable {
     public var defaultValue: String?
     
     public var comment: String?
+    
+    public init(type: SignalType, name: String, defaultValue: String?, comment: String?) {
+        self.type = type
+        self.name = name
+        self.defaultValue = defaultValue
+        self.comment = comment
+    }
 
 }

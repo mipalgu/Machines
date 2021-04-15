@@ -21,4 +21,13 @@ public struct State {
     
     public var externalVariables: [String]
     
+    public init(name: String, actions: [ActionName: String], actionOrder: [[ActionName]], signals: [MachineSignal], variables: [VHDLVariable], externalVariables: [String]) {
+        self.name = name
+        self.actions = actions
+        self.actionOrder = actionOrder
+        self.signals = signals
+        self.variables = variables
+        self.externalVariables = externalVariables
+    }
+    
 }
