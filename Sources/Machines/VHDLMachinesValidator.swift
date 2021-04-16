@@ -10,46 +10,40 @@ import Attributes
 
 class VHDLMachinesValidator: MachineValidator {
     
-    private var dataTypes: Set<String> {
-        [
-            "std_logic",
-            "std_ulogic",
-            "signed",
-            "unsigned",
-            "std_logic_vector",
-            "std_ulogic_vector",
-            "bit",
-            "boolean",
-            "bit_vector",
-            "integer",
-            "natural",
-            "positive"
-        ]
-    }
+    private let dataTypes: Set<String> = [
+        "std_logic",
+        "std_ulogic",
+        "signed",
+        "unsigned",
+        "std_logic_vector",
+        "std_ulogic_vector",
+        "bit",
+        "boolean",
+        "bit_vector",
+        "integer",
+        "natural",
+        "positive"
+    ]
     
-    private var vhdlTypes: Set<String> {
-        [
-            "signal",
-            "variable"
-        ]
-    }
+    private let vhdlTypes: Set<String> = [
+        "signal",
+        "variable"
+    ]
     
-    private var reservedWords: Set<String> {
-        [
-            "abs", "access", "after", "alias", "all", "and", "architecture", "array",
-            "assert", "attribute", "begin", "block", "body", "buffer", "bus", "case",
-            "component", "configuration", "constant", "disconnect", "downto", "else",
-            "elsif", "end", "entity", "exit", "file", "for", "function", "generate",
-            "generic", "group", "guarded", "if", "impure", "in", "inertial", "inout",
-            "is", "label", "library", "linkage", "literal", "loop", "map", "mod", "nand",
-            "new", "next", "nor", "not", "null", "of", "on", "open", "or", "others",
-            "out", "package", "port", "postponed", "procedure", "process", "pure",
-            "range", "record", "register", "reject", "return", "rol", "ror", "select",
-            "severity", "signal", "shared", "sla", "sli", "sra", "srl", "subtype",
-            "then", "to", "transport", "type", "unaffected", "units", "until", "use",
-            "variable", "wait", "when", "while", "with", "xnor", "xor"
-        ]
-    }
+    private let reservedWords: Set<String> = [
+        "abs", "access", "after", "alias", "all", "and", "architecture", "array",
+        "assert", "attribute", "begin", "block", "body", "buffer", "bus", "case",
+        "component", "configuration", "constant", "disconnect", "downto", "else",
+        "elsif", "end", "entity", "exit", "file", "for", "function", "generate",
+        "generic", "group", "guarded", "if", "impure", "in", "inertial", "inout",
+        "is", "label", "library", "linkage", "literal", "loop", "map", "mod", "nand",
+        "new", "next", "nor", "not", "null", "of", "on", "open", "or", "others",
+        "out", "package", "port", "postponed", "procedure", "process", "pure",
+        "range", "record", "register", "reject", "return", "rol", "ror", "select",
+        "severity", "signal", "shared", "sla", "sli", "sra", "srl", "subtype",
+        "then", "to", "transport", "type", "unaffected", "units", "until", "use",
+        "variable", "wait", "when", "while", "with", "xnor", "xor"
+    ]
     
     private var allReservedWords: Set<String> {
         dataTypes.union(vhdlTypes).union(reservedWords)
