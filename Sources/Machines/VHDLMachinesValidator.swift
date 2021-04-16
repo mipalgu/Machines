@@ -17,8 +17,9 @@ struct VHDLMachinesValidator: MachineValidator {
             validator.states.maxLength(128)
             validator.states.each { (stateIndex, state: ValidationPath<ReadOnlyPath<Machine, State>>) in
                 state.name
-                    .alphadash()
                     .notEmpty()
+                    .alphafirst()
+                    .alphaunderscore()
                     .maxLength(64)
                 state.actions.unique() { $0.map { $0.name } }
                 state.actions.length(5)
@@ -44,7 +45,7 @@ struct VHDLMachinesValidator: MachineValidator {
                         table.unique() { $0.map { $0[0].enumeratedValue } }
                         table.each { (_, external) in
                             external[0].enumeratedValue.notEmpty().maxLength(128)
-                            external[0].enumeratedValue.alphanumeric()
+                            external[0].enumeratedValue.alphafirst().alphaunderscore()
                         }
                     }
                     variables.attributes["state_signals"].required()
@@ -52,7 +53,7 @@ struct VHDLMachinesValidator: MachineValidator {
                         table.unique() { $0.map { $0[1].lineValue } }
                         table.each { (_, stateSignal) in
                             stateSignal[0].expressionValue.notEmpty().maxLength(128)
-                            stateSignal[1].lineValue.notEmpty().maxLength(128)
+                            stateSignal[1].lineValue.notEmpty().alphafirst().alphaunderscore().maxLength(128)
                             stateSignal[2].expressionValue.maxLength(128)
                             stateSignal[3].lineValue.maxLength(128)
                         }
@@ -64,7 +65,7 @@ struct VHDLMachinesValidator: MachineValidator {
                             stateVariable[0].expressionValue.notEmpty().maxLength(128)
                             stateVariable[1].lineValue.numeric()
                             stateVariable[2].lineValue.numeric()
-                            stateVariable[3].lineValue.notEmpty().maxLength(128)
+                            stateVariable[3].lineValue.notEmpty().alphafirst().alphaunderscore().maxLength(128)
                             stateVariable[4].expressionValue.maxLength(128)
                             stateVariable[5].lineValue.maxLength(128)
                         }
@@ -75,8 +76,7 @@ struct VHDLMachinesValidator: MachineValidator {
                     actions.attributes["action_names"].wrappedValue.tableValue.validate { table in
                         table.unique() { $0.map { $0[0].lineValue } }
                         table.each { (_, actionName) in
-                            actionName[0].lineValue.notEmpty().maxLength(128)
-                            actionName[0].lineValue.alpha()
+                            actionName[0].lineValue.notEmpty().alpha().maxLength(128)
                         }
                     }
                     actions.attributes["action_order"].required()
@@ -96,7 +96,7 @@ struct VHDLMachinesValidator: MachineValidator {
                     variables.attributes["clocks"].wrappedValue.tableValue.validate { table in
                         table.unique() { $0.map { $0[0].lineValue } }
                         table.each { (_, clock) in
-                            clock[0].lineValue.notEmpty().alphanumeric().maxLength(128)
+                            clock[0].lineValue.notEmpty().alphafirst().alphaunderscore().maxLength(128)
                             clock[1].integerValue.between(min: 0, max: 999)
                             clock[2].enumeratedValue.notEmpty().alpha().maxLength(3)
                         }
@@ -107,7 +107,7 @@ struct VHDLMachinesValidator: MachineValidator {
                         table.each { (_, signal) in
                             signal[0].enumeratedValue.notEmpty().alpha().maxLength(6)
                             signal[1].expressionValue.notEmpty().alphadash().maxLength(128)
-                            signal[2].lineValue.notEmpty().alphanumeric().maxLength(128)
+                            signal[2].lineValue.notEmpty().alphafirst().alphaunderscore().maxLength(128)
                             signal[3].expressionValue.maxLength(128)
                             signal[4].lineValue.maxLength(128)
                         }
@@ -117,7 +117,7 @@ struct VHDLMachinesValidator: MachineValidator {
                         table.unique() { $0.map { $0[1].lineValue } }
                         table.each { (_, variable) in
                             variable[0].expressionValue.notEmpty().maxLength(128)
-                            variable[1].lineValue.notEmpty().alphanumeric().maxLength(128)
+                            variable[1].lineValue.notEmpty().alphafirst().alphaunderscore().maxLength(128)
                             variable[2].expressionValue.maxLength(128)
                             variable[3].lineValue.maxLength(128)
                         }
@@ -127,7 +127,7 @@ struct VHDLMachinesValidator: MachineValidator {
                         table.unique() { $0.map { $0[1].lineValue } }
                         table.each { (_, variable) in
                             variable[0].expressionValue.notEmpty().maxLength(128)
-                            variable[1].lineValue.notEmpty().alphanumeric().maxLength(128)
+                            variable[1].lineValue.notEmpty().alphafirst().alphaunderscore().maxLength(128)
                             variable[2].expressionValue.maxLength(128)
                             variable[3].lineValue.maxLength(128)
                         }
@@ -137,13 +137,13 @@ struct VHDLMachinesValidator: MachineValidator {
                         table.unique() { $0.map { $0[1].lineValue } }
                         table.each { (_, variable) in
                             variable[0].expressionValue.notEmpty().maxLength(128)
-                            variable[1].lineValue.notEmpty().alphanumeric().maxLength(128)
+                            variable[1].lineValue.notEmpty().alphafirst().alphaunderscore().maxLength(128)
                             variable[2].expressionValue.maxLength(128)
                             variable[3].lineValue.maxLength(128)
                         }
                     }
                     variables.attributes["driving_clock"].required()
-                    variables.attributes["driving_clock"].wrappedValue.enumeratedValue.notEmpty().alphanumeric().maxLength(128)
+                    variables.attributes["driving_clock"].wrappedValue.enumeratedValue.notEmpty().alphafirst().alphaunderscore().maxLength(128)
                 }
                 attributes[1].validate { includes in
                     includes.attributes["includes"].required()
@@ -151,9 +151,9 @@ struct VHDLMachinesValidator: MachineValidator {
                 }
                 attributes[2].validate { settings in
                     settings.attributes["initial_state"].required()
-                    settings.attributes["initial_state"].wrappedValue.enumeratedValue.notEmpty().alphanumeric().maxLength(128)
+                    settings.attributes["initial_state"].wrappedValue.enumeratedValue.notEmpty().alphafirst().alphaunderscore().maxLength(64)
                     settings.attributes["suspended_state"].required()
-                    settings.attributes["suspended_state"].wrappedValue.enumeratedValue.alphanumeric().maxLength(128)
+                    settings.attributes["suspended_state"].wrappedValue.enumeratedValue.alphafirst().alphaunderscore().maxLength(64)
                 }
             }
         }
