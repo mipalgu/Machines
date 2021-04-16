@@ -371,50 +371,156 @@ struct VHDLMachinesConverter {
             externalVariables: externalVariables(state: state)
         )
     }
-//
-//    func toTransition(source: State, transition: Transition, states: [CXXBase.State], index: Int) -> CXXBase.Transition {
-//        guard let target = (states.first { $0.name == transition.target }) else {
-//            fatalError("U dun goofed!")
-//        }
-//        return CXXBase.Transition(
-//            source: source.name,
-//            target: target.name,
-//            condition: transition.condition ?? "true",
-//            priority: UInt(index)
-//        )
-//    }
-//
-//    func toTransitions(state: State, states: [CXXBase.State]) -> [CXXBase.Transition] {
-//        state.transitions.enumerated().map { toTransition(source: state, transition: $0.1, states: states, index: $0.0) }
-//    }
-//
-//    func convert(machine: Machine) throws -> CXXBase.Machine {
-//        let validator = CXXBaseMachineValidator()
-//        try validator.validate(machine: machine)
-//        let cxxStates = machine.states.map(toState)
-//        let suspendedState = machine.attributes.first { $0.name == "settings" }?.attributes["suspended_state"]?.enumeratedValue
-//        let suspendedStateName = suspendedState == "" ? nil : suspendedState
-//        let suspendedIndex = suspendedStateName == nil ? nil : cxxStates.firstIndex { $0.name == suspendedStateName! }
-//        var actionDisplayOrder: [String] = []
-//        if machine.semantics == .clfsm {
-//            actionDisplayOrder = ["OnEntry", "OnExit", "Internal", "OnSuspend", "OnResume"]
-//        } else if machine.semantics == .ucfsm {
-//            actionDisplayOrder = ["OnEntry", "OnExit", "Internal"]
-//        }
-//        return CXXBase.Machine(
-//            name: machine.name,
-//            path: machine.filePath,
-//            includes: machine.attributes.first { $0.name == "includes" }?.attributes["includes"]?.codeValue ?? "",
-//            includePaths: machine.attributes.first { $0.name == "includes" }?.attributes["include_paths"]?.textValue.components(separatedBy: .newlines) ?? [],
-//            funcRefs: machine.attributes.first { $0.name == "func_refs" }?.attributes["func_refs"]?.codeValue ?? "",
-//            states: cxxStates,
-//            transitions: machine.states.flatMap { toTransitions(state: $0, states: cxxStates) },
-//            machineVariables: machine.attributes.first { $0.name == "variables" }?.attributes["machine_variables"]?.tableValue.compactMap(toVariable) ?? [],
-//            initialState: cxxStates.firstIndex { $0.name == machine.initialState } ?? 0,
-//            suspendedState: suspendedIndex,
-//            actionDisplayOrder: actionDisplayOrder
-//        )
-//    }
+    
+    func getIncludes(machine: Machine) -> [String] {
+        guard
+            machine.attributes.count == 3,
+            let includes = machine.attributes[1].attributes["includes"]?.codeValue
+        else {
+            fatalError("Cannot retrieve includes")
+        }
+        return includes.split(separator: "\n").map { String($0) }
+    }
+    
+    func getExternalSignals(machine: Machine) -> [ExternalSignal] {
+        guard
+            machine.attributes.count == 3,
+            let signals = machine.attributes[0].attributes["external_signals"]?.tableValue
+        else {
+            fatalError("Cannot retrieve external signals")
+        }
+        return signals.map {
+            let value = $0[3].expressionValue == "" ? nil : $0[3].expressionValue
+            let comment = $0[4].lineValue == "" ? nil : $0[4].lineValue
+            guard let mode = ExternalSignal.Mode(rawValue: $0[0].enumeratedValue) else {
+                fatalError("Cannot convert Mode!")
+            }
+            return ExternalSignal(type: $0[1].expressionValue, name: $0[2].lineValue, mode: mode, defaultValue: value, comment: comment)
+        }
+    }
+    
+    func getExternalVariables(machine: Machine) -> [VHDLVariable] {
+        guard
+            machine.attributes.count == 3,
+            let variables = machine.attributes[0].attributes["external_variables"]?.tableValue
+        else {
+            fatalError("Cannot retrieve external variables")
+        }
+        return variables.map {
+            VHDLVariable(
+                type: $0[0].expressionValue,
+                name: $0[1].lineValue,
+                defaultValue: $0[2].expressionValue == "" ? nil : $0[2].expressionValue,
+                range: nil,
+                comment: $0[3].lineValue == "" ? nil : $0[3].lineValue
+            )
+        }
+    }
+    
+    func getClocks(machine: Machine) -> [Clock] {
+        guard
+            machine.attributes.count == 3,
+            let clocks = machine.attributes[0].attributes["clocks"]?.tableValue
+        else {
+            fatalError("Cannot retrieve clocks")
+        }
+        return clocks.map {
+            guard let unit = Clock.FrequencyUnit(rawValue: $0[2].enumeratedValue) else {
+                fatalError("Clock unit is invalid: \($0[2])")
+            }
+            return Clock(name: $0[0].lineValue, frequency: UInt(clamping: $0[1].integerValue), unit: unit)
+        }
+    }
+    
+    func getDrivingClock(machine: Machine) -> Int {
+        guard
+            machine.attributes.count == 3,
+            let clock = machine.attributes[0].attributes["driving_clock"]?.enumeratedValue,
+            let index = machine.attributes[0].attributes["clocks"]?.tableValue.firstIndex(where: { $0[0].lineValue == clock })
+        else {
+            fatalError("Cannot retrieve driving clock")
+        }
+        return index
+    }
+    
+    func getDependentMachines(machine: Machine) -> [MachineName: URL] {
+        var machines: [MachineName: URL] = [:]
+        machine.dependencies.forEach {
+            machines[$0.name] = $0.filePath
+        }
+        return machines
+    }
+    
+    func getMachineVariables(machine: Machine) -> [VHDLVariable] {
+        guard
+            machine.attributes.count == 3,
+            let variables = machine.attributes[0].attributes["machine_variables"]?.tableValue
+        else {
+            fatalError("Cannot retrieve machine variables")
+        }
+        return variables.map {
+            VHDLVariable(
+                type: $0[0].expressionValue,
+                name: $0[1].lineValue,
+                defaultValue: $0[2].expressionValue == "" ? nil : $0[2].expressionValue,
+                range: nil,
+                comment: $0[3].lineValue == "" ? nil : $0[3].lineValue
+            )
+        }
+    }
+    
+    func getMachineSignals(machine: Machine) -> [MachineSignal] {
+        guard
+            machine.attributes.count == 3,
+            let signals = machine.attributes[0].attributes["machine_signals"]?.tableValue
+        else {
+            fatalError("Cannot retrieve machine signals")
+        }
+        return signals.map {
+            MachineSignal(
+                type: $0[0].expressionValue,
+                name: $0[1].lineValue,
+                defaultValue: $0[2].expressionValue == "" ? nil : $0[2].expressionValue,
+                comment: $0[3].lineValue == "" ? nil : $0[3].lineValue
+            )
+        }
+    }
+
+    func getTransitions(machine: Machine) -> [VHDLMachines.Transition] {
+        machine.states.indices.flatMap { stateIndex in
+            machine.states[stateIndex].transitions.map { transition in
+                guard let targetIndex = machine.states.firstIndex(where: { transition.target == $0.name }) else {
+                    fatalError("Cannot find target state \(transition.target) for transition \(transition) from state \(machine.states[stateIndex].name)")
+                }
+                return VHDLMachines.Transition(condition: transition.condition ?? "true", source: stateIndex, target: targetIndex)
+            }
+        }
+    }
+
+    func convert(machine: Machine) throws -> VHDLMachines.Machine {
+        let validator = VHDLMachinesValidator()
+        try validator.validate(machine: machine)
+        let vhdlStates = machine.states.map(toState)
+        let suspendedState = machine.attributes.first { $0.name == "settings" }?.attributes["suspended_state"]?.enumeratedValue
+        let suspendedStateName = suspendedState == "" ? nil : suspendedState
+        let suspendedIndex = suspendedStateName == nil ? nil : vhdlStates.firstIndex { $0.name == suspendedStateName! }
+        return VHDLMachines.Machine(
+            name: machine.name,
+            path: machine.filePath,
+            includes: getIncludes(machine: machine),
+            externalSignals: getExternalSignals(machine: machine),
+            externalVariables: getExternalVariables(machine: machine),
+            clocks: getClocks(machine: machine),
+            drivingClock: getDrivingClock(machine: machine),
+            dependentMachines: getDependentMachines(machine: machine),
+            machineVariables: getMachineVariables(machine: machine),
+            machineSignals: getMachineSignals(machine: machine),
+            states: machine.states.map(toState),
+            transitions: getTransitions(machine: machine),
+            initialState: machine.states.firstIndex(where: { machine.initialState == $0.name }) ?? 0,
+            suspendedState: suspendedIndex
+        )
+    }
 //
 //}
 //
