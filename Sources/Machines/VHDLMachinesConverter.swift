@@ -11,6 +11,74 @@ import Attributes
 
 struct VHDLMachinesConverter {
     
+    func arrangementAttributes(arrangement: VHDLMachines.Arrangement) -> [AttributeGroup] {
+        var attributes: [AttributeGroup] = []
+        let variables = AttributeGroup(
+            name: "variables",
+            fields: [
+                Field(name: "clocks", type: .table(columns: [
+                    ("name", .line),
+                    ("frequency", .integer),
+                    ("unit", .enumerated(validValues: Set(VHDLMachines.Clock.FrequencyUnit.allCases.map { $0.rawValue })))
+                ])),
+                Field(name: "external_signals", type: .table(columns: [
+                    ("mode", .enumerated(validValues: Set(VHDLMachines.ExternalSignal.Mode.allCases.map { $0.rawValue }))),
+                    ("type", .expression(language: .vhdl)),
+                    ("name", .line),
+                    ("comment", .line)
+                ])),
+                Field(name: "external_variables", type: .table(columns: [
+                    ("type", .expression(language: .vhdl)),
+                    ("name", .line),
+                    ("comment", .line)
+                ]))
+            ],
+            attributes: [
+                "clocks": .table(
+                    arrangement.clocks.map(toLineAttribute),
+                    columns: [
+                        ("name", .line),
+                        ("frequency", .integer),
+                        ("unit", .enumerated(validValues: Set(VHDLMachines.Clock.FrequencyUnit.allCases.map { $0.rawValue })))
+                    ]
+                ),
+                "external_signals": .table(
+                    arrangement.externalSignals.map(toLineAttribute),
+                    columns: [
+                        ("mode", .enumerated(validValues: Set(VHDLMachines.ExternalSignal.Mode.allCases.map { $0.rawValue }))),
+                        ("type", .expression(language: .vhdl)),
+                        ("name", .line),
+                        ("comment", .line)
+                    ]
+                ),
+                "external_variables": .table(
+                    arrangement.externalVariables.map(toLineAttribute),
+                    columns: [
+                        ("type", .expression(language: .vhdl)),
+                        ("name", .line),
+                        ("comment", .line)
+                    ]
+                )
+            ],
+            metaData: [:]
+        )
+        attributes.append(variables)
+        return attributes
+    }
+    
+    func toArrangement(arrangement: VHDLMachines.Arrangement) -> Arrangement {
+        Arrangement(
+            filePath: arrangement.path,
+            rootMachines: arrangement.parents.compactMap {
+                guard let path = arrangement.machines[$0] else {
+                    return nil
+                }
+                return MachineDependency(name: $0, filePath: path)
+                
+            }
+        )
+    }
+    
     func machineAttributes(machine: VHDLMachines.Machine) -> [AttributeGroup] {
         var attributes: [AttributeGroup] = []
         let variables = AttributeGroup(
