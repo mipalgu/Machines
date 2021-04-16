@@ -26,4 +26,12 @@ public struct ExternalSignal: Variable {
     public var comment: String?
     
     public var mode: Mode
+    
+    public init(type: SignalType, name: String, mode: Mode, defaultValue: String?, comment: String?) {
+        self.type = type
+        self.name = name
+        self.mode = mode
+        self.defaultValue = defaultValue
+        self.comment = comment
+    }
 }

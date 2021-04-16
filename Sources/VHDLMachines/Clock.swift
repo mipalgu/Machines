@@ -28,4 +28,10 @@ public struct Clock {
     
     public var unit: FrequencyUnit
     
+    public init(name: String, frequency: UInt, unit: FrequencyUnit) {
+        self.name = name
+        self.frequency = frequency
+        self.unit = unit
+    }
+    
 }

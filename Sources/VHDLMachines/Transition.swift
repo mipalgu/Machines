@@ -15,4 +15,10 @@ public struct Transition {
     
     public var target: Int
     
+    public init(condition: String, source: Int, target: Int) {
+        self.condition = condition
+        self.source = source
+        self.target = target
+    }
+    
 }
