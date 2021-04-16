@@ -396,6 +396,36 @@ extension ValidationPushProtocol where Value: StringProtocol {
         }
     }
     
+    public func alphafirst() -> PushValidator {
+        return push {
+            guard let firstChar = $1.first else {
+                return
+            }
+            if !firstChar.isLetter {
+                throw ValidationError(message: "First Character must be alphabetic.", path: path)
+            }
+        }
+    }
+    
+    public func alphaunderscorefirst() -> PushValidator {
+        return push {
+            guard let firstChar = $1.first else {
+                return
+            }
+            if !(firstChar.isLetter || firstChar == "_") {
+                throw ValidationError(message: "First Character must be alphabetic or an underscore.", path: path)
+            }
+        }
+    }
+    
+    public func alphaunderscore() -> PushValidator {
+        return push {
+            if nil != $1.first(where: { !$0.isLetter && !$0.isNumber && $0 != "_" }) {
+                throw ValidationError(message: "Must be alphabetic with underscores allowed.", path: path)
+            }
+        }
+    }
+    
     public func numeric() -> PushValidator {
         return push {
             if nil != $1.first(where: { !$0.isNumber }) {
