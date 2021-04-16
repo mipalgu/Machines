@@ -427,9 +427,9 @@ extension ValidationPushProtocol where Value: StringProtocol {
     }
     
     public func blacklist(_ list: Set<String>) -> PushValidator {
-        return push {
-            if list.contains(String($1)) {
-                throw ValidationError(message: "Must not use a banned word.", path: path)
+        return push { (_, val) in
+            if list.contains(String(val)) {
+                throw ValidationError(message: "\(val) is a banned word.", path: path)
             }
         }
     }
