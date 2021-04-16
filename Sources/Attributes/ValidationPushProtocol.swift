@@ -388,6 +388,17 @@ extension ValidationPushProtocol where Value: StringProtocol {
         }
     }
     
+    public func alphafirst() -> PushValidator {
+        return push {
+            guard let firstChar = $1.first else {
+                return
+            }
+            if !firstChar.isLetter {
+                throw ValidationError(message: "First Character must be alphabetic.", path: path)
+            }
+        }
+    }
+    
     public func alphanumeric() -> PushValidator {
         return push {
             if nil != $1.first(where: { !$0.isLetter && !$0.isNumber }) {
@@ -396,13 +407,10 @@ extension ValidationPushProtocol where Value: StringProtocol {
         }
     }
     
-    public func alphafirst() -> PushValidator {
+    public func alphaunderscore() -> PushValidator {
         return push {
-            guard let firstChar = $1.first else {
-                return
-            }
-            if !firstChar.isLetter {
-                throw ValidationError(message: "First Character must be alphabetic.", path: path)
+            if nil != $1.first(where: { !$0.isLetter && !$0.isNumber && $0 != "_" }) {
+                throw ValidationError(message: "Must be alphabetic with underscores allowed.", path: path)
             }
         }
     }
@@ -418,10 +426,10 @@ extension ValidationPushProtocol where Value: StringProtocol {
         }
     }
     
-    public func alphaunderscore() -> PushValidator {
+    public func blacklist(_ list: Set<String>) -> PushValidator {
         return push {
-            if nil != $1.first(where: { !$0.isLetter && !$0.isNumber && $0 != "_" }) {
-                throw ValidationError(message: "Must be alphabetic with underscores allowed.", path: path)
+            if list.contains(String($1)) {
+                throw ValidationError(message: "Must not use a banned word.", path: path)
             }
         }
     }
@@ -430,6 +438,14 @@ extension ValidationPushProtocol where Value: StringProtocol {
         return push {
             if nil != $1.first(where: { !$0.isNumber }) {
                 throw ValidationError(message: "Must be numeric.", path: path)
+            }
+        }
+    }
+    
+    public func whitelist(_ list: Set<String>) -> PushValidator {
+        return push { (_, val) in
+            if !list.contains(String(val)) {
+                throw ValidationError(message: "\(val) is not valid, you must use pre-existing words. Candidates: \(list)", path: path)
             }
         }
     }
