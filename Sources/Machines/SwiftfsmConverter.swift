@@ -677,7 +677,7 @@ extension SwiftfsmConverter: MachineMutator {
     
     func deleteState(atIndex index: Int, machine: inout Machine) throws {
         try perform(on: &machine) { machine in
-            if machine.states.count >= index {
+            if index >= machine.states.count  {
                 throw ValidationError(message: "Can't delete state that doesn't exist", path: Machine.path.states)
             }
             if machine.states[index].name == machine.initialState {
