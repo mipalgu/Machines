@@ -302,7 +302,7 @@ public struct Machine: PathContainer, Modifiable {
         case .swiftfsm:
             return SwiftfsmConverter().initial(filePath: filePath)
         case .vhdl:
-            fatalError("vhdl semantics have not been implemented")
+            return VHDLMachinesConverter().initialVHDLMachine(filePath: filePath)
         case .other:
             fatalError("You cannot create an initial machine for an unknown semantics")
         }

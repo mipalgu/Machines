@@ -11,6 +11,51 @@ import Attributes
 
 struct VHDLMachinesConverter {
     
+    func initialVHDLMachine(filePath: URL) -> Machine {
+        let name = filePath.lastPathComponent.components(separatedBy: ".machine")[0]
+        let defaultActions = [
+            "OnEntry": "",
+            "OnExit": "",
+            "Internal": "",
+            "OnResume": "",
+            "OnSuspend": ""
+        ]
+        let machine = VHDLMachines.Machine(
+            name: name,
+            path: filePath,
+            includes: [],
+            externalSignals: [],
+            externalVariables: [],
+            clocks: [Clock(name: "clk", frequency: 50, unit: .MHz)],
+            drivingClock: 0,
+            dependentMachines: [:],
+            machineVariables: [],
+            machineSignals: [],
+            states: [
+                VHDLMachines.State(
+                    name: "Initial",
+                    actions: defaultActions,
+                    actionOrder: [["OnResume", "OnSuspend"], ["OnEntry"], ["OnExit", "Internal"]],
+                    signals: [],
+                    variables: [],
+                    externalVariables: []
+                ),
+                VHDLMachines.State(
+                    name: "Suspended",
+                    actions: defaultActions,
+                    actionOrder: [["OnResume", "OnSuspend"], ["OnEntry"], ["OnExit", "Internal"]],
+                    signals: [],
+                    variables: [],
+                    externalVariables: []
+                )
+            ],
+            transitions: [],
+            initialState: 0,
+            suspendedState: 1
+        )
+        return self.toMachine(machine: machine)
+    }
+    
     func arrangementAttributes(arrangement: VHDLMachines.Arrangement) -> [AttributeGroup] {
         var attributes: [AttributeGroup] = []
         let variables = AttributeGroup(
