@@ -202,6 +202,23 @@ public enum LineAttribute: Hashable, Identifiable {
         }
     }
     
+    public var strValue: String {
+        switch self {
+        case .bool(let value):
+            return String(describing: value)
+        case .enumerated(let value, _):
+            return value
+        case .expression(let value, _):
+            return value
+        case .float(let value):
+            return String(describing: value)
+        case .integer(let value):
+            return String(describing: value)
+        case .line(let value):
+            return value
+        }
+    }
+    
     public init?(type: LineAttributeType, value: String) {
         switch type {
         case .bool:
