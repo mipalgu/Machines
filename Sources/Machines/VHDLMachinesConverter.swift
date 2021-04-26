@@ -759,7 +759,7 @@ extension VHDLMachinesConverter: MachineMutator {
         }
     }
 
-    func delete(states: IndexSet, transitions: IndexSet, machine: inout Machine) throws {
+    func delete(states: IndexSet, machine: inout Machine) throws {
         try self.perform(on: &machine) { machine in
             if
                 let initialIndex = machine.states.enumerated().first(where: { $0.1.name == machine.initialState })?.0,
@@ -769,6 +769,15 @@ extension VHDLMachinesConverter: MachineMutator {
             }
             machine.states = machine.states.enumerated().filter { !states.contains($0.0) }.map { $1 }
             self.syncSuspendState(machine: &machine)
+        }
+    }
+    
+    func delete(transitions: IndexSet, attachedTo sourceState: StateName, machine: inout Machine) throws {
+        try self.perform(on: &machine) { machine in
+            guard let stateIndex = machine.states.firstIndex(where: { $0.name == sourceState }) else {
+                throw ValidationError(message: "Unable to find state with name \(sourceState)", path: Machine.path.states)
+            }
+            machine.states[stateIndex].transitions = machine.states[stateIndex].transitions.enumerated().filter { !transitions.contains($0.0) }.map { $1 }
         }
     }
 

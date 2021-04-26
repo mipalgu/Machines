@@ -71,7 +71,9 @@ public protocol MachineMutator {
     
     func newTransition(source: StateName, target: StateName, condition: Expression?, machine: inout Machine) throws
     
-    func delete(states: IndexSet, transitions: IndexSet, machine: inout Machine) throws
+    func delete(states: IndexSet, machine: inout Machine) throws
+    
+    func delete(transitions: IndexSet, attachedTo sourceState: StateName, machine: inout Machine) throws
     
     func deleteState(atIndex index: Int, machine: inout Machine) throws
     

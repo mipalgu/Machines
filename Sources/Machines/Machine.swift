@@ -349,9 +349,15 @@ public struct Machine: PathContainer, Modifiable {
     }
     
     /// Delete a set of states and transitions.
-    public mutating func delete(states: IndexSet, transitions: IndexSet) throws {
+    public mutating func delete(states: IndexSet) throws {
         try perform { [mutator] machine in
-            try mutator.delete(states: states, transitions: transitions, machine: &machine)
+            try mutator.delete(states: states, machine: &machine)
+        }
+    }
+    
+    public mutating func delete(transitions: IndexSet, attachedTo sourceState: StateName) throws {
+        try perform { [mutator] machine in
+            try mutator.delete(transitions: transitions, attachedTo: sourceState, machine: &machine)
         }
     }
     
