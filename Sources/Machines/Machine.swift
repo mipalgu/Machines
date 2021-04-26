@@ -235,7 +235,7 @@ public struct Machine: PathContainer, Modifiable {
         case .spartanfsm:
             self.mutator = CXXBaseConverter()
         case .vhdl:
-            fatalError("vhdl semantics are not yet implemented.")
+            self.mutator = VHDLMachinesConverter()
         case .other:
             fatalError("Use the mutator constructor if you wish to use an undefined semantics")
         }
@@ -302,7 +302,7 @@ public struct Machine: PathContainer, Modifiable {
         case .swiftfsm:
             return SwiftfsmConverter().initial(filePath: filePath)
         case .vhdl:
-            fatalError("vhdl semantics have not been implemented")
+            return VHDLMachinesConverter().initialVHDLMachine(filePath: filePath)
         case .other:
             fatalError("You cannot create an initial machine for an unknown semantics")
         }
