@@ -11,7 +11,7 @@ import Attributes
 
 struct VHDLMachinesConverter {
     
-    func initialVHDLMachine(filePath: URL) -> Machine {
+    public func initialVHDLMachine(filePath: URL) -> Machine {
         let name = filePath.lastPathComponent.components(separatedBy: ".machine")[0]
         let defaultActions = [
             "OnEntry": "",
@@ -288,10 +288,10 @@ struct VHDLMachinesConverter {
         ]
     }
     
-    func toLineAttribute(actionOrder: [[String]]) -> [[LineAttribute]] {
+    func toLineAttribute(actionOrder: [[String]], validValues: Set<String>) -> [[LineAttribute]] {
         actionOrder.indices.map { timeslot in
             actionOrder[timeslot].flatMap { action in
-                [LineAttribute.integer(timeslot), LineAttribute.line(action)]
+                [LineAttribute.integer(timeslot), LineAttribute.enumerated(action, validValues: validValues)]
             }
         }
     }
@@ -361,7 +361,7 @@ struct VHDLMachinesConverter {
                 "action_names": .table(state.actions.keys.map { [LineAttribute.line($0)] }, columns: [
                     ("name", .line)
                 ]),
-                "action_order": .table(toLineAttribute(actionOrder: state.actionOrder), columns: [
+                "action_order": .table(toLineAttribute(actionOrder: state.actionOrder, validValues: Set(state.actions.keys)), columns: [
                     ("timeslot", .integer),
                     ("action", .enumerated(validValues: Set(state.actions.keys)))
                 ])
@@ -751,7 +751,7 @@ extension VHDLMachinesConverter: MachineMutator {
                         "action_names": .table(actions.map { [LineAttribute.line($0)] }, columns: [
                             ("name", .line)
                         ]),
-                        "action_order": .table(toLineAttribute(actionOrder: defaultActionOrder), columns: [
+                        "action_order": .table(toLineAttribute(actionOrder: defaultActionOrder, validValues: Set(actions)), columns: [
                             ("timeslot", .integer),
                             ("action", .enumerated(validValues: Set(actions)))
                         ])

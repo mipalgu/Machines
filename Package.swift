@@ -68,6 +68,10 @@ let package = Package(
             name: "UCFSMMachinesTests",
             dependencies: ["UCFSMMachines", "CLFSMMachines"]
         ),
+        .testTarget(
+            name: "VHDLMachinesTests",
+            dependencies: ["VHDLMachines", "Machines"]
+        ),
         .testTarget(name: "MachinesTests",
             dependencies: ["Machines", "XMI"]
         )
