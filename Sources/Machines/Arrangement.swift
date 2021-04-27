@@ -67,6 +67,21 @@ public struct Arrangement: Identifiable, PathContainer {
         case swiftfsm
     }
     
+    /// The semantics that are fully supported by this module.
+    ///
+    /// This means that it is possible to create an arrangement using the
+    /// helper functions such as `initialArrangement(forSemantics:)` or call
+    /// the semantics initialiser.
+    ///
+    /// If you are implementing an editor, this could be used when creating a
+    /// new machine to display a list of options to asking inquiring which
+    /// semantics they would like to use.
+    ///
+    /// This array generally contains all semantics except for the `other` case.
+    public static var supportedSemantics: [Arrangement.Semantics] {
+        return Arrangement.Semantics.allCases.filter { $0 != .other }
+    }
+    
     private let mutator: ArrangementMutator
     
     public private(set) var errorBag: ErrorBag<Arrangement> = ErrorBag()
