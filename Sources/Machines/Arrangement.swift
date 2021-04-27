@@ -143,6 +143,21 @@ public struct Arrangement: Identifiable, PathContainer {
         self = SwiftfsmConverter().metaArrangement(of: arrangement)
     }
     
+    /// Setup an initial machine for a specific semantics.
+    ///
+    /// - Parameter semantics: The semantics which the machine should follow.
+    ///
+    /// - Warning: The value of `semantics` should exist in the
+    /// `supportedSemantics` array.
+    public static func initialArrangement(forSemantics semantics: Arrangement.Semantics, filePath: URL = URL(fileURLWithPath: "/tmp/Untitled.arrangement", isDirectory: true)) -> Arrangement {
+        switch semantics {
+        case .swiftfsm:
+            return SwiftfsmConverter().initialArrangement(filePath: filePath)
+        case .other:
+            fatalError("You cannot create an initial machine for an unknown semantics")
+        }
+    }
+    
     public func flattenedDependencies() throws -> [FlattenedDependency] {
         let allMachines = try self.allMachines()
         func process(_ dependency: MachineDependency) throws -> FlattenedDependency {
