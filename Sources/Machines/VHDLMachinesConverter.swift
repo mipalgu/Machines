@@ -113,6 +113,7 @@ struct VHDLMachinesConverter {
     
     func toArrangement(arrangement: VHDLMachines.Arrangement) -> Arrangement {
         Arrangement(
+            semantics: .swiftfsm,
             filePath: arrangement.path,
             rootMachines: arrangement.parents.compactMap {
                 guard let path = arrangement.machines[$0] else {
@@ -120,7 +121,9 @@ struct VHDLMachinesConverter {
                 }
                 return MachineDependency(name: $0, filePath: path)
                 
-            }
+            },
+            attributes: [],
+            metaData: []
         )
     }
     

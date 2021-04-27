@@ -60,7 +60,19 @@ import Foundation
 import Attributes
 import SwiftMachines
 
-public struct Arrangement: Hashable, Codable, PathContainer {
+public struct Arrangement: Identifiable, PathContainer {
+    
+    public enum Semantics: String, Hashable, Codable, CaseIterable {
+        case other
+        case swiftfsm
+    }
+    
+    private let mutator: ArrangementMutator
+    
+    public private(set) var errorBag: ErrorBag<Arrangement> = ErrorBag()
+    
+    public private(set) var id: UUID = UUID()
+    
     
     public static var path: Path<Arrangement, Arrangement> {
         return Attributes.Path<Arrangement, Arrangement>(path: \.self, ancestors: [])
@@ -75,15 +87,37 @@ public struct Arrangement: Hashable, Codable, PathContainer {
         return self.filePath.lastPathComponent.components(separatedBy: ".")[0]
     }
     
+    /// The underlying semantics which this meta machine follows.
+    public var semantics: Semantics
+    
     /// The location of the arrangement on the file system.
     public var filePath: URL
     
     /// The root machines of the arrangement.
     public var rootMachines: [MachineDependency]
     
-    public init(filePath: URL, rootMachines: [MachineDependency]) {
+    public var attributes: [AttributeGroup]
+    
+    public var metaData: [AttributeGroup]
+    
+    public init(
+        semantics: Semantics,
+        filePath: URL,
+        rootMachines: [MachineDependency] = [],
+        attributes: [AttributeGroup],
+        metaData: [AttributeGroup]
+    ) {
+        self.semantics = semantics
+        switch semantics {
+        case .swiftfsm:
+            self.mutator = SwiftfsmConverter()
+        case .other:
+            fatalError("Use the mutator constructor if you wish to use an undefined semantics")
+        }
         self.filePath = filePath
         self.rootMachines = rootMachines
+        self.attributes = attributes
+        self.metaData = metaData
     }
     
     public init(loadAtFilePath url: URL) throws {
@@ -127,6 +161,69 @@ public struct Arrangement: Hashable, Codable, PathContainer {
         guard nil != generator.generateArrangement(swiftArrangement) else {
             throw ConversionError(message: generator.errors.last ?? "Unable to save arrangement", path: Machine.path)
         }
+    }
+    
+}
+
+extension Arrangement: Equatable {
+    
+    public static func == (lhs: Arrangement, rhs: Arrangement) -> Bool {
+        return lhs.semantics == rhs.semantics
+            && lhs.filePath == rhs.filePath
+            && lhs.rootMachines == rhs.rootMachines
+            && lhs.attributes == rhs.attributes
+            && lhs.metaData == rhs.metaData
+    }
+    
+}
+
+extension Arrangement: Hashable {
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(self.semantics)
+        hasher.combine(self.filePath)
+        hasher.combine(self.rootMachines)
+        hasher.combine(self.attributes)
+        hasher.combine(self.metaData)
+    }
+    
+}
+
+extension Arrangement: Codable {
+    
+    public enum CodingKeys: CodingKey {
+        
+        case semantics
+        case filePath
+        case rootMachines
+        case attributes
+        case metaData
+        
+    }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let semantics = try container.decode(Semantics.self, forKey: .semantics)
+        let filePath = try container.decode(URL.self, forKey: .filePath)
+        let rootMachines = try container.decode([MachineDependency].self, forKey: .rootMachines)
+        let attributes = try container.decode([AttributeGroup].self, forKey: .attributes)
+        let metaData = try container.decode([AttributeGroup].self, forKey: .metaData)
+        self.init(
+            semantics: semantics,
+            filePath: filePath,
+            rootMachines: rootMachines,
+            attributes: attributes,
+            metaData: metaData
+        )
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(self.semantics, forKey: .semantics)
+        try container.encode(self.filePath, forKey: .filePath)
+        try container.encode(self.rootMachines, forKey: .rootMachines)
+        try container.encode(self.attributes, forKey: .attributes)
+        try container.encode(self.metaData, forKey: .metaData)
     }
     
 }
