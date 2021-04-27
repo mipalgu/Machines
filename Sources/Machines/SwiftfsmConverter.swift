@@ -66,28 +66,7 @@ import TokamakShim
 import SwiftUI
 #endif
 
-struct SwiftfsmConverter: ArrangementMutator, Converter, MachineValidator {
-    
-    func addItem<Path, T>(_ item: T, to attribute: Path, in arrangement: inout Arrangement) throws where Path : PathProtocol, Path.Root == Arrangement, Path.Value == [T] {
-        arrangement[keyPath: attribute.path].append(item)
-    }
-    
-    func moveItems<Path, T>(attribute: Path, in arrangement: inout Arrangement, from source: IndexSet, to destination: Int) throws where Path : PathProtocol, Path.Root == Arrangement, Path.Value == [T] {
-        arrangement[keyPath: attribute.path].move(fromOffsets: source, toOffset: destination)
-    }
-    
-    func deleteItem<Path, T>(attribute: Path, atIndex index: Int, in arrangement: inout Arrangement) throws where Path : PathProtocol, Path.Root == Arrangement, Path.Value == [T] {
-        arrangement[keyPath: attribute.path].remove(at: index)
-    }
-    
-    func modify<Path>(attribute: Path, value: Path.Value, in arrangement: inout Arrangement) throws where Path : PathProtocol, Path.Root == Arrangement {
-        arrangement[keyPath: attribute.path] = value
-    }
-    
-    func validate(arrangement: Arrangement) throws {
-        return
-    }
-    
+struct SwiftfsmConverter: Converter, MachineValidator {
     
     private let validator = SwiftfsmMachineValidator()
     
@@ -602,6 +581,30 @@ struct SwiftfsmConverter: ArrangementMutator, Converter, MachineValidator {
         default:
             return nil
         }
+    }
+    
+}
+
+extension SwiftfsmConverter: ArrangementMutator {
+    
+    func addItem<Path, T>(_ item: T, to attribute: Path, in arrangement: inout Arrangement) throws where Path : PathProtocol, Path.Root == Arrangement, Path.Value == [T] {
+        arrangement[keyPath: attribute.path].append(item)
+    }
+    
+    func moveItems<Path, T>(attribute: Path, in arrangement: inout Arrangement, from source: IndexSet, to destination: Int) throws where Path : PathProtocol, Path.Root == Arrangement, Path.Value == [T] {
+        arrangement[keyPath: attribute.path].move(fromOffsets: source, toOffset: destination)
+    }
+    
+    func deleteItem<Path, T>(attribute: Path, atIndex index: Int, in arrangement: inout Arrangement) throws where Path : PathProtocol, Path.Root == Arrangement, Path.Value == [T] {
+        arrangement[keyPath: attribute.path].remove(at: index)
+    }
+    
+    func modify<Path>(attribute: Path, value: Path.Value, in arrangement: inout Arrangement) throws where Path : PathProtocol, Path.Root == Arrangement {
+        arrangement[keyPath: attribute.path] = value
+    }
+    
+    func validate(arrangement: Arrangement) throws {
+        return
     }
     
 }
