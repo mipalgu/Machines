@@ -165,7 +165,7 @@ public struct Arrangement: Identifiable, PathContainer {
     
 }
 
-extension Arrangement {
+extension Arrangement: Modifiable {
     
     /// Add a new item to a table attribute.
     public mutating func addItem<Path: PathProtocol, T>(_ item: T, to attribute: Path) throws where Path.Root == Arrangement, Path.Value == [T] {
