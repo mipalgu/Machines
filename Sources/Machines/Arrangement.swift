@@ -165,6 +165,75 @@ public struct Arrangement: Identifiable, PathContainer {
     
 }
 
+extension Arrangement {
+    
+    /// Add a new item to a table attribute.
+    public mutating func addItem<Path: PathProtocol, T>(_ item: T, to attribute: Path) throws where Path.Root == Arrangement, Path.Value == [T] {
+        try perform { [mutator] arrangement in
+            try mutator.addItem(item, to: attribute, in: &arrangement)
+        }
+    }
+    
+    public mutating func moveItems<Path: PathProtocol, T>(table attribute: Path, from source: IndexSet, to destination: Int) throws where Path.Root == Arrangement, Path.Value == [T]  {
+        try perform { [mutator] arrangement in
+            try mutator.moveItems(attribute: attribute, in: &arrangement, from: source, to: destination)
+        }
+    }
+    
+    /// Delete a specific item in a table attribute.
+    public mutating func deleteItem<Path: PathProtocol, T>(table attribute: Path, atIndex index: Int) throws where Path.Root == Arrangement, Path.Value == [T] {
+        try perform { [mutator] arrangement in
+            try mutator.deleteItem(attribute: attribute, atIndex: index, in: &arrangement)
+        }
+    }
+    
+    public mutating func deleteItems<Path: PathProtocol, T>(table attribute: Path, items: IndexSet) throws where Path.Root == Arrangement, Path.Value == [T] {
+        try perform { [mutator] arrangement in
+            try mutator.deleteItems(table: attribute, items: items, in: &arrangement)
+        }
+    }
+    
+    /// Modify a specific attributes value.
+    public mutating func modify<Path: PathProtocol>(attribute: Path, value: Path.Value) throws where Path.Root == Arrangement {
+        try perform { [mutator] arrangement in
+            try mutator.modify(attribute: attribute, value: value, in: &arrangement)
+        }
+    }
+    
+    /// Are there any errors with the machine?
+    public func validate() throws {
+        try perform { arrangement in
+            try self.mutator.validate(arrangement: arrangement)
+        }
+    }
+    
+    private func perform(_ f: (Arrangement) throws -> Void) throws {
+        do {
+            try f(self)
+        } catch let e as AttributeError<Arrangement> {
+            throw e
+        } catch let e {
+            fatalError("Unsupported error: \(e)")
+        }
+    }
+    
+    private mutating func perform(_ f: (inout Arrangement) throws -> Void) throws {
+        let backup = self
+        do {
+            try f(&self)
+            self.errorBag.empty()
+        } catch let e as AttributeError<Arrangement> {
+            self = backup
+            self.errorBag.remove(includingDescendantsForPath: e.path)
+            self.errorBag.insert(e)
+            throw e
+        } catch let e {
+            fatalError("Unsupported error: \(e)")
+        }
+    }
+    
+}
+
 extension Arrangement: Equatable {
     
     public static func == (lhs: Arrangement, rhs: Arrangement) -> Bool {
