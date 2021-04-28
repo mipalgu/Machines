@@ -60,7 +60,7 @@ import Foundation
 
 extension ReadOnlyPathProtocol where Value: Collection, Value.Index: BinaryInteger {
     
-    subscript(index: Value.Index) -> ReadOnlyPath<Root, Value.Element> {
+    public subscript(index: Value.Index) -> ReadOnlyPath<Root, Value.Element> {
         return ReadOnlyPath<Root, Value.Element>(
             keyPath: self.keyPath.appending(path: \.[index]),
             ancestors: self.ancestors + [AnyPath(self)],
@@ -72,7 +72,7 @@ extension ReadOnlyPathProtocol where Value: Collection, Value.Index: BinaryInteg
 
 extension PathProtocol where Value: MutableCollection, Value.Index: BinaryInteger {
     
-    subscript(index: Value.Index) -> Path<Root, Value.Element> {
+    public subscript(index: Value.Index) -> Path<Root, Value.Element> {
         return Path<Root, Value.Element>(
             path: self.path.appending(path: \.[index]),
             ancestors: self.ancestors + [AnyPath(self)],
