@@ -78,16 +78,16 @@ public struct AnyPath<Root> {
         self.targetType = P.Value.self
         self._value = { $0[keyPath: path.keyPath] as Any }
         self.isOptional = isOptional || (path.ancestors.last?.isOptional ?? false)
-        self._isNil = { root in (path.ancestors.last?.isNil(root) ?? false) || isNil(root) }
+        self._isNil = { root in path.ancestors.last?.isNil(root) ?? false || isNil(root) }
         self._isSame = isSame
     }
     
     public init<P: ReadOnlyPathProtocol>(_ path: P) where P.Root == Root {
-        self.init(path, isOptional: false, isNil: { _ in false }, isSame: { $0 == path.keyPath })
+        self.init(path, isOptional: false, isNil: { path.isNil($0) }, isSame: { $0 == path.keyPath })
     }
     
     public init<P: ReadOnlyPathProtocol, V>(optional path: P) where P.Root == Root, P.Value == V? {
-        self.init(path, isOptional: true, isNil: { nil == $0[keyPath: path.keyPath] }, isSame: { $0 == path.keyPath || $0 == path.keyPath.appending(path: \.wrappedValue) })
+        self.init(path, isOptional: true, isNil: { path.isNil($0) }, isSame: { $0 == path.keyPath || $0 == path.keyPath.appending(path: \.wrappedValue) })
     }
     
     public func isParent(of path: AnyPath<Root>) -> Bool {

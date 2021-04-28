@@ -68,7 +68,7 @@ public struct ReadOnlyPath<Root, Value>: ReadOnlyPathProtocol {
     public init(keyPath: KeyPath<Root, Value>, ancestors: [AnyPath<Root>], isNil: @escaping (Root) -> Bool) {
         self.ancestors = ancestors.reversed().drop { $0.partialKeyPath == keyPath }.reversed()
         self.keyPath = keyPath
-        self._isNil = isNil
+        self._isNil = { root in ancestors.last?.isNil(root) ?? false || isNil(root) }
     }
     
     public init(keyPath: KeyPath<Root, Value>, ancestors: [AnyPath<Root>]) {
@@ -114,7 +114,7 @@ public struct Path<Root, Value>: PathProtocol {
     init(path: WritableKeyPath<Root, Value>, ancestors: [AnyPath<Root>], isNil: @escaping (Root) -> Bool) {
         self.path = path
         self.ancestors = ancestors.reversed().drop { $0.partialKeyPath == path }.reversed()
-        self._isNil = isNil
+        self._isNil = { root in ancestors.last?.isNil(root) ?? false || isNil(root) }
     }
     
     public init(path: WritableKeyPath<Root, Value>, ancestors: [AnyPath<Root>]) {

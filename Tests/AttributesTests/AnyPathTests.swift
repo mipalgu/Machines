@@ -63,7 +63,8 @@ import XCTest
 final class AnyPathTests: AttributesTestCase {
     
     static var allTests = [
-        "test_equality": test_equality
+        "test_equality": test_equality,
+        "test_arraysubscript": test_arraysubscript
     ]
 
     func test_equality() {
@@ -72,6 +73,16 @@ final class AnyPathTests: AttributesTestCase {
         let path3 = AnyPath(Path<[Int], Int>(path: \.[1], ancestors: []))
         XCTAssertEqual(path, path2)
         XCTAssertNotEqual(path, path3)
+    }
+    
+    func test_arraysubscript() {
+        let arr = [(1, 2), (3, 4), (5, 6)]
+        let readonlyPath = ReadOnlyPath<[(Int, Int)], [(Int, Int)]>(keyPath: \.self, ancestors: [])[3].1
+        let path = Path<[(Int, Int)], [(Int, Int)]>(path: \.self, ancestors: [])[3].1
+        let anyPath = AnyPath(path)
+        XCTAssertTrue(readonlyPath.isNil(arr))
+        XCTAssertTrue(path.isNil(arr))
+        XCTAssertTrue(anyPath.isNil(arr))
     }
 
 }
