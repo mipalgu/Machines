@@ -65,6 +65,8 @@ public protocol ReadOnlyPathProtocol: Hashable {
     
     var keyPath: KeyPath<Root, Value> { get }
     
+    func isNil(_ root: Root) -> Bool
+    
 }
 
 extension ReadOnlyPathProtocol {

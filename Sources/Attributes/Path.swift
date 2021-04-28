@@ -63,13 +63,41 @@ public struct ReadOnlyPath<Root, Value>: ReadOnlyPathProtocol {
     
     public var keyPath: KeyPath<Root, Value>
     
-    public init(keyPath: KeyPath<Root, Value>, ancestors: [AnyPath<Root>]) {
+    private let _isNil: (Root) -> Bool
+    
+    public init(keyPath: KeyPath<Root, Value>, ancestors: [AnyPath<Root>], isNil: @escaping (Root) -> Bool) {
         self.ancestors = ancestors.reversed().drop { $0.partialKeyPath == keyPath }.reversed()
         self.keyPath = keyPath
+        self._isNil = isNil
+    }
+    
+    public init(keyPath: KeyPath<Root, Value>, ancestors: [AnyPath<Root>]) {
+        self.init(keyPath: keyPath, ancestors: ancestors, isNil: { _ in false })
+    }
+    
+    public init<T>(keyPath: KeyPath<Root, Value>, ancestors: [AnyPath<Root>]) where Value == Optional<T> {
+        self.init(keyPath: keyPath, ancestors: ancestors, isNil: { root in root[keyPath: keyPath] == nil })
     }
     
     public subscript<AppendedValue>(dynamicMember member: KeyPath<Value, AppendedValue>) -> ReadOnlyPath<Root, AppendedValue> {
         return ReadOnlyPath<Root, AppendedValue>(keyPath: keyPath.appending(path: member), ancestors: fullPath)
+    }
+    
+    public func isNil(_ root: Root) -> Bool {
+        return self._isNil(root)
+    }
+    
+}
+
+extension ReadOnlyPath {
+    
+    public static func ==(lhs: ReadOnlyPath<Root, Value>, rhs: ReadOnlyPath<Root, Value>) -> Bool {
+        return lhs.ancestors == rhs.ancestors && lhs.keyPath == rhs.keyPath
+    }
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(self.ancestors)
+        hasher.combine(self.keyPath)
     }
     
 }
@@ -81,9 +109,20 @@ public struct Path<Root, Value>: PathProtocol {
     
     public var path: WritableKeyPath<Root, Value>
     
-    public init(path: WritableKeyPath<Root, Value>, ancestors: [AnyPath<Root>]) {
-        self.ancestors = ancestors.reversed().drop { $0.partialKeyPath == path }.reversed()
+    private let _isNil: (Root) -> Bool
+    
+    init(path: WritableKeyPath<Root, Value>, ancestors: [AnyPath<Root>], isNil: @escaping (Root) -> Bool) {
         self.path = path
+        self.ancestors = ancestors.reversed().drop { $0.partialKeyPath == path }.reversed()
+        self._isNil = isNil
+    }
+    
+    public init(path: WritableKeyPath<Root, Value>, ancestors: [AnyPath<Root>]) {
+        self.init(path: path, ancestors: ancestors, isNil: { _ in false })
+    }
+    
+    public init<T>(path: WritableKeyPath<Root, Value>, ancestors: [AnyPath<Root>]) where Value == Optional<T> {
+        self.init(path: path, ancestors: ancestors, isNil: { root in root[keyPath: path] == nil })
     }
     
     public var readOnly: ReadOnlyPath<Root, Value> {
@@ -96,6 +135,23 @@ public struct Path<Root, Value>: PathProtocol {
     
     public subscript<AppendedValue>(dynamicMember member: WritableKeyPath<Value, AppendedValue>) -> Path<Root, AppendedValue> {
         return Path<Root, AppendedValue>(path: path.appending(path: member), ancestors: fullPath)
+    }
+    
+    public func isNil(_ root: Root) -> Bool {
+        return self._isNil(root)
+    }
+    
+}
+
+extension Path {
+    
+    public static func ==(lhs: Path<Root, Value>, rhs: Path<Root, Value>) -> Bool {
+        return lhs.ancestors == rhs.ancestors && lhs.keyPath == rhs.keyPath
+    }
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(self.ancestors)
+        hasher.combine(self.keyPath)
     }
     
 }

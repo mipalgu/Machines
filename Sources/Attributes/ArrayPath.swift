@@ -58,6 +58,30 @@
 
 import Foundation
 
+extension ReadOnlyPathProtocol where Value: Collection, Value.Index: BinaryInteger {
+    
+    subscript(index: Value.Index) -> ReadOnlyPath<Root, Value.Element> {
+        return ReadOnlyPath<Root, Value.Element>(
+            keyPath: self.keyPath.appending(path: \.[index]),
+            ancestors: self.ancestors + [AnyPath(self)],
+            isNil: { root in root[keyPath: keyPath].count <= index }
+        )
+    }
+    
+}
+
+extension PathProtocol where Value: MutableCollection, Value.Index: BinaryInteger {
+    
+    subscript(index: Value.Index) -> Path<Root, Value.Element> {
+        return Path<Root, Value.Element>(
+            path: self.path.appending(path: \.[index]),
+            ancestors: self.ancestors + [AnyPath(self)],
+            isNil: { root in root[keyPath: self.path].count <= index }
+        )
+    }
+    
+}
+
 extension Path where Value: MutableCollection, Value.Index: Hashable {
     
     public func each<T>(_ f: @escaping (Value.Index, Path<Root, Value.Element>) -> T) -> (Root) -> [T] {
