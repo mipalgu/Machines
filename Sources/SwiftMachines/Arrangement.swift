@@ -87,10 +87,11 @@ public struct Arrangement {
         return _process(self.machines)
     }
     
-    public init(name: String, filePath: URL, dependencies: [Machine.Dependency]) {
+    public init(name: String, filePath: URL, dependencies: [Machine.Dependency], dispatchTable: DispatchTable? = nil) {
         self.name = name
         self.filePath = filePath
         self.dependencies = dependencies
+        self.dispatchTable = dispatchTable
     }
     
 }
