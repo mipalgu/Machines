@@ -60,6 +60,10 @@ public protocol DependenciesContainer {
     
     var dependencies: [MachineDependency] { get set }
     
+    var dependencyAttributeType: AttributeType { get }
+    
+    var dependencyAttributes: [Attribute] { get set }
+    
 }
 
 import Attributes

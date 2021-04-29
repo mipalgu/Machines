@@ -111,6 +111,26 @@ public struct Arrangement: Identifiable, PathContainer, MutatorContainer, Depend
     /// The root machines of the arrangement.
     public var dependencies: [MachineDependency]
     
+    public var dependencyAttributeType: AttributeType {
+        return .complex(layout: [
+            "name": .line,
+            "filePath": .line,
+            "attributes": .complex(layout: mutator.dependencyLayout)
+        ])
+    }
+    
+    public var dependencyAttributes: [Attribute] {
+        get {
+            self.dependencies.map(\.complexAttribute)
+        } set {
+            self.dependencies = zip(self.dependencies, newValue).map {
+                var dep = $0
+                dep.complexAttribute = $1
+                return dep
+            }
+        }
+    }
+    
     public var attributes: [AttributeGroup]
     
     public var metaData: [AttributeGroup]
