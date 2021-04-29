@@ -1,9 +1,9 @@
 /*
- * Arrangement.swift
- * SwiftMachines
+ * Dependency.swift
+ * 
  *
- * Created by Callum McColl on 23/10/20.
- * Copyright © 2020 Callum McColl. All rights reserved.
+ * Created by Callum McColl on 29/4/21.
+ * Copyright © 2021 Callum McColl. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -58,64 +58,10 @@
 
 import Foundation
 
-public struct Arrangement {
+public struct NamespacedDependency {
     
     public var name: String
     
-    public var filePath: URL
-    
-    public var dependencies: [Machine.Dependency]
-    
-    public var dispatchTable: DispatchTable?
-    
-    public var machines: [Machine] {
-        return self.dependencies.map { $0.machine }
-    }
-    
-    public var flattenedMachines: [Machine] {
-        var urls = Set<URL>()
-        func _process(_ machines: [Machine]) -> [Machine] {
-            return machines.flatMap { (machine) -> [Machine] in
-                let machineUrl = machine.filePath.resolvingSymlinksInPath().absoluteURL
-                if urls.contains(machineUrl) {
-                    return []
-                }
-                urls.insert(machineUrl)
-                return [machine] + _process(machine.dependencies.map { $0.machine } )
-            }
-        }
-        return _process(self.machines)
-    }
-    
-    public var namespacedDependencies: (Set<String>, [NamespacedDependency]) {
-        var names: Set<String> = []
-        var machines: [URL: Machine] = [:]
-        let parser = MachineParser()
-        func process(_ url: URL, prefix: String, previous previousNames: [URL: String]) -> NamespacedDependency? {
-            guard let machine = machines[url] ?? parser.parseMachine(atPath: url.path) else {
-                return nil
-            }
-            machines[url] = machine
-            if nil != previousNames[url] {
-                return nil
-            }
-            let name = prefix + machine.name
-            names.insert(name)
-            var newPreviousNames = previousNames
-            newPreviousNames[url] = name
-            return NamespacedDependency(name: prefix, dependencies: machine.dependencies.compactMap { process($0.filePath, prefix: name + ".", previous: newPreviousNames) })
-        }
-        let deps = self.dependencies.compactMap {
-            process($0.filePath, prefix: "", previous: [:])
-        }
-        return (names, deps)
-    }
-    
-    public init(name: String, filePath: URL, dependencies: [Machine.Dependency], dispatchTable: DispatchTable? = nil) {
-        self.name = name
-        self.filePath = filePath
-        self.dependencies = dependencies
-        self.dispatchTable = dispatchTable
-    }
+    public var dependencies: [NamespacedDependency]
     
 }

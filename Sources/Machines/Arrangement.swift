@@ -115,6 +115,29 @@ public struct Arrangement: Identifiable, PathContainer {
     
     public var metaData: [AttributeGroup]
     
+    public var allMachineNames: Set<String> {
+        var names: Set<String> = []
+        var machines: [URL: Machine] = [:]
+        func process(_ url: URL, prefix: String, previous previousNames: [URL: String]) {
+            guard let machine = machines[url] ?? (try? Machine(filePath: url)) else {
+                return
+            }
+            machines[url] = machine
+            if nil != previousNames[url] {
+                return
+            }
+            let name = prefix + machine.name
+            names.insert(name)
+            var newPreviousNames = previousNames
+            newPreviousNames[url] = name
+            machine.dependencies.forEach { process($0.filePath, prefix: name + ".", previous: newPreviousNames) }
+        }
+        self.rootMachines.forEach {
+            process($0.filePath, prefix: "", previous: [:])
+        }
+        return names
+    }
+    
     public init(
         semantics: Semantics,
         filePath: URL,

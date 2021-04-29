@@ -142,7 +142,49 @@ struct SwiftfsmConverter: Converter, MachineValidator {
     
     func metaArrangement(of swiftArrangement: SwiftMachines.Arrangement) -> Arrangement {
         let rootFsms = swiftArrangement.dependencies.map { MachineDependency(name: $0.callName, filePath: $0.filePath) }
-        return Arrangement(semantics: .swiftfsm, filePath: swiftArrangement.filePath, rootMachines: rootFsms, attributes: [], metaData: [])
+        let group: AttributeGroup
+        if let table = swiftArrangement.dispatchTable {
+            let (names, _) = swiftArrangement.namespacedDependencies
+            let accurateTable = DispatchTable(groups: table.groups.compactMap {
+                let items = $0.items.filter { names.contains($0.name) }
+                return items.isEmpty ? nil : DispatchGroup(items: items)
+            })
+            let rows: [Attribute] = accurateTable.groups.map {
+                .table(
+                    $0.items.map {
+                        [.integer(Int($0.startTime)), .integer(Int($0.duration)), .enumerated($0.name, validValues: names)]
+                    },
+                    columns: [("start_time", .integer), ("duration", .integer), ("FSM", .line)]
+                )
+            }
+            group = AttributeGroup(
+                name: "dispatch_table",
+                fields: [
+                    Field(name: "use_dispatch_table", type: .bool),
+                    Field(name: "dispatch_table", type: .collection(type: .table(columns: [("start_time", .integer), ("duration", .integer), ("FSM", .enumerated(validValues: names))])))
+                ],
+                attributes: [
+                    "use_dispatch_table": .bool(true),
+                    "dispatch_table": .collection(
+                        rows,
+                        type: .table(columns: [("start_time", .integer), ("duration", .integer), ("FSM", .enumerated(validValues: names))])
+                    )
+                ],
+                metaData: [:]
+            )
+        } else {
+            group = AttributeGroup(
+                name: "dispatch_table",
+                fields: [
+                    Field(name: "use_dispatch_table", type: .bool)
+                ],
+                attributes: [
+                    "use_dispatch_table": .bool(false)
+                ],
+                metaData: [:]
+            )
+        }
+        return Arrangement(semantics: .swiftfsm, filePath: swiftArrangement.filePath, rootMachines: rootFsms, attributes: [group], metaData: [])
     }
     
     func metaMachine(of swiftMachine: SwiftMachines.Machine) -> Machine {
@@ -600,11 +642,36 @@ extension SwiftfsmConverter: ArrangementMutator {
     }
     
     func modify<Path>(attribute: Path, value: Path.Value, in arrangement: inout Arrangement) throws where Path : PathProtocol, Path.Root == Arrangement {
-        arrangement[keyPath: attribute.path] = value
+        switch attribute.path {
+        case \Arrangement.attributes[0].attributes["use_dispatch_table"],
+             \Arrangement.attributes[0].attributes["use_dispatch_table"].wrappedValue,
+             \Arrangement.attributes[0].attributes["use_dispatch_table"].wrappedValue.lineAttribute,
+             \Arrangement.attributes[0].attributes["use_dispatch_table"].wrappedValue.lineAttribute.boolValue:
+            guard let boolValue = (value as? Attribute)?.boolValue ?? (value as? LineAttribute)?.boolValue ?? (value as? Bool) else {
+                throw ValidationError(message: "Invalid value \(value)", path: attribute)
+            }
+            self.toggleUseDispatchTable(boolValue: boolValue, arrangement: &arrangement)
+            arrangement[keyPath: attribute.path] = value
+        default:
+            arrangement[keyPath: attribute.path] = value
+        }
     }
     
     func validate(arrangement: Arrangement) throws {
         return
+    }
+    
+    private func toggleUseDispatchTable(boolValue: Bool, arrangement: inout Arrangement) {
+        if boolValue {
+            arrangement.attributes[0].fields = [
+                Field(name: "use_dispatch_table", type: .bool),
+                Field(name: "dispatch_table", type: .collection(type: .table(columns: [("start_time", .integer), ("duration", .integer), ("FSM", .enumerated(validValues: arrangement.allMachineNames))])))
+            ]
+        } else {
+            arrangement.attributes[0].fields = [
+                Field(name: "use_dispatch_table", type: .bool)
+            ]
+        }
     }
     
 }
