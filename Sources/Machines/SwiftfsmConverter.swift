@@ -60,11 +60,6 @@ import Attributes
 import SwiftMachines
 import Foundation
 
-#if canImport(TokamakShim)
-import TokamakShim
-#else
-import SwiftUI
-#endif
 
 struct SwiftfsmConverter: Converter, MachineValidator {
     
