@@ -908,6 +908,13 @@ extension VHDLMachinesConverter: MachineMutator {
         }
         return machinePaths + statePaths
     }
+    
+    private func addClock(value: String, machine: inout Machine) {
+        let currentClocks = machine.attributes[0].attributes["driving_clock"]!
+        var newValidValues = currentClocks.enumeratedValidValues
+        newValidValues.insert(value)
+        machine.attributes[0].attributes["driving_clock"]!.enumeratedValidValues = newValidValues
+    }
 
     func modify<Path>(attribute: Path, value: Path.Value, machine: inout Machine) throws where Path : PathProtocol, Path.Root == Machine {
         try perform(on: &machine) { machine in
@@ -919,6 +926,14 @@ extension VHDLMachinesConverter: MachineMutator {
             }
             if nil == self.whitelist(forMachine: machine).first(where: { $0.isParent(of: attribute) || $0.isSame(as: attribute) }) {
                 throw ValidationError(message: "Attempting to modify a value which is not allowed to be modified", path: attribute)
+            }
+            if attribute.path == Machine.path.attributes[0].attributes["clocks"].wrappedValue.path {
+                guard let newValue = (value as? Attribute)?.enumeratedValue else {
+                    throw ValidationError(message: "Invalid value \(value)", path: attribute)
+                }
+                addClock(value: newValue, machine: &machine)
+                machine[keyPath: attribute.path] = value
+                return
             }
             machine[keyPath: attribute.path] = value
         }

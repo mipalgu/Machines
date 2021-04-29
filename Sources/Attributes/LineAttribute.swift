@@ -183,6 +183,25 @@ public enum LineAttribute: Hashable, Identifiable {
         }
     }
     
+    public var enumeratedValidValues: Set<String> {
+        get {
+            switch self {
+            case .enumerated(_, let validValues):
+                return validValues
+            default:
+                fatalError("Attempting to fetch an enumerated valid value on a line attribute which is not an enumerated attribute")
+            }
+        }
+        set {
+            switch self {
+            case .enumerated(let value, _):
+                self = .enumerated(value, validValues: newValue)
+            default:
+                fatalError("Attempting to set an enumerated valid value on a line attribute which is not an enumerated attribute")
+            }
+        }
+    }
+    
     public var lineValue: String {
         get {
             switch self {
