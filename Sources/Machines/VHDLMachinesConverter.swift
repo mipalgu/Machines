@@ -115,7 +115,7 @@ struct VHDLMachinesConverter {
         Arrangement(
             semantics: .swiftfsm,
             filePath: arrangement.path,
-            rootMachines: arrangement.parents.compactMap {
+            dependencies: arrangement.parents.compactMap {
                 guard let path = arrangement.machines[$0] else {
                     return nil
                 }

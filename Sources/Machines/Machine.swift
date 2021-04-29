@@ -77,7 +77,7 @@ import Attributes
 /// for swiftfsm machines for example.
 ///
 /// - SeeAlso: `SwiftMachinesConvertible`.
-public struct Machine: PathContainer, Modifiable {
+public struct Machine: PathContainer, Modifiable, MutatorContainer, DependenciesContainer {
     
     public enum Semantics: String, Hashable, Codable, CaseIterable {
         case other
@@ -103,7 +103,7 @@ public struct Machine: PathContainer, Modifiable {
         return Machine.Semantics.allCases.filter { $0 != .other }
     }
     
-    private let mutator: MachineMutator
+    public let mutator: MachineMutator
     
     public private(set) var errorBag: ErrorBag<Machine> = ErrorBag()
     
@@ -140,26 +140,6 @@ public struct Machine: PathContainer, Modifiable {
     
     /// All machines that this machine depends on
     public var dependencies: [MachineDependency]
-    
-    public var dependencyAttributeType: AttributeType {
-        return .complex(layout: [
-            "name": .line,
-            "filePath": .line,
-            "attributes": .complex(layout: mutator.dependencyLayout)
-        ])
-    }
-    
-    public var dependencyAttributes: [Attribute] {
-        get {
-            self.dependencies.map(\.complexAttribute)
-        } set {
-            self.dependencies = zip(self.dependencies, newValue).map {
-                var dep = $0
-                dep.complexAttribute = $1
-                return dep
-            }
-        }
-    }
     
     /// A list of attributes specifying additional fields that can change.
     ///

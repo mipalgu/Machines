@@ -60,7 +60,7 @@ import Foundation
 import Attributes
 import SwiftMachines
 
-public struct Arrangement: Identifiable, PathContainer {
+public struct Arrangement: Identifiable, PathContainer, MutatorContainer, DependenciesContainer {
     
     public enum Semantics: String, Hashable, Codable, CaseIterable {
         case other
@@ -82,7 +82,7 @@ public struct Arrangement: Identifiable, PathContainer {
         return Arrangement.Semantics.allCases.filter { $0 != .other }
     }
     
-    private let mutator: ArrangementMutator
+    public let mutator: ArrangementMutator
     
     public private(set) var errorBag: ErrorBag<Arrangement> = ErrorBag()
     
@@ -109,7 +109,7 @@ public struct Arrangement: Identifiable, PathContainer {
     public var filePath: URL
     
     /// The root machines of the arrangement.
-    public var rootMachines: [MachineDependency]
+    public var dependencies: [MachineDependency]
     
     public var attributes: [AttributeGroup]
     
@@ -132,7 +132,7 @@ public struct Arrangement: Identifiable, PathContainer {
             newPreviousNames[url] = name
             machine.dependencies.forEach { process($0.filePath, prefix: name + ".", previous: newPreviousNames) }
         }
-        self.rootMachines.forEach {
+        self.dependencies.forEach {
             process($0.filePath, prefix: "", previous: [:])
         }
         return names
@@ -141,7 +141,7 @@ public struct Arrangement: Identifiable, PathContainer {
     public init(
         semantics: Semantics,
         filePath: URL,
-        rootMachines: [MachineDependency] = [],
+        dependencies: [MachineDependency] = [],
         attributes: [AttributeGroup],
         metaData: [AttributeGroup]
     ) {
@@ -153,7 +153,7 @@ public struct Arrangement: Identifiable, PathContainer {
             fatalError("Use the mutator constructor if you wish to use an undefined semantics")
         }
         self.filePath = filePath
-        self.rootMachines = rootMachines
+        self.dependencies = dependencies
         self.attributes = attributes
         self.metaData = metaData
     }
@@ -190,12 +190,12 @@ public struct Arrangement: Identifiable, PathContainer {
             let dependencies = try machine.dependencies.map(process)
             return FlattenedDependency(name: dependency.name, machine: machine, dependencies: dependencies)
         }
-        return try rootMachines.map(process)
+        return try dependencies.map(process)
     }
     
     public func allMachines() throws -> [URL: Machine] {
         var dict: [URL: Machine] = [:]
-        dict.reserveCapacity(rootMachines.count)
+        dict.reserveCapacity(dependencies.count)
         func recurse(_ dependency: MachineDependency) throws {
             if nil != dict[dependency.filePath.resolvingSymlinksInPath().absoluteURL] {
                 return
@@ -204,7 +204,7 @@ public struct Arrangement: Identifiable, PathContainer {
             dict[dependency.filePath.resolvingSymlinksInPath().absoluteURL] = machine
             try machine.dependencies.forEach(recurse)
         }
-        try rootMachines.forEach(recurse)
+        try dependencies.forEach(recurse)
         return dict
     }
     
@@ -292,7 +292,7 @@ extension Arrangement: Equatable {
     public static func == (lhs: Arrangement, rhs: Arrangement) -> Bool {
         return lhs.semantics == rhs.semantics
             && lhs.filePath == rhs.filePath
-            && lhs.rootMachines == rhs.rootMachines
+            && lhs.dependencies == rhs.dependencies
             && lhs.attributes == rhs.attributes
             && lhs.metaData == rhs.metaData
     }
@@ -304,7 +304,7 @@ extension Arrangement: Hashable {
     public func hash(into hasher: inout Hasher) {
         hasher.combine(self.semantics)
         hasher.combine(self.filePath)
-        hasher.combine(self.rootMachines)
+        hasher.combine(self.dependencies)
         hasher.combine(self.attributes)
         hasher.combine(self.metaData)
     }
@@ -317,7 +317,7 @@ extension Arrangement: Codable {
         
         case semantics
         case filePath
-        case rootMachines
+        case dependencies
         case attributes
         case metaData
         
@@ -327,13 +327,13 @@ extension Arrangement: Codable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let semantics = try container.decode(Semantics.self, forKey: .semantics)
         let filePath = try container.decode(URL.self, forKey: .filePath)
-        let rootMachines = try container.decode([MachineDependency].self, forKey: .rootMachines)
+        let dependencies = try container.decode([MachineDependency].self, forKey: .dependencies)
         let attributes = try container.decode([AttributeGroup].self, forKey: .attributes)
         let metaData = try container.decode([AttributeGroup].self, forKey: .metaData)
         self.init(
             semantics: semantics,
             filePath: filePath,
-            rootMachines: rootMachines,
+            dependencies: dependencies,
             attributes: attributes,
             metaData: metaData
         )
@@ -343,7 +343,7 @@ extension Arrangement: Codable {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(self.semantics, forKey: .semantics)
         try container.encode(self.filePath, forKey: .filePath)
-        try container.encode(self.rootMachines, forKey: .rootMachines)
+        try container.encode(self.dependencies, forKey: .dependencies)
         try container.encode(self.attributes, forKey: .attributes)
         try container.encode(self.metaData, forKey: .metaData)
     }

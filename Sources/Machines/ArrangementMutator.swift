@@ -59,9 +59,7 @@
 import Attributes
 import Foundation
 
-public protocol ArrangementMutator {
-    
-    var dependencyLayout: [Field] { get }
+public protocol ArrangementMutator: DependencyLayoutContainer {
     
     func addItem<Path, T>(_ item: T, to attribute: Path, in: inout Arrangement) throws where Path : PathProtocol, Path.Root == Arrangement, Path.Value == [T]
     

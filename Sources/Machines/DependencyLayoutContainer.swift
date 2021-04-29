@@ -1,9 +1,9 @@
 /*
- * MachineMutator.swift
- * Machines
+ * DependencyLayoutContainer.swift
+ * 
  *
- * Created by Callum McColl on 13/11/20.
- * Copyright © 2020 Callum McColl. All rights reserved.
+ * Created by Callum McColl on 29/4/21.
+ * Copyright © 2021 Callum McColl. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -57,40 +57,9 @@
  */
 
 import Attributes
-import Foundation
 
-public protocol MachineMutator: DependencyLayoutContainer {
+public protocol DependencyLayoutContainer {
     
-    func addItem<Path, T>(_ item: T, to attribute: Path, machine: inout Machine) throws where Path : PathProtocol, Path.Root == Machine, Path.Value == [T]
-    
-    func moveItems<Path: PathProtocol, T>(attribute: Path, machine: inout Machine, from source: IndexSet, to destination: Int) throws where Path.Root == Machine, Path.Value == [T]
-    
-    func newState(machine: inout Machine) throws
-    
-    func newTransition(source: StateName, target: StateName, condition: Expression?, machine: inout Machine) throws
-    
-    func delete(states: IndexSet, machine: inout Machine) throws
-    
-    func delete(transitions: IndexSet, attachedTo sourceState: StateName, machine: inout Machine) throws
-    
-    func deleteState(atIndex index: Int, machine: inout Machine) throws
-    
-    func deleteTransition(atIndex index: Int, attachedTo sourceState: StateName, machine: inout Machine) throws
-    
-    func deleteItems<Path: PathProtocol, T>(table attribute: Path, items: IndexSet, machine: inout Machine) throws where Path.Root == Machine, Path.Value == [T]
-    
-    func deleteItem<Path: PathProtocol, T>(attribute: Path, atIndex: Int, machine: inout Machine) throws where Path.Root == Machine, Path.Value == [T]
-    
-    func modify<Path: PathProtocol>(attribute: Path, value: Path.Value, machine: inout Machine) throws where Path.Root == Machine
-    
-    func validate(machine: Machine) throws
-    
-}
-
-extension MachineMutator {
-    
-    public func deleteItems<Path: PathProtocol, T>(table attribute: Path, items: IndexSet, machine: inout Machine) throws where Path.Root == Machine, Path.Value == [T] {
-        try items.sorted(by: >).forEach { try self.deleteItem(attribute: attribute, atIndex: $0, machine: &machine) }
-    }
+    var dependencyLayout: [Field] { get }
     
 }

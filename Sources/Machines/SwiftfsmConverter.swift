@@ -73,7 +73,7 @@ struct SwiftfsmConverter: Converter, MachineValidator {
         return Arrangement(
             semantics: .swiftfsm,
             filePath: filePath,
-            rootMachines: [],
+            dependencies: [],
             attributes: [],
             metaData: []
         )
@@ -179,7 +179,7 @@ struct SwiftfsmConverter: Converter, MachineValidator {
                 metaData: [:]
             )
         }
-        return Arrangement(semantics: .swiftfsm, filePath: swiftArrangement.filePath, rootMachines: rootFsms, attributes: [group], metaData: [])
+        return Arrangement(semantics: .swiftfsm, filePath: swiftArrangement.filePath, dependencies: rootFsms, attributes: [group], metaData: [])
     }
     
     func metaMachine(of swiftMachine: SwiftMachines.Machine) -> Machine {
@@ -456,7 +456,7 @@ struct SwiftfsmConverter: Converter, MachineValidator {
     }
     
     func convert(_ arrangement: Arrangement) throws -> SwiftMachines.Arrangement {
-        let dependencies = try arrangement.rootMachines.map { (dep: MachineDependency) -> SwiftMachines.Machine.Dependency in
+        let dependencies = try arrangement.dependencies.map { (dep: MachineDependency) -> SwiftMachines.Machine.Dependency in
             guard let dependency = SwiftMachines.Machine.Dependency(name: dep.name, filePath: dep.filePath) else {
                 throw ConversionError(message: "Unable to create dependency", path: Machine.path)
             }
