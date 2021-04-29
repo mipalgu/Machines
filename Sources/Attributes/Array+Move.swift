@@ -58,8 +58,6 @@
 
 import Foundation
 
-#if !canImport(TokamakShim) || !canImport(SwiftUI)
-
 extension Array {
     
     public mutating func move(fromOffsets source: IndexSet, toOffset destination: Int) {
@@ -73,5 +71,3 @@ extension Array {
     }
     
 }
-
-#endif
