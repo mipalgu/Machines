@@ -1,5 +1,5 @@
 /*
- * DispatchTable.swift
+ * DispatchTableTests.swift
  * 
  *
  * Created by Callum McColl on 29/4/21.
@@ -57,53 +57,39 @@
  */
 
 import Foundation
-import swift_helpers
+@testable import SwiftMachines
+import XCTest
 
-public struct DispatchTable: Hashable, Codable {
-
-    public struct Error: Swift.Error {
-        
-        var lineNumber: Int
-        
-        var message: String
-        
-        fileprivate init(lineNumber: Int, message: String) {
-            self.lineNumber = lineNumber
-            self.message = message
-        }
-        
+public class DispatchTableTests: XCTestCase {
+    
+    public static var allTests: [(String, (DispatchTableTests) -> () throws -> Void)] {
+        return [
+            ("test_canParseValidDispatchTable", test_canParseValidDispatchTable)
+        ]
     }
     
-    public var groups: [DispatchGroup]
-    
-    public var asString: String {
-        groups.map(\.asString).joined(separator: "\n\n")
-    }
-    
-    public init(groups: [DispatchGroup]) {
-        self.groups = groups
-    }
-    
-    public init(parsing str: String) throws {
-        let blocks = Array(str.components(separatedBy: .newlines).enumerated()).grouped {
-            !$1.element.trimmingCharacters(in: .whitespaces).isEmpty
+    func test_canParseValidDispatchTable() {
+        let str = """
+            0, 300, A
+            400, 300, B
+            
+            
+            0, 200, C
+            """
+        guard let result = try? DispatchTable(parsing: str) else {
+            XCTFail("Unable to parse str.")
+            return
         }
-        let indexedBlocks: [(Int, String)] = blocks.compactMap {
-            guard !$0.isEmpty else {
-                return nil
-            }
-            return ($0[0].offset, $0.lazy.map(\.1).joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines))
-        }.filter { !$1.trimmingCharacters(in: .whitespaces).isEmpty }
-        let groups: [DispatchGroup] = try indexedBlocks.map {
-            do {
-                return try DispatchGroup(parsing: $1)
-            } catch let e as DispatchGroup.Error {
-                throw Error(lineNumber: $0 + e.lineNumber, message: e.message)
-            } catch {
-                throw Error(lineNumber: $0, message: "Unable to parse group.")
-            }
-        }
-        self.init(groups: groups)
+        let expected = DispatchTable(groups: [
+            DispatchGroup(items: [
+                DispatchItem(startTime: 0, duration: 300, name: "A"),
+                DispatchItem(startTime: 400, duration: 300, name: "B")
+            ]),
+            DispatchGroup(items: [
+                DispatchItem(startTime: 0, duration: 200, name: "C")
+            ])
+        ])
+        XCTAssertEqual(expected, result)
     }
     
 }
