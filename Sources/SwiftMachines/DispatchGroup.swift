@@ -1,9 +1,9 @@
 /*
- * Arrangement.swift
- * SwiftMachines
+ * DispatchGroup.swift
+ * 
  *
- * Created by Callum McColl on 23/10/20.
- * Copyright © 2020 Callum McColl. All rights reserved.
+ * Created by Callum McColl on 29/4/21.
+ * Copyright © 2021 Callum McColl. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -58,39 +58,47 @@
 
 import Foundation
 
-public struct Arrangement {
+public struct DispatchGroup: Hashable, Codable {
     
-    public var name: String
-    
-    public var filePath: URL
-    
-    public var dependencies: [Machine.Dependency]
-    
-    public var dispatchTable: DispatchTable?
-    
-    public var machines: [Machine] {
-        return self.dependencies.map { $0.machine }
+    struct Error: Swift.Error {
+        
+        var lineNumber: Int
+        
+        var message: String
+        
+        fileprivate init(lineNumber: Int, message: String) {
+            self.lineNumber = lineNumber
+            self.message = message
+        }
+        
     }
     
-    public var flattenedMachines: [Machine] {
-        var urls = Set<URL>()
-        func _process(_ machines: [Machine]) -> [Machine] {
-            return machines.flatMap { (machine) -> [Machine] in
-                let machineUrl = machine.filePath.resolvingSymlinksInPath().absoluteURL
-                if urls.contains(machineUrl) {
-                    return []
-                }
-                urls.insert(machineUrl)
-                return [machine] + _process(machine.dependencies.map { $0.machine } )
+    public var items: [DispatchItem]
+    
+    public var asString: String {
+        items.map(\.asString).joined(separator: "\n")
+    }
+    
+    public init(items: [DispatchItem]) {
+        self.items = items
+    }
+    
+    init(parsing str: String) throws {
+        let items: [DispatchItem] = try str.components(separatedBy: .newlines).enumerated().map {
+            let line = $0.element.trimmingCharacters(in: .whitespaces)
+            if line.isEmpty {
+                throw Error(lineNumber: $0.offset, message: "Empty line detected.")
+            }
+            do {
+                let item = try DispatchItem(parsing: line)
+                return item
+            } catch let e as DispatchItem.Error {
+                throw Error(lineNumber: $0.offset, message: e.message)
+            } catch {
+                throw Error(lineNumber: $0.offset, message: "Unable to parse item.")
             }
         }
-        return _process(self.machines)
-    }
-    
-    public init(name: String, filePath: URL, dependencies: [Machine.Dependency]) {
-        self.name = name
-        self.filePath = filePath
-        self.dependencies = dependencies
+        self.init(items: items)
     }
     
 }

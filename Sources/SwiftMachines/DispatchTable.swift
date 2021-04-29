@@ -1,9 +1,9 @@
 /*
- * Arrangement.swift
- * SwiftMachines
+ * DispatchTable.swift
+ * 
  *
- * Created by Callum McColl on 23/10/20.
- * Copyright © 2020 Callum McColl. All rights reserved.
+ * Created by Callum McColl on 29/4/21.
+ * Copyright © 2021 Callum McColl. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -57,40 +57,53 @@
  */
 
 import Foundation
+import swift_helpers
 
-public struct Arrangement {
-    
-    public var name: String
-    
-    public var filePath: URL
-    
-    public var dependencies: [Machine.Dependency]
-    
-    public var dispatchTable: DispatchTable?
-    
-    public var machines: [Machine] {
-        return self.dependencies.map { $0.machine }
+public struct DispatchTable: Hashable, Codable {
+
+    public struct Error: Swift.Error {
+        
+        var lineNumber: Int
+        
+        var message: String
+        
+        fileprivate init(lineNumber: Int, message: String) {
+            self.lineNumber = lineNumber
+            self.message = message
+        }
+        
     }
     
-    public var flattenedMachines: [Machine] {
-        var urls = Set<URL>()
-        func _process(_ machines: [Machine]) -> [Machine] {
-            return machines.flatMap { (machine) -> [Machine] in
-                let machineUrl = machine.filePath.resolvingSymlinksInPath().absoluteURL
-                if urls.contains(machineUrl) {
-                    return []
-                }
-                urls.insert(machineUrl)
-                return [machine] + _process(machine.dependencies.map { $0.machine } )
+    public var groups: [DispatchGroup]
+    
+    public var asString: String {
+        groups.map(\.asString).joined(separator: "\n\n")
+    }
+    
+    public init(groups: [DispatchGroup]) {
+        self.groups = groups
+    }
+    
+    public init(parsing str: String) throws {
+        let blocks = Array(str.components(separatedBy: .newlines).enumerated()).grouped {
+            $1.element.trimmingCharacters(in: .newlines).isEmpty
+        }
+        let indexedBlocks: [(Int, String)] = blocks.compactMap {
+            guard !$0.isEmpty else {
+                return nil
+            }
+            return ($0[0].offset, $0.lazy.map(\.1).joined(separator: "\n"))
+        }
+        let groups: [DispatchGroup] = try indexedBlocks.map {
+            do {
+                return try DispatchGroup(parsing: $1)
+            } catch let e as DispatchGroup.Error {
+                throw Error(lineNumber: $0 + e.lineNumber, message: e.message)
+            } catch {
+                throw Error(lineNumber: $0, message: "Unable to parse group.")
             }
         }
-        return _process(self.machines)
-    }
-    
-    public init(name: String, filePath: URL, dependencies: [Machine.Dependency]) {
-        self.name = name
-        self.filePath = filePath
-        self.dependencies = dependencies
+        self.init(groups: groups)
     }
     
 }

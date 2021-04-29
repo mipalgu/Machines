@@ -1,9 +1,9 @@
 /*
- * Arrangement.swift
- * SwiftMachines
+ * DispatchItem.swift
+ * 
  *
- * Created by Callum McColl on 23/10/20.
- * Copyright © 2020 Callum McColl. All rights reserved.
+ * Created by Callum McColl on 29/4/21.
+ * Copyright © 2021 Callum McColl. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -58,39 +58,46 @@
 
 import Foundation
 
-public struct Arrangement {
+public struct DispatchItem: Hashable, Codable {
+    
+    struct Error: Swift.Error {
+        
+        var message: String
+        
+        fileprivate init(message: String) {
+            self.message = message
+        }
+        
+    }
+    
+    public var startTime: UInt
+    
+    public var duration: UInt
     
     public var name: String
     
-    public var filePath: URL
-    
-    public var dependencies: [Machine.Dependency]
-    
-    public var dispatchTable: DispatchTable?
-    
-    public var machines: [Machine] {
-        return self.dependencies.map { $0.machine }
+    public var asString: String {
+        return "\(startTime),\(duration),\(name)"
     }
     
-    public var flattenedMachines: [Machine] {
-        var urls = Set<URL>()
-        func _process(_ machines: [Machine]) -> [Machine] {
-            return machines.flatMap { (machine) -> [Machine] in
-                let machineUrl = machine.filePath.resolvingSymlinksInPath().absoluteURL
-                if urls.contains(machineUrl) {
-                    return []
-                }
-                urls.insert(machineUrl)
-                return [machine] + _process(machine.dependencies.map { $0.machine } )
-            }
-        }
-        return _process(self.machines)
-    }
-    
-    public init(name: String, filePath: URL, dependencies: [Machine.Dependency]) {
+    public init(startTime: UInt, duration: UInt, name: String) {
+        self.startTime = startTime
+        self.duration = duration
         self.name = name
-        self.filePath = filePath
-        self.dependencies = dependencies
+    }
+    
+    init(parsing str: String) throws {
+        let items = str.components(separatedBy: ",").lazy.map { $0.trimmingCharacters(in: .whitespaces) }
+        guard items.count == 3 else {
+            throw Error(message: "Missing required fields: require start time, duration and name of machine separated by commas.")
+        }
+        guard let startTime = UInt(items[0]) else {
+            throw Error(message: "Unable to convert start time '\(items[0])' into a valid unsigned integer.")
+        }
+        guard let duration = UInt(items[1]) else {
+            throw Error(message: "Unable to convert duration '\(items[1])' into a valid unsigned integer.")
+        }
+        self.init(startTime: startTime, duration: duration, name: items[2])
     }
     
 }
