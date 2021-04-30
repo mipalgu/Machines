@@ -624,31 +624,36 @@ struct SwiftfsmConverter: Converter, MachineValidator {
 
 extension SwiftfsmConverter: ArrangementMutator {
     
-    func addItem<Path, T>(_ item: T, to attribute: Path, in arrangement: inout Arrangement) throws where Path : PathProtocol, Path.Root == Arrangement, Path.Value == [T] {
+    func addItem<Path, T>(_ item: T, to attribute: Path, in arrangement: inout Arrangement) -> Result<Bool, AttributeError<Path.Root>> where Path : PathProtocol, Path.Root == Arrangement, Path.Value == [T] {
         arrangement[keyPath: attribute.path].append(item)
+        return .success(false)
     }
     
-    func moveItems<Path, T>(attribute: Path, in arrangement: inout Arrangement, from source: IndexSet, to destination: Int) throws where Path : PathProtocol, Path.Root == Arrangement, Path.Value == [T] {
+    func moveItems<Path, T>(attribute: Path, in arrangement: inout Arrangement, from source: IndexSet, to destination: Int) -> Result<Bool, AttributeError<Path.Root>> where Path : PathProtocol, Path.Root == Arrangement, Path.Value == [T] {
         arrangement[keyPath: attribute.path].move(fromOffsets: source, toOffset: destination)
+        return.success(false)
     }
     
-    func deleteItem<Path, T>(attribute: Path, atIndex index: Int, in arrangement: inout Arrangement) throws where Path : PathProtocol, Path.Root == Arrangement, Path.Value == [T] {
+    func deleteItem<Path, T>(attribute: Path, atIndex index: Int, in arrangement: inout Arrangement) -> Result<Bool, AttributeError<Path.Root>> where Path : PathProtocol, Path.Root == Arrangement, Path.Value == [T] {
         arrangement[keyPath: attribute.path].remove(at: index)
+        return .success(false)
     }
     
-    func modify<Path>(attribute: Path, value: Path.Value, in arrangement: inout Arrangement) throws where Path : PathProtocol, Path.Root == Arrangement {
+    func modify<Path>(attribute: Path, value: Path.Value, in arrangement: inout Arrangement) -> Result<Bool, AttributeError<Path.Root>> where Path : PathProtocol, Path.Root == Arrangement {
         switch attribute.path {
         case \Arrangement.attributes[0].attributes["use_dispatch_table"],
              \Arrangement.attributes[0].attributes["use_dispatch_table"].wrappedValue,
              \Arrangement.attributes[0].attributes["use_dispatch_table"].wrappedValue.lineAttribute,
              \Arrangement.attributes[0].attributes["use_dispatch_table"].wrappedValue.lineAttribute.boolValue:
             guard let boolValue = (value as? Attribute)?.boolValue ?? (value as? LineAttribute)?.boolValue ?? (value as? Bool) else {
-                throw ValidationError(message: "Invalid value \(value)", path: attribute)
+                return .failure(ValidationError(message: "Invalid value \(value)", path: attribute))
             }
             self.toggleUseDispatchTable(boolValue: boolValue, arrangement: &arrangement)
             arrangement[keyPath: attribute.path] = value
+            return .success(true)
         default:
             arrangement[keyPath: attribute.path] = value
+            return .success(false)
         }
     }
     

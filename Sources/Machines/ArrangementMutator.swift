@@ -61,15 +61,15 @@ import Foundation
 
 public protocol ArrangementMutator: DependencyLayoutContainer {
     
-    func addItem<Path, T>(_ item: T, to attribute: Path, in: inout Arrangement) throws where Path : PathProtocol, Path.Root == Arrangement, Path.Value == [T]
+    func addItem<Path, T>(_ item: T, to attribute: Path, in: inout Arrangement) -> Result<Bool, AttributeError<Path.Root>> where Path : PathProtocol, Path.Root == Arrangement, Path.Value == [T]
     
-    func moveItems<Path: PathProtocol, T>(attribute: Path, in: inout Arrangement, from source: IndexSet, to destination: Int) throws where Path.Root == Arrangement, Path.Value == [T]
+    func moveItems<Path: PathProtocol, T>(attribute: Path, in: inout Arrangement, from source: IndexSet, to destination: Int) -> Result<Bool, AttributeError<Path.Root>> where Path.Root == Arrangement, Path.Value == [T]
     
-    func deleteItems<Path: PathProtocol, T>(table attribute: Path, items: IndexSet, in: inout Arrangement) throws where Path.Root == Arrangement, Path.Value == [T]
+    func deleteItems<Path: PathProtocol, T>(table attribute: Path, items: IndexSet, in: inout Arrangement) -> Result<Bool, AttributeError<Path.Root>> where Path.Root == Arrangement, Path.Value == [T]
     
-    func deleteItem<Path: PathProtocol, T>(attribute: Path, atIndex: Int, in: inout Arrangement) throws where Path.Root == Arrangement, Path.Value == [T]
+    func deleteItem<Path: PathProtocol, T>(attribute: Path, atIndex: Int, in: inout Arrangement) -> Result<Bool, AttributeError<Path.Root>> where Path.Root == Arrangement, Path.Value == [T]
     
-    func modify<Path: PathProtocol>(attribute: Path, value: Path.Value, in: inout Arrangement) throws where Path.Root == Arrangement
+    func modify<Path: PathProtocol>(attribute: Path, value: Path.Value, in: inout Arrangement) -> Result<Bool, AttributeError<Path.Root>> where Path.Root == Arrangement
     
     func validate(arrangement: Arrangement) throws
     
@@ -77,8 +77,17 @@ public protocol ArrangementMutator: DependencyLayoutContainer {
 
 extension ArrangementMutator {
     
-    public func deleteItems<Path: PathProtocol, T>(table attribute: Path, items: IndexSet, in arrangement: inout Arrangement) throws where Path.Root == Arrangement, Path.Value == [T] {
-        try items.sorted(by: >).forEach { try self.deleteItem(attribute: attribute, atIndex: $0, in: &arrangement) }
+    public func deleteItems<Path: PathProtocol, T>(table attribute: Path, items: IndexSet, in arrangement: inout Arrangement) -> Result<Bool, AttributeError<Arrangement>> where Path.Root == Arrangement, Path.Value == [T] {
+        var triggers: Bool = false
+        for index in items.sorted(by: >) {
+            switch self.deleteItem(attribute: attribute, atIndex: index, in: &arrangement) {
+            case .failure(let error):
+                return .failure(error)
+            case .success(let triggersActivated):
+                triggers = triggers || triggersActivated
+            }
+        }
+        return .success(triggers)
     }
     
 }
