@@ -897,6 +897,13 @@ extension VHDLMachinesConverter: MachineMutator {
         }
         return machinePaths + statePaths
     }
+    
+    private func addClock(value: String, machine: inout Machine) {
+        let currentClocks = machine.attributes[0].attributes["driving_clock"]!
+        var newValidValues = currentClocks.enumeratedValidValues
+        newValidValues.insert(value)
+        machine.attributes[0].attributes["driving_clock"]!.enumeratedValidValues = newValidValues
+    }
 
     func modify<Path>(attribute: Path, value: Path.Value, machine: inout Machine) -> Result<Bool, AttributeError<Path.Root>> where Path : PathProtocol, Path.Root == Machine {
         if let index = machine.states.indices.first(where: { Machine.path.states[$0].name.path == attribute.path }) {
@@ -910,10 +917,16 @@ extension VHDLMachinesConverter: MachineMutator {
             } catch {
                 return .failure(AttributeError(message: "Unable to change name of state", path: attribute))
             }
+            if attribute.path == Machine.path.attributes[0].attributes["clocks"].wrappedValue.path {
+                guard let newValue = (value as? Attribute)?.enumeratedValue else {
+                    return .failure(ValidationError(message: "Invalid value \(value)", path: attribute))
+                }
+                addClock(value: newValue, machine: &machine)
+                machine[keyPath: attribute.path] = value
+                return .success(true)
+            }
+            machine[keyPath: attribute.path] = value
             return .success(true)
-        }
-        if nil == self.whitelist(forMachine: machine).first(where: { $0.isParent(of: attribute) || $0.isSame(as: attribute) }) {
-            return .failure(ValidationError(message: "Attempting to modify a value which is not allowed to be modified", path: attribute))
         }
         machine[keyPath: attribute.path] = value
         return .success(false)
