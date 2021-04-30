@@ -61,27 +61,27 @@ import Foundation
 
 public protocol MachineMutator: DependencyLayoutContainer {
     
-    func addItem<Path, T>(_ item: T, to attribute: Path, machine: inout Machine) throws where Path : PathProtocol, Path.Root == Machine, Path.Value == [T]
+    func addItem<Path, T>(_ item: T, to attribute: Path, machine: inout Machine) -> Result<Bool, AttributeError<Path.Root>> where Path : PathProtocol, Path.Root == Machine, Path.Value == [T]
     
-    func moveItems<Path: PathProtocol, T>(attribute: Path, machine: inout Machine, from source: IndexSet, to destination: Int) throws where Path.Root == Machine, Path.Value == [T]
+    func moveItems<Path: PathProtocol, T>(attribute: Path, machine: inout Machine, from source: IndexSet, to destination: Int) -> Result<Bool, AttributeError<Path.Root>> where Path.Root == Machine, Path.Value == [T]
     
-    func newState(machine: inout Machine) throws
+    func newState(machine: inout Machine) -> Result<Bool, AttributeError<Machine>>
     
-    func newTransition(source: StateName, target: StateName, condition: Expression?, machine: inout Machine) throws
+    func newTransition(source: StateName, target: StateName, condition: Expression?, machine: inout Machine) -> Result<Bool, AttributeError<Machine>>
     
-    func delete(states: IndexSet, machine: inout Machine) throws
+    func delete(states: IndexSet, machine: inout Machine) -> Result<Bool, AttributeError<Machine>>
     
-    func delete(transitions: IndexSet, attachedTo sourceState: StateName, machine: inout Machine) throws
+    func delete(transitions: IndexSet, attachedTo sourceState: StateName, machine: inout Machine) -> Result<Bool, AttributeError<Machine>>
     
-    func deleteState(atIndex index: Int, machine: inout Machine) throws
+    func deleteState(atIndex index: Int, machine: inout Machine) -> Result<Bool, AttributeError<Machine>>
     
-    func deleteTransition(atIndex index: Int, attachedTo sourceState: StateName, machine: inout Machine) throws
+    func deleteTransition(atIndex index: Int, attachedTo sourceState: StateName, machine: inout Machine) -> Result<Bool, AttributeError<Machine>>
     
-    func deleteItems<Path: PathProtocol, T>(table attribute: Path, items: IndexSet, machine: inout Machine) throws where Path.Root == Machine, Path.Value == [T]
+    func deleteItems<Path: PathProtocol, T>(table attribute: Path, items: IndexSet, machine: inout Machine) -> Result<Bool, AttributeError<Path.Root>> where Path.Root == Machine, Path.Value == [T]
     
-    func deleteItem<Path: PathProtocol, T>(attribute: Path, atIndex: Int, machine: inout Machine) throws where Path.Root == Machine, Path.Value == [T]
+    func deleteItem<Path: PathProtocol, T>(attribute: Path, atIndex: Int, machine: inout Machine) -> Result<Bool, AttributeError<Path.Root>> where Path.Root == Machine, Path.Value == [T]
     
-    func modify<Path: PathProtocol>(attribute: Path, value: Path.Value, machine: inout Machine) throws where Path.Root == Machine
+    func modify<Path: PathProtocol>(attribute: Path, value: Path.Value, machine: inout Machine) -> Result<Bool, AttributeError<Path.Root>> where Path.Root == Machine
     
     func validate(machine: Machine) throws
     
@@ -89,8 +89,17 @@ public protocol MachineMutator: DependencyLayoutContainer {
 
 extension MachineMutator {
     
-    public func deleteItems<Path: PathProtocol, T>(table attribute: Path, items: IndexSet, machine: inout Machine) throws where Path.Root == Machine, Path.Value == [T] {
-        try items.sorted(by: >).forEach { try self.deleteItem(attribute: attribute, atIndex: $0, machine: &machine) }
+    public func deleteItems<Path: PathProtocol, T>(table attribute: Path, items: IndexSet, machine: inout Machine) -> Result<Bool, AttributeError<Path.Root>> where Path.Root == Machine, Path.Value == [T] {
+        var triggers: Bool = false
+        for index in items.sorted(by: >) {
+            switch self.deleteItem(attribute: attribute, atIndex: index, machine: &machine) {
+            case .failure(let error):
+                return .failure(error)
+            case .success(let triggersActivated):
+                triggers = triggers || triggersActivated
+            }
+        }
+        return .success(triggers)
     }
     
 }

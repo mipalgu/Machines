@@ -63,19 +63,19 @@ public protocol Modifiable {
     var errorBag: ErrorBag<Self> { get }
     
     /// Add a new item to a table/collection attribute.
-    mutating func addItem<Path: PathProtocol, T>(_ item: T, to attribute: Path) throws where Path.Root == Self, Path.Value == [T]
+    mutating func addItem<Path: PathProtocol, T>(_ item: T, to attribute: Path) -> Result<Bool, AttributeError<Self>> where Path.Root == Self, Path.Value == [T]
     
     /// Move the position of items in a table/collection attribute.
-    mutating func moveItems<Path: PathProtocol, T>(table attribute: Path, from source: IndexSet, to destination: Int) throws where Path.Root == Self, Path.Value == [T]
+    mutating func moveItems<Path: PathProtocol, T>(table attribute: Path, from source: IndexSet, to destination: Int) -> Result<Bool, AttributeError<Self>> where Path.Root == Self, Path.Value == [T]
     
     /// Delete a specific item in a table/collection attribute.
-    mutating func deleteItem<Path: PathProtocol, T>(table attribute: Path, atIndex index: Int) throws where Path.Root == Self, Path.Value == [T]
+    mutating func deleteItem<Path: PathProtocol, T>(table attribute: Path, atIndex index: Int) -> Result<Bool, AttributeError<Self>> where Path.Root == Self, Path.Value == [T]
     
     /// Delete specific items in a table/collection attribute.
-    mutating func deleteItems<Path: PathProtocol, T>(table attribute: Path, items: IndexSet) throws where Path.Root == Self, Path.Value == [T]
+    mutating func deleteItems<Path: PathProtocol, T>(table attribute: Path, items: IndexSet) -> Result<Bool, AttributeError<Self>> where Path.Root == Self, Path.Value == [T]
     
     /// Modify a specific attributes value.
-    mutating func modify<Path: PathProtocol>(attribute: Path, value: Path.Value) throws where Path.Root == Self
+    mutating func modify<Path: PathProtocol>(attribute: Path, value: Path.Value) -> Result<Bool, AttributeError<Self>> where Path.Root == Self
     
     /// Are there any errors with the modification?
     func validate() throws

@@ -311,76 +311,76 @@ public struct Machine: PathContainer, Modifiable, MutatorContainer, Dependencies
     }
     
     /// Add a new item to a table attribute.
-    public mutating func addItem<Path: PathProtocol, T>(_ item: T, to attribute: Path) throws where Path.Root == Machine, Path.Value == [T] {
-        try perform { [mutator] machine in
-            try mutator.addItem(item, to: attribute, machine: &machine)
+    public mutating func addItem<Path: PathProtocol, T>(_ item: T, to attribute: Path) -> Result<Bool, AttributeError<Machine>> where Path.Root == Machine, Path.Value == [T] {
+        perform { [mutator] machine in
+            mutator.addItem(item, to: attribute, machine: &machine)
         }
     }
     
-    public mutating func moveItems<Path: PathProtocol, T>(table attribute: Path, from source: IndexSet, to destination: Int) throws where Path.Root == Machine, Path.Value == [T]  {
-        try perform { [mutator] machine in
-            try mutator.moveItems(attribute: attribute, machine: &machine, from: source, to: destination)
+    public mutating func moveItems<Path: PathProtocol, T>(table attribute: Path, from source: IndexSet, to destination: Int) -> Result<Bool, AttributeError<Machine>> where Path.Root == Machine, Path.Value == [T]  {
+        perform { [mutator] machine in
+            mutator.moveItems(attribute: attribute, machine: &machine, from: source, to: destination)
         }
     }
     
     /// Add a new empty state to the machine.
-    public mutating func newState() throws {
-        try perform { [mutator] machine in
-            try mutator.newState(machine: &machine)
+    public mutating func newState() -> Result<Bool, AttributeError<Machine>> {
+        perform { [mutator] machine in
+            mutator.newState(machine: &machine)
         }
     }
     
     /// Add a new empty transition to the machine.
-    public mutating func newTransition(source: StateName, target: StateName, condition: Expression? = nil) throws {
-        try perform { [mutator] machine in
-            try mutator.newTransition(source: source, target: target, condition: condition, machine: &machine)
+    public mutating func newTransition(source: StateName, target: StateName, condition: Expression? = nil) -> Result<Bool, AttributeError<Machine>> {
+        perform { [mutator] machine in
+            mutator.newTransition(source: source, target: target, condition: condition, machine: &machine)
         }
     }
     
     /// Delete a specific item in a table attribute.
-    public mutating func deleteItem<Path: PathProtocol, T>(table attribute: Path, atIndex index: Int) throws where Path.Root == Machine, Path.Value == [T] {
-        try perform { [mutator] machine in
-            try mutator.deleteItem(attribute: attribute, atIndex: index, machine: &machine)
+    public mutating func deleteItem<Path: PathProtocol, T>(table attribute: Path, atIndex index: Int) -> Result<Bool, AttributeError<Machine>> where Path.Root == Machine, Path.Value == [T] {
+        perform { [mutator] machine in
+            mutator.deleteItem(attribute: attribute, atIndex: index, machine: &machine)
         }
     }
     
-    public mutating func deleteItems<Path: PathProtocol, T>(table attribute: Path, items: IndexSet) throws where Path.Root == Machine, Path.Value == [T] {
-        try perform { [mutator] machine in
-            try mutator.deleteItems(table: attribute, items: items, machine: &machine)
+    public mutating func deleteItems<Path: PathProtocol, T>(table attribute: Path, items: IndexSet) -> Result<Bool, AttributeError<Machine>> where Path.Root == Machine, Path.Value == [T] {
+        perform { [mutator] machine in
+            mutator.deleteItems(table: attribute, items: items, machine: &machine)
         }
     }
     
     /// Delete a set of states and transitions.
-    public mutating func delete(states: IndexSet) throws {
-        try perform { [mutator] machine in
-            try mutator.delete(states: states, machine: &machine)
+    public mutating func delete(states: IndexSet) -> Result<Bool, AttributeError<Machine>> {
+        perform { [mutator] machine in
+            mutator.delete(states: states, machine: &machine)
         }
     }
     
-    public mutating func delete(transitions: IndexSet, attachedTo sourceState: StateName) throws {
-        try perform { [mutator] machine in
-            try mutator.delete(transitions: transitions, attachedTo: sourceState, machine: &machine)
+    public mutating func delete(transitions: IndexSet, attachedTo sourceState: StateName) -> Result<Bool, AttributeError<Machine>> {
+        perform { [mutator] machine in
+            mutator.delete(transitions: transitions, attachedTo: sourceState, machine: &machine)
         }
     }
     
     /// Delete a state at a specific index.
-    public mutating func deleteState(atIndex index: Int) throws {
-        try perform { [mutator] machine in
-            try mutator.deleteState(atIndex: index, machine: &machine)
+    public mutating func deleteState(atIndex index: Int) -> Result<Bool, AttributeError<Machine>> {
+        perform { [mutator] machine in
+            mutator.deleteState(atIndex: index, machine: &machine)
         }
     }
     
     /// Delete a transition at a specific index.
-    public mutating func deleteTransition(atIndex index: Int, attachedTo sourceState: StateName) throws {
-        try perform { [mutator] machine in
-            try mutator.deleteTransition(atIndex: index, attachedTo: sourceState, machine: &machine)
+    public mutating func deleteTransition(atIndex index: Int, attachedTo sourceState: StateName) -> Result<Bool, AttributeError<Machine>> {
+        perform { [mutator] machine in
+            mutator.deleteTransition(atIndex: index, attachedTo: sourceState, machine: &machine)
         }
     }
     
     /// Modify a specific attributes value.
-    public mutating func modify<Path: PathProtocol>(attribute: Path, value: Path.Value) throws where Path.Root == Machine {
-        try perform { [mutator] machine in
-            try mutator.modify(attribute: attribute, value: value, machine: &machine)
+    public mutating func modify<Path: PathProtocol>(attribute: Path, value: Path.Value) -> Result<Bool, AttributeError<Machine>> where Path.Root == Machine {
+        perform { [mutator] machine in
+            mutator.modify(attribute: attribute, value: value, machine: &machine)
         }
     }
     
@@ -413,6 +413,25 @@ public struct Machine: PathContainer, Modifiable, MutatorContainer, Dependencies
             throw e
         } catch let e {
             fatalError("Unsupported error: \(e)")
+        }
+    }
+    
+    private func perform(_ f: (Machine) -> Result<Bool, AttributeError<Machine>>) -> Result<Bool, AttributeError<Machine>> {
+        return f(self)
+    }
+    
+    private mutating func perform(_ f: (inout Machine) -> Result<Bool, AttributeError<Machine>>) -> Result<Bool, AttributeError<Machine>> {
+        let backup = self
+        let result = f(&self)
+        switch result {
+        case .failure(let e):
+            self = backup
+            self.errorBag.remove(includingDescendantsForPath: e.path)
+            self.errorBag.insert(e)
+            return result
+        case .success:
+            self.errorBag.empty()
+            return result
         }
     }
     

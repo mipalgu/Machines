@@ -673,197 +673,243 @@ extension SwiftfsmConverter: ArrangementMutator {
 
 extension SwiftfsmConverter: MachineMutator {
 
-    func addItem<Path, T>(_ item: T, to attribute: Path, machine: inout Machine) throws where Path : PathProtocol, Path.Root == Machine, Path.Value == [T] {
-        try perform(on: &machine) { machine in
-            switch attribute.path {
-            case Machine.path.attributes[1].attributes["actions"].wrappedValue.collectionValue.path,
-                 Machine.path.attributes[1].attributes["actions"].wrappedValue.blockAttribute.collectionValue.path:
-                guard let action = (item as? Attribute)?.lineValue ?? (item as? LineAttribute)?.lineValue ?? (item as? String) else {
-                    throw ValidationError(message: "Invalid value \(item)", path: attribute)
-                }
+    func addItem<Path, T>(_ item: T, to attribute: Path, machine: inout Machine) -> Result<Bool, AttributeError<Path.Root>> where Path : PathProtocol, Path.Root == Machine, Path.Value == [T] {
+        switch attribute.path {
+        case Machine.path.attributes[1].attributes["actions"].wrappedValue.collectionValue.path,
+             Machine.path.attributes[1].attributes["actions"].wrappedValue.blockAttribute.collectionValue.path:
+            guard let action = (item as? Attribute)?.lineValue ?? (item as? LineAttribute)?.lineValue ?? (item as? String) else {
+                return .failure(ValidationError(message: "Invalid value \(item)", path: attribute))
+            }
+            do {
                 try self.addNewAction(action: action, machine: &machine)
-            default:
-                machine[keyPath: attribute.path].append(item)
+            } catch let e as AttributeError<Machine> {
+                return .failure(e)
+            } catch {
+                return .failure(AttributeError(message: "Unable to create new action.", path: attribute))
             }
+            return .success(true)
+        default:
+            machine[keyPath: attribute.path].append(item)
+            return .success(false)
         }
     }
     
-    func moveItems<Path: PathProtocol, T>(attribute: Path, machine: inout Machine, from source: IndexSet, to destination: Int) throws where Path.Root == Machine, Path.Value == [T] {
-        try perform(on: &machine) { machine in
-            switch attribute.path {
-            case Machine.path.attributes[1].attributes["actions"].wrappedValue.collectionValue.path,
-                 Machine.path.attributes[1].attributes["actions"].wrappedValue.blockAttribute.collectionValue.path:
+    func moveItems<Path: PathProtocol, T>(attribute: Path, machine: inout Machine, from source: IndexSet, to destination: Int) -> Result<Bool, AttributeError<Path.Root>> where Path.Root == Machine, Path.Value == [T] {
+        switch attribute.path {
+        case Machine.path.attributes[1].attributes["actions"].wrappedValue.collectionValue.path,
+             Machine.path.attributes[1].attributes["actions"].wrappedValue.blockAttribute.collectionValue.path:
+            do {
                 try self.moveActions(from: source, to: destination, machine: &machine)
-            default:
-                machine[keyPath: attribute.path].move(fromOffsets: source, toOffset: destination)
+            } catch let e as AttributeError<Machine> {
+                return .failure(e)
+            } catch {
+                return .failure(AttributeError(message: "Unable to reorder actions.", path: attribute))
             }
+            return .success(true)
+        default:
+            machine[keyPath: attribute.path].move(fromOffsets: source, toOffset: destination)
+            return .success(false)
         }
     }
     
-    func newState(machine: inout Machine) throws {
-        try perform(on: &machine) { machine in
-            if machine.semantics != .swiftfsm {
-                throw MachinesError.unsupportedSemantics(machine.semantics)
-            }
-            let name = "State"
-            if nil == machine.states.first(where: { $0.name == name }) {
+    func newState(machine: inout Machine) -> Result<Bool, AttributeError<Machine>> {
+        let name = "State"
+        if nil == machine.states.first(where: { $0.name == name }) {
+            do {
                 try machine.states.append(self.createState(named: name, forMachine: machine))
+            } catch let e as AttributeError<Machine> {
+                return .failure(e)
+            } catch {
+                return .failure(AttributeError(message: "Unable to create new state.", path: Machine.path.states))
             }
-            var num = 0
-            var stateName: String
-            repeat {
-                stateName = name + "\(num)"
-                num += 1
-            } while (nil != machine.states.reversed().first(where: { $0.name == stateName }))
+        }
+        var num = 0
+        var stateName: String
+        repeat {
+            stateName = name + "\(num)"
+            num += 1
+        } while (nil != machine.states.reversed().first(where: { $0.name == stateName }))
+        do {
             try machine.states.append(self.createState(named: stateName, forMachine: machine))
-            self.syncSuspendState(machine: &machine)
+        } catch let e as AttributeError<Machine> {
+            return .failure(e)
+        } catch {
+            return .failure(AttributeError(message: "Unable to create new state.", path: Machine.path.states))
         }
+        self.syncSuspendState(machine: &machine)
+        return .success(true)
     }
     
-    func newTransition(source: StateName, target: StateName, condition: Expression? = nil, machine: inout Machine) throws {
-        try perform(on: &machine) { machine in
-            guard
-                let index = machine.states.indices.first(where: { machine.states[$0].name == source }),
-                nil != machine.states.first(where: { $0.name == target })
-            else {
-                throw ValidationError(message: "You must attach a transition to a source and target state", path: Machine.path)
-            }
-            machine.states[index].transitions.append(Transition(condition: condition, target: target))
+    func newTransition(source: StateName, target: StateName, condition: Expression? = nil, machine: inout Machine) -> Result<Bool, AttributeError<Machine>> {
+        guard
+            let index = machine.states.indices.first(where: { machine.states[$0].name == source }),
+            nil != machine.states.first(where: { $0.name == target })
+        else {
+            return .failure(ValidationError(message: "You must attach a transition to a source and target state", path: Machine.path))
         }
+        machine.states[index].transitions.append(Transition(condition: condition, target: target))
+        return .success(false)
     }
     
-    func deleteItem<Path, T>(attribute: Path, atIndex index: Int, machine: inout Machine) throws where Path : PathProtocol, Path.Root == Machine, Path.Value == [T] {
-        try perform(on: &machine) { machine in
-            if machine[keyPath: attribute.path].count <= index || index < 0 {
-                throw ValidationError(message: "Invalid index '\(index)'", path: attribute)
+    func deleteItem<Path, T>(attribute: Path, atIndex index: Int, machine: inout Machine) -> Result<Bool, AttributeError<Path.Root>> where Path : PathProtocol, Path.Root == Machine, Path.Value == [T] {
+        if machine[keyPath: attribute.path].count <= index || index < 0 {
+            return .failure(ValidationError(message: "Invalid index '\(index)'", path: attribute))
+        }
+        switch attribute.path {
+        case Machine.path.attributes[1].attributes["actions"].wrappedValue.collectionValue.path,
+             Machine.path.attributes[1].attributes["actions"].wrappedValue.blockAttribute.collectionValue.path:
+            let item = machine[keyPath: attribute.keyPath][index]
+            guard let action = (item as? Attribute)?.lineValue ?? (item as? LineAttribute)?.lineValue ?? (item as? String) else {
+                return .failure(ValidationError(message: "Invalid value \(item)", path: attribute))
             }
-            switch attribute.path {
-            case Machine.path.attributes[1].attributes["actions"].wrappedValue.collectionValue.path,
-                 Machine.path.attributes[1].attributes["actions"].wrappedValue.blockAttribute.collectionValue.path:
-                let item = machine[keyPath: attribute.keyPath][index]
-                guard let action = (item as? Attribute)?.lineValue ?? (item as? LineAttribute)?.lineValue ?? (item as? String) else {
-                    throw ValidationError(message: "Invalid value \(item)", path: attribute)
-                }
+            do {
                 try self.deleteAction(action: action, machine: &machine)
-            default:
-                machine[keyPath: attribute.path].remove(at: index)
+            } catch let e as AttributeError<Machine> {
+                return .failure(e)
+            } catch {
+                return .failure(AttributeError(message: "Unable to delete action.", path: attribute))
             }
+            return .success(true)
+        default:
+            machine[keyPath: attribute.path].remove(at: index)
+            return .success(false)
         }
     }
     
-    func delete(states: IndexSet, machine: inout Machine) throws {
-        try self.perform(on: &machine) { machine in
-            if
-                let initialIndex = machine.states.enumerated().first(where: { $0.1.name == machine.initialState })?.0,
-                states.contains(initialIndex)
-            {
-                throw ValidationError(message: "You cannot delete the initial state", path: Machine.path.states[initialIndex])
-            }
-            machine.states = machine.states.enumerated().filter { !states.contains($0.0) }.map { $1 }
-            self.syncSuspendState(machine: &machine)
+    func delete(states: IndexSet, machine: inout Machine) -> Result<Bool, AttributeError<Machine>> {
+        if
+            let initialIndex = machine.states.enumerated().first(where: { $0.1.name == machine.initialState })?.0,
+            states.contains(initialIndex)
+        {
+            return .failure(ValidationError(message: "You cannot delete the initial state", path: Machine.path.states[initialIndex]))
         }
+        machine.states = machine.states.enumerated().filter { !states.contains($0.0) }.map { $1 }
+        self.syncSuspendState(machine: &machine)
+        return .success(true)
     }
     
-    func delete(transitions: IndexSet, attachedTo sourceState: StateName, machine: inout Machine) throws {
-        try self.perform(on: &machine) { machine in
-            guard let stateIndex = machine.states.firstIndex(where: { $0.name == sourceState }) else {
-                throw ValidationError(message: "Unable to find state with name \(sourceState)", path: Machine.path.states)
-            }
-            machine.states[stateIndex].transitions = machine.states[stateIndex].transitions.enumerated().filter { !transitions.contains($0.0) }.map { $1 }
+    func delete(transitions: IndexSet, attachedTo sourceState: StateName, machine: inout Machine) -> Result<Bool, AttributeError<Machine>> {
+        guard let stateIndex = machine.states.firstIndex(where: { $0.name == sourceState }) else {
+            return .failure(ValidationError(message: "Unable to find state with name \(sourceState)", path: Machine.path.states))
         }
+        machine.states[stateIndex].transitions = machine.states[stateIndex].transitions.enumerated().filter { !transitions.contains($0.0) }.map { $1 }
+        return .success(false)
     }
     
-    func deleteState(atIndex index: Int, machine: inout Machine) throws {
-        try perform(on: &machine) { machine in
-            if index >= machine.states.count  {
-                throw ValidationError(message: "Can't delete state that doesn't exist", path: Machine.path.states)
-            }
-            if machine.states[index].name == machine.initialState {
-                throw ValidationError(message: "Can't delete the initial state", path: Machine.path.states[index])
-            }
-            machine.states.remove(at: index)
-            self.syncSuspendState(machine: &machine)
+    func deleteState(atIndex index: Int, machine: inout Machine) -> Result<Bool, AttributeError<Machine>> {
+        if index >= machine.states.count  {
+            return .failure(ValidationError(message: "Can't delete state that doesn't exist", path: Machine.path.states))
         }
+        if machine.states[index].name == machine.initialState {
+            return .failure(ValidationError(message: "Can't delete the initial state", path: Machine.path.states[index]))
+        }
+        machine.states.remove(at: index)
+        self.syncSuspendState(machine: &machine)
+        return .success(true)
     }
     
-    func deleteTransition(atIndex index: Int, attachedTo sourceState: StateName, machine: inout Machine) throws {
-        try perform(on: &machine) { machine in
-            guard let index = machine.states.indices.first(where: { machine.states[$0].name == sourceState }) else {
-                throw ValidationError(message: "Cannot delete a transition attached to a state that does not exist", path: Machine.path.states)
-            }
-            guard machine.states[index].transitions.count >= index else {
-                throw ValidationError(message: "Cannot delete transition that does not exist", path: Machine.path.states[index].transitions)
-            }
-            machine.states[index].transitions.remove(at: index)
+    func deleteTransition(atIndex index: Int, attachedTo sourceState: StateName, machine: inout Machine) -> Result<Bool, AttributeError<Machine>> {
+        guard let index = machine.states.indices.first(where: { machine.states[$0].name == sourceState }) else {
+            return .failure(ValidationError(message: "Cannot delete a transition attached to a state that does not exist", path: Machine.path.states))
         }
+        guard machine.states[index].transitions.count >= index else {
+            return .failure(ValidationError(message: "Cannot delete transition that does not exist", path: Machine.path.states[index].transitions))
+        }
+        machine.states[index].transitions.remove(at: index)
+        return .success(false)
     }
     
-    func modify<Path>(attribute: Path, value: Path.Value, machine: inout Machine) throws where Path : PathProtocol, Path.Root == Machine {
-        try perform(on: &machine) { machine in
-            if let index = machine.attributes[1].attributes["actions"]?.collectionValue.indices.first(where: { (index: Int) -> Bool in
-                Machine.path.attributes[1].attributes["actions"].wrappedValue.collectionValue[index].path == attribute.path
-                    || Machine.path.attributes[1].attributes["actions"].wrappedValue.collectionValue[index].lineValue.path == attribute.path
-                    || Machine.path.attributes[1].attributes["actions"].wrappedValue.blockAttribute.collectionValue[index].lineValue.path == attribute.path
-                    || Machine.path.attributes[1].attributes["actions"].wrappedValue.blockAttribute.collectionValue[index].lineAttribute.lineValue.path == attribute.path
-                    || Machine.path.attributes[1].attributes["actions"].wrappedValue.collectionValue[index].lineAttribute.path == attribute.path
-                    || Machine.path.attributes[1].attributes["actions"].wrappedValue.collectionValue[index].lineAttribute.lineValue.path == attribute.path
-            }) {
-                guard let actionName = (value as? Attribute)?.lineValue ?? (value as? LineAttribute)?.lineValue ?? (value as? String) else {
-                    throw ValidationError(message: "Invalid value \(value)", path: attribute)
-                }
+    func modify<Path>(attribute: Path, value: Path.Value, machine: inout Machine) -> Result<Bool, AttributeError<Path.Root>> where Path : PathProtocol, Path.Root == Machine {
+        if let index = machine.attributes[1].attributes["actions"]?.collectionValue.indices.first(where: { (index: Int) -> Bool in
+            Machine.path.attributes[1].attributes["actions"].wrappedValue.collectionValue[index].path == attribute.path
+                || Machine.path.attributes[1].attributes["actions"].wrappedValue.collectionValue[index].lineValue.path == attribute.path
+                || Machine.path.attributes[1].attributes["actions"].wrappedValue.blockAttribute.collectionValue[index].lineValue.path == attribute.path
+                || Machine.path.attributes[1].attributes["actions"].wrappedValue.blockAttribute.collectionValue[index].lineAttribute.lineValue.path == attribute.path
+                || Machine.path.attributes[1].attributes["actions"].wrappedValue.collectionValue[index].lineAttribute.path == attribute.path
+                || Machine.path.attributes[1].attributes["actions"].wrappedValue.collectionValue[index].lineAttribute.lineValue.path == attribute.path
+        }) {
+            guard let actionName = (value as? Attribute)?.lineValue ?? (value as? LineAttribute)?.lineValue ?? (value as? String) else {
+                return .failure(ValidationError(message: "Invalid value \(value)", path: attribute))
+            }
+            do {
                 try self.changeName(ofAction: index, to: actionName, machine: &machine)
+            } catch let e as AttributeError<Machine> {
+                return .failure(e)
+            } catch {
+                return .failure(AttributeError(message: "Unable to change name of action.", path: attribute))
             }
-            if let index = machine.states.indices.first(where: { Machine.path.states[$0].name.path == attribute.path }) {
-                guard let stateName = value as? StateName else {
-                    throw ValidationError(message: "Invalid value \(value)", path: attribute)
-                }
+        }
+        if let index = machine.states.indices.first(where: { Machine.path.states[$0].name.path == attribute.path }) {
+            guard let stateName = value as? StateName else {
+                return .failure(ValidationError(message: "Invalid value \(value)", path: attribute))
+            }
+            do {
                 try self.changeName(ofState: index, to: stateName, machine: &machine)
+            } catch let e as AttributeError<Machine> {
+                return .failure(e)
+            } catch {
+                return .failure(AttributeError(message: "Unable to change name of state.", path: attribute))
             }
-            if let index = machine.states.indices.first(where: {
-                machine.path.states[$0].attributes[1].attributes["access_external_variables"].wrappedValue.boolValue.path == attribute.path
-                    || machine.path.states[$0].attributes[1].attributes["access_external_variables"].wrappedValue.lineAttribute.boolValue.path == attribute.path
-            }) {
-                guard let boolValue = (value as? Attribute)?.boolValue ?? (value as? LineAttribute)?.boolValue ?? (value as? Bool) else {
-                    throw ValidationError(message: "Invalid value \(value)", path: attribute)
-                }
-                self.toggleAccessExternalVariables(boolValue: boolValue, forState: index, machine: &machine)
+        }
+        if let index = machine.states.indices.first(where: {
+            machine.path.states[$0].attributes[1].attributes["access_external_variables"].wrappedValue.boolValue.path == attribute.path
+                || machine.path.states[$0].attributes[1].attributes["access_external_variables"].wrappedValue.lineAttribute.boolValue.path == attribute.path
+        }) {
+            guard let boolValue = (value as? Attribute)?.boolValue ?? (value as? LineAttribute)?.boolValue ?? (value as? Bool) else {
+                return .failure(ValidationError(message: "Invalid value \(value)", path: attribute))
             }
-            if let index = machine.attributes[0].attributes["external_variables"].wrappedValue.tableValue.indices.first(where: { (index) -> Bool in
-                let externalsPath = Machine.path.attributes[0].attributes["external_variables"].wrappedValue
-                return externalsPath.tableValue[index][1].path == attribute.path
-                    || externalsPath.tableValue[index][1].lineValue.path == attribute.path
-                    || externalsPath.blockAttribute.tableValue[index][1].path == attribute.path
-                    || externalsPath.blockAttribute.tableValue[index][1].lineValue.path == attribute.path
-            }) {
-                guard let name = (value as? Attribute)?.lineValue ?? (value as? LineAttribute)?.lineValue ?? (value as? String) else {
-                    throw ValidationError(message: "Invalid value \(value)", path: attribute)
-                }
+            self.toggleAccessExternalVariables(boolValue: boolValue, forState: index, machine: &machine)
+        }
+        if let index = machine.attributes[0].attributes["external_variables"].wrappedValue.tableValue.indices.first(where: { (index) -> Bool in
+            let externalsPath = Machine.path.attributes[0].attributes["external_variables"].wrappedValue
+            return externalsPath.tableValue[index][1].path == attribute.path
+                || externalsPath.tableValue[index][1].lineValue.path == attribute.path
+                || externalsPath.blockAttribute.tableValue[index][1].path == attribute.path
+                || externalsPath.blockAttribute.tableValue[index][1].lineValue.path == attribute.path
+        }) {
+            guard let name = (value as? Attribute)?.lineValue ?? (value as? LineAttribute)?.lineValue ?? (value as? String) else {
+                return .failure(ValidationError(message: "Invalid value \(value)", path: attribute))
+            }
+            do {
                 try self.changeName(ofExternal: index, to: name, machine: &machine)
+            } catch let e as AttributeError<Machine> {
+                return .failure(e)
+            } catch {
+                return .failure(AttributeError(message: "Unable to change name of external variable.", path: attribute))
             }
-            switch attribute.path {
-            case machine.path.attributes[1].attributes["use_custom_ringlet"].wrappedValue.path,
-                 machine.path.attributes[1].attributes["use_custom_ringlet"].wrappedValue.boolValue.keyPath,
-                 machine.path.attributes[1].attributes["use_custom_ringlet"].wrappedValue.lineAttribute.boolValue.keyPath:
-                guard let boolValue = (value as? Attribute)?.boolValue ?? (value as? LineAttribute)?.boolValue ?? (value as? Bool) else {
-                    throw ValidationError(message: "Invalid value \(value)", path: attribute)
-                }
-                self.toggleUseCustomRinglet(boolValue: boolValue, machine: &machine)
-            case machine.path.attributes[0].attributes["parameters"].wrappedValue.complexValue["enable_parameters"].wrappedValue.path,
-                 machine.path.attributes[0].attributes["parameters"].wrappedValue.complexValue["enable_parameters"].wrappedValue.boolValue.keyPath,
-                 machine.path.attributes[0].attributes["parameters"].wrappedValue.complexValue["enable_parameters"].wrappedValue.lineAttribute.boolValue.keyPath,
-                 machine.path.attributes[0].attributes["parameters"].wrappedValue.blockAttribute.complexValue["enable_parameters"].wrappedValue.path,
-                 machine.path.attributes[0].attributes["parameters"].wrappedValue.blockAttribute.complexValue["enable_parameters"].wrappedValue.boolValue.keyPath,
-                 machine.path.attributes[0].attributes["parameters"].wrappedValue.blockAttribute.complexValue["enable_parameters"].wrappedValue.lineAttribute.boolValue.keyPath:
-                guard let boolValue = (value as? Attribute)?.boolValue ?? (value as? LineAttribute)?.boolValue ?? (value as? Bool) else {
-                    throw ValidationError(message: "Invalid value \(value)", path: attribute)
-                }
+        }
+        switch attribute.path {
+        case machine.path.attributes[1].attributes["use_custom_ringlet"].wrappedValue.path,
+             machine.path.attributes[1].attributes["use_custom_ringlet"].wrappedValue.boolValue.keyPath,
+             machine.path.attributes[1].attributes["use_custom_ringlet"].wrappedValue.lineAttribute.boolValue.keyPath:
+            guard let boolValue = (value as? Attribute)?.boolValue ?? (value as? LineAttribute)?.boolValue ?? (value as? Bool) else {
+                return .failure(ValidationError(message: "Invalid value \(value)", path: attribute))
+            }
+            self.toggleUseCustomRinglet(boolValue: boolValue, machine: &machine)
+            return .success(true)
+        case machine.path.attributes[0].attributes["parameters"].wrappedValue.complexValue["enable_parameters"].wrappedValue.path,
+             machine.path.attributes[0].attributes["parameters"].wrappedValue.complexValue["enable_parameters"].wrappedValue.boolValue.keyPath,
+             machine.path.attributes[0].attributes["parameters"].wrappedValue.complexValue["enable_parameters"].wrappedValue.lineAttribute.boolValue.keyPath,
+             machine.path.attributes[0].attributes["parameters"].wrappedValue.blockAttribute.complexValue["enable_parameters"].wrappedValue.path,
+             machine.path.attributes[0].attributes["parameters"].wrappedValue.blockAttribute.complexValue["enable_parameters"].wrappedValue.boolValue.keyPath,
+             machine.path.attributes[0].attributes["parameters"].wrappedValue.blockAttribute.complexValue["enable_parameters"].wrappedValue.lineAttribute.boolValue.keyPath:
+            guard let boolValue = (value as? Attribute)?.boolValue ?? (value as? LineAttribute)?.boolValue ?? (value as? Bool) else {
+                return .failure(ValidationError(message: "Invalid value \(value)", path: attribute))
+            }
+            do {
                 try self.toggleEnableParameters(boolValue: boolValue, machine: &machine)
-            default:
-                if nil == self.whitelist(forMachine: machine).first(where: { $0.isParent(of: attribute) || $0.isSame(as: attribute) }) {
-                    throw ValidationError(message: "Attempting to modify a value which is not allowed to be modified", path: attribute)
-                }
-                machine[keyPath: attribute.path] = value
+            } catch let e as AttributeError<Machine> {
+                return .failure(e)
+            } catch {
+                return .failure(AttributeError(message: "Unable to toggle enabling parameters.", path: attribute))
             }
+            return .success(true)
+        default:
+            if nil == self.whitelist(forMachine: machine).first(where: { $0.isParent(of: attribute) || $0.isSame(as: attribute) }) {
+                return .failure(ValidationError(message: "Attempting to modify a value which is not allowed to be modified", path: attribute))
+            }
+            machine[keyPath: attribute.path] = value
+            return .success(false)
         }
     }
     

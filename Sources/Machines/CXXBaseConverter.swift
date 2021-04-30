@@ -238,27 +238,14 @@ extension CXXBaseConverter: MachineMutator {
         []
     }
     
-    private func perform(on machine: inout Machine, _ f: (inout Machine) throws -> Void) throws {
-        let backup = machine
-        do {
-            try f(&machine)
-            try CXXBaseMachineValidator().validate(machine: machine)
-        } catch let e {
-            machine = backup
-            throw e
-        }
+    func addItem<Path, T>(_ item: T, to attribute: Path, machine: inout Machine) -> Result<Bool, AttributeError<Path.Root>> where Path : PathProtocol, Path.Root == Machine, Path.Value == [T] {
+        machine[keyPath: attribute.path].append(item)
+        return .success(false)
     }
     
-    func addItem<Path, T>(_ item: T, to attribute: Path, machine: inout Machine) throws where Path : PathProtocol, Path.Root == Machine, Path.Value == [T] {
-        try perform(on: &machine) { machine in
-            machine[keyPath: attribute.path].append(item)
-        }
-    }
-    
-    func moveItems<Path, T>(attribute: Path, machine: inout Machine, from source: IndexSet, to destination: Int) throws where Path : PathProtocol, Path.Root == Machine, Path.Value == [T] {
-        try perform(on: &machine) { machine in
-            machine[keyPath: attribute.path].move(fromOffsets: source, toOffset: destination)
-        }
+    func moveItems<Path, T>(attribute: Path, machine: inout Machine, from source: IndexSet, to destination: Int) -> Result<Bool, AttributeError<Path.Root>> where Path : PathProtocol, Path.Root == Machine, Path.Value == [T] {
+        machine[keyPath: attribute.path].move(fromOffsets: source, toOffset: destination)
+        return .success(false)
     }
     
     private func createState(named name: String, forMachine machine: Machine) throws -> State {
@@ -300,26 +287,34 @@ extension CXXBaseConverter: MachineMutator {
         )
     }
     
-    func newState(machine: inout Machine) throws {
-        try perform(on: &machine) { machine in
-            if machine.semantics != .clfsm || machine.semantics != .ucfsm {
-                throw MachinesError.unsupportedSemantics(machine.semantics)
-            }
-            let name = "State"
-            if nil == machine.states.first(where: { $0.name == name }) {
+    func newState(machine: inout Machine) -> Result<Bool, AttributeError<Machine>> {
+        let name = "State"
+        if nil == machine.states.first(where: { $0.name == name }) {
+            do {
                 try machine.states.append(self.createState(named: name, forMachine: machine))
-                self.syncSuspendState(machine: &machine)
-                return
+            } catch let e as AttributeError<Machine> {
+                return .failure(e)
+            } catch {
+                return .failure(AttributeError(message: "Unable to create new state", path: Machine.path.states))
             }
-            var num = 0
-            var stateName: String
-            repeat {
-                stateName = name + "\(num)"
-                num += 1
-            } while (nil != machine.states.reversed().first(where: { $0.name == stateName }))
-            try machine.states.append(self.createState(named: stateName, forMachine: machine))
             self.syncSuspendState(machine: &machine)
+            return .success(true)
         }
+        var num = 0
+        var stateName: String
+        repeat {
+            stateName = name + "\(num)"
+            num += 1
+        } while (nil != machine.states.reversed().first(where: { $0.name == stateName }))
+        do {
+            try machine.states.append(self.createState(named: stateName, forMachine: machine))
+        } catch let e as AttributeError<Machine> {
+            return .failure(e)
+        } catch {
+            return .failure(AttributeError(message: "Unable to create new state", path: Machine.path.states))
+        }
+        self.syncSuspendState(machine: &machine)
+        return .success(true)
     }
     
     private func syncSuspendState(machine: inout Machine) {
@@ -330,72 +325,66 @@ extension CXXBaseConverter: MachineMutator {
         machine.attributes[3].attributes["suspend_state"] = .enumerated(newValue, validValues: validValues)
     }
     
-    func newTransition(source: StateName, target: StateName, condition: Expression?, machine: inout Machine) throws {
-        try perform(on: &machine) { machine in
-            guard
-                let index = machine.states.indices.first(where: { machine.states[$0].name == source }),
-                nil != machine.states.first(where: { $0.name == target })
-            else {
-                throw ValidationError(message: "You must attach a transition to a source and target state", path: Machine.path)
-            }
-            machine.states[index].transitions.append(Transition(condition: condition, target: target))
+    func newTransition(source: StateName, target: StateName, condition: Expression?, machine: inout Machine) -> Result<Bool, AttributeError<Machine>> {
+        guard
+            let index = machine.states.indices.first(where: { machine.states[$0].name == source }),
+            nil != machine.states.first(where: { $0.name == target })
+        else {
+            return .failure(ValidationError(message: "You must attach a transition to a source and target state", path: Machine.path))
         }
+        machine.states[index].transitions.append(Transition(condition: condition, target: target))
+        return .success(false)
     }
     
-    func delete(states: IndexSet, machine: inout Machine) throws {
-        try self.perform(on: &machine) { machine in
-            if
-                let initialIndex = machine.states.enumerated().first(where: { $0.1.name == machine.initialState })?.0,
-                states.contains(initialIndex)
-            {
-                throw ValidationError(message: "You cannot delete the initial state", path: Machine.path.states[initialIndex])
-            }
-            machine.states = machine.states.enumerated().filter { !states.contains($0.0) }.map { $1 }
-            self.syncSuspendState(machine: &machine)
+    func delete(states: IndexSet, machine: inout Machine) -> Result<Bool, AttributeError<Machine>> {
+        if
+            let initialIndex = machine.states.enumerated().first(where: { $0.1.name == machine.initialState })?.0,
+            states.contains(initialIndex)
+        {
+            return .failure(ValidationError(message: "You cannot delete the initial state", path: Machine.path.states[initialIndex]))
         }
+        machine.states = machine.states.enumerated().filter { !states.contains($0.0) }.map { $1 }
+        self.syncSuspendState(machine: &machine)
+        return .success(true)
     }
     
-    func delete(transitions: IndexSet, attachedTo sourceState: StateName, machine: inout Machine) throws {
-        try self.perform(on: &machine) { machine in
-            guard let stateIndex = machine.states.firstIndex(where: { $0.name == sourceState }) else {
-                throw ValidationError(message: "Unable to find state with name \(sourceState)", path: Machine.path.states)
-            }
-            machine.states[stateIndex].transitions = machine.states[stateIndex].transitions.enumerated().filter { !transitions.contains($0.0) }.map { $1 }
+    func delete(transitions: IndexSet, attachedTo sourceState: StateName, machine: inout Machine) -> Result<Bool, AttributeError<Machine>> {
+        guard let stateIndex = machine.states.firstIndex(where: { $0.name == sourceState }) else {
+            return .failure(ValidationError(message: "Unable to find state with name \(sourceState)", path: Machine.path.states))
         }
+        machine.states[stateIndex].transitions = machine.states[stateIndex].transitions.enumerated().filter { !transitions.contains($0.0) }.map { $1 }
+        return .success(false)
     }
     
-    func deleteState(atIndex index: Int, machine: inout Machine) throws {
-        try perform(on: &machine) { machine in
-            if machine.states.count >= index {
-                throw ValidationError(message: "Can't delete state that doesn't exist", path: Machine.path.states)
-            }
-            if machine.states[index].name == machine.initialState {
-                throw ValidationError(message: "Can't delete the initial state", path: Machine.path.states[index])
-            }
-            machine.states.remove(at: index)
-            self.syncSuspendState(machine: &machine)
+    func deleteState(atIndex index: Int, machine: inout Machine) -> Result<Bool, AttributeError<Machine>> {
+        if machine.states.count >= index {
+            return .failure(ValidationError(message: "Can't delete state that doesn't exist", path: Machine.path.states))
         }
+        if machine.states[index].name == machine.initialState {
+            return .failure(ValidationError(message: "Can't delete the initial state", path: Machine.path.states[index]))
+        }
+        machine.states.remove(at: index)
+        self.syncSuspendState(machine: &machine)
+        return .success(true)
     }
     
-    func deleteTransition(atIndex index: Int, attachedTo sourceState: StateName, machine: inout Machine) throws {
-        try perform(on: &machine) { machine in
-            guard let index = machine.states.indices.first(where: { machine.states[$0].name == sourceState }) else {
-                throw ValidationError(message: "Cannot delete a transition attached to a state that does not exist", path: Machine.path.states)
-            }
-            guard machine.states[index].transitions.count >= index else {
-                throw ValidationError(message: "Cannot delete transition that does not exist", path: Machine.path.states[index].transitions)
-            }
-            machine.states[index].transitions.remove(at: index)
+    func deleteTransition(atIndex index: Int, attachedTo sourceState: StateName, machine: inout Machine) -> Result<Bool, AttributeError<Machine>> {
+        guard let index = machine.states.indices.first(where: { machine.states[$0].name == sourceState }) else {
+            return .failure(ValidationError(message: "Cannot delete a transition attached to a state that does not exist", path: Machine.path.states))
         }
+        guard machine.states[index].transitions.count >= index else {
+            return .failure(ValidationError(message: "Cannot delete transition that does not exist", path: Machine.path.states[index].transitions))
+        }
+        machine.states[index].transitions.remove(at: index)
+        return .success(false)
     }
     
-    func deleteItem<Path, T>(attribute: Path, atIndex index: Int, machine: inout Machine) throws where Path : PathProtocol, Path.Root == Machine, Path.Value == [T] {
-        try perform(on: &machine) { machine in
-            if machine[keyPath: attribute.path].count <= index || index < 0 {
-                throw ValidationError(message: "Invalid index '\(index)'", path: attribute)
-            }
-            machine[keyPath: attribute.path].remove(at: index)
+    func deleteItem<Path, T>(attribute: Path, atIndex index: Int, machine: inout Machine) -> Result<Bool, AttributeError<Path.Root>> where Path : PathProtocol, Path.Root == Machine, Path.Value == [T] {
+        if machine[keyPath: attribute.path].count <= index || index < 0 {
+            return .failure(ValidationError(message: "Invalid index '\(index)'", path: attribute))
         }
+        machine[keyPath: attribute.path].remove(at: index)
+        return .success(false)
     }
     
     private func changeName(ofState index: Int, to stateName: StateName, machine: inout Machine) throws {
@@ -444,19 +433,25 @@ extension CXXBaseConverter: MachineMutator {
         return machinePaths + statePaths
     }
     
-    func modify<Path>(attribute: Path, value: Path.Value, machine: inout Machine) throws where Path : PathProtocol, Path.Root == Machine {
-        try perform(on: &machine) { machine in
-            if let index = machine.states.indices.first(where: { Machine.path.states[$0].name.path == attribute.path }) {
-                guard let stateName = value as? StateName else {
-                    throw ValidationError(message: "Invalid value \(value)", path: attribute)
-                }
+    func modify<Path>(attribute: Path, value: Path.Value, machine: inout Machine) -> Result<Bool, AttributeError<Path.Root>> where Path : PathProtocol, Path.Root == Machine {
+        if let index = machine.states.indices.first(where: { Machine.path.states[$0].name.path == attribute.path }) {
+            guard let stateName = value as? StateName else {
+                return .failure(ValidationError(message: "Invalid value \(value)", path: attribute))
+            }
+            do {
                 try self.changeName(ofState: index, to: stateName, machine: &machine)
+            } catch let e as AttributeError<Machine> {
+                return .failure(e)
+            } catch {
+                return .failure(AttributeError(message: "Unable to change name of state", path: attribute))
             }
-            if nil == self.whitelist(forMachine: machine).first(where: { $0.isParent(of: attribute) || $0.isSame(as: attribute) }) {
-                throw ValidationError(message: "Attempting to modify a value which is not allowed to be modified", path: attribute)
-            }
-            machine[keyPath: attribute.path] = value
+            return .success(true)
         }
+        if nil == self.whitelist(forMachine: machine).first(where: { $0.isParent(of: attribute) || $0.isSame(as: attribute) }) {
+            return .failure(ValidationError(message: "Attempting to modify a value which is not allowed to be modified", path: attribute))
+        }
+        machine[keyPath: attribute.path] = value
+        return .success(false)
     }
     
     func validate(machine: Machine) throws {
