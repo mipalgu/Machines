@@ -441,11 +441,39 @@ struct SwiftfsmConverter: Converter, MachineValidator {
                 ]
             )
         }
+        let submachines = swiftMachine.subs.map {
+            MachineDependency(
+                name: $0.name ?? $0.machineName,
+                filePath: $0.filePath,
+                fields: dependencyLayout,
+                attributes: ["relationship": .enumerated("submachine", validValues: ["submachine", "asynchronous_parameterised_machine", "synchronous_parameterised_machine"])],
+                metaData: [:]
+            )
+        }
+        let synchronous = swiftMachine.callables.map {
+            MachineDependency(
+                name: $0.name ?? $0.machineName,
+                filePath: $0.filePath,
+                fields: dependencyLayout,
+                attributes: ["relationship": .enumerated("synchronous_parameterised_machine", validValues: ["submachine", "asynchronous_parameterised_machine", "synchronous_parameterised_machine"])],
+                metaData: [:]
+            )
+        }
+        let asynchronous = swiftMachine.invocables.map {
+            MachineDependency(
+                name: $0.name ?? $0.machineName,
+                filePath: $0.filePath,
+                fields: dependencyLayout,
+                attributes: ["relationship": .enumerated("submachine", validValues: ["submachine", "asynchronous_parameterised_machine", "asynchronous_parameterised_machine"])],
+                metaData: [:]
+            )
+        }
         return Machine(
             semantics: .swiftfsm,
             filePath: swiftMachine.filePath,
             initialState: swiftMachine.initialState.name,
             states: states,
+            dependencies: (submachines + synchronous + asynchronous).sorted { $0.name < $1.name },
             attributes: attributes,
             metaData: []
         )
@@ -525,6 +553,15 @@ struct SwiftfsmConverter: Converter, MachineValidator {
         let packageDependencies = try (moduleDependencies["packages"]?.collectionComplex.enumerated().map {
             try self.parsePackageDependencies($1, attributePath: Machine.path.attributes[2].attributes["module_dependencies"].wrappedValue.complexValue)
         }) ?? []
+        let submachines = machine.dependencies.filter {
+            $0.attributes["relationship"]?.enumeratedValue == "submachine"
+        }
+        let synchronous = machine.dependencies.filter {
+            $0.attributes["relationship"]?.enumeratedValue == "synchronous_parameterised_machine"
+        }
+        let asynchronous = machine.dependencies.filter {
+            $0.attributes["relationship"]?.enumeratedValue == "asynchronous_parameterised_machine"
+        }
         return SwiftMachines.Machine(
             name: machine.name,
             filePath: machine.filePath,
@@ -542,9 +579,9 @@ struct SwiftfsmConverter: Converter, MachineValidator {
             initialState: initialState,
             suspendState: suspendState,
             states: states,
-            submachines: [],
-            callableMachines: [],
-            invocableMachines: []
+            submachines: submachines.compactMap { SwiftMachines.Machine.Dependency(name: $0.name, filePath: $0.filePath) },
+            callableMachines: synchronous.compactMap { SwiftMachines.Machine.Dependency(name: $0.name, filePath: $0.filePath) },
+            invocableMachines: asynchronous.compactMap { SwiftMachines.Machine.Dependency(name: $0.name, filePath: $0.filePath) }
         )
     }
     
