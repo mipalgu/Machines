@@ -323,6 +323,12 @@ public struct Machine: PathContainer, Modifiable, MutatorContainer, Dependencies
         }
     }
     
+    public mutating func newDependency(_ dependency: MachineDependency) -> Result<Bool, AttributeError<Machine>> {
+        perform { [mutator] machine in
+            mutator.newDependency(dependency, machine: &machine)
+        }
+    }
+    
     /// Add a new empty state to the machine.
     public mutating func newState() -> Result<Bool, AttributeError<Machine>> {
         perform { [mutator] machine in
@@ -350,6 +356,12 @@ public struct Machine: PathContainer, Modifiable, MutatorContainer, Dependencies
         }
     }
     
+    public mutating func delete(dependencies: IndexSet) -> Result<Bool, AttributeError<Machine>> {
+        perform { [mutator] machine in
+            mutator.delete(dependencies: dependencies, machine: &machine)
+        }
+    }
+    
     /// Delete a set of states and transitions.
     public mutating func delete(states: IndexSet) -> Result<Bool, AttributeError<Machine>> {
         perform { [mutator] machine in
@@ -360,6 +372,12 @@ public struct Machine: PathContainer, Modifiable, MutatorContainer, Dependencies
     public mutating func delete(transitions: IndexSet, attachedTo sourceState: StateName) -> Result<Bool, AttributeError<Machine>> {
         perform { [mutator] machine in
             mutator.delete(transitions: transitions, attachedTo: sourceState, machine: &machine)
+        }
+    }
+    
+    public mutating func deleteDependency(atIndex index: Int) -> Result<Bool, AttributeError<Machine>> {
+        perform { [mutator] machine in
+            mutator.deleteDependency(atIndex: index, machine: &machine)
         }
     }
     

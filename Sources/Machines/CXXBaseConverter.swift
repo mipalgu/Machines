@@ -238,6 +238,7 @@ extension CXXBaseConverter: MachineMutator {
         []
     }
     
+    
     func addItem<Path, T>(_ item: T, to attribute: Path, machine: inout Machine) -> Result<Bool, AttributeError<Path.Root>> where Path : PathProtocol, Path.Root == Machine, Path.Value == [T] {
         machine[keyPath: attribute.path].append(item)
         return .success(false)
@@ -246,6 +247,10 @@ extension CXXBaseConverter: MachineMutator {
     func moveItems<Path, T>(attribute: Path, machine: inout Machine, from source: IndexSet, to destination: Int) -> Result<Bool, AttributeError<Path.Root>> where Path : PathProtocol, Path.Root == Machine, Path.Value == [T] {
         machine[keyPath: attribute.path].move(fromOffsets: source, toOffset: destination)
         return .success(false)
+    }
+    
+    func newDependency(_ dependency: MachineDependency, machine: inout Machine) -> Result<Bool, AttributeError<Machine>> {
+        .failure(AttributeError<Machine>(message: "Currently not supported.", path: machine.path.dependencies))
     }
     
     private func createState(named name: String, forMachine machine: Machine) throws -> State {
@@ -336,6 +341,10 @@ extension CXXBaseConverter: MachineMutator {
         return .success(false)
     }
     
+    func delete(dependencies: IndexSet, machine: inout Machine) -> Result<Bool, AttributeError<Machine>> {
+        .failure(AttributeError<Machine>(message: "Currently not supported.", path: machine.path.dependencies))
+    }
+    
     func delete(states: IndexSet, machine: inout Machine) -> Result<Bool, AttributeError<Machine>> {
         if
             let initialIndex = machine.states.enumerated().first(where: { $0.1.name == machine.initialState })?.0,
@@ -354,6 +363,10 @@ extension CXXBaseConverter: MachineMutator {
         }
         machine.states[stateIndex].transitions = machine.states[stateIndex].transitions.enumerated().filter { !transitions.contains($0.0) }.map { $1 }
         return .success(false)
+    }
+    
+    func deleteDependency(atIndex index: Int, machine: inout Machine) -> Result<Bool, AttributeError<Machine>> {
+        .failure(AttributeError<Machine>(message: "Currently not supported.", path: machine.path.dependencies))
     }
     
     func deleteState(atIndex index: Int, machine: inout Machine) -> Result<Bool, AttributeError<Machine>> {

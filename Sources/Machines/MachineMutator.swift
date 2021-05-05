@@ -65,13 +65,19 @@ public protocol MachineMutator: DependencyLayoutContainer {
     
     func moveItems<Path: PathProtocol, T>(attribute: Path, machine: inout Machine, from source: IndexSet, to destination: Int) -> Result<Bool, AttributeError<Path.Root>> where Path.Root == Machine, Path.Value == [T]
     
+    func newDependency(_ dependency: MachineDependency, machine: inout Machine) -> Result<Bool, AttributeError<Machine>>
+    
     func newState(machine: inout Machine) -> Result<Bool, AttributeError<Machine>>
     
     func newTransition(source: StateName, target: StateName, condition: Expression?, machine: inout Machine) -> Result<Bool, AttributeError<Machine>>
     
+    func delete(dependencies: IndexSet, machine: inout Machine) -> Result<Bool, AttributeError<Machine>>
+    
     func delete(states: IndexSet, machine: inout Machine) -> Result<Bool, AttributeError<Machine>>
     
     func delete(transitions: IndexSet, attachedTo sourceState: StateName, machine: inout Machine) -> Result<Bool, AttributeError<Machine>>
+    
+    func deleteDependency(atIndex index: Int, machine: inout Machine) -> Result<Bool, AttributeError<Machine>>
     
     func deleteState(atIndex index: Int, machine: inout Machine) -> Result<Bool, AttributeError<Machine>>
     

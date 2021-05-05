@@ -678,6 +678,7 @@ extension SwiftfsmConverter: ArrangementMutator {
 }
 
 extension SwiftfsmConverter: MachineMutator {
+    
 
     func addItem<Path, T>(_ item: T, to attribute: Path, machine: inout Machine) -> Result<Bool, AttributeError<Path.Root>> where Path : PathProtocol, Path.Root == Machine, Path.Value == [T] {
         switch attribute.path {
@@ -716,6 +717,10 @@ extension SwiftfsmConverter: MachineMutator {
             machine[keyPath: attribute.path].move(fromOffsets: source, toOffset: destination)
             return .success(false)
         }
+    }
+    
+    func newDependency(_ dependency: MachineDependency, machine: inout Machine) -> Result<Bool, AttributeError<Machine>> {
+        .failure(AttributeError<Machine>(message: "Currently not supported.", path: machine.path.dependencies))
     }
     
     func newState(machine: inout Machine) -> Result<Bool, AttributeError<Machine>> {
@@ -782,6 +787,10 @@ extension SwiftfsmConverter: MachineMutator {
         }
     }
     
+    func delete(dependencies: IndexSet, machine: inout Machine) -> Result<Bool, AttributeError<Machine>> {
+        .failure(AttributeError<Machine>(message: "Currently not supported.", path: machine.path.dependencies))
+    }
+    
     func delete(states: IndexSet, machine: inout Machine) -> Result<Bool, AttributeError<Machine>> {
         if
             let initialIndex = machine.states.enumerated().first(where: { $0.1.name == machine.initialState })?.0,
@@ -800,6 +809,10 @@ extension SwiftfsmConverter: MachineMutator {
         }
         machine.states[stateIndex].transitions = machine.states[stateIndex].transitions.enumerated().filter { !transitions.contains($0.0) }.map { $1 }
         return .success(false)
+    }
+    
+    func deleteDependency(atIndex index: Int, machine: inout Machine) -> Result<Bool, AttributeError<Machine>> {
+        .failure(AttributeError<Machine>(message: "Currently not supported.", path: machine.path.dependencies))
     }
     
     func deleteState(atIndex index: Int, machine: inout Machine) -> Result<Bool, AttributeError<Machine>> {
