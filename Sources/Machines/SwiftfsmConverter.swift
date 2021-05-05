@@ -604,7 +604,8 @@ struct SwiftfsmConverter: Converter, MachineValidator {
         }
         let label = String(variable[1].lineValue)
         let type = String(variable[2].expressionValue)
-        return SwiftMachines.Variable(accessType: accessType, label: label, type: type, initialValue: String(variable[3].expressionValue))
+        let value = String(variable[3].expressionValue).trimmingCharacters(in: .whitespaces)
+        return SwiftMachines.Variable(accessType: accessType, label: label, type: type, initialValue: value.isEmpty ? nil : value)
     }
     
     private func parseExternalAccessType(_ value: String) -> SwiftMachines.Variable.AccessType? {
