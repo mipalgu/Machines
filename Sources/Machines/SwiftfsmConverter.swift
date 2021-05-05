@@ -65,10 +65,6 @@ struct SwiftfsmConverter: Converter, MachineValidator {
     
     private let validator = SwiftfsmMachineValidator()
     
-    var dependencyLayout: [Field] {
-        return []
-    }
-    
     func initialArrangement(filePath: URL) -> Arrangement {
         return Arrangement(
             semantics: .swiftfsm,
@@ -679,6 +675,14 @@ extension SwiftfsmConverter: ArrangementMutator {
 
 extension SwiftfsmConverter: MachineMutator {
     
+    var dependencyLayout: [Field] {
+        return [
+            Field(
+                name: "relationship",
+                type: .enumerated(validValues: ["submachine", "asynchronous_parameterised_machine", "synchronous_parameterised_machine"])
+            )
+        ]
+    }
 
     func addItem<Path, T>(_ item: T, to attribute: Path, machine: inout Machine) -> Result<Bool, AttributeError<Path.Root>> where Path : PathProtocol, Path.Root == Machine, Path.Value == [T] {
         switch attribute.path {
@@ -720,7 +724,11 @@ extension SwiftfsmConverter: MachineMutator {
     }
     
     func newDependency(_ dependency: MachineDependency, machine: inout Machine) -> Result<Bool, AttributeError<Machine>> {
-        .failure(AttributeError<Machine>(message: "Currently not supported.", path: machine.path.dependencies))
+        if machine.dependencies.contains(where: { $0.name == dependency.name }) {
+            return .failure(AttributeError<Machine>(message: "The dependency '\(dependency.name)' already exists.", path: machine.path.dependencies[machine.dependencies.count]))
+        }
+        machine.dependencies.append(dependency)
+        return .success(false)
     }
     
     func newState(machine: inout Machine) -> Result<Bool, AttributeError<Machine>> {
@@ -788,7 +796,8 @@ extension SwiftfsmConverter: MachineMutator {
     }
     
     func delete(dependencies: IndexSet, machine: inout Machine) -> Result<Bool, AttributeError<Machine>> {
-        .failure(AttributeError<Machine>(message: "Currently not supported.", path: machine.path.dependencies))
+        machine.dependencies = machine.dependencies.enumerated().filter { !dependencies.contains($0.0) }.map(\.element)
+        return .success(false)
     }
     
     func delete(states: IndexSet, machine: inout Machine) -> Result<Bool, AttributeError<Machine>> {
@@ -812,7 +821,11 @@ extension SwiftfsmConverter: MachineMutator {
     }
     
     func deleteDependency(atIndex index: Int, machine: inout Machine) -> Result<Bool, AttributeError<Machine>> {
-        .failure(AttributeError<Machine>(message: "Currently not supported.", path: machine.path.dependencies))
+        if index < 0 || index >= machine.dependencies.count {
+            return .failure(AttributeError<Machine>(message: "Invalid index \(index) for deleting a dependency.", path: machine.path.dependencies))
+        }
+        machine.dependencies.remove(at: index)
+        return .success(false)
     }
     
     func deleteState(atIndex index: Int, machine: inout Machine) -> Result<Bool, AttributeError<Machine>> {
