@@ -564,6 +564,25 @@ public enum BlockAttribute: Hashable, Identifiable {
         }
     }
     
+    public var collectionDisplay: ReadOnlyPath<Attribute, LineAttribute>? {
+        get {
+            switch self {
+            case .collection(_, let display, _):
+                return display
+            default:
+                fatalError("Attempting to fetch a collection display value on a block attribute which is not a collection attribute")
+            }
+        }
+        set {
+            switch self {
+            case .collection(let values, _, let type):
+                self = .collection(values, display: newValue, type: type)
+            default:
+                fatalError("Attempting to set a collection display value on a block attribute which is not a collection attribute")
+            }
+        }
+    }
+    
 }
 
 extension BlockAttribute: Codable {
