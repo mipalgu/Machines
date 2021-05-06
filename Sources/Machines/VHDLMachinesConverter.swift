@@ -119,7 +119,7 @@ struct VHDLMachinesConverter {
                 guard let path = arrangement.machines[$0] else {
                     return nil
                 }
-                return MachineDependency(name: $0, filePath: path)
+                return MachineDependency(filePath: path)
                 
             },
             attributes: [],

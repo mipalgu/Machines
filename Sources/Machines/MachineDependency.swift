@@ -61,7 +61,9 @@ import Attributes
 
 public struct MachineDependency: Hashable, Codable {
     
-    public var name: String
+    public var name: String {
+        return self.filePath.lastPathComponent.components(separatedBy: ".")[0]
+    }
     
     public var filePath: URL
     
@@ -83,12 +85,10 @@ public struct MachineDependency: Hashable, Codable {
         get {
             return .complex(
                 [
-                    "name": .line(name),
                     "filePath": .line(filePath.path),
                     "attributes": .complex(attributes, layout: fields)
                 ],
                 layout: [
-                    "name": .line,
                     "filePath": .line,
                     "attributes": .complex(layout: fields)
                 ]
@@ -96,7 +96,6 @@ public struct MachineDependency: Hashable, Codable {
         } set {
             switch newValue {
             case .block(.complex(let values, _)):
-                self.name = values["name"]?.lineValue ?? self.name
                 self.filePath = (values["filePath"]?.lineValue).flatMap { URL(string: $0) } ?? self.filePath
                 self.attributes = values["attributes"]?.complexValue ?? self.attributes
             default:
@@ -105,8 +104,7 @@ public struct MachineDependency: Hashable, Codable {
         }
     }
     
-    public init(name: String, filePath: URL, fields: [Field] = [], attributes: [Label: Attribute] = [:], metaData: [Label: Attribute] = [:]) {
-        self.name = name
+    public init(filePath: URL, fields: [Field] = [], attributes: [Label: Attribute] = [:], metaData: [Label: Attribute] = [:]) {
         self.filePath = filePath
         self.fields = fields
         self.attributes = attributes
