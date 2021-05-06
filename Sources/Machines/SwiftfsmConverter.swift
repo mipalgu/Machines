@@ -461,7 +461,7 @@ struct SwiftfsmConverter: Converter, MachineValidator {
         }
         let asynchronous = swiftMachine.invocables.map {
             MachineDependency(
-                name: $0.name ?? $0.machineName,
+                name: $0.name ?? "",
                 filePath: $0.filePath,
                 fields: dependencyLayout,
                 attributes: ["relationship": .enumerated("asynchronous_parameterised_machine", validValues: ["submachine", "asynchronous_parameterised_machine", "asynchronous_parameterised_machine"])],
@@ -579,9 +579,9 @@ struct SwiftfsmConverter: Converter, MachineValidator {
             initialState: initialState,
             suspendState: suspendState,
             states: states,
-            submachines: submachines.compactMap { SwiftMachines.Machine.Dependency(name: $0.name, filePath: $0.filePath) },
-            callableMachines: synchronous.compactMap { SwiftMachines.Machine.Dependency(name: $0.name, filePath: $0.filePath) },
-            invocableMachines: asynchronous.compactMap { SwiftMachines.Machine.Dependency(name: $0.name, filePath: $0.filePath) }
+            submachines: submachines.compactMap { SwiftMachines.Machine.Dependency(name: $0.name.trimmingCharacters(in: .whitespaces).isEmpty ? nil : $0.name.trimmingCharacters(in: .whitespaces), filePath: $0.filePath) },
+            callableMachines: synchronous.compactMap { SwiftMachines.Machine.Dependency(name: $0.name.trimmingCharacters(in: .whitespaces).isEmpty ? nil : $0.name.trimmingCharacters(in: .whitespaces), filePath: $0.filePath) },
+            invocableMachines: asynchronous.compactMap { SwiftMachines.Machine.Dependency(name: $0.name.trimmingCharacters(in: .whitespaces).isEmpty ? nil : $0.name.trimmingCharacters(in: .whitespaces), filePath: $0.filePath) }
         )
     }
     
