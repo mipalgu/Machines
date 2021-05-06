@@ -94,6 +94,23 @@ public enum BlockAttribute: Hashable, Identifiable {
         }
     }
     
+    public var strValue: String? {
+        switch self {
+        case .code(let value, _):
+            return value
+        case .collection(let values, _, _):
+            return values.lazy.compactMap { $0.strValue }.first
+        case .complex(let data, _):
+            return data.sorted { $0.key < $1.key }.lazy.compactMap { $1.strValue }.first
+        case .enumerableCollection(let values, _):
+            return values.sorted().first
+        case .table(let rows, _):
+            return rows.first?.first?.strValue
+        case .text(let value):
+            return value
+        }
+    }
+    
     public var codeValue: String {
         get {
             switch self {

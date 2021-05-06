@@ -146,6 +146,15 @@ public enum Attribute: Hashable, Identifiable {
         }
     }
     
+    public var strValue: String? {
+        switch self {
+        case .line(let lineAttribute):
+            return lineAttribute.strValue
+        case .block(let blockAttribute):
+            return blockAttribute.strValue
+        }
+    }
+    
     public var boolValue: Bool {
         get {
             switch self {
@@ -766,32 +775,6 @@ public enum Attribute: Hashable, Identifiable {
                 fatalError("Attempting to set a collection display value on an attribute which is not a collection attribute")
             }
         }
-    }
-    
-    public func displayString(forAttributeAtIndex index: Int) -> String {
-        let (collectionValue, collectionDisplay) = (collectionValue, collectionDisplay)
-        if let display = collectionDisplay {
-            return collectionValue[index][keyPath: display.keyPath].strValue
-        }
-        func process(attribute: Attribute) -> String? {
-            switch attribute {
-            case .block(.code(let value, _)):
-                return value
-            case .block(.collection(let values, _, _)):
-                return values.lazy.compactMap { process(attribute: $0) }.first
-            case .block(.complex(let data, _)):
-                return data.sorted { $0.key < $1.key }.lazy.compactMap { process(attribute: $1) }.first
-            case .block(.enumerableCollection(let values, _)):
-                return values.sorted().first
-            case .block(.table(let rows, _)):
-                return rows.first?.first?.strValue
-            case .block(.text(let value)):
-                return value
-            case .line(let attribute):
-                return attribute.strValue
-            }
-        }
-        return process(attribute: self) ?? "\(index)"
     }
     
     public init(lineAttribute: LineAttribute) {
