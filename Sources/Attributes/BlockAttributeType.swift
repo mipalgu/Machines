@@ -85,7 +85,7 @@ public enum BlockAttributeType: Hashable {
         case .code(let language):
             return .code("", language: language)
         case .collection(let type):
-            return .collection([], type: type)
+            return .collection([], display: nil, type: type)
         case .complex(let fields):
             let values = Dictionary(uniqueKeysWithValues: fields.map { (field) -> (Label, Attribute) in
                 return (field.name, field.type.defaultValue)
