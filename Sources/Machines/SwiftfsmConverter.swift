@@ -464,7 +464,7 @@ struct SwiftfsmConverter: Converter, MachineValidator {
                 name: $0.name ?? $0.machineName,
                 filePath: $0.filePath,
                 fields: dependencyLayout,
-                attributes: ["relationship": .enumerated("submachine", validValues: ["submachine", "asynchronous_parameterised_machine", "asynchronous_parameterised_machine"])],
+                attributes: ["relationship": .enumerated("asynchronous_parameterised_machine", validValues: ["submachine", "asynchronous_parameterised_machine", "asynchronous_parameterised_machine"])],
                 metaData: [:]
             )
         }
