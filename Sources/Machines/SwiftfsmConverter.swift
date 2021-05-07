@@ -928,6 +928,7 @@ extension SwiftfsmConverter: MachineMutator {
             } catch {
                 return .failure(AttributeError(message: "Unable to change name of action.", path: attribute))
             }
+            return .success(true)
         }
         if let index = machine.states.indices.first(where: { Machine.path.states[$0].name.path == attribute.path }) {
             guard let stateName = value as? StateName else {
@@ -940,6 +941,7 @@ extension SwiftfsmConverter: MachineMutator {
             } catch {
                 return .failure(AttributeError(message: "Unable to change name of state.", path: attribute))
             }
+            return .success(true)
         }
         if let index = machine.states.indices.first(where: {
             machine.path.states[$0].attributes[1].attributes["access_external_variables"].wrappedValue.boolValue.path == attribute.path
@@ -949,6 +951,7 @@ extension SwiftfsmConverter: MachineMutator {
                 return .failure(ValidationError(message: "Invalid value \(value)", path: attribute))
             }
             self.toggleAccessExternalVariables(boolValue: boolValue, forState: index, machine: &machine)
+            return .success(true)
         }
         if let index = machine.attributes[0].attributes["external_variables"].wrappedValue.tableValue.indices.first(where: { (index) -> Bool in
             let externalsPath = Machine.path.attributes[0].attributes["external_variables"].wrappedValue
@@ -967,6 +970,7 @@ extension SwiftfsmConverter: MachineMutator {
             } catch {
                 return .failure(AttributeError(message: "Unable to change name of external variable.", path: attribute))
             }
+            return .success(true)
         }
         switch attribute.path {
         case machine.path.attributes[1].attributes["use_custom_ringlet"].wrappedValue.path,
