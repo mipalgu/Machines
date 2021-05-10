@@ -63,7 +63,14 @@ public typealias Label = String
 extension Label {
     
     public var pretty: String {
-        return self.replacingOccurrences(of: "_", with: " ").capitalized
+        let str = self.replacingOccurrences(of: "_", with: " ")
+        let words = str.components(separatedBy: " ")
+        return words.map {
+            guard let first = $0.first else {
+                return ""
+            }
+            return first.uppercased() + String($0.dropFirst())
+        }.joined(separator: " ")
     }
     
 }
