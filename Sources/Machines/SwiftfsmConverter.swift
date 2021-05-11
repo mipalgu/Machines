@@ -899,13 +899,13 @@ extension SwiftfsmConverter: MachineMutator {
     }
     
     func deleteTransition(atIndex index: Int, attachedTo sourceState: StateName, machine: inout Machine) -> Result<Bool, AttributeError<Machine>> {
-        guard let index = machine.states.indices.first(where: { machine.states[$0].name == sourceState }) else {
+        guard let stateIndex = machine.states.indices.first(where: { machine.states[$0].name == sourceState }) else {
             return .failure(ValidationError(message: "Cannot delete a transition attached to a state that does not exist", path: Machine.path.states))
         }
-        guard machine.states[index].transitions.count >= index else {
-            return .failure(ValidationError(message: "Cannot delete transition that does not exist", path: Machine.path.states[index].transitions))
+        guard machine.states[stateIndex].transitions.count >= index else {
+            return .failure(ValidationError(message: "Cannot delete transition that does not exist", path: Machine.path.states[stateIndex].transitions))
         }
-        machine.states[index].transitions.remove(at: index)
+        machine.states[stateIndex].transitions.remove(at: index)
         return .success(false)
     }
     
