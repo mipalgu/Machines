@@ -890,11 +890,17 @@ extension SwiftfsmConverter: MachineMutator {
         if index >= machine.states.count  {
             return .failure(ValidationError(message: "Can't delete state that doesn't exist", path: Machine.path.states))
         }
-        if machine.states[index].name == machine.initialState {
+        let name = machine.states[index].name
+        if name == machine.initialState {
             return .failure(ValidationError(message: "Can't delete the initial state", path: Machine.path.states[index]))
         }
         machine.states.remove(at: index)
         self.syncSuspendState(machine: &machine)
+        machine.states = machine.states.map {
+            var state = $0
+            state.transitions.removeAll(where: { $0.target == name })
+            return state
+        }
         return .success(true)
     }
     
