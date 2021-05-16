@@ -59,6 +59,7 @@
 import Foundation
 import SwiftMachines
 import CXXBase
+import VHDLMachines
 
 public final class MachineGenerator {
     
@@ -109,6 +110,18 @@ public final class MachineGenerator {
                 return nil
             }
             return (cxxMachine.path, [])
+        case .vhdl:
+            let vhdlMachine: VHDLMachines.Machine
+            do {
+                vhdlMachine = try VHDLMachinesConverter().convert(machine: machine)
+            } catch let e as ConversionError<Machine> {
+                self.errors.append(e.message)
+                return nil
+            } catch let e {
+                self.errors.append("\(e)")
+                return nil
+            }
+            return (vhdlMachine.path, [])
         default:
             self.errors.append("\(machine.semantics) Machines are currently not supported")
             return nil
