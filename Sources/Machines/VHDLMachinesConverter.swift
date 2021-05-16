@@ -930,18 +930,19 @@ extension VHDLMachinesConverter: MachineMutator {
             } catch {
                 return .failure(AttributeError(message: "Unable to change name of state", path: attribute))
             }
-            if attribute.path == Machine.path.attributes[0].attributes["clocks"].wrappedValue.path {
-                guard let newValue = (value as? Attribute)?.tableValue, let clockName = newValue.last?[0].lineValue else {
-                    return .failure(ValidationError(message: "Invalid value \(value)", path: attribute))
-                }
-                addClock(value: clockName, machine: &machine)
-                machine[keyPath: attribute.path] = value
-                return .success(true)
-            } else if attribute.path == machine.path.attributes[0].attributes["external_signals"].wrappedValue.path {
-                
-            }
             machine[keyPath: attribute.path] = value
             return .success(true)
+        }
+        if attribute.path == Machine.path.attributes[0].attributes["clocks"].wrappedValue.path {
+            guard let newValue = (value as? Attribute)?.tableValue, let clockName = newValue.last?[0].lineValue else {
+                print(value)
+                return .failure(ValidationError(message: "Invalid value \(value)", path: attribute))
+            }
+            addClock(value: clockName, machine: &machine)
+            machine[keyPath: attribute.path] = value
+            return .success(true)
+        } else if attribute.path == machine.path.attributes[0].attributes["external_signals"].wrappedValue.path {
+            
         }
         machine[keyPath: attribute.path] = value
         return .success(false)
