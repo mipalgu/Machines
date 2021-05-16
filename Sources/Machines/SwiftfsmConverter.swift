@@ -865,8 +865,14 @@ extension SwiftfsmConverter: MachineMutator {
         {
             return .failure(ValidationError(message: "You cannot delete the initial state", path: Machine.path.states[initialIndex]))
         }
-        machine.states = machine.states.enumerated().filter { !states.contains($0.0) }.map { $1 }
+        let deletedStates = Set(machine.states.enumerated().filter { states.contains($0.0)  }.map(\.element.name))
+        machine.states = machine.states.enumerated().filter { !states.contains($0.0) }.map(\.element)
         self.syncSuspendState(machine: &machine)
+        machine.states = machine.states.map {
+            var state = $0
+            state.transitions.removeAll(where: { deletedStates.contains($0.target) })
+            return state
+        }
         return .success(true)
     }
     
