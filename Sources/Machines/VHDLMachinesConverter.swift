@@ -649,6 +649,14 @@ extension VHDLMachinesConverter: MachineMutator {
 
     func addItem<Path, T>(_ item: T, to attribute: Path, machine: inout Machine) -> Result<Bool, AttributeError<Path.Root>> where Path : PathProtocol, Path.Root == Machine, Path.Value == [T] {
         machine[keyPath: attribute.path].append(item)
+        if attribute.path == machine.path.attributes[0].attributes["clocks"].wrappedValue.path {
+            print(item)
+            guard let clock = item as? Clock else {
+                return .failure(AttributeError(message: "Failed to add to driving clocks", path: attribute))
+            }
+            machine.attributes[0].attributes["driving_clock"]?.enumeratedValidValues.insert(clock.name)
+            return .success(false)
+        }
         return .success(false)
     }
 
@@ -911,11 +919,17 @@ extension VHDLMachinesConverter: MachineMutator {
         return machinePaths + statePaths
     }
     
-    private func addClock(value: String, machine: inout Machine) {
+    private func changeClockName(at index: Int, value: String, machine: inout Machine) {
         let currentClocks = machine.attributes[0].attributes["driving_clock"]!
+        let drivingClock = currentClocks.enumeratedValue
+        let oldName = machine.attributes[0].attributes["clocks"]!.tableValue[index][0].lineValue
         var newValidValues = currentClocks.enumeratedValidValues
+        newValidValues.remove(oldName)
         newValidValues.insert(value)
         machine.attributes[0].attributes["driving_clock"]!.enumeratedValidValues = newValidValues
+        if drivingClock == oldName {
+            machine.attributes[0].attributes["driving_clock"]!.enumeratedValue = value
+        }
     }
 
     func modify<Path>(attribute: Path, value: Path.Value, machine: inout Machine) -> Result<Bool, AttributeError<Path.Root>> where Path : PathProtocol, Path.Root == Machine {
@@ -933,15 +947,24 @@ extension VHDLMachinesConverter: MachineMutator {
             machine[keyPath: attribute.path] = value
             return .success(true)
         }
-        if attribute.path == Machine.path.attributes[0].attributes["clocks"].wrappedValue.path {
-            guard let newValue = (value as? Attribute)?.tableValue, let clockName = newValue.last?[0].lineValue else {
+        if let index = machine.attributes[0].attributes["clocks"].wrappedValue.tableValue.indices.first(where: { (index) -> Bool in
+            let clocksPath = Machine.path.attributes[0].attributes["clocks"].wrappedValue.tableValue
+            return clocksPath[index][0].path == attribute.path ||
+                clocksPath[index][0].lineValue.path == attribute.path ||
+                clocksPath[index][1].path == attribute.path ||
+                clocksPath[index][1].integerValue.path == attribute.path ||
+                clocksPath[index][2].path == attribute.path ||
+                clocksPath[index][2].enumeratedValue.path == attribute.path
+        }) {
+            guard let newValue = (value as? Attribute)?.lineValue ?? (value as? LineAttribute)?.lineValue ?? (value as? String) else {
                 print(value)
                 return .failure(ValidationError(message: "Invalid value \(value)", path: attribute))
             }
-            addClock(value: clockName, machine: &machine)
+            changeClockName(at: index, value: newValue, machine: &machine)
             machine[keyPath: attribute.path] = value
             return .success(true)
-        } else if attribute.path == machine.path.attributes[0].attributes["external_signals"].wrappedValue.path {
+        }
+        if attribute.path == machine.path.attributes[0].attributes["external_signals"].wrappedValue.path {
             
         }
         machine[keyPath: attribute.path] = value
