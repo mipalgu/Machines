@@ -451,8 +451,10 @@ extension VHDLMachinesConverter: MachineMutator {
             }
             machine[keyPath: attribute.path] = value
             machine.states.indices.forEach {
-                machine.states[$0].attributes[0].attributes["externals"]?.enumerableCollectionValue.remove(currentValue)
-                machine.states[$0].attributes[0].attributes["externals"]?.enumerableCollectionValue.insert(newValue)
+                if machine.states[$0].attributes[0].attributes["externals"]?.enumerableCollectionValue.contains(currentValue) ?? false {
+                    machine.states[$0].attributes[0].attributes["externals"]?.enumerableCollectionValue.remove(currentValue)
+                    machine.states[$0].attributes[0].attributes["externals"]?.enumerableCollectionValue.insert(newValue)
+                }
                 machine.states[$0].attributes[0].attributes["externals"]?.enumerableCollectionValidValues.remove(currentValue)
                 machine.states[$0].attributes[0].attributes["externals"]?.enumerableCollectionValidValues.insert(newValue)
             }
@@ -473,8 +475,10 @@ extension VHDLMachinesConverter: MachineMutator {
             }
             machine[keyPath: attribute.path] = value
             machine.states.indices.forEach {
-                machine.states[$0].attributes[0].attributes["externals"]?.enumerableCollectionValue.remove(currentValue)
-                machine.states[$0].attributes[0].attributes["externals"]?.enumerableCollectionValue.insert(newValue)
+                if machine.states[$0].attributes[0].attributes["externals"]?.enumerableCollectionValue.contains(currentValue) ?? false {
+                    machine.states[$0].attributes[0].attributes["externals"]?.enumerableCollectionValue.remove(currentValue)
+                    machine.states[$0].attributes[0].attributes["externals"]?.enumerableCollectionValue.insert(newValue)
+                }
                 machine.states[$0].attributes[0].attributes["externals"]?.enumerableCollectionValidValues.remove(currentValue)
                 machine.states[$0].attributes[0].attributes["externals"]?.enumerableCollectionValidValues.insert(newValue)
             }
