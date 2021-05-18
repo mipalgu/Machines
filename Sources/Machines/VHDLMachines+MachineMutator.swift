@@ -19,7 +19,7 @@ extension VHDLMachinesConverter: MachineMutator {
     func addItem<Path, T>(_ item: T, to attribute: Path, machine: inout Machine) -> Result<Bool, AttributeError<Path.Root>> where Path : PathProtocol, Path.Root == Machine, Path.Value == [T] {
         print("Path: \(attribute.path)")
         print("If Path: \(Machine.path.attributes[0].attributes["clocks"].wrappedValue.blockAttribute.tableValue.path)")
-        if attribute.path == Machine.path.attributes[0].attributes["clocks"].wrappedValue.tableValue.path {
+        if attribute.path == machine.path.attributes[0].attributes["clocks"].wrappedValue.tableValue.path {
             print("Adding driving clock")
             machine[keyPath: attribute.path].append(item)
             guard
