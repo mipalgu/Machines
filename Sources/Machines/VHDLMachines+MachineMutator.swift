@@ -432,8 +432,34 @@ extension VHDLMachinesConverter: MachineMutator {
             machine[keyPath: attribute.path] = value
             return .success(true)
         }
-        if attribute.path == machine.path.attributes[0].attributes["external_signals"].wrappedValue.path {
-            
+        
+        
+        if let _ = machine.attributes[0].attributes["external_signals"].wrappedValue.tableValue.indices.first(where: {
+            let signalPath = machine.path.attributes[0].attributes["external_signals"].wrappedValue.blockAttribute.tableValue
+            let variablePath = machine.path.attributes[0].attributes["external_variables"].wrappedValue.blockAttribute.tableValue
+            return signalPath[$0][2].path == attribute.path ||
+                signalPath[$0][2].lineValue.path == attribute.path ||
+                variablePath[$0][1].path == attribute.path ||
+                variablePath[$0][1].lineValue.path == attribute.path
+        }) {
+            guard let newValue = (value as? Attribute)?.lineValue ?? (value as? LineAttribute)?.lineValue ?? (value as? String) else {
+                return .failure(ValidationError(message: "Invalid value \(value)", path: attribute))
+            }
+            guard
+                let currentValue = (machine[keyPath: attribute.path] as? Attribute)?.lineValue ??
+                    (machine[keyPath: attribute.path] as? LineAttribute)?.lineValue ??
+                    (machine[keyPath: attribute.path] as? String)
+            else {
+                return .failure(ValidationError(message: "Failed to cast value to string", path: attribute))
+            }
+            machine[keyPath: attribute.path] = value
+            machine.states.indices.forEach {
+                machine.states[$0].attributes[0].attributes["externals"]?.enumerableCollectionValue.remove(currentValue)
+                machine.states[$0].attributes[0].attributes["externals"]?.enumerableCollectionValue.insert(newValue)
+                machine.states[$0].attributes[0].attributes["externals"]?.enumerableCollectionValidValues.remove(currentValue)
+                machine.states[$0].attributes[0].attributes["externals"]?.enumerableCollectionValidValues.insert(newValue)
+            }
+            return .success(false)
         }
         machine[keyPath: attribute.path] = value
         return .success(false)
