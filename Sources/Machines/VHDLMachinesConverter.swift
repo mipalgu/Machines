@@ -305,9 +305,9 @@ struct VHDLMachinesConverter {
         let variables = AttributeGroup(
             name: "variables",
             fields: [
-                Field(name: "externals", type: .table(columns: [
-                    ("name", .enumerated(validValues: Set(machine.externalSignals.map(\.name) + machine.externalVariables.map(\.name))))
-                ])),
+                Field(name: "externals", type: .enumerableCollection(
+                        validValues: Set(externals)
+                )),
                 Field(name: "state_signals", type: .table(columns: [
                     ("type", .expression(language: .vhdl)),
                     ("name", .line),
@@ -324,7 +324,7 @@ struct VHDLMachinesConverter {
                 ]))
             ],
             attributes: [
-                "externals": .table(state.externalVariables.map { [LineAttribute.line($0)] }, columns: [("name", .enumerated(validValues: Set(externals)))]),
+                "externals": .enumerableCollection(Set(state.externalVariables), validValues: Set(externals)),
                 "state_signals": .table(
                     state.signals.map(toLineAttribute),
                     columns: [
