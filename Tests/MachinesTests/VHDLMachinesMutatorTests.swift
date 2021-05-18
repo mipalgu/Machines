@@ -12,12 +12,15 @@ import Attributes
 
 public class VHDLMachinesMutatorTests: XCTestCase {
     
-    private var mutator: MachineMutator?
     private var machine: Machines.Machine?
     private let clockFrequencies: Set<String> = ["Hz", "kHz", "MHz", "GHz", "THz"]
     
     private var variables: [String: Attribute] {
         machine?.attributes[0].attributes ?? [:]
+    }
+    
+    private var mutator: MachineMutator? {
+        machine?.mutator
     }
  
     public static var allTests: [(String, (VHDLMachinesMutatorTests) -> () throws -> Void)] {
@@ -29,7 +32,6 @@ public class VHDLMachinesMutatorTests: XCTestCase {
     }
     
     public override func setUp() {
-        mutator = VHDLMachinesConverter()
         machine = Machines.Machine.initialMachine(forSemantics: .vhdl)
         super.setUp()
     }
@@ -57,13 +59,21 @@ public class VHDLMachinesMutatorTests: XCTestCase {
                 BlockAttributeType.TableColumn(name: "unit", type: .enumerated(validValues: clockFrequencies))
             ]
         ))
-        machine?.addItem(attribute.tableValue.last ?? [], to: path)
+        let _ = machine?.addItem(attribute.tableValue.last ?? [], to: path)
         let insertedValues = machine?.attributes[0].attributes["clocks"]?.tableValue
+        let currentDrivingClock = variables["driving_clock"]?.enumeratedValue
         XCTAssertNotNil(insertedValues)
         XCTAssertEqual(inserted, insertedValues)
         let drivingClocks = variables["driving_clock"]?.enumeratedValidValues
         XCTAssertNotNil(drivingClocks)
         XCTAssertTrue(drivingClocks!.contains("clk2"))
+        currentClocks?.forEach {
+            XCTAssertTrue(drivingClocks!.contains($0[0].lineValue))
+        }
+        XCTAssertNotNil(currentDrivingClock)
+        let newDrivingClock = variables["driving_clock"]?.enumeratedValue
+        XCTAssertNotNil(newDrivingClock)
+        XCTAssertEqual(newDrivingClock, currentDrivingClock)
     }
     
 }
