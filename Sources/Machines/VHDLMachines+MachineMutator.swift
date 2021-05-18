@@ -316,21 +316,18 @@ extension VHDLMachinesConverter: MachineMutator {
             let variableName: String
             if attribute.path == signalPath {
                 guard
-                    index > 0,
-                    machine.attributes[0].attributes["external_signals"]?.tableValue.count ?? -1 > index
+                    machine.attributes[0].attributes["external_signals"].wrappedValue.tableValue.count > index
                 else {
                     fatalError("Failed to get signal name")
                 }
                 variableName = machine.attributes[0].attributes["external_signals"].wrappedValue.tableValue[index][2].lineValue
             } else {
                 guard
-                    index > 0,
-                    machine.attributes[0].attributes["external_variables"]?.tableValue.count ?? -1 > index,
-                    let temp = machine.attributes[0].attributes["external_variables"]?.tableValue[index][1].lineValue
+                    machine.attributes[0].attributes["external_variables"].wrappedValue.tableValue.count > index
                 else {
                     fatalError("Failed to get variable name")
                 }
-                variableName = temp
+                variableName = machine.attributes[0].attributes["external_variables"].wrappedValue.tableValue[index][1].lineValue
             }
             machine[keyPath: attribute.path].remove(at: index)
             machine.states.indices.forEach {
