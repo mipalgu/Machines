@@ -18,16 +18,18 @@ extension VHDLMachinesConverter: MachineMutator {
 
     func addItem<Path, T>(_ item: T, to attribute: Path, machine: inout Machine) -> Result<Bool, AttributeError<Path.Root>> where Path : PathProtocol, Path.Root == Machine, Path.Value == [T] {
         machine[keyPath: attribute.path].append(item)
-        print("add item testing")
-        print("Item: \(item)")
-        print("Path: \(attribute)")
-        
-        if attribute.path == machine.path.attributes[0].attributes["clocks"].wrappedValue.path {
+        if attribute.path == Machine.path.attributes[0].attributes["clocks"].wrappedValue.tableValue.path {
             print(item)
-            guard let clock = item as? Clock else {
-                return .failure(AttributeError(message: "Failed to add to driving clocks", path: attribute))
+            guard
+                let clock = item as? [LineAttribute],
+                let currentDrivingClock = machine.attributes[0].attributes["driving_clock"]
+            else {
+                fatalError("Failed to add clocks")
             }
-            machine.attributes[0].attributes["driving_clock"]?.enumeratedValidValues.insert(clock.name)
+            let inserted = clock[0].lineValue
+            var validValues = currentDrivingClock.enumeratedValidValues
+            validValues.insert(inserted)
+            machine.attributes[0].attributes["driving_clock"] = Attribute(lineAttribute: .enumerated(inserted, validValues: validValues))
             return .success(false)
         }
         return .success(false)
