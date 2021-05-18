@@ -27,7 +27,8 @@ public class VHDLMachinesMutatorTests: XCTestCase {
         return [
             ("test_hello_world", test_hello_world),
             ("test_newClockAddsToDrivingClock", test_newClockAddsToDrivingClock),
-            ("test_deletingClockRemoveFromDrivingClock", test_deletingClockRemoveFromDrivingClock)
+            ("test_deletingClockRemoveFromDrivingClock", test_deletingClockRemoveFromDrivingClock),
+            ("test_deletingClockDoesntRemoveDrivingClock", test_deletingClockDoesntRemoveDrivingClock)
 //            ("test_write2", test_write2)
         ]
     }
