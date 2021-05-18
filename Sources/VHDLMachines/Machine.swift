@@ -31,6 +31,8 @@ public struct Machine {
     
     public var parameters: [Parameter]
     
+    public var outputs: [ReturnableVariable]
+    
     public var states: [State]
     
     public var transitions: [Transition]
@@ -51,6 +53,7 @@ public struct Machine {
         machineVariables: [VHDLVariable],
         machineSignals: [MachineSignal],
         parameters: [Parameter],
+        outputs: [ReturnableVariable],
         states: [State],
         transitions: [Transition],
         initialState: Int,
@@ -67,6 +70,7 @@ public struct Machine {
         self.machineVariables = machineVariables
         self.machineSignals = machineSignals
         self.parameters = parameters
+        self.outputs = outputs
         self.states = states
         self.transitions = transitions
         self.initialState = initialState
