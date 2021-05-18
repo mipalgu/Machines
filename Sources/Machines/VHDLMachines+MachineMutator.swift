@@ -17,11 +17,11 @@ extension VHDLMachinesConverter: MachineMutator {
     }
 
     func addItem<Path, T>(_ item: T, to attribute: Path, machine: inout Machine) -> Result<Bool, AttributeError<Path.Root>> where Path : PathProtocol, Path.Root == Machine, Path.Value == [T] {
-        machine[keyPath: attribute.path].append(item)
         print("Path: \(attribute.path)")
         print("If Path: \(Machine.path.attributes[0].attributes["clocks"].wrappedValue.tableValue.path)")
         if attribute.path == Machine.path.attributes[0].attributes["clocks"].wrappedValue.tableValue.path {
             print("Adding driving clock")
+            machine[keyPath: attribute.path].append(item)
             guard
                 let clock = item as? [LineAttribute],
                 let currentDrivingClock = machine.attributes[0].attributes["driving_clock"]
@@ -36,6 +36,7 @@ extension VHDLMachinesConverter: MachineMutator {
         } else {
             print(machine[keyPath: attribute.path])
         }
+        machine[keyPath: attribute.path].append(item)
         return .success(false)
     }
 
