@@ -43,7 +43,7 @@ public class VHDLMachinesMutatorTests: XCTestCase {
     }
     
     func test_newClockAddsToDrivingClock() {
-        let path = Machine.path.attributes[0].attributes["clocks"].wrappedValue.tableValue
+        let path = Machine.path.attributes[0].attributes["clocks"].wrappedValue.blockAttribute.tableValue
         let currentClocks = machine?.attributes[0].attributes["clocks"]?.tableValue ?? []
         let value = [
             LineAttribute(type: .line, value: "clk2")!,
