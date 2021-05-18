@@ -432,8 +432,6 @@ extension VHDLMachinesConverter: MachineMutator {
             machine[keyPath: attribute.path] = value
             return .success(true)
         }
-        
-        
         if let _ = machine.attributes[0].attributes["external_signals"].wrappedValue.tableValue.indices.first(where: {
             let signalPath = machine.path.attributes[0].attributes["external_signals"].wrappedValue.blockAttribute.tableValue
             return signalPath[$0][2].path == attribute.path ||
@@ -458,7 +456,9 @@ extension VHDLMachinesConverter: MachineMutator {
                 machine.states[$0].attributes[0].attributes["externals"]?.enumerableCollectionValidValues.remove(currentValue)
                 machine.states[$0].attributes[0].attributes["externals"]?.enumerableCollectionValidValues.insert(newValue)
             }
-        } else if let _ = machine.attributes[0].attributes["external_variables"].wrappedValue.tableValue.indices.first(where: {
+            return .success(false)
+        }
+        if let _ = machine.attributes[0].attributes["external_variables"].wrappedValue.tableValue.indices.first(where: {
             let variablePath = machine.path.attributes[0].attributes["external_variables"].wrappedValue.blockAttribute.tableValue
             return variablePath[$0][1].path == attribute.path ||
                 variablePath[$0][1].lineValue.path == attribute.path
@@ -482,6 +482,7 @@ extension VHDLMachinesConverter: MachineMutator {
                 machine.states[$0].attributes[0].attributes["externals"]?.enumerableCollectionValidValues.remove(currentValue)
                 machine.states[$0].attributes[0].attributes["externals"]?.enumerableCollectionValidValues.insert(newValue)
             }
+            return .success(false)
         }
         machine[keyPath: attribute.path] = value
         return .success(false)
