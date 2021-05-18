@@ -68,4 +68,33 @@ public class VHDLMachinesMutatorTests: XCTestCase {
         XCTAssertEqual(newDrivingClock, currentDrivingClock)
     }
     
+    func test_deletingClockRemoveFromDrivingClock() {
+        let path = Machine.path.attributes[0].attributes["clocks"].wrappedValue.blockAttribute.tableValue
+        let currentClocks = machine?.attributes[0].attributes["clocks"]?.tableValue ?? []
+        let value = [
+            LineAttribute(type: .line, value: "clk2")!,
+            LineAttribute(type: .integer, value: "20")!,
+            LineAttribute(type: .enumerated(validValues: clockFrequencies), value: "Hz")!
+        ]
+        let inserted = currentClocks + [value]
+        let _ = machine?.addItem(value, to: path)
+        let insertedValues = machine?.attributes[0].attributes["clocks"]?.tableValue
+        let currentDrivingClock = variables["driving_clock"]?.enumeratedValue
+        XCTAssertNotNil(insertedValues)
+        XCTAssertEqual(inserted, insertedValues)
+        let drivingClocks = variables["driving_clock"]?.enumeratedValidValues
+        XCTAssertNotNil(drivingClocks)
+        XCTAssertTrue(drivingClocks!.contains("clk2"))
+        currentClocks.forEach {
+            XCTAssertTrue(drivingClocks!.contains($0[0].lineValue))
+        }
+        XCTAssertNotNil(currentDrivingClock)
+        let newDrivingClock = variables["driving_clock"]?.enumeratedValue
+        XCTAssertNotNil(newDrivingClock)
+        XCTAssertEqual(newDrivingClock, currentDrivingClock)
+        let _ = machine?.deleteItem(table: path, atIndex: 1)
+        XCTAssertEqual(currentClocks, machine?.attributes[0].attributes["clocks"]?.tableValue)
+        XCTAssertEqual(["clk"], machine?.attributes[0].attributes["driving_clock"]?.enumeratedValidValues)
+    }
+    
 }

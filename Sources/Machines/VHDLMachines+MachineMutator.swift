@@ -31,17 +31,16 @@ extension VHDLMachinesConverter: MachineMutator {
             validValues.insert(inserted)
             machine.attributes[0].attributes["driving_clock"] = Attribute(lineAttribute: .enumerated(currentDrivingClock.enumeratedValue, validValues: validValues))
             return .success(false)
-        } else {
-            let attPath = AnyPath(attribute)
-            let ifPath = AnyPath(Machine.path.attributes[0].attributes["clocks"].wrappedValue.tableValue)
-            print(ifPath.isChild(of: attPath))
-            print(attPath.isChild(of: ifPath))
-            print(ifPath.isSame(as: attPath))
-            print(ifPath.targetType)
-            print(attPath.targetType)
-            print(machine[keyPath: Machine.path.attributes[0].attributes["clocks"].wrappedValue.tableValue.keyPath])
-            print(machine[keyPath: attribute.path])
         }
+        let attPath = AnyPath(attribute)
+        let ifPath = AnyPath(Machine.path.attributes[0].attributes["clocks"].wrappedValue.tableValue)
+        print(ifPath.isChild(of: attPath))
+        print(attPath.isChild(of: ifPath))
+        print(ifPath.isSame(as: attPath))
+        print(ifPath.targetType)
+        print(attPath.targetType)
+        print(machine[keyPath: Machine.path.attributes[0].attributes["clocks"].wrappedValue.tableValue.keyPath])
+        print(machine[keyPath: attribute.path])
         machine[keyPath: attribute.path].append(item)
         return .success(false)
     }
@@ -254,6 +253,28 @@ extension VHDLMachinesConverter: MachineMutator {
     func deleteItem<Path, T>(attribute: Path, atIndex index: Int, machine: inout Machine) -> Result<Bool, AttributeError<Path.Root>> where Path : PathProtocol, Path.Root == Machine, Path.Value == [T] {
         if machine[keyPath: attribute.path].count <= index || index < 0 {
             return .failure(ValidationError(message: "Invalid index '\(index)'", path: attribute))
+        }
+        if attribute.path == machine.path.attributes[0].attributes["clocks"].wrappedValue.blockAttribute.tableValue.path {
+            guard let clocks = machine.attributes[0].attributes["clocks"]?.tableValue else {
+                fatalError("No clocks")
+            }
+            guard clocks.count > index else {
+                return .failure(ValidationError(message: "Trying to delete clock that doesn't exist", path: attribute))
+            }
+            guard
+                let old = machine.attributes[0].attributes["driving_clock"]?.enumeratedValue,
+                var validValues = machine.attributes[0].attributes["driving_clock"]?.enumeratedValidValues
+            else {
+                fatalError("Machine does not have a driving clock")
+            }
+            let clock = clocks[index][0].lineValue
+            guard old != clock else {
+                return .failure(ValidationError(message: "Cannot remove driving clock", path: attribute))
+            }
+            machine[keyPath: attribute.path].remove(at: index)
+            validValues.remove(clock)
+            machine.attributes[0].attributes["driving_clock"] = Attribute(lineAttribute: .enumerated(old, validValues: validValues))
+            return .success(false)
         }
         machine[keyPath: attribute.path].remove(at: index)
         return .success(false)
