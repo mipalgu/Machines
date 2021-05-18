@@ -30,7 +30,7 @@ extension VHDLMachinesConverter: MachineMutator {
             var validValues = currentDrivingClock.enumeratedValidValues
             validValues.insert(inserted)
             machine.attributes[0].attributes["driving_clock"] = Attribute(lineAttribute: .enumerated(currentDrivingClock.enumeratedValue, validValues: validValues))
-            return .success(false)
+            return .success(true)
         }
         let attPath = AnyPath(attribute)
         let ifPath = AnyPath(Machine.path.attributes[0].attributes["clocks"].wrappedValue.tableValue)
@@ -274,7 +274,7 @@ extension VHDLMachinesConverter: MachineMutator {
             machine[keyPath: attribute.path].remove(at: index)
             validValues.remove(clock)
             machine.attributes[0].attributes["driving_clock"] = Attribute(lineAttribute: .enumerated(old, validValues: validValues))
-            return .success(false)
+            return .success(true)
         }
         machine[keyPath: attribute.path].remove(at: index)
         return .success(false)
