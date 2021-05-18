@@ -329,7 +329,7 @@ extension VHDLMachinesConverter: MachineMutator {
                     machine.attributes[0].attributes["external_variables"]?.tableValue.count ?? -1 > index,
                     let temp = machine.attributes[0].attributes["external_variables"]?.tableValue[index][1].lineValue
                 else {
-                    fatalError("Failed to get signal name")
+                    fatalError("Failed to get variable name")
                 }
                 variableName = temp
             }
