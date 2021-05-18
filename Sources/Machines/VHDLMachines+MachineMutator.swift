@@ -317,12 +317,11 @@ extension VHDLMachinesConverter: MachineMutator {
             if attribute.path == signalPath {
                 guard
                     index > 0,
-                    machine.attributes[0].attributes["external_signals"]?.tableValue.count ?? -1 > index,
-                    let temp = machine.attributes[0].attributes["external_signals"]?.tableValue[index][2].lineValue
+                    machine.attributes[0].attributes["external_signals"]?.tableValue.count ?? -1 > index
                 else {
                     fatalError("Failed to get signal name")
                 }
-                variableName = temp
+                variableName = machine.attributes[0].attributes["external_signals"].wrappedValue.tableValue[index][2].lineValue
             } else {
                 guard
                     index > 0,
