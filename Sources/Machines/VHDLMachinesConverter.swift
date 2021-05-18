@@ -466,16 +466,10 @@ struct VHDLMachinesConverter {
     }
     
     func externalVariables(state: State) -> [String] {
-        guard let rows = state.attributes.first(where: { $0.name == "variables" })?.attributes["externals"]?.tableValue else {
+        guard let rows = state.attributes.first(where: { $0.name == "variables" })?.attributes["externals"]?.enumerableCollectionValue else {
             return []
         }
-        return rows.compactMap {
-            let data = $0[0].lineValue.trimmingCharacters(in: .whitespaces)
-            if data == "" {
-                return nil
-            }
-            return data
-        }
+        return Array(rows)
     }
 
     func toState(state: State) -> VHDLMachines.State {
