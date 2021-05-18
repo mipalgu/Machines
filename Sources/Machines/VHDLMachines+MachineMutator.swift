@@ -34,10 +34,7 @@ extension VHDLMachinesConverter: MachineMutator {
             machine.attributes[0].attributes["driving_clock"] = Attribute(lineAttribute: .enumerated(currentDrivingClock.enumeratedValue, validValues: validValues))
             return .success(false)
         } else {
-            guard let x = machine[keyPath: attribute.path] else {
-                fatalError("can't access resource")
-            }
-            print(x)
+            print(machine[keyPath: attribute.path])
         }
         return .success(false)
     }
