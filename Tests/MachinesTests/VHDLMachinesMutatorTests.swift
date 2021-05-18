@@ -44,22 +44,14 @@ public class VHDLMachinesMutatorTests: XCTestCase {
     
     func test_newClockAddsToDrivingClock() {
         let path = Machine.path.attributes[0].attributes["clocks"].wrappedValue.tableValue
-        let currentClocks = machine?.attributes[0].attributes["clocks"]?.tableValue
+        let currentClocks = machine?.attributes[0].attributes["clocks"]?.tableValue ?? []
         let value = [
             LineAttribute(type: .line, value: "clk2")!,
             LineAttribute(type: .integer, value: "20")!,
             LineAttribute(type: .enumerated(validValues: clockFrequencies), value: "Hz")!
         ]
-        let inserted = currentClocks! + [value]
-        let attribute = Attribute(blockAttribute: .table(
-            inserted,
-            columns: [
-                BlockAttributeType.TableColumn(name: "name", type: .line),
-                BlockAttributeType.TableColumn(name: "frequency", type: .integer),
-                BlockAttributeType.TableColumn(name: "unit", type: .enumerated(validValues: clockFrequencies))
-            ]
-        ))
-        let _ = machine?.addItem(attribute.tableValue.last ?? [], to: path)
+        let inserted = currentClocks + [value]
+        let _ = machine?.addItem(value, to: path)
         let insertedValues = machine?.attributes[0].attributes["clocks"]?.tableValue
         let currentDrivingClock = variables["driving_clock"]?.enumeratedValue
         XCTAssertNotNil(insertedValues)
@@ -67,7 +59,7 @@ public class VHDLMachinesMutatorTests: XCTestCase {
         let drivingClocks = variables["driving_clock"]?.enumeratedValidValues
         XCTAssertNotNil(drivingClocks)
         XCTAssertTrue(drivingClocks!.contains("clk2"))
-        currentClocks?.forEach {
+        currentClocks.forEach {
             XCTAssertTrue(drivingClocks!.contains($0[0].lineValue))
         }
         XCTAssertNotNil(currentDrivingClock)
