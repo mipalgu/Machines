@@ -31,6 +31,7 @@ struct VHDLMachinesConverter {
             dependentMachines: [:],
             machineVariables: [],
             machineSignals: [],
+            parameters: [],
             states: [
                 VHDLMachines.State(
                     name: "Initial",
@@ -150,6 +151,12 @@ struct VHDLMachinesConverter {
                     ("value", .expression(language: .vhdl)),
                     ("comment", .line)
                 ])),
+                Field(name: "parameters", type: .table(columns: [
+                    ("type", .expression(language: .vhdl)),
+                    ("name", .line),
+                    ("value", .expression(language: .vhdl)),
+                    ("comment", .line)
+                ])),
                 Field(name: "machine_signals", type: .table(columns: [
                     ("type", .expression(language: .vhdl)),
                     ("name", .line),
@@ -184,6 +191,15 @@ struct VHDLMachinesConverter {
                     ]
                 ),
                 "external_variables": .table(
+                    machine.externalVariables.map(toLineAttribute),
+                    columns: [
+                        ("type", .expression(language: .vhdl)),
+                        ("name", .line),
+                        ("value", .expression(language: .vhdl)),
+                        ("comment", .line)
+                    ]
+                ),
+                "parameters": .table(
                     machine.externalVariables.map(toLineAttribute),
                     columns: [
                         ("type", .expression(language: .vhdl)),
@@ -528,6 +544,23 @@ struct VHDLMachinesConverter {
         }
     }
     
+    func getParameters(machine: Machine) -> [Parameter] {
+        guard
+            machine.attributes.count == 3,
+            let variables = machine.attributes[0].attributes["parameters"]?.tableValue
+        else {
+            fatalError("Cannot retrieve external variables")
+        }
+        return variables.map {
+            Parameter(
+                type: $0[0].expressionValue,
+                name: $0[1].lineValue,
+                defaultValue: $0[2].expressionValue == "" ? nil : $0[2].expressionValue,
+                comment: $0[3].lineValue == "" ? nil : $0[3].lineValue
+            )
+        }
+    }
+    
     func getClocks(machine: Machine) -> [Clock] {
         guard
             machine.attributes.count == 3,
@@ -626,6 +659,7 @@ struct VHDLMachinesConverter {
             dependentMachines: getDependentMachines(machine: machine),
             machineVariables: getMachineVariables(machine: machine),
             machineSignals: getMachineSignals(machine: machine),
+            parameters: getParameters(machine: machine),
             states: machine.states.map(toState),
             transitions: getTransitions(machine: machine),
             initialState: machine.states.firstIndex(where: { machine.initialState == $0.name }) ?? 0,

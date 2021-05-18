@@ -29,6 +29,8 @@ public struct Machine {
     
     public var machineSignals: [MachineSignal]
     
+    public var parameters: [Parameter]
+    
     public var states: [State]
     
     public var transitions: [Transition]
@@ -48,6 +50,7 @@ public struct Machine {
         dependentMachines: [MachineName: URL],
         machineVariables: [VHDLVariable],
         machineSignals: [MachineSignal],
+        parameters: [Parameter],
         states: [State],
         transitions: [Transition],
         initialState: Int,
@@ -63,6 +66,7 @@ public struct Machine {
         self.dependentMachines = dependentMachines
         self.machineVariables = machineVariables
         self.machineSignals = machineSignals
+        self.parameters = parameters
         self.states = states
         self.transitions = transitions
         self.initialState = initialState

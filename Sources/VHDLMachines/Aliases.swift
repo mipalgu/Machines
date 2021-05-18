@@ -14,3 +14,5 @@ public typealias ActionName = String
 public typealias SignalType = String
 
 public typealias VariableType = String
+
+public typealias ParameterType = String
