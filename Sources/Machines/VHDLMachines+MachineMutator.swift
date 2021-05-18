@@ -332,6 +332,7 @@ extension VHDLMachinesConverter: MachineMutator {
             machine[keyPath: attribute.path].remove(at: index)
             machine.states.indices.forEach {
                 machine.states[$0].attributes[0].attributes["externals"]?.enumerableCollectionValidValues.remove(variableName)
+                machine.states[$0].attributes[0].attributes["externals"]?.enumerableCollectionValue.remove(variableName)
             }
             return .success(false)
         }
