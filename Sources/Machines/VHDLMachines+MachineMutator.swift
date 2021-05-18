@@ -38,6 +38,7 @@ extension VHDLMachinesConverter: MachineMutator {
             let ifPath = AnyPath(Machine.path.attributes[0].attributes["clocks"].wrappedValue.tableValue)
             print(ifPath.isChild(of: attPath))
             print(attPath.isChild(of: ifPath))
+            print(ifPath.isSame(as: attPath))
             print(machine[keyPath: Machine.path.attributes[0].attributes["clocks"].wrappedValue.tableValue.keyPath])
             print(machine[keyPath: attribute.path])
         }
