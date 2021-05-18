@@ -18,7 +18,6 @@ extension VHDLMachinesConverter: MachineMutator {
 
     func addItem<Path, T>(_ item: T, to attribute: Path, machine: inout Machine) -> Result<Bool, AttributeError<Path.Root>> where Path : PathProtocol, Path.Root == Machine, Path.Value == [T] {
         if attribute.path == machine.path.attributes[0].attributes["clocks"].wrappedValue.blockAttribute.tableValue.path {
-            print("Adding driving clock")
             machine[keyPath: attribute.path].append(item)
             guard
                 let clock = item as? [LineAttribute],
@@ -31,6 +30,41 @@ extension VHDLMachinesConverter: MachineMutator {
             validValues.insert(inserted)
             machine.attributes[0].attributes["driving_clock"] = Attribute(lineAttribute: .enumerated(currentDrivingClock.enumeratedValue, validValues: validValues))
             return .success(true)
+        }
+        let signalPath = machine.path.attributes[0].attributes["external_signals"].wrappedValue.blockAttribute.tableValue.path
+        let variablePath = machine.path.attributes[0].attributes["external_variables"].wrappedValue.blockAttribute.tableValue.path
+        if attribute.path == signalPath || attribute.path == variablePath {
+            let variableName: String
+            if attribute.path == signalPath {
+                guard let temp = (item as? [LineAttribute])?[2].lineValue else {
+                    fatalError("Item does not fit format for external signal")
+                }
+                variableName = temp
+            } else {
+                guard let temp = (item as? [LineAttribute])?[1].lineValue else {
+                    fatalError("Item does not fit format for external variable")
+                }
+                variableName = temp
+            }
+            guard
+                let signals = machine.attributes[0].attributes["external_signals"]?.tableValue.map({ $0[2].lineValue }),
+                let variables = machine.attributes[0].attributes["external_variables"]?.tableValue.map({ $0[1].lineValue })
+            else {
+                fatalError("Cannot find external variables and signals")
+            }
+            let validValues = Set(signals + variables + [variableName])
+            machine[keyPath: attribute.path].append(item)
+            machine.states.indices.forEach {
+                guard let currentValues = machine.states[$0].attributes[0].attributes["externals"]?.enumerableCollectionValue else {
+                    fatalError("Cannot find externals for state \(machine.states[$0].name)")
+                }
+                let _ = machine.modify(
+                    attribute: Machine.path.states[$0].attributes[0].attributes["externals"],
+                    value: Attribute(blockAttribute: .enumerableCollection(currentValues, validValues: validValues))
+                )
+            }
+            return .success(false)
+            
         }
         let attPath = AnyPath(attribute)
         let ifPath = AnyPath(Machine.path.attributes[0].attributes["clocks"].wrappedValue.tableValue)
