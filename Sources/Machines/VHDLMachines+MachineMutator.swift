@@ -310,6 +310,35 @@ extension VHDLMachinesConverter: MachineMutator {
             machine.attributes[0].attributes["driving_clock"] = Attribute(lineAttribute: .enumerated(old, validValues: validValues))
             return .success(true)
         }
+        let signalPath = machine.path.attributes[0].attributes["external_signals"].wrappedValue.blockAttribute.tableValue.path
+        let variablePath = machine.path.attributes[0].attributes["external_variables"].wrappedValue.blockAttribute.tableValue.path
+        if attribute.path == signalPath || attribute.path == variablePath {
+            let variableName: String
+            if attribute.path == signalPath {
+                guard
+                    index > 0,
+                    machine.attributes[0].attributes["external_signals"]?.tableValue.count ?? -1 > index,
+                    let temp = machine.attributes[0].attributes["external_signals"]?.tableValue[index][2].lineValue
+                else {
+                    fatalError("Failed to get signal name")
+                }
+                variableName = temp
+            } else {
+                guard
+                    index > 0,
+                    machine.attributes[0].attributes["external_variables"]?.tableValue.count ?? -1 > index,
+                    let temp = machine.attributes[0].attributes["external_variables"]?.tableValue[index][1].lineValue
+                else {
+                    fatalError("Failed to get signal name")
+                }
+                variableName = temp
+            }
+            machine[keyPath: attribute.path].remove(at: index)
+            machine.states.indices.forEach {
+                machine.states[$0].attributes[0].attributes["externals"]?.enumerableCollectionValidValues.remove(variableName)
+            }
+            return .success(false)
+        }
         machine[keyPath: attribute.path].remove(at: index)
         return .success(false)
     }
