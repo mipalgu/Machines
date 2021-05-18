@@ -80,15 +80,9 @@ class VHDLMachinesValidator: MachineValidator {
                 state.attributes.length(2)
                 state.attributes[0].validate { variables in
                     variables.attributes["externals"].required()
-                    variables.attributes["externals"].wrappedValue.tableValue.validate {table in
-                        table.unique() { $0.map { $0[0].enumeratedValue } }
-                        table.each { (_, external) in
-                            external[0].enumeratedValue
-                                .notEmpty()
-                                .blacklist(self.allReservedWords)
-                                .alphafirst()
-                                .alphaunderscore()
-                                .maxLength(128)
+                    variables.attributes["externals"].wrappedValue.blockAttribute.enumerableCollectionValue.each { (_, external) in
+                        external.in(Machine.path.attributes[0].attributes["externals"].wrappedValue.tableValue) {
+                            Set($0.map { $0[1].lineValue })
                         }
                     }
                     variables.attributes["state_signals"].required()
