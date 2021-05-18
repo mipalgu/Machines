@@ -33,6 +33,8 @@ extension VHDLMachinesConverter: MachineMutator {
             validValues.insert(inserted)
             machine.attributes[0].attributes["driving_clock"] = Attribute(lineAttribute: .enumerated(currentDrivingClock.enumeratedValue, validValues: validValues))
             return .success(false)
+        } else {
+            print("Item: \(item)")
         }
         return .success(false)
     }
