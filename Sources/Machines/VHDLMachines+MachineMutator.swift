@@ -34,6 +34,9 @@ extension VHDLMachinesConverter: MachineMutator {
             machine.attributes[0].attributes["driving_clock"] = Attribute(lineAttribute: .enumerated(currentDrivingClock.enumeratedValue, validValues: validValues))
             return .success(false)
         } else {
+            print("Path ancestors: \(attribute.ancestors)")
+            print("Path full path: \(attribute.fullPath)")
+            print("Path keypath: \(attribute.keyPath)")
             print(machine[keyPath: attribute.path])
         }
         machine[keyPath: attribute.path].append(item)
