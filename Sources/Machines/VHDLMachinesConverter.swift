@@ -524,7 +524,9 @@ struct VHDLMachinesConverter {
         else {
             fatalError("Cannot retrieve includes")
         }
-        return includes.split(separator: "\n").map { String($0) }
+        return includes.split(separator: ";").map {
+            $0.trimmingCharacters(in: .whitespacesAndNewlines) + ";"
+        }
     }
     
     func getExternalSignals(machine: Machine) -> [ExternalSignal] {
