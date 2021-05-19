@@ -15,13 +15,13 @@ public struct VHDLCompiler {
     public func compile(_ machine: Machine) -> Bool {
         let format = foldWithNewLine(
             components: [
-                createIncludes(includes: machine.includes),
+                createIncludes(includes: machine.includes) + "\n",
                 createEntity(machine: machine)
             ],
             initial: ""
         )
         let fileName = "\(machine.name).vhd"
-        return helper.createFile(fileName, inDirectory: machine.path, withContents: format) != nil
+        return helper.createFile(fileName, inDirectory: machine.path, withContents: format + "\n") != nil
     }
     
     private func createIncludes(includes: [String]) -> String {
@@ -39,7 +39,7 @@ public struct VHDLCompiler {
     private func createEntity(machine: Machine) -> String {
         """
          entity \(machine.name) is
-             \(foldWithNewLine(components: [createGenericsBlock(variables: machine.externalVariables), createPortBlock(clocks: machine.clocks, signals: machine.externalSignals)], initial: ""))
+         \(foldWithNewLine(components: [createGenericsBlock(variables: machine.externalVariables), createPortBlock(clocks: machine.clocks, signals: machine.externalSignals)], initial: ""))
          end \(machine.name);
          """
     }
@@ -49,29 +49,32 @@ public struct VHDLCompiler {
             return ""
         }
         return """
-         generic (
-            \(foldWithNewLine(components: variables.indices.map {
-                if $0 == variables.count - 1 {
-                    return variableToGeneric(variable: variables[$0], withSemicolon: true)
-                }
+             generic (
+         \(foldWithNewLine(components: variables.indices.map {
+            if $0 == variables.count - 1 {
                 return variableToGeneric(variable: variables[$0], withSemicolon: false)
-            },
-            initial: ""
-           )
-           )
-         );
+            }
+            return variableToGeneric(variable: variables[$0], withSemicolon: true)
+         },
+         initial: ""
+         )
+         )
+             );
          """
     }
     
     private func variableToGeneric(variable: VHDLVariable, withSemicolon: Bool) -> String {
         let semiColon = withSemicolon ? ";" : ""
         guard let range = variable.range else {
-            return "\(variable.name): \(variable.type)\(semiColon)"
+            guard let defaultValue = variable.defaultValue else {
+                return "        \(variable.name): \(variable.type)\(semiColon)" + (variable.comment == nil ? "" : " -- \(variable.comment!)")
+            }
+            return "        \(variable.name): \(variable.type) := \(defaultValue)\(semiColon)" + (variable.comment == nil ? "" : " -- \(variable.comment!)")
         }
         guard let defaultValue = variable.defaultValue else {
-            return "\(variable.name): \(variable.type) range \(range.0) to \(range.1)\(semiColon)" + (variable.comment == nil ? "" : " -- \(variable.comment!)")
+            return "        \(variable.name): \(variable.type) range \(range.0) to \(range.1)\(semiColon)" + (variable.comment == nil ? "" : " -- \(variable.comment!)")
         }
-        return "\(variable.name): \(variable.type) range \(range.0) to \(range.1) := \(defaultValue)\(semiColon)" + (variable.comment == nil ? "" : " -- \(variable.comment!)")
+        return "        \(variable.name): \(variable.type) range \(range.0) to \(range.1) := \(defaultValue)\(semiColon)" + (variable.comment == nil ? "" : " -- \(variable.comment!)")
     }
     
     private func createPortBlock(clocks: [Clock], signals: [ExternalSignal]) -> String {
@@ -79,22 +82,25 @@ public struct VHDLCompiler {
             fatalError("No clock found for machine")
         }
         return """
-         port (
-             \(foldWithNewLine(components: clocks.map { clockToSignal(clk: $0) }, initial: ""));
-             \(foldWithNewLine(components: signals.map { signalToEntityDeclaration(signal: $0) }, initial: "suspended: out std_logic;"))
-             command: in std_logic_vector(1 downto 0)
-         );
+             port (
+         \(foldWithNewLine(components: clocks.map { clockToSignal(clk: $0) }, initial: ""));
+         \(foldWithNewLine(components: signals.map { signalToEntityDeclaration(signal: $0) }, initial: "        suspended: out std_logic;"))
+                 command: in std_logic_vector(1 downto 0)
+             );
          """
     }
     
     private func clockToSignal(clk: Clock) -> String {
-        "\(clk.name): in std_logic"
+        "        \(clk.name): in std_logic"
     }
     
     private func foldWithNewLine(components: [String], initial: String) -> String {
         components.reduce(initial) {
-            if $0 == "" {
+            if $0 == "" && $1 == "" {
                 return ""
+            }
+            if $0 == "" {
+                return $1
             }
             if $1 == "" {
                 return $0
@@ -105,9 +111,9 @@ public struct VHDLCompiler {
     
     private func signalToEntityDeclaration(signal: ExternalSignal) -> String {
         guard let defaultValue = signal.defaultValue else {
-            return "\(signal.name): \(signal.mode) \(signal.type);" + (signal.comment == nil ? "" : " --\(signal.comment!)")
+            return "        \(signal.name): \(signal.mode.rawValue) \(signal.type);" + (signal.comment == nil ? "" : " -- \(signal.comment!)")
         }
-        return "\(signal.name): \(signal.mode) \(signal.type) := \(defaultValue);" + (signal.comment == nil ? "" : " --\(signal.comment!)")
+        return "        \(signal.name): \(signal.mode.rawValue) \(signal.type) := \(defaultValue);" + (signal.comment == nil ? "" : " -- \(signal.comment!)")
     }
     
 }
