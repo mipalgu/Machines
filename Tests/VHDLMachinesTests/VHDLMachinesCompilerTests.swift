@@ -56,7 +56,7 @@ public class VHDLMachinesCompilerTests: XCTestCase {
             machineSignals: [],
             parameters: [],
             outputs: [],
-            states: [defaultState(name: "Initial"), defaultState(name: "Suspended")],
+            states: [defaultState(name: "Initial"), defaultState(name: "Suspended"), defaultState(name: "State0")],
             transitions: [],
             initialState: 0,
             suspendedState: 1,

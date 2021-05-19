@@ -28,6 +28,22 @@ public struct Clock {
     
     public var unit: FrequencyUnit
     
+    public var period: Double {
+        let f = Double(frequency)
+        switch unit {
+        case .Hz:
+            return 1.0 / f
+        case .kHz:
+            return 1.0 / (f * 1000)
+        case .MHz:
+            return 1.0 / (f * 1_000_000)
+        case .GHz:
+            return 1.0 / (f * 1_000_000_000)
+        case .THz:
+            return 1.0 / (f * 1_000_000_000_000)
+        }
+    }
+    
     public init(name: String, frequency: UInt, unit: FrequencyUnit) {
         self.name = name
         self.frequency = frequency
