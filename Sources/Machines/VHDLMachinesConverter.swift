@@ -175,9 +175,7 @@ struct VHDLMachinesConverter {
                     ("value", .expression(language: .vhdl)),
                     ("comment", .line)
                 ])),
-                Field(name: "driving_clock", type: .enumerated(validValues: Set(machine.clocks.map { $0.name }))),
-                Field(name: "architecture_head", type: .code(language: .vhdl)),
-                Field(name: "architecture_body", type: .code(language: .vhdl))
+                Field(name: "driving_clock", type: .enumerated(validValues: Set(machine.clocks.map { $0.name })))
             ],
             attributes: [
                 "clocks": .table(
@@ -242,9 +240,7 @@ struct VHDLMachinesConverter {
                         ("comment", .line)
                     ]
                 ),
-                "driving_clock": .enumerated(machine.clocks[machine.drivingClock].name, validValues: Set(machine.clocks.map { $0.name })),
-                "architecture_head": .code(machine.architectureHead ?? "", language: .vhdl),
-                "architecture_body": .code(machine.architectureBody ?? "", language: .vhdl)
+                "driving_clock": .enumerated(machine.clocks[machine.drivingClock].name, validValues: Set(machine.clocks.map { $0.name }))
             ],
             metaData: [:]
         )
@@ -252,10 +248,14 @@ struct VHDLMachinesConverter {
         let includes = AttributeGroup(
             name: "includes",
             fields: [
-                Field(name: "includes", type: .code(language: .vhdl))
+                Field(name: "includes", type: .code(language: .vhdl)),
+                Field(name: "architecture_head", type: .code(language: .vhdl)),
+                Field(name: "architecture_body", type: .code(language: .vhdl))
             ],
             attributes: [
-                "includes": .code(machine.includes.reduce("", addNewline), language: .vhdl)
+                "includes": .code(machine.includes.reduce("", addNewline), language: .vhdl),
+                "architecture_head": .code(machine.architectureHead ?? "", language: .vhdl),
+                "architecture_body": .code(machine.architectureBody ?? "", language: .vhdl)
             ],
             metaData: [:]
         )
@@ -675,8 +675,8 @@ struct VHDLMachinesConverter {
         }
     }
     
-    func getCodeVariable(machine: Machine, key: String) -> String? {
-        guard let val = machine.attributes[0].attributes[key]?.codeValue else {
+    func getCodeIncludes(machine: Machine, key: String) -> String? {
+        guard let val = machine.attributes[1].attributes[key]?.codeValue else {
             return nil
         }
         return val == "" ? nil : val
@@ -706,8 +706,8 @@ struct VHDLMachinesConverter {
             transitions: getTransitions(machine: machine),
             initialState: machine.states.firstIndex(where: { machine.initialState == $0.name }) ?? 0,
             suspendedState: suspendedIndex,
-            architectureHead: getCodeVariable(machine: machine, key: "architecture_head"),
-            architectureBody: getCodeVariable(machine: machine, key: "architecture_body")
+            architectureHead: getCodeIncludes(machine: machine, key: "architecture_head"),
+            architectureBody: getCodeIncludes(machine: machine, key: "architecture_body")
         )
     }
 }
