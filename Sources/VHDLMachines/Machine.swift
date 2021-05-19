@@ -41,6 +41,10 @@ public struct Machine {
     
     public var suspendedState: Int?
     
+    public var architectureHead: String?
+    
+    public var architectureBody: String?
+    
     public init(
         name: MachineName,
         path: URL,
@@ -57,7 +61,9 @@ public struct Machine {
         states: [State],
         transitions: [Transition],
         initialState: Int,
-        suspendedState: Int?
+        suspendedState: Int?,
+        architectureHead: String? = nil,
+        architectureBody: String? = nil
     ) {
         self.name = name
         self.path = path
@@ -75,6 +81,8 @@ public struct Machine {
         self.transitions = transitions
         self.initialState = initialState
         self.suspendedState = suspendedState
+        self.architectureHead = architectureHead
+        self.architectureBody = architectureBody
     }
     
 }
