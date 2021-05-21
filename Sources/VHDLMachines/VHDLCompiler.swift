@@ -288,6 +288,47 @@ public struct VHDLCompiler {
         String(repeating: "    ", count: count)
     }
     
+    private func architectureHead(head: String?) -> String {
+        guard let head = head else {
+            return ""
+        }
+        return foldWithNewLine(
+            components: head.split(separator: "\n").map { String($0) },
+            initial: "-- User-Specific Code for Architecture Head",
+            indentation: 1
+        )
+    }
+    
+    private func architectureBody(body: String?) -> String {
+        guard let body = body else {
+            return ""
+        }
+        return foldWithNewLine(
+            components: body.split(separator: "\n").map { String($0) },
+            initial: "-- User-Specific Code for Architecture Body",
+            indentation: 1
+        ) + "\n"
+    }
+    
+    private func createArchitectureBody(machine: Machine) -> String {
+        foldWithNewLine(
+            components: [
+                "if (rising_edge(\(machine.clocks[machine.drivingClock].name))) then",
+                foldWithNewLine(
+                    components: [
+                        "case internalState is",
+                        "end case;"
+                    ],
+                    initial: "",
+                    indentation: 3
+                ),
+                "end if;"
+            ],
+            initial: "",
+            indentation: 2
+        )
+    }
+    
     private func createArhictecure(machine: Machine) -> String {
         return foldWithNewLine(
             components: [
@@ -296,11 +337,27 @@ public struct VHDLCompiler {
                 suspensionCommands,
                 afterVariables(driving: machine.clocks[machine.drivingClock]),
                 snapshots(signals: machine.externalSignals, variables: machine.externalVariables),
-                machineVariables(signals: machine.machineSignals, variables: machine.machineVariables)
+                machineVariables(signals: machine.machineSignals, variables: machine.machineVariables),
+                architectureHead(head: machine.architectureHead)
             ],
             initial: "architecture Behavioral of \(machine.name) is",
             indentation: 1
-        )
+        ) + "\nbegin\n" + foldWithNewLine(
+            components: [
+                "process",
+                "begin",
+                createArchitectureBody(machine: machine),
+                "end process;"
+            ],
+            initial: foldWithNewLine(
+                components: [
+                    architectureBody(body: machine.architectureBody)
+                ],
+                initial: "",
+                indentation: 1
+            ),
+            indentation: 1
+        ) + "\nend Behavioral;\n"
     }
     
 }

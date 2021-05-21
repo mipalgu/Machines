@@ -61,8 +61,8 @@ public class VHDLMachinesCompilerTests: XCTestCase {
             transitions: [],
             initialState: 0,
             suspendedState: 1,
-            architectureHead: nil,
-            architectureBody: nil
+            architectureHead: "some code\n    with indentation\nend;",
+            architectureBody: "some async code\n    with indentation\nend;"
         )
         super.setUp()
     }
