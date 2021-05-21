@@ -128,7 +128,21 @@ public struct VHDLCompiler {
         return "\(variable.name): \(variable.type) range \(range.0) to \(range.1) := \(defaultValue)\(semiColon)" + (variable.comment == nil ? "" : " -- \(variable.comment!)")
     }
     
-    private func createPortBlock(clocks: [Clock], signals: [ExternalSignal], variables: [VHDLVariable]) -> String {
+    private func variableToPort(variable: ExternalVariable, withSemicolon: Bool) -> String {
+        let semiColon = withSemicolon ? ";" : ""
+        guard let range = variable.range else {
+            guard let defaultValue = variable.defaultValue else {
+                return "\(variable.name): \(variable.type)\(semiColon)" + (variable.comment == nil ? "" : " -- \(variable.comment!)")
+            }
+            return "\(variable.name): \(variable.type) := \(defaultValue)\(semiColon)" + (variable.comment == nil ? "" : " -- \(variable.comment!)")
+        }
+        guard let defaultValue = variable.defaultValue else {
+            return "\(variable.name): \(variable.type) range \(range.0) to \(range.1)\(semiColon)" + (variable.comment == nil ? "" : " -- \(variable.comment!)")
+        }
+        return "\(variable.name): \(variable.type) range \(range.0) to \(range.1) := \(defaultValue)\(semiColon)" + (variable.comment == nil ? "" : " -- \(variable.comment!)")
+    }
+    
+    private func createPortBlock(clocks: [Clock], signals: [ExternalSignal], variables: [ExternalVariable]) -> String {
         guard !clocks.isEmpty else {
             fatalError("No clock found for machine")
         }
@@ -137,12 +151,13 @@ public struct VHDLCompiler {
          \(foldWithNewLine(components: clocks.map { clockToSignal(clk: $0) }, initial: "", indentation: 2));
          \(foldWithNewLine(components: signals.map { signalToEntityDeclaration(signal: $0) }, initial: indent(count: 2) + "suspended: out std_logic;", indentation: 2))
          \(foldWithNewLine(
-            components: variables.map { (variable: VHDLVariable) -> VHDLVariable in
+            components: variables.map { (variable: ExternalVariable) -> ExternalVariable in
                 var newVar = variable
                 newVar.name = toExternal(name: newVar.name)
+                newVar.type = "\(variable.mode.rawValue) \(newVar.type)"
                 return newVar
             }.enumerated().map {
-                return variableToGeneric(variable: $1, withSemicolon: true)
+                return variableToPort(variable: $1, withSemicolon: true)
             },
              initial: "",
             indentation: 2
@@ -260,7 +275,7 @@ public struct VHDLCompiler {
     }
     
     
-    private func snapshots(signals: [ExternalSignal], variables: [VHDLVariable]) -> String {
+    private func snapshots(signals: [ExternalSignal], variables: [ExternalVariable]) -> String {
         foldWithNewLine(
             components: variables.map { variableToArchitectureDeclaration(variable: $0) },
             initial: foldWithNewLine(

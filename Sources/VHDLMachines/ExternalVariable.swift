@@ -13,17 +13,20 @@ public struct ExternalVariable: ExternalType {
     
     public var name: String
     
+    public var range: (Int, Int)?
+    
     public var defaultValue: String?
     
     public var comment: String?
     
     public var mode: Mode
     
-    public init(type: VariableType, name: String, mode: Mode, defaultValue: String?, comment: String?) {
+    public init(type: VariableType, name: String, mode: Mode, range: (Int, Int)? = nil, defaultValue: String?, comment: String?) {
         self.type = type
         self.name = name
         self.mode = mode
         self.defaultValue = defaultValue
         self.comment = comment
+        self.range = range
     }
 }

@@ -148,6 +148,7 @@ struct VHDLMachinesConverter {
                     ("comment", .line)
                 ])),
                 Field(name: "external_variables", type: .table(columns: [
+                    ("mode", .enumerated(validValues: Set(VHDLMachines.Mode.allCases.map { $0.rawValue }))),
                     ("type", .expression(language: .vhdl)),
                     ("name", .line),
                     ("value", .expression(language: .vhdl)),
@@ -206,6 +207,7 @@ struct VHDLMachinesConverter {
                 "external_variables": .table(
                     machine.externalVariables.map(toLineAttribute),
                     columns: [
+                        ("mode", .enumerated(validValues: Set(VHDLMachines.Mode.allCases.map { $0.rawValue }))),
                         ("type", .expression(language: .vhdl)),
                         ("name", .line),
                         ("value", .expression(language: .vhdl)),
@@ -580,6 +582,25 @@ struct VHDLMachinesConverter {
         }
     }
     
+    func getExternalVariables(machine: Machine) -> [ExternalVariable] {
+        guard
+            machine.attributes.count == 3,
+            let variables = machine.attributes[0].attributes["external_variables"]?.tableValue
+        else {
+            fatalError("Cannot retrieve external variables")
+        }
+        return variables.map {
+            ExternalVariable(
+                type: $0[1].expressionValue,
+                name: $0[2].lineValue,
+                mode: Mode(rawValue: $0[0].enumeratedValue)!,
+                range: nil,
+                defaultValue: $0[3].expressionValue == "" ? nil : $0[2].expressionValue,
+                comment: $0[4].lineValue == "" ? nil : $0[3].lineValue
+            )
+        }
+    }
+    
     func getParameters(machine: Machine) -> [Parameter] {
         guard
             machine.attributes.count == 3,
@@ -712,7 +733,7 @@ struct VHDLMachinesConverter {
             path: machine.filePath,
             includes: getIncludes(machine: machine),
             externalSignals: getExternalSignals(machine: machine),
-            externalVariables: getVHDLVariables(machine: machine, key: "external_variables"),
+            externalVariables: getExternalVariables(machine: machine),
             generics: getVHDLVariables(machine: machine, key: "generics"),
             clocks: getClocks(machine: machine),
             drivingClock: getDrivingClock(machine: machine),
