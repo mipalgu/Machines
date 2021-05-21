@@ -151,12 +151,13 @@ class VHDLMachinesValidator: MachineValidator {
                     }
                     variables.attributes["external_variables"].required()
                     variables.attributes["external_variables"].wrappedValue.tableValue.validate { table in
-                        table.unique() { $0.map { $0[1].lineValue } }
+                        table.unique() { $0.map { $0[2].lineValue } }
                         table.each { (_, variable) in
-                            variable[0].expressionValue.notEmpty().maxLength(128)
-                            variable[1].lineValue.notEmpty().alphafirst().alphaunderscore().blacklist(self.allReservedWords).maxLength(128)
-                            variable[2].expressionValue.maxLength(128)
-                            variable[3].lineValue.maxLength(128)
+                            variable[0].enumeratedValue.notEmpty().alpha().maxLength(6)
+                            variable[1].expressionValue.notEmpty().maxLength(128)
+                            variable[2].lineValue.notEmpty().alphafirst().alphaunderscore().blacklist(self.allReservedWords).maxLength(128)
+                            variable[3].expressionValue.maxLength(128)
+                            variable[4].lineValue.maxLength(128)
                         }
                     }
                     variables.attributes["machine_signals"].required()
@@ -181,6 +182,18 @@ class VHDLMachinesValidator: MachineValidator {
                     }
                     variables.attributes["driving_clock"].required()
                     variables.attributes["driving_clock"].wrappedValue.enumeratedValue.notEmpty().alphafirst().alphaunderscore().blacklist(self.allReservedWords).maxLength(128)
+                }
+                attributes[0].validate { variables in
+                    variables.attributes["generics"].required()
+                    variables.attributes["generics"].wrappedValue.tableValue.validate { table in
+                        table.unique() { $0.map { $0[1].lineValue } }
+                        table.each { (_, variable) in
+                            variable[0].expressionValue.notEmpty().maxLength(128)
+                            variable[1].lineValue.notEmpty().alphafirst().alphaunderscore().blacklist(self.allReservedWords).maxLength(128)
+                            variable[2].expressionValue.maxLength(128)
+                            variable[3].lineValue.maxLength(128)
+                        }
+                    }
                 }
                 attributes[1].validate { includes in
                     includes.attributes["includes"].required()
