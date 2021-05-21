@@ -26,6 +26,7 @@ struct VHDLMachinesConverter {
             includes: [],
             externalSignals: [],
             externalVariables: [],
+            generics: [],
             clocks: [Clock(name: "clk", frequency: 50, unit: .MHz)],
             drivingClock: 0,
             dependentMachines: [:],
@@ -69,7 +70,7 @@ struct VHDLMachinesConverter {
                     ("unit", .enumerated(validValues: Set(VHDLMachines.Clock.FrequencyUnit.allCases.map { $0.rawValue })))
                 ])),
                 Field(name: "external_signals", type: .table(columns: [
-                    ("mode", .enumerated(validValues: Set(VHDLMachines.ExternalSignal.Mode.allCases.map { $0.rawValue }))),
+                    ("mode", .enumerated(validValues: Set(VHDLMachines.Mode.allCases.map { $0.rawValue }))),
                     ("type", .expression(language: .vhdl)),
                     ("name", .line),
                     ("comment", .line)
@@ -92,7 +93,7 @@ struct VHDLMachinesConverter {
                 "external_signals": .table(
                     arrangement.externalSignals.map(toLineAttribute),
                     columns: [
-                        ("mode", .enumerated(validValues: Set(VHDLMachines.ExternalSignal.Mode.allCases.map { $0.rawValue }))),
+                        ("mode", .enumerated(validValues: Set(VHDLMachines.Mode.allCases.map { $0.rawValue }))),
                         ("type", .expression(language: .vhdl)),
                         ("name", .line),
                         ("comment", .line)
@@ -140,13 +141,19 @@ struct VHDLMachinesConverter {
                     ("unit", .enumerated(validValues: Set(VHDLMachines.Clock.FrequencyUnit.allCases.map { $0.rawValue })))
                 ])),
                 Field(name: "external_signals", type: .table(columns: [
-                    ("mode", .enumerated(validValues: Set(VHDLMachines.ExternalSignal.Mode.allCases.map { $0.rawValue }))),
+                    ("mode", .enumerated(validValues: Set(VHDLMachines.Mode.allCases.map { $0.rawValue }))),
                     ("type", .expression(language: .vhdl)),
                     ("name", .line),
                     ("value", .expression(language: .vhdl)),
                     ("comment", .line)
                 ])),
                 Field(name: "external_variables", type: .table(columns: [
+                    ("type", .expression(language: .vhdl)),
+                    ("name", .line),
+                    ("value", .expression(language: .vhdl)),
+                    ("comment", .line)
+                ])),
+                Field(name: "generics", type: .table(columns: [
                     ("type", .expression(language: .vhdl)),
                     ("name", .line),
                     ("value", .expression(language: .vhdl)),
@@ -189,7 +196,7 @@ struct VHDLMachinesConverter {
                 "external_signals": .table(
                     machine.externalSignals.map(toLineAttribute),
                     columns: [
-                        ("mode", .enumerated(validValues: Set(VHDLMachines.ExternalSignal.Mode.allCases.map { $0.rawValue }))),
+                        ("mode", .enumerated(validValues: Set(VHDLMachines.Mode.allCases.map { $0.rawValue }))),
                         ("type", .expression(language: .vhdl)),
                         ("name", .line),
                         ("value", .expression(language: .vhdl)),
@@ -197,6 +204,15 @@ struct VHDLMachinesConverter {
                     ]
                 ),
                 "external_variables": .table(
+                    machine.externalVariables.map(toLineAttribute),
+                    columns: [
+                        ("type", .expression(language: .vhdl)),
+                        ("name", .line),
+                        ("value", .expression(language: .vhdl)),
+                        ("comment", .line)
+                    ]
+                ),
+                "generics": .table(
                     machine.externalVariables.map(toLineAttribute),
                     columns: [
                         ("type", .expression(language: .vhdl)),
@@ -298,9 +314,9 @@ struct VHDLMachinesConverter {
         return lhs + "\n" + rhs
     }
     
-    func toLineAttribute(variable: VHDLMachines.Variable) -> [LineAttribute] {
+    func toLineAttribute<T: VHDLMachines.Variable>(variable: T) -> [LineAttribute] {
         [
-            .expression(variable.type, language: .vhdl),
+            .expression(String(variable.type), language: .vhdl),
             .line(variable.name),
             .expression(variable.defaultValue ?? "", language: .vhdl),
             .line(variable.comment ?? "")
@@ -309,7 +325,7 @@ struct VHDLMachinesConverter {
     
     func toLineAttribute(variable: VHDLMachines.ExternalSignal) -> [LineAttribute] {
         [
-            .enumerated(variable.mode.rawValue, validValues: Set(VHDLMachines.ExternalSignal.Mode.allCases.map { $0.rawValue })),
+            .enumerated(variable.mode.rawValue, validValues: Set(VHDLMachines.Mode.allCases.map { $0.rawValue })),
             .expression(variable.type, language: .vhdl),
             .line(variable.name),
             .expression(variable.defaultValue ?? "", language: .vhdl),
@@ -539,17 +555,17 @@ struct VHDLMachinesConverter {
         return signals.map {
             let value = $0[3].expressionValue == "" ? nil : $0[3].expressionValue
             let comment = $0[4].lineValue == "" ? nil : $0[4].lineValue
-            guard let mode = ExternalSignal.Mode(rawValue: $0[0].enumeratedValue) else {
+            guard let mode = Mode(rawValue: $0[0].enumeratedValue) else {
                 fatalError("Cannot convert Mode!")
             }
             return ExternalSignal(type: $0[1].expressionValue, name: $0[2].lineValue, mode: mode, defaultValue: value, comment: comment)
         }
     }
     
-    func getExternalVariables(machine: Machine) -> [VHDLVariable] {
+    func getVHDLVariables(machine: Machine, key: String) -> [VHDLVariable] {
         guard
             machine.attributes.count == 3,
-            let variables = machine.attributes[0].attributes["external_variables"]?.tableValue
+            let variables = machine.attributes[0].attributes[key]?.tableValue
         else {
             fatalError("Cannot retrieve external variables")
         }
@@ -696,7 +712,8 @@ struct VHDLMachinesConverter {
             path: machine.filePath,
             includes: getIncludes(machine: machine),
             externalSignals: getExternalSignals(machine: machine),
-            externalVariables: getExternalVariables(machine: machine),
+            externalVariables: getVHDLVariables(machine: machine, key: "external_variables"),
+            generics: getVHDLVariables(machine: machine, key: "generics"),
             clocks: getClocks(machine: machine),
             drivingClock: getDrivingClock(machine: machine),
             dependentMachines: getDependentMachines(machine: machine),

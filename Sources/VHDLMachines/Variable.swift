@@ -9,7 +9,9 @@ import Foundation
 
 public protocol Variable {
     
-    var type: SignalType {get set}
+    associatedtype T: StringProtocol
+    
+    var type: T {get set}
     
     var name: String {get set}
     

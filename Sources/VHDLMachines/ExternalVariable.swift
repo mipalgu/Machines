@@ -2,14 +2,14 @@
 //  File.swift
 //  
 //
-//  Created by Morgan McColl on 14/4/21.
+//  Created by Morgan McColl on 20/5/21.
 //
 
 import Foundation
 
-public struct ExternalSignal: ExternalType {
+public struct ExternalVariable: ExternalType {
     
-    public var type: SignalType
+    public var type: VariableType
     
     public var name: String
     
@@ -19,7 +19,7 @@ public struct ExternalSignal: ExternalType {
     
     public var mode: Mode
     
-    public init(type: SignalType, name: String, mode: Mode, defaultValue: String?, comment: String?) {
+    public init(type: VariableType, name: String, mode: Mode, defaultValue: String?, comment: String?) {
         self.type = type
         self.name = name
         self.mode = mode

@@ -88,7 +88,7 @@ public struct VHDLCompiler {
     private func createEntity(machine: Machine) -> String {
         """
          entity \(machine.name) is
-         \(foldWithNewLine(components: [createGenericsBlock(variables: machine.externalVariables), createPortBlock(clocks: machine.clocks, signals: machine.externalSignals)], initial: ""))
+         \(foldWithNewLine(components: [createGenericsBlock(variables: machine.generics), createPortBlock(clocks: machine.clocks, signals: machine.externalSignals, variables: machine.externalVariables)], initial: ""))
          end \(machine.name);
          """
     }
@@ -128,7 +128,7 @@ public struct VHDLCompiler {
         return "\(variable.name): \(variable.type) range \(range.0) to \(range.1) := \(defaultValue)\(semiColon)" + (variable.comment == nil ? "" : " -- \(variable.comment!)")
     }
     
-    private func createPortBlock(clocks: [Clock], signals: [ExternalSignal]) -> String {
+    private func createPortBlock(clocks: [Clock], signals: [ExternalSignal], variables: [VHDLVariable]) -> String {
         guard !clocks.isEmpty else {
             fatalError("No clock found for machine")
         }
@@ -136,9 +136,27 @@ public struct VHDLCompiler {
              port (
          \(foldWithNewLine(components: clocks.map { clockToSignal(clk: $0) }, initial: "", indentation: 2));
          \(foldWithNewLine(components: signals.map { signalToEntityDeclaration(signal: $0) }, initial: indent(count: 2) + "suspended: out std_logic;", indentation: 2))
+         \(foldWithNewLine(
+            components: variables.map { (variable: VHDLVariable) -> VHDLVariable in
+                var newVar = variable
+                newVar.name = toExternal(name: newVar.name)
+                return newVar
+            }.enumerated().map {
+                if $0 == variables.count - 1 {
+                    return variableToGeneric(variable: $1, withSemicolon: false)
+                }
+                return variableToGeneric(variable: $1, withSemicolon: true)
+            },
+             initial: "",
+            indentation: 2
+         ))
                  command: in std_logic_vector(1 downto 0)
              );
          """
+    }
+    
+    private func toExternal(name: String) -> String {
+        "EXTERNAL_\(name)"
     }
     
     private func clockToSignal(clk: Clock) -> String {
@@ -161,10 +179,11 @@ public struct VHDLCompiler {
     }
     
     private func signalToEntityDeclaration(signal: ExternalSignal) -> String {
+        let name = toExternal(name: signal.name)
         guard let defaultValue = signal.defaultValue else {
-            return "\(signal.name): \(signal.mode.rawValue) \(signal.type);" + (signal.comment == nil ? "" : " -- \(signal.comment!)")
+            return "\(name): \(signal.mode.rawValue) \(signal.type);" + (signal.comment == nil ? "" : " -- \(signal.comment!)")
         }
-        return "\(signal.name): \(signal.mode.rawValue) \(signal.type) := \(defaultValue);" + (signal.comment == nil ? "" : " -- \(signal.comment!)")
+        return "\(name): \(signal.mode.rawValue) \(signal.type) := \(defaultValue);" + (signal.comment == nil ? "" : " -- \(signal.comment!)")
     }
     
     private func findBinaryLength(count: Int) -> Int {

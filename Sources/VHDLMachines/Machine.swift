@@ -19,6 +19,8 @@ public struct Machine {
     
     public var externalVariables: [VHDLVariable]
     
+    public var generics: [VHDLVariable]
+    
     public var clocks: [Clock]
     
     public var drivingClock: Int
@@ -51,6 +53,7 @@ public struct Machine {
         includes: [String],
         externalSignals: [ExternalSignal],
         externalVariables: [VHDLVariable],
+        generics: [VHDLVariable],
         clocks: [Clock],
         drivingClock: Int,
         dependentMachines: [MachineName: URL],
@@ -70,6 +73,7 @@ public struct Machine {
         self.includes = includes
         self.externalSignals = externalSignals
         self.externalVariables = externalVariables
+        self.generics = generics
         self.clocks = clocks
         self.drivingClock = drivingClock
         self.dependentMachines = dependentMachines
