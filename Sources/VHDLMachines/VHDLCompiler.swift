@@ -142,9 +142,6 @@ public struct VHDLCompiler {
                 newVar.name = toExternal(name: newVar.name)
                 return newVar
             }.enumerated().map {
-                if $0 == variables.count - 1 {
-                    return variableToGeneric(variable: $1, withSemicolon: false)
-                }
                 return variableToGeneric(variable: $1, withSemicolon: true)
             },
              initial: "",
@@ -184,6 +181,17 @@ public struct VHDLCompiler {
             return "\(name): \(signal.mode.rawValue) \(signal.type);" + (signal.comment == nil ? "" : " -- \(signal.comment!)")
         }
         return "\(name): \(signal.mode.rawValue) \(signal.type) := \(defaultValue);" + (signal.comment == nil ? "" : " -- \(signal.comment!)")
+    }
+    
+    private func signalToArchitectureDeclaration<T: Variable>(signal: T, with value: Bool = false, and comment: Bool = false) -> String {
+        let comment = comment ? " -- \(signal.comment ?? "")" : ""
+        guard let defaultVal = signal.defaultValue else {
+            return "signal \(signal.name): \(signal.type);\(comment)"
+        }
+        if value {
+            return "signal \(signal.name): \(signal.type) := \(defaultVal);\(comment)"
+        }
+        return "signal \(signal.name): \(signal.type);\(comment)"
     }
     
     private func findBinaryLength(count: Int) -> Int {
@@ -246,6 +254,36 @@ public struct VHDLCompiler {
          """
     }
     
+    private func variableToArchitectureDeclaration<T: Variable>(variable: T) -> String {
+        let comment = nil == variable.comment ? "" : " -- \(variable.comment!)"
+        return "shared variable \(variable.name): \(variable.type);\(comment)"
+    }
+    
+    
+    private func snapshots(signals: [ExternalSignal], variables: [VHDLVariable]) -> String {
+        foldWithNewLine(
+            components: variables.map { variableToArchitectureDeclaration(variable: $0) },
+            initial: foldWithNewLine(
+                components: signals.map{ signalToArchitectureDeclaration(signal: $0) },
+                initial: "-- Snapshot of External Signals and Variables",
+                indentation: 1
+            ),
+            indentation: 1
+        )
+    }
+    
+    private func machineVariables(signals: [MachineSignal], variables: [VHDLVariable]) -> String {
+        foldWithNewLine(
+            components: variables.map { variableToArchitectureDeclaration(variable: $0) },
+            initial: foldWithNewLine(
+                components: signals.map { signalToArchitectureDeclaration(signal: $0, with: $0.defaultValue != nil, and: $0.comment != nil) },
+                initial: "-- Machine Signals and Variables",
+                indentation: 1
+            ),
+            indentation: 1
+        )
+    }
+    
     private func indent(count: Int) -> String {
         String(repeating: "    ", count: count)
     }
@@ -256,7 +294,9 @@ public struct VHDLCompiler {
                 internalStates,
                 stateRepresenation(states: machine.states, initialState: machine.states[machine.initialState].name),
                 suspensionCommands,
-                afterVariables(driving: machine.clocks[machine.drivingClock])
+                afterVariables(driving: machine.clocks[machine.drivingClock]),
+                snapshots(signals: machine.externalSignals, variables: machine.externalVariables),
+                machineVariables(signals: machine.machineSignals, variables: machine.machineVariables)
             ],
             initial: "architecture Behavioral of \(machine.name) is",
             indentation: 1
