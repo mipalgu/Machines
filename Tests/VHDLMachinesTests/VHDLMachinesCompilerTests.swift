@@ -29,11 +29,11 @@ public class VHDLMachinesCompilerTests: XCTestCase {
         VHDLMachines.State(
             name: name,
             actions: [
-                "onentry": "",
-                "onexit": "",
-                "onresume": "",
-                "onsuspend": "",
-                "internal": ""
+                "OnEntry": "x <= '1';\nxx <= '0'; -- \(name) onEntry",
+                "OnExit": "x <= '0'; -- \(name) OnExit",
+                "OnResume": "x <= '0'; -- \(name) OnResume",
+                "OnSuspend": "xx <= '1'; -- \(name) onSuspend",
+                "Internal": "x <= '1'; -- \(name) Internal"
             ],
             actionOrder: [["onresume", "onentry"], ["onexit", "internal"], ["onsuspend"]],
             signals: [],

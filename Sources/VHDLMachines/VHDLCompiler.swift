@@ -170,17 +170,118 @@ public struct VHDLCompiler {
         )
     }
     
+    private func codeForStatesStatement(names: [String], code: [String], indentation: Int, trailer: String, internalVar: String = "currentState") -> String {
+        guard names.count == code.count else {
+            fatalError("Invalid call of codeForStatesStatement. Size of parameters does not match")
+        }
+        if code.reduce(true, { $0 && ($1 == "") }) {
+            return "    " + trailer
+        }
+        var data = names.indices.flatMap { (i: Int) -> [String] in
+            guard code[i] != "" else {
+                return [""]
+            }
+            return ["when \(toStateName(name: names[i])) =>"] + code[i].split(separator: "\n").map { "    " + String($0) }
+        }
+        if data.count == 0 {
+            return ""
+        }
+        data[0] = "    " + data[0]
+        data.append("when others =>")
+        data.append("    null;")
+        return foldWithNewLineExceptFirst(
+            components: [
+                "    case \(internalVar) is",
+                foldWithNewLineExceptFirst(components: data, initial: "", indentation: indentation + 1),
+                "end case;",
+                trailer
+            ],
+            initial: "",
+            indentation: indentation
+        )
+    }
+    
+    private func actionForStates(machine: Machine, actionName: String) -> [String] {
+        machine.states.map { $0.actions[actionName] ?? "" }
+    }
+    
+    private func onEntry(machine: Machine, indentation: Int) -> String {
+        codeForStatesStatement(
+            names: machine.states.map(\.name),
+            code: actionForStates(machine: machine, actionName: "OnEntry"),
+            indentation: indentation,
+            trailer: "internalState <= CheckTransition;"
+        )
+    }
+    
+    private func onExit(machine: Machine, indentation: Int) -> String {
+        codeForStatesStatement(
+            names: machine.states.map(\.name),
+            code: actionForStates(machine: machine, actionName: "OnExit"),
+            indentation: indentation,
+            trailer: "internalState <= WriteSnapshot;"
+        )
+    }
+    
+    private func internalAction(machine: Machine, indentation: Int) -> String {
+        codeForStatesStatement(
+            names: machine.states.map(\.name),
+            code: actionForStates(machine: machine, actionName: "Internal"),
+            indentation: indentation,
+            trailer: "internalState <= WriteSnapshot;"
+        )
+    }
+    
+    private func actionsForStates(machine: Machine, actionsNames: [String]) -> [String] {
+        machine.states.map { state in
+            let actions = actionsNames.map { name in
+                state.actions[name] ?? ""
+            }
+            return foldWithNewLine(components: actions)
+        }
+    }
+    
+    private func onResume(machine: Machine, indentation: Int) -> String {
+        codeForStatesStatement(
+            names: machine.states.map(\.name),
+            code: actionsForStates(machine: machine, actionsNames: ["OnResume", "OnEntry"]),
+            indentation: indentation,
+            trailer: "internalState <= CheckTransition;"
+        )
+    }
+    
+    private func onSuspend(machine: Machine, indentation: Int) -> String {
+        let onEntry = (machine.states[machine.suspendedState!].actions["OnEntry"] ?? "").split(separator: "\n").map { String($0) }
+//        if onEntry.count > 0 {
+//            onEntry[0] = "    " + onEntry[0]
+//        }
+        let actions = actionForStates(machine: machine, actionName: "OnSuspend")
+        return codeForStatesStatement(
+            names: machine.states.map(\.name),
+            code: actions,
+            indentation: indentation,
+            trailer: foldWithNewLineExceptFirst(components: onEntry + ["internalState <= CheckTransition;"], initial: "", indentation: indentation),
+            internalVar: "suspendedFrom"
+        )
+    }
+    
     private func actionCase(machine: Machine, indentation: Int) -> String {
         let components = [
             "    when ReadSnapshot =>",
             readSnapshot(machine: machine, indentation: indentation),
             "when OnSuspend =>",
+            onSuspend(machine: machine, indentation: indentation + 1),
             "when OnResume =>",
+            onResume(machine: machine, indentation: indentation + 1),
             "when OnEntry =>",
+            onEntry(machine: machine, indentation: indentation + 1),
             "when NoOnEntry =>",
+            "    internalState <= CheckTransition;",
             "when CheckTransition =>",
             "when OnExit =>",
+            onExit(machine: machine, indentation: indentation + 1),
             "when Internal =>",
+            internalAction(machine: machine, indentation: indentation + 1),
             "when WriteSnapshot"
         ]
         return foldWithNewLineExceptFirst(components: components, initial: "", indentation: indentation)
