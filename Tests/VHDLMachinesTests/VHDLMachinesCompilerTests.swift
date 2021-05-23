@@ -58,7 +58,7 @@ public class VHDLMachinesCompilerTests: XCTestCase {
             parameters: [],
             outputs: [],
             states: [defaultState(name: "Initial"), defaultState(name: "Suspended"), defaultState(name: "State0")],
-            transitions: [],
+            transitions: [ VHDLMachines.Transition(condition: "true", source: 0, target: 1), VHDLMachines.Transition(condition: "x = '1'", source: 1, target: 0), VHDLMachines.Transition(condition: "true", source: 1, target: 0) ],
             initialState: 0,
             suspendedState: 1,
             architectureHead: "some code\n    with indentation\nend;",

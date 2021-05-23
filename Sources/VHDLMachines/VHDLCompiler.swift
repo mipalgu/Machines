@@ -294,6 +294,86 @@ public struct VHDLCompiler {
         return foldWithNewLineExceptFirst(components: combined, initial: "", indentation: indentation)
     }
     
+    private struct VHDLTransition {
+        
+        var source: String
+        
+        var target: String
+        
+        var condition: String
+        
+        init(source: String, target: String, condition: String) {
+            self.source = source
+            self.target = target
+            self.condition = condition
+        }
+        
+        init(transition: Transition, machine: Machine) {
+            self.init(
+                source: machine.states[transition.source].name,
+                target: machine.states[transition.target].name,
+                condition: transition.condition
+            )
+        }
+        
+    }
+    
+    private func transitionExpression(expression: String, transitionBefore: String?) -> String {
+        guard let before = transitionBefore else {
+            return expression
+        }
+        return "\(expression) and (not (\(before)))"
+    }
+    
+    private func transitionsToCode(transitions: [VHDLTransition]) -> String {
+        if transitions.count == 0 {
+            return "internalState <= Internal;"
+        }
+        if transitions.count == 1 && transitions[0].condition.lowercased() == "true" {
+            return "targetState <= \(toStateName(name: transitions[0].target));\ninternalState <= OnExit;"
+        }
+        var previous: String = ""
+        let expressions = transitions.indices.map { (i: Int) -> String in
+            if i == 0 {
+                previous = transitionExpression(expression: transitions[i].condition, transitionBefore: nil)
+                return previous
+            }
+            previous = transitionExpression(expression: transitions[i].condition, transitionBefore: previous)
+            return previous
+        }
+        let ifCases = expressions.indices.map { (i: Int) -> String in
+            if i == 0 {
+                return "if (\(expressions[i])) then"
+            }
+            return "elsif (\(expressions[i])) then"
+        }
+        let code = expressions.indices.flatMap { (i: Int) -> [String] in
+            [
+                ifCases[i],
+                "    targetState <= \(toStateName(name: transitions[i].target));",
+                "    internalState <= OnExit;"
+            ]
+        }
+        return foldWithNewLine(components: code + ["else", "    internalState <= Internal;", "end if;"])
+    }
+    
+    private func checkTransition(machine: Machine, indentation: Int) -> String {
+        guard machine.transitions.count > 0 else {
+            return "    internalState <= Internal;"
+        }
+        let transitions = machine.transitions.map { VHDLTransition(transition: $0, machine: machine) }
+        let groupedTransitions = transitions.grouped(by: { $0.source == $1.source })
+        let code: Dictionary<String, [VHDLTransition]> = Dictionary(uniqueKeysWithValues: groupedTransitions.map { ($0[0].source, $0) })
+        let keys: [String] = Array(code.keys)
+        let vhdlCode = keys.map { transitionsToCode(transitions: code[$0]!) }
+        return codeForStatesStatement(
+            names: keys,
+            code: vhdlCode,
+            indentation: indentation,
+            trailer: ""
+        )
+    }
+    
     private func actionCase(machine: Machine, indentation: Int) -> String {
         let components = [
             "    when ReadSnapshot =>",
@@ -307,6 +387,7 @@ public struct VHDLCompiler {
             "when NoOnEntry =>",
             "    internalState <= CheckTransition;",
             "when CheckTransition =>",
+            checkTransition(machine: machine, indentation: indentation + 1),
             "when OnExit =>",
             onExit(machine: machine, indentation: indentation + 1),
             "when Internal =>",
