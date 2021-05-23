@@ -23,7 +23,7 @@ struct VHDLMachinesConverter {
         let machine = VHDLMachines.Machine(
             name: name,
             path: filePath,
-            includes: [],
+            includes: ["library IEEE;", "use IEEE.std_logic_1164.All"],
             externalSignals: [],
             externalVariables: [],
             generics: [],
