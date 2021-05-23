@@ -44,6 +44,19 @@ public struct VHDLCompiler {
         )
     }
     
+    public func compile(_ machine: Machine) -> Bool {
+        let format = foldWithNewLine(
+            components: [
+                createIncludes(includes: machine.includes) + "\n",
+                createEntity(machine: machine) + "\n\n",
+                createArhictecure(machine: machine)
+            ],
+            initial: ""
+        )
+        let fileName = "\(machine.name).vhd"
+        return helper.createFile(fileName, inDirectory: machine.path, withContents: format + "\n") != nil
+    }
+    
     private func readSnapshotLogic(machine: Machine, indentation: Int) -> String {
         let initialState = toStateName(name: machine.states[machine.initialState].name)
         let suspendedState = toStateName(name: machine.states[machine.suspendedState!].name)
@@ -320,19 +333,6 @@ public struct VHDLCompiler {
             initial: "-- After Variables",
             indentation: 1
         )
-    }
-    
-    public func compile(_ machine: Machine) -> Bool {
-        let format = foldWithNewLine(
-            components: [
-                createIncludes(includes: machine.includes) + "\n",
-                createEntity(machine: machine) + "\n\n",
-                createArhictecure(machine: machine)
-            ],
-            initial: ""
-        )
-        let fileName = "\(machine.name).vhd"
-        return helper.createFile(fileName, inDirectory: machine.path, withContents: format + "\n") != nil
     }
     
     private func createIncludes(includes: [String]) -> String {
