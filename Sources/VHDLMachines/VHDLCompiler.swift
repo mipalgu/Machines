@@ -44,9 +44,114 @@ public struct VHDLCompiler {
         )
     }
     
+    private func readSnapshotLogic(machine: Machine, indentation: Int) -> String {
+        let initialState = toStateName(name: machine.states[machine.initialState].name)
+        let suspendedState = toStateName(name: machine.states[machine.suspendedState!].name)
+        return foldWithNewLineExceptFirst(
+            components: [
+                "    if (command = COMMAND_RESTART and currentState /= \(initialState)) then",
+                foldWithNewLineExceptFirst(
+                    components: [
+                        "    currentState <= \(initialState);",
+                        "suspended <= '0';",
+                        "suspendedFrom <= \(initialState);",
+                        "targetState <= \(initialState);",
+                        "if (previousRinglet = \(suspendedState)) then",
+                        foldWithNewLine(components: ["internalState <= onResume;"], initial: "", indentation: 1),
+                        "elsif (previousRinglet = \(initialState)) then",
+                        foldWithNewLine(components: ["internalState <= noOnEntry;"], initial: "", indentation: 1),
+                        "else",
+                        foldWithNewLine(components: ["internalState <= onEntry;"], initial: "", indentation: 1),
+                        "end if;"
+                    ],
+                    initial: "",
+                    indentation: indentation + 1
+                ),
+                "elsif (command = COMMAND_RESUME and currentState = \(suspendedState) and suspendedFrom /= \(suspendedState)) then",
+                foldWithNewLineExceptFirst(
+                    components: [
+                        "    suspended <= '0';",
+                        "currentState <= suspendedFrom;",
+                        "targetState <= suspendedFrom;",
+                        "if (previousRinglet = suspendedFrom) then",
+                        foldWithNewLine(components: ["internalState <= noOnEntry;"], initial: "", indentation: 1),
+                        "else",
+                        foldWithNewLine(components: ["internalState <= onResume;"], initial: "", indentation: 1),
+                        "end if;"
+                    ],
+                    initial: "",
+                    indentation: indentation + 1
+                ),
+                "elsif (command = COMMAND_SUSPEND and currentState /= \(suspendedState)) then",
+                foldWithNewLineExceptFirst(
+                    components: [
+                        "    suspendedFrom <= currentState;",
+                        "suspended <= '1';",
+                        "currentState <= \(suspendedState);",
+                        "targetState <= \(suspendedState);",
+                        "if (previousRinglet = \(suspendedState)) then",
+                        foldWithNewLine(components: ["internalState <= noOnEntry;"], initial: "", indentation: 1),
+                        "else",
+                        foldWithNewLine(components: ["internalState <= onSuspend;"], initial: "", indentation: 1),
+                        "end if;"
+                    ],
+                    initial: "",
+                    indentation: indentation + 1
+                ),
+                "elsif (currentState = \(suspendedState)) then",
+                foldWithNewLineExceptFirst(
+                    components: [
+                        "    suspended <= '1';",
+                        "if (previousRinglet /= \(suspendedState)) then",
+                        foldWithNewLine(components: ["internalState <= onSuspend;"], initial: "", indentation: 1),
+                        "else",
+                        foldWithNewLine(components: ["internalState <= noOnEntry;"], initial: "", indentation: 1),
+                        "end if;"
+                    ],
+                    initial: "",
+                    indentation: indentation + 1
+                ),
+                "elsif (previousRinglet = \(suspendedState)) then",
+                foldWithNewLineExceptFirst(
+                    components: [
+                        "    internalState <= OnResume;",
+                        "suspended <= '0';",
+                        "suspendedFrom <= currentState;"
+                    ],
+                    initial: "",
+                    indentation: indentation + 1
+                ),
+                "else",
+                foldWithNewLineExceptFirst(
+                    components: [
+                        "    suspended <= '0';",
+                        "suspendedFrom <= currentState;",
+                        "if (previousRinglet /= currentState) then",
+                        foldWithNewLine(components: ["internalState <= onEntry;"], initial: "", indentation: 1),
+                        "else",
+                        foldWithNewLine(components: ["internalState <= noOnEntry;"], initial: "", indentation: 1),
+                        "end if;"
+                    ],
+                    initial: "",
+                    indentation: indentation + 1
+                ),
+                "end if;"
+            ],
+            initial: "",
+            indentation: indentation
+        )
+    }
+    
     private func readSnapshotVariables(machine: Machine, indentation: Int) -> String {
-        let signals = machine.externalSignals.filter { $0.mode == .input || $0.mode == .inputoutput || $0.mode == .buffer }.map { "\(toExternal(name: $0.name)) <= \($0.name);" }
-        let variables = machine.externalVariables.filter { $0.mode == .input || $0.mode == .inputoutput || $0.mode == .buffer }.map { "\(toExternal(name: $0.name)) := \($0.name);" }
+        var signals = machine.externalSignals.filter { $0.mode == .input || $0.mode == .inputoutput || $0.mode == .buffer }.map { "\(toExternal(name: $0.name)) <= \($0.name);" }
+        var variables = machine.externalVariables.filter { $0.mode == .input || $0.mode == .inputoutput || $0.mode == .buffer }.map { "\(toExternal(name: $0.name)) := \($0.name);" }
+        if signals.count > 0 {
+            signals[0] = "    " + signals[0]
+        } else if variables.count > 0 {
+            variables[0] = "    " + variables[0]
+        } else {
+            return ""
+        }
         return foldWithNewLineExceptFirst(
             components: signals + variables,
             initial: "",
@@ -57,7 +162,8 @@ public struct VHDLCompiler {
     private func readSnapshot(machine: Machine, indentation: Int) -> String {
         foldWithNewLineExceptFirst(
             components: [
-                readSnapshotVariables(machine: machine, indentation: indentation)
+                readSnapshotVariables(machine: machine, indentation: indentation + 1),
+                readSnapshotLogic(machine: machine, indentation: indentation + 1)
             ],
             initial: "",
             indentation: indentation
@@ -66,8 +172,8 @@ public struct VHDLCompiler {
     
     private func actionCase(machine: Machine, indentation: Int) -> String {
         let components = [
-            "when ReadSnapshot =>",
-            readSnapshot(machine: machine, indentation: indentation + 1),
+            "    when ReadSnapshot =>",
+            readSnapshot(machine: machine, indentation: indentation),
             "when OnSuspend =>",
             "when OnResume =>",
             "when OnEntry =>",
@@ -364,10 +470,10 @@ public struct VHDLCompiler {
     private func createArchitectureBody(machine: Machine) -> String {
         foldWithNewLineExceptFirst(
             components: [
-                "if (rising_edge(\(machine.clocks[machine.drivingClock].name))) then",
+                "    if (rising_edge(\(machine.clocks[machine.drivingClock].name))) then",
                 foldWithNewLineExceptFirst(
                     components: [
-                        "case internalState is",
+                        "    case internalState is",
                         actionCase(machine: machine, indentation: 4),
                         "end case;"
                     ],
@@ -420,7 +526,7 @@ public struct VHDLCompiler {
             return components[0]
         }
         let newList = Array(components[1..<components.count])
-        return foldWithNewLine(components: [components[0]], initial: initial, indentation: indentation == 0 ? 0 : 1) +
+        return foldWithNewLine(components: [components[0]], initial: initial, indentation: 0) +
             "\n" + foldWithNewLine(components: newList, initial: "", indentation: indentation)
     }
     
