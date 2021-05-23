@@ -265,6 +265,22 @@ public struct VHDLCompiler {
         )
     }
     
+    private func writeSnapshot(machine: Machine, indentation: Int) -> String {
+        let externalSignals = machine.externalSignals.filter { $0.mode == .output || $0.mode == .inputoutput || $0.mode == .buffer }.map {
+            "\(toExternal(name: $0.name)) <= \($0.name);"
+        }
+        let externalVariables = machine.externalVariables.filter { $0.mode == .output || $0.mode == .inputoutput || $0.mode == .buffer }.map {
+            "\(toExternal(name: $0.name)) := \($0.name);"
+        }
+        var combined = externalSignals + externalVariables + [
+            "internalState <= ReadSnapshot;",
+            "previousRinglet <= currentState;",
+            "currentState <= targetState;"
+        ]
+        combined[0] = "    " + combined[0]
+        return foldWithNewLineExceptFirst(components: combined, initial: "", indentation: indentation)
+    }
+    
     private func actionCase(machine: Machine, indentation: Int) -> String {
         let components = [
             "    when ReadSnapshot =>",
@@ -282,7 +298,10 @@ public struct VHDLCompiler {
             onExit(machine: machine, indentation: indentation + 1),
             "when Internal =>",
             internalAction(machine: machine, indentation: indentation + 1),
-            "when WriteSnapshot"
+            "when WriteSnapshot",
+            writeSnapshot(machine: machine, indentation: indentation + 1),
+            "when others =>",
+            "    null;"
         ]
         return foldWithNewLineExceptFirst(components: components, initial: "", indentation: indentation)
     }
