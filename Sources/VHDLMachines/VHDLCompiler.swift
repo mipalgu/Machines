@@ -10,9 +10,9 @@ import IO
 
 public struct VHDLCompiler {
     
-    var helper: FileHelpers = FileHelpers()
+    private var helper: FileHelpers = FileHelpers()
     
-    var internalStates: String {
+    private var internalStates: String {
         foldWithNewLine(
             components: [
                 "constant ReadSnapshot: std_logic_vector(3 downto 0) := \"0000\";",
@@ -31,7 +31,7 @@ public struct VHDLCompiler {
         )
     }
     
-    var suspensionCommands: String {
+    private var suspensionCommands: String {
         foldWithNewLine(
             components: [
                 "constant COMMAND_NULL: std_logic_vector(1 downto 0) := \"00\";",
@@ -42,6 +42,42 @@ public struct VHDLCompiler {
             initial: "-- Suspension Commands",
             indentation: 1
         )
+    }
+    
+    private func readSnapshotVariables(machine: Machine, indentation: Int) -> String {
+        let signals = machine.externalSignals.filter { $0.mode == .input || $0.mode == .inputoutput || $0.mode == .buffer }.map { "\(toExternal(name: $0.name)) <= \($0.name);" }
+        let variables = machine.externalVariables.filter { $0.mode == .input || $0.mode == .inputoutput || $0.mode == .buffer }.map { "\(toExternal(name: $0.name)) := \($0.name);" }
+        return foldWithNewLineExceptFirst(
+            components: signals + variables,
+            initial: "",
+            indentation: indentation
+        )
+    }
+    
+    private func readSnapshot(machine: Machine, indentation: Int) -> String {
+        foldWithNewLineExceptFirst(
+            components: [
+                readSnapshotVariables(machine: machine, indentation: indentation)
+            ],
+            initial: "",
+            indentation: indentation
+        )
+    }
+    
+    private func actionCase(machine: Machine, indentation: Int) -> String {
+        let components = [
+            "when ReadSnapshot =>",
+            readSnapshot(machine: machine, indentation: indentation + 1),
+            "when OnSuspend =>",
+            "when OnResume =>",
+            "when OnEntry =>",
+            "when NoOnEntry =>",
+            "when CheckTransition =>",
+            "when OnExit =>",
+            "when Internal =>",
+            "when WriteSnapshot"
+        ]
+        return foldWithNewLineExceptFirst(components: components, initial: "", indentation: indentation)
     }
     
     private func afterVariables(driving clock: Clock) -> String {
@@ -175,7 +211,7 @@ public struct VHDLCompiler {
         "\(clk.name): in std_logic"
     }
     
-    private func foldWithNewLine(components: [String], initial: String, indentation: Int = 0) -> String {
+    private func foldWithNewLine(components: [String], initial: String = "", indentation: Int = 0) -> String {
         return components.reduce(initial) {
             if $0 == "" && $1 == "" {
                 return ""
@@ -326,12 +362,13 @@ public struct VHDLCompiler {
     }
     
     private func createArchitectureBody(machine: Machine) -> String {
-        foldWithNewLine(
+        foldWithNewLineExceptFirst(
             components: [
                 "if (rising_edge(\(machine.clocks[machine.drivingClock].name))) then",
-                foldWithNewLine(
+                foldWithNewLineExceptFirst(
                     components: [
                         "case internalState is",
+                        actionCase(machine: machine, indentation: 4),
                         "end case;"
                     ],
                     initial: "",
@@ -373,6 +410,18 @@ public struct VHDLCompiler {
             ),
             indentation: 1
         ) + "\nend Behavioral;\n"
+    }
+    
+    private func foldWithNewLineExceptFirst(components: [String], initial: String = "", indentation: Int = 0) -> String {
+        if components.count == 0 {
+            return initial
+        }
+        guard components.count > 1 else {
+            return components[0]
+        }
+        let newList = Array(components[1..<components.count])
+        return foldWithNewLine(components: [components[0]], initial: initial, indentation: indentation == 0 ? 0 : 1) +
+            "\n" + foldWithNewLine(components: newList, initial: "", indentation: indentation)
     }
     
 }
