@@ -183,7 +183,7 @@ public struct VHDLCompiler {
         )
     }
     
-    private func codeForStatesStatement(names: [String], code: [String], indentation: Int, trailer: String, internalVar: String = "currentState") -> String {
+    private func codeForStatesStatement(names: [String], code: [String], indentation: Int, trailer: String, internalVar: String = "currentState", defaultCode: String = "null;") -> String {
         guard names.count == code.count else {
             fatalError("Invalid call of codeForStatesStatement. Size of parameters does not match")
         }
@@ -201,7 +201,7 @@ public struct VHDLCompiler {
         }
         data[0] = "    " + data[0]
         data.append("when others =>")
-        data.append("    null;")
+        data.append("    \(defaultCode)")
         return foldWithNewLineExceptFirst(
             components: [
                 "    case \(internalVar) is",
@@ -370,7 +370,8 @@ public struct VHDLCompiler {
             names: keys,
             code: vhdlCode,
             indentation: indentation,
-            trailer: ""
+            trailer: "",
+            defaultCode: "internalState <= Internal;"
         )
     }
     
