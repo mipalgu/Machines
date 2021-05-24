@@ -295,7 +295,7 @@ struct VHDLMachinesConverter {
                         ("name", .line),
                         ("comment", .line)
                     ]
-                ),
+                )
             ],
             metaData: [:]
         )
