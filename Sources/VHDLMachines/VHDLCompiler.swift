@@ -57,12 +57,19 @@ public struct VHDLCompiler {
         return helper.createFile(fileName, inDirectory: machine.path, withContents: format + "\n") != nil
     }
     
+    private func readParameterLogic(machine: Machine) -> [String] {
+        ["    if (command = COMMAND_RESTART) then"] +
+            machine.parameterSignals.map { "    \($0.name) <= \(toParameter(name: $0.name));" } +
+            machine.parameterVariables.map { "    \($0.name) := \(toParameter(name: $0.name));" } +
+        ["end if;"]
+    }
+    
     private func readSnapshotLogic(machine: Machine, indentation: Int) -> String {
         let initialState = toStateName(name: machine.states[machine.initialState].name)
         let suspendedState = toStateName(name: machine.states[machine.suspendedState!].name)
         return foldWithNewLineExceptFirst(
-            components: [
-                "    if (command = COMMAND_RESTART and currentState /= \(initialState)) then",
+            components: readParameterLogic(machine: machine) + [
+                "if (command = COMMAND_RESTART and currentState /= \(initialState)) then",
                 foldWithNewLineExceptFirst(
                     components: [
                         "    currentState <= \(initialState);",
@@ -156,8 +163,8 @@ public struct VHDLCompiler {
     }
     
     private func readSnapshotVariables(machine: Machine, indentation: Int) -> String {
-        var signals = machine.externalSignals.filter { $0.mode == .input || $0.mode == .inputoutput || $0.mode == .buffer }.map { "\(toExternal(name: $0.name)) <= \($0.name);" }
-        var variables = machine.externalVariables.filter { $0.mode == .input || $0.mode == .inputoutput || $0.mode == .buffer }.map { "\(toExternal(name: $0.name)) := \($0.name);" }
+        var signals = machine.externalSignals.filter { $0.mode == .input || $0.mode == .inputoutput || $0.mode == .buffer }.map { "\($0.name) <= \(toExternal(name: $0.name));" }
+        var variables = machine.externalVariables.filter { $0.mode == .input || $0.mode == .inputoutput || $0.mode == .buffer }.map { "\($0.name) := \(toExternal(name: $0.name));" }
         if signals.count > 0 {
             signals[0] = "    " + signals[0]
         } else if variables.count > 0 {
