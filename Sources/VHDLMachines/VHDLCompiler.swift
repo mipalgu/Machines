@@ -407,7 +407,7 @@ public struct VHDLCompiler {
             onExit(machine: machine, indentation: indentation + 1),
             "when Internal =>",
             internalAction(machine: machine, indentation: indentation + 1),
-            "when WriteSnapshot",
+            "when WriteSnapshot =>",
             writeSnapshot(machine: machine, indentation: indentation + 1),
             "when others =>",
             "    null;"
