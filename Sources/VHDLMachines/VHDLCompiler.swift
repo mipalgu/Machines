@@ -432,7 +432,7 @@ public struct VHDLCompiler {
     private func createEntity(machine: Machine) -> String {
         """
          entity \(machine.name) is
-         \(foldWithNewLine(components: [createGenericsBlock(variables: machine.generics), createPortBlock(clocks: machine.clocks, signals: machine.externalSignals, variables: machine.externalVariables)], initial: ""))
+         \(foldWithNewLine(components: [createGenericsBlock(variables: machine.generics), createPortBlock(machine: machine)], initial: ""))
          end \(machine.name);
          """
     }
@@ -486,16 +486,16 @@ public struct VHDLCompiler {
         return "\(variable.name): \(variable.type) range \(range.0) to \(range.1) := \(defaultValue)\(semiColon)" + (variable.comment == nil ? "" : " -- \(variable.comment!)")
     }
     
-    private func createPortBlock(clocks: [Clock], signals: [ExternalSignal], variables: [ExternalVariable]) -> String {
-        guard !clocks.isEmpty else {
+    private func createPortBlock(machine: Machine) -> String {
+        guard !machine.clocks.isEmpty else {
             fatalError("No clock found for machine")
         }
         return """
              port (
-         \(foldWithNewLine(components: clocks.map { clockToSignal(clk: $0) }, initial: "", indentation: 2));
-         \(foldWithNewLine(components: signals.map { signalToEntityDeclaration(signal: $0) }, initial: indent(count: 2) + "suspended: out std_logic;", indentation: 2))
+         \(foldWithNewLine(components: machine.clocks.map { clockToSignal(clk: $0) }, initial: "", indentation: 2));
+         \(foldWithNewLine(components: machine.externalSignals.map { signalToEntityDeclaration(signal: $0) }, initial: indent(count: 2) + "suspended: out std_logic;", indentation: 2))
          \(foldWithNewLine(
-            components: variables.map { (variable: ExternalVariable) -> ExternalVariable in
+            components: machine.externalVariables.map { (variable: ExternalVariable) -> ExternalVariable in
                 var newVar = variable
                 newVar.name = toExternal(name: newVar.name)
                 newVar.type = "\(variable.mode.rawValue) \(newVar.type)"
@@ -506,9 +506,50 @@ public struct VHDLCompiler {
              initial: "",
             indentation: 2
          ))
+         \(foldWithNewLine(
+            components: machine.parameterSignals.map { toParameterDeclaration(parameter: $0) },
+            initial: "",
+            indentation: 2
+         ))
+         \(foldWithNewLine(
+            components: machine.parameterVariables.map { toParameterDeclaration(parameter: $0) },
+            initial: "",
+            indentation: 2
+         ))
+         \(foldWithNewLine(
+             components: machine.returnableSignals.map(toReturnDeclaration),
+             initial: "",
+             indentation: 2
+         ))
+         \(foldWithNewLine(
+              components: machine.returnableVariables.map(toReturnDeclaration),
+              initial: "",
+              indentation: 2
+         ))
                  command: in std_logic_vector(1 downto 0)
              );
          """
+    }
+    
+    private func toParameterDeclaration(parameter: Parameter) -> String {
+        let name = toParameter(name: parameter.name)
+        guard let defaultValue = parameter.defaultValue else {
+            return "\(name): in \(parameter.type);" + (parameter.comment == nil ? "" : " -- \(parameter.comment!)")
+        }
+        return "\(name): in \(parameter.type) := \(defaultValue);" + (parameter.comment == nil ? "" : " -- \(parameter.comment!)")
+    }
+    
+    private func toReturnDeclaration(returnable: ReturnableVariable) -> String {
+        let name = toReturnable(name: returnable.name)
+        return "\(name): out \(returnable.type);" + (returnable.comment == nil ? "" : " -- \(returnable.comment!)")
+    }
+    
+    private func toReturnable(name: String) -> String {
+        "OUTPUT_\(name)"
+    }
+    
+    private func toParameter(name: String) -> String {
+        "PARAMETER_\(name)"
     }
     
     private func toExternal(name: String) -> String {
