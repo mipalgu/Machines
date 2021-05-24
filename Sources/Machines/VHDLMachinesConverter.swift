@@ -254,7 +254,12 @@ struct VHDLMachinesConverter {
                     ("value", .expression(language: .vhdl)),
                     ("comment", .line)
                 ])),
-                Field(name: "outputs", type: .table(columns: [
+                Field(name: "returnable_signals", type: .table(columns: [
+                    ("type", .expression(language: .vhdl)),
+                    ("name", .line),
+                    ("comment", .line)
+                ])),
+                Field(name: "returnable_variables", type: .table(columns: [
                     ("type", .expression(language: .vhdl)),
                     ("name", .line),
                     ("comment", .line)
