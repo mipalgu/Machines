@@ -35,7 +35,8 @@ struct VHDLMachinesConverter {
             isParameterised: false,
             parameterSignals: [],
             parameterVariables: [],
-            outputs: [],
+            returnableSignals: [],
+            returnableVariables: [],
             states: [
                 VHDLMachines.State(
                     name: "Initial",
@@ -279,8 +280,16 @@ struct VHDLMachinesConverter {
                         ("comment", .line)
                     ]
                 ),
-                "outputs": .table(
-                    !machine.isParameterised ? [] : machine.outputs.map(toLineAttribute),
+                "returnable_signals": .table(
+                    !machine.isParameterised ? [] : machine.returnableSignals.map(toLineAttribute),
+                    columns: [
+                        ("type", .expression(language: .vhdl)),
+                        ("name", .line),
+                        ("comment", .line)
+                    ]
+                ),
+                "returnable_variables": .table(
+                    !machine.isParameterised ? [] : machine.returnableVariables.map(toLineAttribute),
                     columns: [
                         ("type", .expression(language: .vhdl)),
                         ("name", .line),
@@ -741,10 +750,10 @@ struct VHDLMachinesConverter {
         return val == "" ? nil : val
     }
     
-    func getOutputs(machine: Machine) -> [ReturnableVariable] {
+    func getOutputs(machine: Machine, key: String) -> [ReturnableVariable] {
         guard
             machine.attributes.count == 4,
-            let returns = machine.attributes[1].attributes["outputs"]?.tableValue
+            let returns = machine.attributes[1].attributes[key]?.tableValue
         else {
             fatalError("No outputs")
         }
@@ -783,7 +792,8 @@ struct VHDLMachinesConverter {
             isParameterised: isParameterised(machine: machine),
             parameterSignals: getParameters(machine: machine, key: "parameter_signals"),
             parameterVariables: getParameters(machine: machine, key: "parameter_variables"),
-            outputs: getOutputs(machine: machine),
+            returnableSignals: getOutputs(machine: machine, key: "returnable_signals"),
+            returnableVariables: getOutputs(machine: machine, key: "returnable_variables"),
             states: machine.states.map(toState),
             transitions: getTransitions(machine: machine),
             initialState: machine.states.firstIndex(where: { machine.initialState == $0.name }) ?? 0,
