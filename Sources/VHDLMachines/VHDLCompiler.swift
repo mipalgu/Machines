@@ -645,7 +645,11 @@ public struct VHDLCompiler {
         return "constant \(toStateName(name: name)): std_logic_vector(\(l - 1) downto 0) := \"\(toBinary(number: index, binaryPosition: l - 1))\""
     }
     
-    private func stateRepresenation(states: [State], initialState: String) -> String {
+    private func stateRepresenation(machine: Machine) -> String {
+        let states = machine.states
+        let initialState = machine.states[machine.initialState].name
+        let suspendedState = machine.states[machine.suspendedState!].name
+        let defaultState = machine.isParameterised ? suspendedState : initialState
         let stateLength = findBinaryLength(count: states.count)
         return """
          -- State Representation Bits
@@ -657,8 +661,8 @@ public struct VHDLCompiler {
          \(
          foldWithNewLine(
             components: [
-                "signal currentState: std_logic_vector(1 downto 0) := \(toStateName(name: initialState));",
-                "signal targetState: std_logic_vector(1 downto 0) := \(toStateName(name: initialState));",
+                "signal currentState: std_logic_vector(1 downto 0) := \(toStateName(name: defaultState));",
+                "signal targetState: std_logic_vector(1 downto 0) := \(toStateName(name: defaultState));",
                 "signal previousRinglet: std_logic_vector(1 downto 0) := \"ZZ\";",
                 "signal suspendedFrom: std_logic_vector(1 downto 0) := \(toStateName(name: initialState));"
             ],
@@ -780,7 +784,7 @@ public struct VHDLCompiler {
         return foldWithNewLine(
             components: [
                 internalStates,
-                stateRepresenation(states: machine.states, initialState: machine.states[machine.initialState].name),
+                stateRepresenation(machine: machine),
                 suspensionCommands,
                 afterVariables(driving: machine.clocks[machine.drivingClock]),
                 snapshots(machine: machine),

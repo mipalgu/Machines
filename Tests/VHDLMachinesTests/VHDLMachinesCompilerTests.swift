@@ -55,7 +55,7 @@ public class VHDLMachinesCompilerTests: XCTestCase {
             dependentMachines: [:],
             machineVariables: [VHDLVariable(type: "integer", name: "machineVar1", defaultValue: "12", range: nil, comment: "machine var 1"), VHDLVariable(type: "boolean", name: "machineVar2", defaultValue: "false", range: nil, comment: "machine var 2")],
             machineSignals: [MachineSignal(type: "std_logic", name: "machineSignal1", defaultValue: nil, comment: nil), MachineSignal(type: "std_logic_vector(2 downto 0)", name: "machineSignal2", defaultValue: "\"11\"", comment: "machine signal 2")],
-            isParameterised: false,
+            isParameterised: true,
             parameterSignals: [Parameter(type: "std_logic", name: "parX", defaultValue: "'1'", comment: "Parameter parX"), Parameter(type: "std_logic_vector(1 downto 0)", name: "parXs", defaultValue: "\"01\"", comment: "Parameter parXs")],
             parameterVariables: [Parameter(type: "integer", name: "parY", defaultValue: "1", comment: "Parameter parY"), Parameter(type: "boolean", name: "parIsY", defaultValue: "false", comment: "Parameter parIsY")],
             returnableSignals: [ReturnableVariable(type: "std_logic", name: "retX", comment: "Returnable retX"), ReturnableVariable(type: "std_logic_vector(1 downto 0)", name: "retXs", comment: "Returnable retXs")],
