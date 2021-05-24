@@ -195,11 +195,40 @@ class VHDLMachinesValidator: MachineValidator {
                         }
                     }
                 }
-                attributes[1].validate { includes in
+                attributes[1].validate { parameters in
+                    parameters.attributes["is_parameterised"].required()
+                    parameters.attributes["parameter_signals"].wrappedValue.tableValue.validate { table in
+                        table.unique() { $0.map { $0[1].lineValue } }
+                        table.each { (_, variable) in
+                            variable[0].expressionValue.notEmpty().maxLength(128)
+                            variable[1].lineValue.notEmpty().alphafirst().alphaunderscore().blacklist(self.allReservedWords).maxLength(128)
+                            variable[2].expressionValue.maxLength(128)
+                            variable[3].lineValue.maxLength(128)
+                        }
+                    }
+                    parameters.attributes["parameter_variables"].wrappedValue.tableValue.validate { table in
+                        table.unique() { $0.map { $0[1].lineValue } }
+                        table.each { (_, variable) in
+                            variable[0].expressionValue.notEmpty().maxLength(128)
+                            variable[1].lineValue.notEmpty().alphafirst().alphaunderscore().blacklist(self.allReservedWords).maxLength(128)
+                            variable[2].expressionValue.maxLength(128)
+                            variable[3].lineValue.maxLength(128)
+                        }
+                    }
+                    parameters.attributes["outputs"].wrappedValue.tableValue.validate { table in
+                        table.unique() { $0.map { $0[1].lineValue } }
+                        table.each { (_, variable) in
+                            variable[0].expressionValue.notEmpty().maxLength(128)
+                            variable[1].lineValue.notEmpty().alphafirst().alphaunderscore().blacklist(self.allReservedWords).maxLength(128)
+                            variable[2].lineValue.maxLength(128)
+                        }
+                    }
+                }
+                attributes[2].validate { includes in
                     includes.attributes["includes"].required()
                     includes.attributes["includes"].wrappedValue.codeValue.maxLength(2048)
                 }
-                attributes[2].validate { settings in
+                attributes[3].validate { settings in
                     settings.attributes["initial_state"].required()
                     settings.attributes["initial_state"].wrappedValue.enumeratedValue.notEmpty().alphafirst().alphaunderscore().blacklist(self.allReservedWords).maxLength(64)
                     settings.attributes["suspended_state"].required()

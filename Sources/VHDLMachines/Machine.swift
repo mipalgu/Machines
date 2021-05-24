@@ -31,7 +31,9 @@ public struct Machine {
     
     public var machineSignals: [MachineSignal]
     
-    public var parameters: [Parameter]
+    public var parameterSignals: [Parameter]
+    
+    public var parameterVariables: [Parameter]
     
     public var outputs: [ReturnableVariable]
     
@@ -47,6 +49,8 @@ public struct Machine {
     
     public var architectureBody: String?
     
+    public var isParameterised: Bool
+    
     public init(
         name: MachineName,
         path: URL,
@@ -59,7 +63,9 @@ public struct Machine {
         dependentMachines: [MachineName: URL],
         machineVariables: [VHDLVariable],
         machineSignals: [MachineSignal],
-        parameters: [Parameter],
+        isParameterised: Bool,
+        parameterSignals: [Parameter],
+        parameterVariables: [Parameter],
         outputs: [ReturnableVariable],
         states: [State],
         transitions: [Transition],
@@ -79,7 +85,9 @@ public struct Machine {
         self.dependentMachines = dependentMachines
         self.machineVariables = machineVariables
         self.machineSignals = machineSignals
-        self.parameters = parameters
+        self.isParameterised = isParameterised
+        self.parameterSignals = parameterSignals
+        self.parameterVariables = parameterVariables
         self.outputs = outputs
         self.states = states
         self.transitions = transitions

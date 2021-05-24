@@ -207,10 +207,10 @@ extension VHDLMachinesConverter: MachineMutator {
 
     private func syncSuspendState(machine: inout Machine) {
         let validValues = Set(machine.states.map(\.name) + [""])
-        let currentValue = machine.attributes[2].attributes["suspended_state"]?.enumeratedValue ?? ""
+        let currentValue = machine.attributes[3].attributes["suspended_state"]?.enumeratedValue ?? ""
         let newValue = validValues.contains(currentValue) ? currentValue : ""
-        machine.attributes[2].fields[1].type = .enumerated(validValues: validValues)
-        machine.attributes[2].attributes["suspend_state"] = .enumerated(newValue, validValues: validValues)
+        machine.attributes[3].fields[1].type = .enumerated(validValues: validValues)
+        machine.attributes[3].attributes["suspended_state"] = .enumerated(newValue, validValues: validValues)
     }
 
     func newTransition(source: StateName, target: StateName, condition: Expression?, machine: inout Machine) -> Result<Bool, AttributeError<Machine>> {
@@ -343,8 +343,8 @@ extension VHDLMachinesConverter: MachineMutator {
         if machine.initialState == currentName {
             machine.initialState = stateName
         }
-        if machine.attributes[2].attributes["suspend_state"]!.enumeratedValue == currentName {
-            machine.attributes[2].attributes["suspend_state"]!.enumeratedValue = stateName
+        if machine.attributes[3].attributes["suspended_state"]!.enumeratedValue == currentName {
+            machine.attributes[3].attributes["suspended_state"]!.enumeratedValue = stateName
         }
         self.syncSuspendState(machine: &machine)
     }
@@ -355,7 +355,8 @@ extension VHDLMachinesConverter: MachineMutator {
             AnyPath(machine.path.initialState),
             AnyPath(machine.path.attributes[0].attributes),
             AnyPath(machine.path.attributes[1].attributes),
-            AnyPath(machine.path.attributes[2].attributes)
+            AnyPath(machine.path.attributes[2].attributes),
+            AnyPath(machine.path.attributes[3].attributes)
         ]
         let statePaths: [AnyPath<Machine>] = machine.states.indices.flatMap { (stateIndex) -> [AnyPath<Machine>] in
             let attributes = [

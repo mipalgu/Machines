@@ -7,9 +7,7 @@
 
 import Foundation
 
-public struct ReturnableVariable: Variable {
-    
-    public var defaultValue: String?
+public struct ReturnableVariable {
     
     public var type: ParameterType
     
@@ -21,7 +19,6 @@ public struct ReturnableVariable: Variable {
         self.type = type
         self.name = name
         self.comment = comment
-        self.defaultValue = nil
     }
     
 }

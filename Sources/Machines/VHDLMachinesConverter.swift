@@ -32,7 +32,9 @@ struct VHDLMachinesConverter {
             dependentMachines: [:],
             machineVariables: [],
             machineSignals: [],
-            parameters: [],
+            isParameterised: false,
+            parameterSignals: [],
+            parameterVariables: [],
             outputs: [],
             states: [
                 VHDLMachines.State(
@@ -160,17 +162,6 @@ struct VHDLMachinesConverter {
                     ("value", .expression(language: .vhdl)),
                     ("comment", .line)
                 ])),
-                Field(name: "parameters", type: .table(columns: [
-                    ("type", .expression(language: .vhdl)),
-                    ("name", .line),
-                    ("value", .expression(language: .vhdl)),
-                    ("comment", .line)
-                ])),
-                Field(name: "outputs", type: .table(columns: [
-                    ("type", .expression(language: .vhdl)),
-                    ("name", .line),
-                    ("comment", .line)
-                ])),
                 Field(name: "machine_signals", type: .table(columns: [
                     ("type", .expression(language: .vhdl)),
                     ("name", .line),
@@ -223,23 +214,6 @@ struct VHDLMachinesConverter {
                         ("comment", .line)
                     ]
                 ),
-                "parameters": .table(
-                    machine.externalVariables.map(toLineAttribute),
-                    columns: [
-                        ("type", .expression(language: .vhdl)),
-                        ("name", .line),
-                        ("value", .expression(language: .vhdl)),
-                        ("comment", .line)
-                    ]
-                ),
-                "outputs": .table(
-                    machine.externalVariables.map(toLineAttribute),
-                    columns: [
-                        ("type", .expression(language: .vhdl)),
-                        ("name", .line),
-                        ("comment", .line)
-                    ]
-                ),
                 "machine_signals": .table(
                     machine.machineSignals.map(toLineAttribute),
                     columns: [
@@ -263,6 +237,60 @@ struct VHDLMachinesConverter {
             metaData: [:]
         )
         attributes.append(variables)
+        let parameters = AttributeGroup(
+            name: "parameters",
+            fields: [
+                Field(name: "is_parameterised", type: .bool),
+                Field(name: "parameter_signals", type: .table(columns: [
+                    ("type", .expression(language: .vhdl)),
+                    ("name", .line),
+                    ("value", .expression(language: .vhdl)),
+                    ("comment", .line)
+                ])),
+                Field(name: "parameter_variables", type: .table(columns: [
+                    ("type", .expression(language: .vhdl)),
+                    ("name", .line),
+                    ("value", .expression(language: .vhdl)),
+                    ("comment", .line)
+                ])),
+                Field(name: "outputs", type: .table(columns: [
+                    ("type", .expression(language: .vhdl)),
+                    ("name", .line),
+                    ("comment", .line)
+                ]))
+            ],
+            attributes: [
+                "is_parameterised": .bool(machine.isParameterised),
+                "parameter_signals": .table(
+                    !machine.isParameterised ? [] : machine.parameterSignals.map(toLineAttribute),
+                    columns: [
+                        ("type", .expression(language: .vhdl)),
+                        ("name", .line),
+                        ("value", .expression(language: .vhdl)),
+                        ("comment", .line)
+                    ]
+                ),
+                "parameter_variables": .table(
+                    !machine.isParameterised ? [] : machine.parameterVariables.map(toLineAttribute),
+                    columns: [
+                        ("type", .expression(language: .vhdl)),
+                        ("name", .line),
+                        ("value", .expression(language: .vhdl)),
+                        ("comment", .line)
+                    ]
+                ),
+                "outputs": .table(
+                    !machine.isParameterised ? [] : machine.outputs.map(toLineAttribute),
+                    columns: [
+                        ("type", .expression(language: .vhdl)),
+                        ("name", .line),
+                        ("comment", .line)
+                    ]
+                ),
+            ],
+            metaData: [:]
+        )
+        attributes.append(parameters)
         let includes = AttributeGroup(
             name: "includes",
             fields: [
@@ -314,6 +342,14 @@ struct VHDLMachinesConverter {
             return lhs
         }
         return lhs + "\n" + rhs
+    }
+    
+    func toLineAttribute(returnable: ReturnableVariable) -> [LineAttribute] {
+        [
+            .expression(String(returnable.type), language: .vhdl),
+            .line(returnable.name),
+            .line(returnable.comment ?? "")
+        ]
     }
     
     func toLineAttribute<T: VHDLMachines.Variable>(variable: T) -> [LineAttribute] {
@@ -537,7 +573,7 @@ struct VHDLMachinesConverter {
     
     func getIncludes(machine: Machine) -> [String] {
         guard
-            machine.attributes.count == 3,
+            machine.attributes.count == 4,
             let includes = machine.attributes[1].attributes["includes"]?.codeValue
         else {
             fatalError("Cannot retrieve includes")
@@ -549,7 +585,7 @@ struct VHDLMachinesConverter {
     
     func getExternalSignals(machine: Machine) -> [ExternalSignal] {
         guard
-            machine.attributes.count == 3,
+            machine.attributes.count == 4,
             let signals = machine.attributes[0].attributes["external_signals"]?.tableValue
         else {
             fatalError("Cannot retrieve external signals")
@@ -566,7 +602,7 @@ struct VHDLMachinesConverter {
     
     func getVHDLVariables(machine: Machine, key: String) -> [VHDLVariable] {
         guard
-            machine.attributes.count == 3,
+            machine.attributes.count == 4,
             let variables = machine.attributes[0].attributes[key]?.tableValue
         else {
             fatalError("Cannot retrieve external variables")
@@ -584,7 +620,7 @@ struct VHDLMachinesConverter {
     
     func getExternalVariables(machine: Machine) -> [ExternalVariable] {
         guard
-            machine.attributes.count == 3,
+            machine.attributes.count == 4,
             let variables = machine.attributes[0].attributes["external_variables"]?.tableValue
         else {
             fatalError("Cannot retrieve external variables")
@@ -601,10 +637,10 @@ struct VHDLMachinesConverter {
         }
     }
     
-    func getParameters(machine: Machine) -> [Parameter] {
+    func getParameters(machine: Machine, key: String) -> [Parameter] {
         guard
-            machine.attributes.count == 3,
-            let variables = machine.attributes[0].attributes["parameters"]?.tableValue
+            machine.attributes.count == 4,
+            let variables = machine.attributes[1].attributes[key]?.tableValue
         else {
             fatalError("Cannot retrieve external variables")
         }
@@ -618,25 +654,9 @@ struct VHDLMachinesConverter {
         }
     }
     
-    func getMachineOutputs(machine: Machine) -> [ReturnableVariable] {
-        guard
-            machine.attributes.count == 3,
-            let variables = machine.attributes[0].attributes["outputs"]?.tableValue
-        else {
-            fatalError("Cannot retrieve external variables")
-        }
-        return variables.map {
-            ReturnableVariable(
-                type: $0[0].expressionValue,
-                name: $0[1].lineValue,
-                comment: $0[3].lineValue == "" ? nil : $0[3].lineValue
-            )
-        }
-    }
-    
     func getClocks(machine: Machine) -> [Clock] {
         guard
-            machine.attributes.count == 3,
+            machine.attributes.count == 4,
             let clocks = machine.attributes[0].attributes["clocks"]?.tableValue
         else {
             fatalError("Cannot retrieve clocks")
@@ -651,7 +671,7 @@ struct VHDLMachinesConverter {
     
     func getDrivingClock(machine: Machine) -> Int {
         guard
-            machine.attributes.count == 3,
+            machine.attributes.count == 4,
             let clock = machine.attributes[0].attributes["driving_clock"]?.enumeratedValue,
             let index = machine.attributes[0].attributes["clocks"]?.tableValue.firstIndex(where: { $0[0].lineValue == clock })
         else {
@@ -670,7 +690,7 @@ struct VHDLMachinesConverter {
     
     func getMachineVariables(machine: Machine) -> [VHDLVariable] {
         guard
-            machine.attributes.count == 3,
+            machine.attributes.count == 4,
             let variables = machine.attributes[0].attributes["machine_variables"]?.tableValue
         else {
             fatalError("Cannot retrieve machine variables")
@@ -688,7 +708,7 @@ struct VHDLMachinesConverter {
     
     func getMachineSignals(machine: Machine) -> [MachineSignal] {
         guard
-            machine.attributes.count == 3,
+            machine.attributes.count == 4,
             let signals = machine.attributes[0].attributes["machine_signals"]?.tableValue
         else {
             fatalError("Cannot retrieve machine signals")
@@ -720,6 +740,26 @@ struct VHDLMachinesConverter {
         }
         return val == "" ? nil : val
     }
+    
+    func getOutputs(machine: Machine) -> [ReturnableVariable] {
+        guard
+            machine.attributes.count == 4,
+            let returns = machine.attributes[1].attributes["outputs"]?.tableValue
+        else {
+            fatalError("No outputs")
+        }
+        return returns.map {
+            let comment = $0[2].lineValue
+            return ReturnableVariable(type: $0[0].expressionValue, name: $0[1].lineValue, comment: comment == "" ? nil : comment)
+        }
+    }
+    
+    func isParameterised(machine: Machine) -> Bool {
+        guard let isParameterised = machine.attributes[1].attributes["is_parameterised"]?.boolValue else {
+            fatalError("Cannot discern if machine is parameterised")
+        }
+        return isParameterised
+    }
 
     func convert(machine: Machine) throws -> VHDLMachines.Machine {
         let validator = VHDLMachinesValidator()
@@ -740,8 +780,10 @@ struct VHDLMachinesConverter {
             dependentMachines: getDependentMachines(machine: machine),
             machineVariables: getMachineVariables(machine: machine),
             machineSignals: getMachineSignals(machine: machine),
-            parameters: getParameters(machine: machine),
-            outputs: getMachineOutputs(machine: machine),
+            isParameterised: isParameterised(machine: machine),
+            parameterSignals: getParameters(machine: machine, key: "parameter_signals"),
+            parameterVariables: getParameters(machine: machine, key: "parameter_variables"),
+            outputs: getOutputs(machine: machine),
             states: machine.states.map(toState),
             transitions: getTransitions(machine: machine),
             initialState: machine.states.firstIndex(where: { machine.initialState == $0.name }) ?? 0,
