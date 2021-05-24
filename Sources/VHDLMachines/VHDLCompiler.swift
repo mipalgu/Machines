@@ -660,11 +660,11 @@ public struct VHDLCompiler {
     }
     
     
-    private func snapshots(signals: [ExternalSignal], variables: [ExternalVariable]) -> String {
+    private func snapshots(machine: Machine) -> String {
         foldWithNewLine(
-            components: variables.map { variableToArchitectureDeclaration(variable: $0) },
+            components: machine.externalVariables.map { variableToArchitectureDeclaration(variable: $0) },
             initial: foldWithNewLine(
-                components: signals.map{ signalToArchitectureDeclaration(signal: $0) },
+                components: machine.externalSignals.map{ signalToArchitectureDeclaration(signal: $0) },
                 initial: "-- Snapshot of External Signals and Variables",
                 indentation: 1
             ),
@@ -730,6 +730,38 @@ public struct VHDLCompiler {
         )
     }
     
+    private func parameters(machine: Machine) -> String {
+        foldWithNewLine(
+            components: machine.parameterVariables.map { variableToArchitectureDeclaration(variable: $0) },
+            initial: foldWithNewLine(
+                components: machine.parameterSignals.map{ signalToArchitectureDeclaration(signal: $0) },
+                initial: "-- Snapshot of Parameter Signals and Variables",
+                indentation: 1
+            ),
+            indentation: 1
+        )
+    }
+    
+    private func returnableSignalToArchitectureDeclaration(signal: ReturnableVariable) -> String {
+        "signal \(signal.name): \(signal.type);"
+    }
+    
+    private func returnableVariableToArchitectureDeclaration(variable: ReturnableVariable) -> String {
+        "shared variable \(variable.name): \(variable.type);"
+    }
+    
+    private func outputs(machine: Machine) -> String {
+        foldWithNewLine(
+            components: machine.returnableVariables.map { returnableVariableToArchitectureDeclaration(variable: $0) },
+            initial: foldWithNewLine(
+                components: machine.returnableSignals.map{ returnableSignalToArchitectureDeclaration(signal: $0) },
+                initial: "-- Snapshot of Output Signals and Variables",
+                indentation: 1
+            ),
+            indentation: 1
+        )
+    }
+    
     private func createArhictecure(machine: Machine) -> String {
         return foldWithNewLine(
             components: [
@@ -737,7 +769,9 @@ public struct VHDLCompiler {
                 stateRepresenation(states: machine.states, initialState: machine.states[machine.initialState].name),
                 suspensionCommands,
                 afterVariables(driving: machine.clocks[machine.drivingClock]),
-                snapshots(signals: machine.externalSignals, variables: machine.externalVariables),
+                snapshots(machine: machine),
+                parameters(machine: machine),
+                outputs(machine: machine),
                 machineVariables(signals: machine.machineSignals, variables: machine.machineVariables),
                 architectureHead(head: machine.architectureHead)
             ],
