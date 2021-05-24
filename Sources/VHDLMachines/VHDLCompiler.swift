@@ -64,6 +64,13 @@ public struct VHDLCompiler {
         ["end if;"]
     }
     
+    private func writeOutputLogic(machine: Machine) -> [String] {
+        ["if (currentState = \(toStateName(name: machine.states[machine.suspendedState!].name)))"] +
+            machine.returnableSignals.map { "    \(toReturnable(name: $0.name)) <= \($0.name);" } +
+            machine.returnableVariables.map { "    \(toReturnable(name: $0.name)) := \($0.name);" } +
+        ["end if;"]
+    }
+    
     private func readSnapshotLogic(machine: Machine, indentation: Int) -> String {
         let initialState = toStateName(name: machine.states[machine.initialState].name)
         let suspendedState = toStateName(name: machine.states[machine.suspendedState!].name)
@@ -298,7 +305,7 @@ public struct VHDLCompiler {
             "currentState <= targetState;"
         ]
         combined[0] = "    " + combined[0]
-        return foldWithNewLineExceptFirst(components: combined, initial: "", indentation: indentation)
+        return foldWithNewLineExceptFirst(components: combined + writeOutputLogic(machine: machine), initial: "", indentation: indentation)
     }
     
     private struct VHDLTransition {
