@@ -37,7 +37,7 @@ let package = Package(
         ),
         .target(
             name: "VHDLMachines",
-            dependencies: ["swift_helpers"]
+            dependencies: ["swift_helpers", .product(name: "IO", package: "swift_helpers")]
         ),
         .target(
             name: "CXXBase",
