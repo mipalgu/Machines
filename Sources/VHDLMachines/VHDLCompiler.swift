@@ -411,12 +411,13 @@ public struct VHDLCompiler {
         foldWithNewLine(
             components: [
                 "shared variable ringlet_counter: natural := 0;",
-                "constant clockPeriod: real := \( String(format: "%0.2f", clock.period * 1_000_000_000 )); -- ns",
+                "constant clockPeriod: real := \( String(format: "%0.2f", clock.period * 1_000_000_000_000 )); -- ps", //clock period is represented in picoseconds
                 "constant ringletLength: real := 5.0 * clockPeriod;",
-                "constant RINGLETS_PER_NS: real := 1.0 / ringletLength;",
-                "constant RINGLETS_PER_US: real := 1000.0 * RINGLETS_PER_NS;",
-                "constant RINGLETS_PER_MS: real := 1000000.0 * RINGLETS_PER_NS;",
-                "constant RINGLETS_PER_S: real := 1000000000.0 * RINGLETS_PER_NS;"
+                "constant RINGLETS_PER_PS: real := 1.0 / ringletLength;",
+                "constant RINGLETS_PER_NS: real := 1000.0 * RINGLETS_PER_PS;",
+                "constant RINGLETS_PER_US: real := 1000000.0 * RINGLETS_PER_PS;",
+                "constant RINGLETS_PER_MS: real := 1000000000.0 * RINGLETS_PER_PS;",
+                "constant RINGLETS_PER_S: real := 1000000000000.0 * RINGLETS_PER_PS;"
             ],
             initial: "-- After Variables",
             indentation: 1
