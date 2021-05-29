@@ -33,9 +33,7 @@ struct VHDLMachinesConverter {
             machineSignals: [],
             isParameterised: false,
             parameterSignals: [],
-            parameterVariables: [],
             returnableSignals: [],
-            returnableVariables: [],
             states: [
                 VHDLMachines.State(
                     name: "Initial",
@@ -232,18 +230,7 @@ struct VHDLMachinesConverter {
                     ("value", .expression(language: .vhdl)),
                     ("comment", .line)
                 ])),
-                Field(name: "parameter_variables", type: .table(columns: [
-                    ("type", .expression(language: .vhdl)),
-                    ("name", .line),
-                    ("value", .expression(language: .vhdl)),
-                    ("comment", .line)
-                ])),
                 Field(name: "returnable_signals", type: .table(columns: [
-                    ("type", .expression(language: .vhdl)),
-                    ("name", .line),
-                    ("comment", .line)
-                ])),
-                Field(name: "returnable_variables", type: .table(columns: [
                     ("type", .expression(language: .vhdl)),
                     ("name", .line),
                     ("comment", .line)
@@ -260,25 +247,8 @@ struct VHDLMachinesConverter {
                         ("comment", .line)
                     ]
                 ),
-                "parameter_variables": .table(
-                    !machine.isParameterised ? [] : machine.parameterVariables.map(toLineAttribute),
-                    columns: [
-                        ("type", .expression(language: .vhdl)),
-                        ("name", .line),
-                        ("value", .expression(language: .vhdl)),
-                        ("comment", .line)
-                    ]
-                ),
                 "returnable_signals": .table(
                     !machine.isParameterised ? [] : machine.returnableSignals.map(toLineAttribute),
-                    columns: [
-                        ("type", .expression(language: .vhdl)),
-                        ("name", .line),
-                        ("comment", .line)
-                    ]
-                ),
-                "returnable_variables": .table(
-                    !machine.isParameterised ? [] : machine.returnableVariables.map(toLineAttribute),
                     columns: [
                         ("type", .expression(language: .vhdl)),
                         ("name", .line),
@@ -779,9 +749,7 @@ struct VHDLMachinesConverter {
             machineSignals: getMachineSignals(machine: machine),
             isParameterised: isParameterised(machine: machine),
             parameterSignals: getParameters(machine: machine, key: "parameter_signals"),
-            parameterVariables: getParameters(machine: machine, key: "parameter_variables"),
             returnableSignals: getOutputs(machine: machine, key: "returnable_signals"),
-            returnableVariables: getOutputs(machine: machine, key: "returnable_variables"),
             states: machine.states.map(toState),
             transitions: getTransitions(machine: machine),
             initialState: machine.states.firstIndex(where: { machine.initialState == $0.name }) ?? 0,

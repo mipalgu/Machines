@@ -60,14 +60,12 @@ public struct VHDLCompiler {
     private func readParameterLogic(machine: Machine) -> [String] {
         ["    if (command = COMMAND_RESTART) then"] +
             machine.parameterSignals.map { "    \($0.name) <= \(toParameter(name: $0.name));" } +
-            machine.parameterVariables.map { "    \($0.name) := \(toParameter(name: $0.name));" } +
         ["end if;"]
     }
     
     private func writeOutputLogic(machine: Machine) -> [String] {
         ["if (currentState = \(toStateName(name: machine.states[machine.suspendedState!].name)))"] +
             machine.returnableSignals.map { "    \(toReturnable(name: $0.name)) <= \($0.name);" } +
-            machine.returnableVariables.map { "    \(toReturnable(name: $0.name)) := \($0.name);" } +
         ["end if;"]
     }
     
@@ -508,19 +506,9 @@ public struct VHDLCompiler {
             indentation: 2
          ))
          \(foldWithNewLine(
-            components: machine.parameterVariables.map { toParameterDeclaration(parameter: $0) },
-            initial: "",
-            indentation: 2
-         ))
-         \(foldWithNewLine(
              components: machine.returnableSignals.map(toReturnDeclaration),
              initial: "",
              indentation: 2
-         ))
-         \(foldWithNewLine(
-              components: machine.returnableVariables.map(toReturnDeclaration),
-              initial: "",
-              indentation: 2
          ))
                  command: in std_logic_vector(1 downto 0)
              );
@@ -732,7 +720,7 @@ public struct VHDLCompiler {
     
     private func parameters(machine: Machine) -> String {
         foldWithNewLine(
-            components: machine.parameterVariables.map { variableToArchitectureDeclaration(variable: $0) },
+            components: [],
             initial: foldWithNewLine(
                 components: machine.parameterSignals.map{ signalToArchitectureDeclaration(signal: $0) },
                 initial: "-- Snapshot of Parameter Signals and Variables",
@@ -752,7 +740,7 @@ public struct VHDLCompiler {
     
     private func outputs(machine: Machine) -> String {
         foldWithNewLine(
-            components: machine.returnableVariables.map { returnableVariableToArchitectureDeclaration(variable: $0) },
+            components: [],
             initial: foldWithNewLine(
                 components: machine.returnableSignals.map{ returnableSignalToArchitectureDeclaration(signal: $0) },
                 initial: "-- Snapshot of Output Signals and Variables",
@@ -779,7 +767,7 @@ public struct VHDLCompiler {
             indentation: 1
         ) + "\nbegin\n" + foldWithNewLine(
             components: [
-                "process",
+                "process(\(machine.clocks[machine.drivingClock].name))",
                 "begin",
                 createArchitectureBody(machine: machine),
                 "end process;"

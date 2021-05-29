@@ -7,7 +7,11 @@
 
 import Foundation
 
-public struct ReturnableVariable {
+public struct ReturnableVariable: ExternalType {
+    
+    public var defaultValue: String? = nil
+    
+    public var mode: Mode = .output
     
     public var type: ParameterType
     

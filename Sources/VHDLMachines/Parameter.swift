@@ -7,7 +7,9 @@
 
 import Foundation
 
-public struct Parameter: Variable {
+public struct Parameter: ExternalType {
+    
+    public var mode: Mode = .input
     
     public var type: ParameterType
     

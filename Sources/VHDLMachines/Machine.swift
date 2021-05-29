@@ -31,11 +31,7 @@ public struct Machine {
     
     public var parameterSignals: [Parameter]
     
-    public var parameterVariables: [Parameter]
-    
     public var returnableSignals: [ReturnableVariable]
-    
-    public var returnableVariables: [ReturnableVariable]
     
     public var states: [State]
     
@@ -64,9 +60,7 @@ public struct Machine {
         machineSignals: [MachineSignal],
         isParameterised: Bool,
         parameterSignals: [Parameter],
-        parameterVariables: [Parameter],
         returnableSignals: [ReturnableVariable],
-        returnableVariables: [ReturnableVariable],
         states: [State],
         transitions: [Transition],
         initialState: Int,
@@ -86,9 +80,7 @@ public struct Machine {
         self.machineSignals = machineSignals
         self.isParameterised = isParameterised
         self.parameterSignals = parameterSignals
-        self.parameterVariables = parameterVariables
         self.returnableSignals = returnableSignals
-        self.returnableVariables = returnableVariables
         self.states = states
         self.transitions = transitions
         self.initialState = initialState

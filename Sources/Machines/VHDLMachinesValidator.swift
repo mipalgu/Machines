@@ -206,15 +206,15 @@ class VHDLMachinesValidator: MachineValidator {
                             variable[3].lineValue.maxLength(128)
                         }
                     }
-                    parameters.attributes["parameter_variables"].wrappedValue.tableValue.validate { table in
-                        table.unique() { $0.map { $0[1].lineValue } }
-                        table.each { (_, variable) in
-                            variable[0].expressionValue.notEmpty().maxLength(128)
-                            variable[1].lineValue.notEmpty().alphafirst().alphaunderscore().blacklist(self.allReservedWords).maxLength(128)
-                            variable[2].expressionValue.maxLength(128)
-                            variable[3].lineValue.maxLength(128)
-                        }
-                    }
+//                    parameters.attributes["parameter_variables"].wrappedValue.tableValue.validate { table in
+//                        table.unique() { $0.map { $0[1].lineValue } }
+//                        table.each { (_, variable) in
+//                            variable[0].expressionValue.notEmpty().maxLength(128)
+//                            variable[1].lineValue.notEmpty().alphafirst().alphaunderscore().blacklist(self.allReservedWords).maxLength(128)
+//                            variable[2].expressionValue.maxLength(128)
+//                            variable[3].lineValue.maxLength(128)
+//                        }
+//                    }
                     parameters.attributes["returnable_signals"].wrappedValue.tableValue.validate { table in
                         table.unique() { $0.map { $0[1].lineValue } }
                         table.each { (_, variable) in
@@ -223,14 +223,14 @@ class VHDLMachinesValidator: MachineValidator {
                             variable[2].lineValue.maxLength(128)
                         }
                     }
-                    parameters.attributes["returnable_variables"].wrappedValue.tableValue.validate { table in
-                        table.unique() { $0.map { $0[1].lineValue } }
-                        table.each { (_, variable) in
-                            variable[0].expressionValue.notEmpty().maxLength(128)
-                            variable[1].lineValue.notEmpty().alphafirst().alphaunderscore().blacklist(self.allReservedWords).maxLength(128)
-                            variable[2].lineValue.maxLength(128)
-                        }
-                    }
+//                    parameters.attributes["returnable_variables"].wrappedValue.tableValue.validate { table in
+//                        table.unique() { $0.map { $0[1].lineValue } }
+//                        table.each { (_, variable) in
+//                            variable[0].expressionValue.notEmpty().maxLength(128)
+//                            variable[1].lineValue.notEmpty().alphafirst().alphaunderscore().blacklist(self.allReservedWords).maxLength(128)
+//                            variable[2].lineValue.maxLength(128)
+//                        }
+//                    }
                 }
                 attributes[2].validate { includes in
                     includes.attributes["includes"].required()
