@@ -171,16 +171,13 @@ public struct VHDLCompiler {
     
     private func readSnapshotVariables(machine: Machine, indentation: Int) -> String {
         var signals = machine.externalSignals.filter { $0.mode == .input || $0.mode == .inputoutput || $0.mode == .buffer }.map { "\($0.name) <= \(toExternal(name: $0.name));" }
-        var variables = machine.externalVariables.filter { $0.mode == .input || $0.mode == .inputoutput || $0.mode == .buffer }.map { "\($0.name) := \(toExternal(name: $0.name));" }
         if signals.count > 0 {
             signals[0] = "    " + signals[0]
-        } else if variables.count > 0 {
-            variables[0] = "    " + variables[0]
         } else {
             return ""
         }
         return foldWithNewLineExceptFirst(
-            components: signals + variables,
+            components: signals,
             initial: "",
             indentation: indentation
         )
@@ -296,10 +293,7 @@ public struct VHDLCompiler {
         let externalSignals = machine.externalSignals.filter { $0.mode == .output || $0.mode == .inputoutput || $0.mode == .buffer }.map {
             "\(toExternal(name: $0.name)) <= \($0.name);"
         }
-        let externalVariables = machine.externalVariables.filter { $0.mode == .output || $0.mode == .inputoutput || $0.mode == .buffer }.map {
-            "\(toExternal(name: $0.name)) := \($0.name);"
-        }
-        var combined = externalSignals + externalVariables + [
+        var combined = externalSignals + [
             "internalState <= ReadSnapshot;",
             "previousRinglet <= currentState;",
             "currentState <= targetState;"
@@ -509,18 +503,6 @@ public struct VHDLCompiler {
          \(foldWithNewLine(components: machine.clocks.map { clockToSignal(clk: $0) }, initial: "", indentation: 2));
          \(foldWithNewLine(components: machine.externalSignals.map { signalToEntityDeclaration(signal: $0) }, initial: indent(count: 2) + "suspended: out std_logic;", indentation: 2))
          \(foldWithNewLine(
-            components: machine.externalVariables.map { (variable: ExternalVariable) -> ExternalVariable in
-                var newVar = variable
-                newVar.name = toExternal(name: newVar.name)
-                newVar.type = "\(variable.mode.rawValue) \(newVar.type)"
-                return newVar
-            }.enumerated().map {
-                return variableToPort(variable: $1, withSemicolon: true)
-            },
-             initial: "",
-            indentation: 2
-         ))
-         \(foldWithNewLine(
             components: machine.parameterSignals.map { toParameterDeclaration(parameter: $0) },
             initial: "",
             indentation: 2
@@ -680,7 +662,7 @@ public struct VHDLCompiler {
     
     private func snapshots(machine: Machine) -> String {
         foldWithNewLine(
-            components: machine.externalVariables.map { variableToArchitectureDeclaration(variable: $0) },
+            components: [],
             initial: foldWithNewLine(
                 components: machine.externalSignals.map{ signalToArchitectureDeclaration(signal: $0) },
                 initial: "-- Snapshot of External Signals and Variables",

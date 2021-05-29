@@ -32,27 +32,16 @@ extension VHDLMachinesConverter: MachineMutator {
             return .success(true)
         }
         let signalPath = machine.path.attributes[0].attributes["external_signals"].wrappedValue.blockAttribute.tableValue.path
-        let variablePath = machine.path.attributes[0].attributes["external_variables"].wrappedValue.blockAttribute.tableValue.path
-        if attribute.path == signalPath || attribute.path == variablePath {
-            let variableName: String
-            if attribute.path == signalPath {
-                guard let temp = (item as? [LineAttribute])?[2].lineValue else {
-                    fatalError("Item does not fit format for external signal")
-                }
-                variableName = temp
-            } else {
-                guard let temp = (item as? [LineAttribute])?[1].lineValue else {
-                    fatalError("Item does not fit format for external variable")
-                }
-                variableName = temp
+        if attribute.path == signalPath {
+            guard let variableName = (item as? [LineAttribute])?[2].lineValue else {
+                fatalError("Item does not fit format for external signal")
             }
             guard
-                let signals = machine.attributes[0].attributes["external_signals"]?.tableValue.map({ $0[2].lineValue }),
-                let variables = machine.attributes[0].attributes["external_variables"]?.tableValue.map({ $0[1].lineValue })
+                let signals = machine.attributes[0].attributes["external_signals"]?.tableValue.map({ $0[2].lineValue })
             else {
                 fatalError("Cannot find external variables and signals")
             }
-            let validValues = Set(signals + variables + [variableName])
+            let validValues = Set(signals + [variableName])
             machine[keyPath: attribute.path].append(item)
             machine.states.indices.forEach {
                 guard let currentValues = machine.states[$0].attributes[0].attributes["externals"]?.enumerableCollectionValue else {
@@ -89,12 +78,11 @@ extension VHDLMachinesConverter: MachineMutator {
         let actions = ["OnEntry", "OnExit", "Internal", "OnSuspend", "OnResume"]
         guard
             let variables = machine.attributes.first(where: { $0.name == "variables" }),
-            let externalSignals = variables.attributes["external_signals"]?.tableValue,
-            let externalVariables = variables.attributes["external_variables"]?.tableValue
+            let externalSignals = variables.attributes["external_signals"]?.tableValue
         else {
             fatalError("Cannot find variables when creating new state.")
         }
-        let externals = externalSignals.map { $0[2].lineValue } + externalVariables.map { $0[1].lineValue }
+        let externals = externalSignals.map { $0[2].lineValue }
         let defaultActionOrder = [["OnResume", "OnEntry"], ["OnExit", "Internal"], ["OnSuspend"]]
         return State(
             name: name,
@@ -302,24 +290,13 @@ extension VHDLMachinesConverter: MachineMutator {
             return .success(true)
         }
         let signalPath = machine.path.attributes[0].attributes["external_signals"].wrappedValue.blockAttribute.tableValue.path
-        let variablePath = machine.path.attributes[0].attributes["external_variables"].wrappedValue.blockAttribute.tableValue.path
-        if attribute.path == signalPath || attribute.path == variablePath {
-            let variableName: String
-            if attribute.path == signalPath {
-                guard
-                    machine.attributes[0].attributes["external_signals"].wrappedValue.tableValue.count > index
-                else {
-                    fatalError("Failed to get signal name")
-                }
-                variableName = machine.attributes[0].attributes["external_signals"].wrappedValue.tableValue[index][2].lineValue
-            } else {
-                guard
-                    machine.attributes[0].attributes["external_variables"].wrappedValue.tableValue.count > index
-                else {
-                    fatalError("Failed to get variable name")
-                }
-                variableName = machine.attributes[0].attributes["external_variables"].wrappedValue.tableValue[index][1].lineValue
+        if attribute.path == signalPath {
+            guard
+                machine.attributes[0].attributes["external_signals"].wrappedValue.tableValue.count > index
+            else {
+                fatalError("Failed to get signal name")
             }
+            let variableName = machine.attributes[0].attributes["external_signals"].wrappedValue.tableValue[index][2].lineValue
             machine[keyPath: attribute.path].remove(at: index)
             machine.states.indices.forEach {
                 machine.states[$0].attributes[0].attributes["externals"]?.enumerableCollectionValidValues.remove(variableName)
@@ -450,32 +427,32 @@ extension VHDLMachinesConverter: MachineMutator {
             }
             return .success(false)
         }
-        if let _ = machine.attributes[0].attributes["external_variables"].wrappedValue.tableValue.indices.first(where: {
-            let variablePath = machine.path.attributes[0].attributes["external_variables"].wrappedValue.blockAttribute.tableValue
-            return variablePath[$0][1].path == attribute.path ||
-                variablePath[$0][1].lineValue.path == attribute.path
-        }) {
-            guard let newValue = (value as? Attribute)?.lineValue ?? (value as? LineAttribute)?.lineValue ?? (value as? String) else {
-                return .failure(ValidationError(message: "Invalid value \(value)", path: attribute))
-            }
-            guard
-                let currentValue = (machine[keyPath: attribute.path] as? Attribute)?.lineValue ??
-                    (machine[keyPath: attribute.path] as? LineAttribute)?.lineValue ??
-                    (machine[keyPath: attribute.path] as? String)
-            else {
-                return .failure(ValidationError(message: "Failed to cast value to string", path: attribute))
-            }
-            machine[keyPath: attribute.path] = value
-            machine.states.indices.forEach {
-                if machine.states[$0].attributes[0].attributes["externals"]?.enumerableCollectionValue.contains(currentValue) ?? false {
-                    machine.states[$0].attributes[0].attributes["externals"]?.enumerableCollectionValue.remove(currentValue)
-                    machine.states[$0].attributes[0].attributes["externals"]?.enumerableCollectionValue.insert(newValue)
-                }
-                machine.states[$0].attributes[0].attributes["externals"]?.enumerableCollectionValidValues.remove(currentValue)
-                machine.states[$0].attributes[0].attributes["externals"]?.enumerableCollectionValidValues.insert(newValue)
-            }
-            return .success(false)
-        }
+//        if let _ = machine.attributes[0].attributes["external_variables"].wrappedValue.tableValue.indices.first(where: {
+//            let variablePath = machine.path.attributes[0].attributes["external_variables"].wrappedValue.blockAttribute.tableValue
+//            return variablePath[$0][1].path == attribute.path ||
+//                variablePath[$0][1].lineValue.path == attribute.path
+//        }) {
+//            guard let newValue = (value as? Attribute)?.lineValue ?? (value as? LineAttribute)?.lineValue ?? (value as? String) else {
+//                return .failure(ValidationError(message: "Invalid value \(value)", path: attribute))
+//            }
+//            guard
+//                let currentValue = (machine[keyPath: attribute.path] as? Attribute)?.lineValue ??
+//                    (machine[keyPath: attribute.path] as? LineAttribute)?.lineValue ??
+//                    (machine[keyPath: attribute.path] as? String)
+//            else {
+//                return .failure(ValidationError(message: "Failed to cast value to string", path: attribute))
+//            }
+//            machine[keyPath: attribute.path] = value
+//            machine.states.indices.forEach {
+//                if machine.states[$0].attributes[0].attributes["externals"]?.enumerableCollectionValue.contains(currentValue) ?? false {
+//                    machine.states[$0].attributes[0].attributes["externals"]?.enumerableCollectionValue.remove(currentValue)
+//                    machine.states[$0].attributes[0].attributes["externals"]?.enumerableCollectionValue.insert(newValue)
+//                }
+//                machine.states[$0].attributes[0].attributes["externals"]?.enumerableCollectionValidValues.remove(currentValue)
+//                machine.states[$0].attributes[0].attributes["externals"]?.enumerableCollectionValidValues.insert(newValue)
+//            }
+//            return .success(false)
+//        }
         machine[keyPath: attribute.path] = value
         return .success(false)
     }

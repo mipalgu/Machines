@@ -149,17 +149,17 @@ class VHDLMachinesValidator: MachineValidator {
                             signal[4].lineValue.maxLength(128)
                         }
                     }
-                    variables.attributes["external_variables"].required()
-                    variables.attributes["external_variables"].wrappedValue.tableValue.validate { table in
-                        table.unique() { $0.map { $0[2].lineValue } }
-                        table.each { (_, variable) in
-                            variable[0].enumeratedValue.notEmpty().alpha().maxLength(6)
-                            variable[1].expressionValue.notEmpty().maxLength(128)
-                            variable[2].lineValue.notEmpty().alphafirst().alphaunderscore().blacklist(self.allReservedWords).maxLength(128)
-                            variable[3].expressionValue.maxLength(128)
-                            variable[4].lineValue.maxLength(128)
-                        }
-                    }
+//                    variables.attributes["external_variables"].required()
+//                    variables.attributes["external_variables"].wrappedValue.tableValue.validate { table in
+//                        table.unique() { $0.map { $0[2].lineValue } }
+//                        table.each { (_, variable) in
+//                            variable[0].enumeratedValue.notEmpty().alpha().maxLength(6)
+//                            variable[1].expressionValue.notEmpty().maxLength(128)
+//                            variable[2].lineValue.notEmpty().alphafirst().alphaunderscore().blacklist(self.allReservedWords).maxLength(128)
+//                            variable[3].expressionValue.maxLength(128)
+//                            variable[4].lineValue.maxLength(128)
+//                        }
+//                    }
                     variables.attributes["machine_signals"].required()
                     variables.attributes["machine_signals"].wrappedValue.tableValue.validate { table in
                         table.unique() { $0.map { $0[1].lineValue } }

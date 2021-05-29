@@ -25,7 +25,6 @@ struct VHDLMachinesConverter {
             path: filePath,
             includes: ["library IEEE;", "use IEEE.std_logic_1164.All"],
             externalSignals: [],
-            externalVariables: [],
             generics: [],
             clocks: [Clock(name: "clk", frequency: 50, unit: .MHz)],
             drivingClock: 0,
@@ -135,106 +134,91 @@ struct VHDLMachinesConverter {
     
     func machineAttributes(machine: VHDLMachines.Machine) -> [AttributeGroup] {
         var attributes: [AttributeGroup] = []
-        let variables = AttributeGroup(
-            name: "variables",
-            fields: [
-                Field(name: "clocks", type: .table(columns: [
+        let variableFields: [Field] = [
+            Field(name: "clocks", type: .table(columns: [
+                ("name", .line),
+                ("frequency", .integer),
+                ("unit", .enumerated(validValues: Set(VHDLMachines.Clock.FrequencyUnit.allCases.map { $0.rawValue })))
+            ])),
+            Field(name: "external_signals", type: .table(columns: [
+                ("mode", .enumerated(validValues: Set(VHDLMachines.Mode.allCases.map { $0.rawValue }))),
+                ("type", .expression(language: .vhdl)),
+                ("name", .line),
+                ("value", .expression(language: .vhdl)),
+                ("comment", .line)
+            ])),
+            Field(name: "generics", type: .table(columns: [
+                ("type", .expression(language: .vhdl)),
+                ("name", .line),
+                ("value", .expression(language: .vhdl)),
+                ("comment", .line)
+            ])),
+            Field(name: "machine_signals", type: .table(columns: [
+                ("type", .expression(language: .vhdl)),
+                ("name", .line),
+                ("value", .expression(language: .vhdl)),
+                ("comment", .line)
+            ])),
+            Field(name: "machine_variables", type: .table(columns: [
+                ("type", .expression(language: .vhdl)),
+                ("name", .line),
+                ("value", .expression(language: .vhdl)),
+                ("comment", .line)
+            ])),
+            Field(name: "driving_clock", type: .enumerated(validValues: Set(machine.clocks.map { $0.name })))
+        ]
+        let variableAttributes: [String: Attribute] = [
+            "clocks": .table(
+                machine.clocks.map(toLineAttribute),
+                columns: [
                     ("name", .line),
                     ("frequency", .integer),
                     ("unit", .enumerated(validValues: Set(VHDLMachines.Clock.FrequencyUnit.allCases.map { $0.rawValue })))
-                ])),
-                Field(name: "external_signals", type: .table(columns: [
+                ]
+            ),
+            "external_signals": .table(
+                machine.externalSignals.map(toLineAttribute),
+                columns: [
                     ("mode", .enumerated(validValues: Set(VHDLMachines.Mode.allCases.map { $0.rawValue }))),
                     ("type", .expression(language: .vhdl)),
                     ("name", .line),
                     ("value", .expression(language: .vhdl)),
                     ("comment", .line)
-                ])),
-                Field(name: "external_variables", type: .table(columns: [
-                    ("mode", .enumerated(validValues: Set(VHDLMachines.Mode.allCases.map { $0.rawValue }))),
+                ]
+            ),
+            "generics": .table(
+                machine.generics.map(toLineAttribute),
+                columns: [
                     ("type", .expression(language: .vhdl)),
                     ("name", .line),
                     ("value", .expression(language: .vhdl)),
                     ("comment", .line)
-                ])),
-                Field(name: "generics", type: .table(columns: [
+                ]
+            ),
+            "machine_signals": .table(
+                machine.machineSignals.map(toLineAttribute),
+                columns: [
                     ("type", .expression(language: .vhdl)),
                     ("name", .line),
                     ("value", .expression(language: .vhdl)),
                     ("comment", .line)
-                ])),
-                Field(name: "machine_signals", type: .table(columns: [
+                ]
+            ),
+            "machine_variables": .table(
+                machine.machineVariables.map(toLineAttribute),
+                columns: [
                     ("type", .expression(language: .vhdl)),
                     ("name", .line),
                     ("value", .expression(language: .vhdl)),
                     ("comment", .line)
-                ])),
-                Field(name: "machine_variables", type: .table(columns: [
-                    ("type", .expression(language: .vhdl)),
-                    ("name", .line),
-                    ("value", .expression(language: .vhdl)),
-                    ("comment", .line)
-                ])),
-                Field(name: "driving_clock", type: .enumerated(validValues: Set(machine.clocks.map { $0.name })))
-            ],
-            attributes: [
-                "clocks": .table(
-                    machine.clocks.map(toLineAttribute),
-                    columns: [
-                        ("name", .line),
-                        ("frequency", .integer),
-                        ("unit", .enumerated(validValues: Set(VHDLMachines.Clock.FrequencyUnit.allCases.map { $0.rawValue })))
-                    ]
-                ),
-                "external_signals": .table(
-                    machine.externalSignals.map(toLineAttribute),
-                    columns: [
-                        ("mode", .enumerated(validValues: Set(VHDLMachines.Mode.allCases.map { $0.rawValue }))),
-                        ("type", .expression(language: .vhdl)),
-                        ("name", .line),
-                        ("value", .expression(language: .vhdl)),
-                        ("comment", .line)
-                    ]
-                ),
-                "external_variables": .table(
-                    machine.externalVariables.map(toLineAttribute),
-                    columns: [
-                        ("mode", .enumerated(validValues: Set(VHDLMachines.Mode.allCases.map { $0.rawValue }))),
-                        ("type", .expression(language: .vhdl)),
-                        ("name", .line),
-                        ("value", .expression(language: .vhdl)),
-                        ("comment", .line)
-                    ]
-                ),
-                "generics": .table(
-                    machine.externalVariables.map(toLineAttribute),
-                    columns: [
-                        ("type", .expression(language: .vhdl)),
-                        ("name", .line),
-                        ("value", .expression(language: .vhdl)),
-                        ("comment", .line)
-                    ]
-                ),
-                "machine_signals": .table(
-                    machine.machineSignals.map(toLineAttribute),
-                    columns: [
-                        ("type", .expression(language: .vhdl)),
-                        ("name", .line),
-                        ("value", .expression(language: .vhdl)),
-                        ("comment", .line)
-                    ]
-                ),
-                "machine_variables": .table(
-                    machine.machineVariables.map(toLineAttribute),
-                    columns: [
-                        ("type", .expression(language: .vhdl)),
-                        ("name", .line),
-                        ("value", .expression(language: .vhdl)),
-                        ("comment", .line)
-                    ]
-                ),
-                "driving_clock": .enumerated(machine.clocks[machine.drivingClock].name, validValues: Set(machine.clocks.map { $0.name }))
-            ],
+                ]
+            ),
+            "driving_clock": .enumerated(machine.clocks[machine.drivingClock].name, validValues: Set(machine.clocks.map { $0.name }))
+        ]
+        let variables = AttributeGroup(
+            name: "variables",
+            fields: variableFields,
+            attributes: variableAttributes,
             metaData: [:]
         )
         attributes.append(variables)
@@ -403,7 +387,7 @@ struct VHDLMachinesConverter {
     
     func stateAttributes(state: VHDLMachines.State, machine: VHDLMachines.Machine) -> [AttributeGroup] {
         var attributes: [AttributeGroup] = []
-        let externals = machine.externalSignals.map { $0.name } + machine.externalVariables.map { $0.name }
+        let externals = machine.externalSignals.map { $0.name }
         let variables = AttributeGroup(
             name: "variables",
             fields: [
@@ -787,7 +771,6 @@ struct VHDLMachinesConverter {
             path: machine.filePath,
             includes: getIncludes(machine: machine),
             externalSignals: getExternalSignals(machine: machine),
-            externalVariables: getExternalVariables(machine: machine),
             generics: getVHDLVariables(machine: machine, key: "generics"),
             clocks: getClocks(machine: machine),
             drivingClock: getDrivingClock(machine: machine),

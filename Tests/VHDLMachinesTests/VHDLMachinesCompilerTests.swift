@@ -48,7 +48,6 @@ public class VHDLMachinesCompilerTests: XCTestCase {
             path: URL(fileURLWithPath: "\(packageRootPath)/machines/VHDLCompilerTestMachine.machine"),
             includes: ["library IEEE;", "use IEEE.std_logic_1164.ALL;"],
             externalSignals: [ExternalSignal(type: "std_logic", name: "x", mode: .input, defaultValue: "'1'", comment: "A std_logic variable."), ExternalSignal(type: "std_logic_vector(1 downto 0)", name: "xx", mode: .output, defaultValue: "\"00\"", comment: "A variable called xx.")],
-            externalVariables: [ExternalVariable(type: "boolean", name: "isX", mode: .input, range: nil, defaultValue: "true", comment: "A bool called isX"), ExternalVariable(type: "natural", name: "genA", mode: .output, range: (0, 65535), defaultValue: "12", comment: "uint16")],
             generics: [VHDLVariable(type: "integer", name: "y", defaultValue: "0", range: (0, 65535), comment: "A uint16 variable called y."), VHDLVariable(type: "boolean", name: "yy", defaultValue: "false", range: nil, comment: "A variable called yy")],
             clocks: [Clock(name: "clk", frequency: 50, unit: .MHz), Clock(name: "clk2", frequency: 20, unit: .kHz)],
             drivingClock: 0,
