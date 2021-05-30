@@ -9,7 +9,7 @@ struct AnyGroup<Root: Modifiable, Schema: SchemaProtocol>: GroupProtocol {
     
     private let _path: () -> Path<Root, AttributeGroup>
     
-    private let _properties: () -> [Property<Root, Schema>]
+    private let _properties: () -> [SchemaProperty<Root, Schema>]
     
     private let _validate: () -> AnyValidator<Root>
     
@@ -19,7 +19,7 @@ struct AnyGroup<Root: Modifiable, Schema: SchemaProtocol>: GroupProtocol {
         _path()
     }
     
-    var properties: [Property<Root, Schema>] {
+    var properties: [SchemaProperty<Root, Schema>] {
         _properties()
     }
     

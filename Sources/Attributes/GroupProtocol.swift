@@ -12,7 +12,7 @@ protocol GroupProtocol {
     
     var path: Path<Root, AttributeGroup> { get }
     
-    var properties: [Property<Root, Schema>] { get }
+    var properties: [SchemaProperty<Root, Schema>] { get }
     
     var validate: AnyValidator<Root> { get }
     
