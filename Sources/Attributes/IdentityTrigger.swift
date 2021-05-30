@@ -15,12 +15,38 @@ public struct IdentityTrigger<Path: PathProtocol>: TriggerProtocol {
         self.path = path
     }
     
+    public func when(_ condition: @escaping (Root) -> Bool, @TriggerBuilder<Root> then builder: (IdentityTrigger<Path>) -> [AnyTrigger<Root>]) -> ConditionalTrigger<AnyTrigger<Path.Root>> {
+        ConditionalTrigger(condition: condition, trigger: AnyTrigger(builder(self)))
+    }
+    
     public func sync<TargetPath: PathProtocol>(target: TargetPath) -> SyncTrigger<Path, TargetPath> where TargetPath.Root == Root, TargetPath.Value == Path.Value {
         SyncTrigger(source: path, target: target)
     }
     
     public func performTrigger(_ root: inout Path.Root) -> Result<Bool, AttributeError<Path.Root>> {
         .success(false)
+    }
+    
+}
+
+public struct ConditionalTrigger<Trigger: TriggerProtocol>: TriggerProtocol {
+    
+    public typealias Root = Trigger.Root
+    
+    let condition: (Root) -> Bool
+    
+    let trigger: Trigger
+    
+    public init(condition: @escaping (Root) -> Bool, trigger: Trigger) {
+        self.condition = condition
+        self.trigger = trigger
+    }
+    
+    public func performTrigger(_ root: inout Root) -> Result<Bool, AttributeError<Root>> {
+        if condition(root) {
+            return trigger.performTrigger(&root)
+        }
+        return .success(false)
     }
     
 }
