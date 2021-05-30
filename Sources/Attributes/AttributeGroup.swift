@@ -56,6 +56,7 @@
  *
  */
 
+@dynamicMemberLookup
 public struct AttributeGroup: Hashable, Codable {
     
     public var name: String
@@ -71,6 +72,10 @@ public struct AttributeGroup: Hashable, Codable {
         self.fields = fields
         self.attributes = attributes
         self.metaData = metaData
+    }
+    
+    subscript(dynamicMember member: String) -> Attribute {
+        self.attributes[member]!
     }
     
 }
