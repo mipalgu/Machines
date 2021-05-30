@@ -58,7 +58,7 @@ public class VHDLMachinesCompilerTests: XCTestCase {
             parameterSignals: [Parameter(type: "std_logic", name: "parX", defaultValue: "'1'", comment: "Parameter parX"), Parameter(type: "std_logic_vector(1 downto 0)", name: "parXs", defaultValue: "\"01\"", comment: "Parameter parXs")],
             returnableSignals: [ReturnableVariable(type: "std_logic", name: "retX", comment: "Returnable retX"), ReturnableVariable(type: "std_logic_vector(1 downto 0)", name: "retXs", comment: "Returnable retXs")],
             states: [defaultState(name: "Initial"), defaultState(name: "Suspended"), defaultState(name: "State0")],
-            transitions: [ VHDLMachines.Transition(condition: "true", source: 0, target: 1), VHDLMachines.Transition(condition: "xx = '1'", source: 1, target: 2), VHDLMachines.Transition(condition: "x = '1'", source: 1, target: 2), VHDLMachines.Transition(condition: "true", source: 1, target: 0) ],
+            transitions: [ VHDLMachines.Transition(condition: "false", source: 0, target: 1), VHDLMachines.Transition(condition: "after_ms(50)", source: 0, target: 1), VHDLMachines.Transition(condition: "true", source: 0, target: 1), VHDLMachines.Transition(condition: "xx = '1'", source: 1, target: 2), VHDLMachines.Transition(condition: "x = '1'", source: 1, target: 2), VHDLMachines.Transition(condition: "true", source: 1, target: 0) ],
             initialState: 0,
             suspendedState: 1,
             architectureHead: "some code\n    with indentation\nend;",

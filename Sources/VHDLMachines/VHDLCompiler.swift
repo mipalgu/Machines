@@ -10,6 +10,23 @@ import IO
 
 public struct VHDLCompiler {
     
+    struct RegexTransformation {
+        
+        var regex: NSRegularExpression
+        
+        var transformation: String
+        
+    }
+    
+    private var afters: [RegexTransformation] = [
+        RegexTransformation(regex: try! NSRegularExpression(pattern: "[aA][fF][tT][eE][rR]_[pP][sS]\\(\\d+\\)"), transformation: "RINGLETS_PER_PS"),
+        RegexTransformation(regex: try! NSRegularExpression(pattern: "[aA][fF][tT][eE][rR]_[nN][sS]\\(\\d+\\)"), transformation: "RINGLETS_PER_NS"),
+        RegexTransformation(regex: try! NSRegularExpression(pattern: "[aA][fF][tT][eE][rR]_[uU][sS]\\(\\d+\\)"), transformation: "RINGLETS_PER_US"),
+        RegexTransformation(regex: try! NSRegularExpression(pattern: "[aA][fF][tT][eE][rR]_[mM][sS]\\(\\d+\\)"), transformation: "RINGLETS_PER_MS"),
+        RegexTransformation(regex: try! NSRegularExpression(pattern: "[aA][fF][tT][eE][rR]\\(\\d+\\)"), transformation: "RINGLETS_PER_S")
+    ]
+    
+    
     private var helper: FileHelpers = FileHelpers()
     
     private var internalStates: String {
@@ -223,14 +240,23 @@ public struct VHDLCompiler {
         )
     }
     
-    private func actionForStates(machine: Machine, actionName: String) -> [String] {
-        machine.states.map { $0.actions[actionName] ?? "" }
+    private func actionForStates(machine: Machine, actionName: String, trailers: [String]? = nil) -> [String] {
+        guard let trailers = trailers else {
+            return machine.states.map { $0.actions[actionName] ?? "" }
+        }
+        return machine.states.indices.map { machine.states[$0].actions[actionName] ?? "" + "\n" + trailers[$0] }
     }
     
     private func onEntry(machine: Machine, indentation: Int) -> String {
-        codeForStatesStatement(
+        let trailers: [String] = machine.states.indices.map { hasAfterInTransition(state: $0, machine: machine) }.map {
+            if $0 {
+                return "ringlet_count := 0;"
+            }
+            return ""
+        }
+        return codeForStatesStatement(
             names: machine.states.map(\.name),
-            code: actionForStates(machine: machine, actionName: "OnEntry"),
+            code: actionForStates(machine: machine, actionName: "OnEntry", trailers: trailers),
             indentation: indentation,
             trailer: "internalState <= CheckTransition;"
         )
@@ -324,11 +350,41 @@ public struct VHDLCompiler {
         
     }
     
-    private func transitionExpression(expression: String, transitionBefore: String?) -> String {
-        guard let before = transitionBefore else {
-            return expression
+    private func toDecimal(value: String) -> String {
+        if let intVal = Int(value) {
+            return "\(intVal).0"
         }
-        return "\(expression) and (not (\(before)))"
+        if let doubleVal = Double(value) {
+            return "\(doubleVal)"
+        }
+        return value
+    }
+    
+    private func replaceAfter(value: String, regex: RegexTransformation) -> String {
+        "(ringlet_counter >= \(value) * \(regex.transformation))"
+    }
+    
+    private func replaceAfters(condition: String) -> String {
+        let range = NSRange(location: 0, length: condition.utf16.count)
+        var strcopy = condition
+        let matches = afters.flatMap {
+            $0.regex.matches(in: condition, options: [], range: range)
+        }.sorted(by: {
+            let lhs0 = $0.lowerBound
+            let lhs1 = $0.upperBound
+            let rhs0 = $1.range.lowerBound
+            let rhs1 = $1.range.upperBound
+            return (lhs0 < rhs0) || (lhs0 == rhs0 && lhs1 <= rhs1)
+        })
+        return String(mutableString)
+    }
+    
+    private func transitionExpression(expression: String, transitionBefore: String?) -> String {
+        let transformedExpression = replaceAfters(condition: expression)
+        guard let before = transitionBefore else {
+            return transformedExpression
+        }
+        return "\(transformedExpression) and (not (\(before)))"
     }
     
     private func transitionsToCode(transitions: [VHDLTransition]) -> String {
@@ -794,6 +850,23 @@ public struct VHDLCompiler {
         let newList = Array(components[1..<components.count])
         return foldWithNewLine(components: [components[0]], initial: initial, indentation: 0) +
             "\n" + foldWithNewLine(components: newList, initial: "", indentation: indentation)
+    }
+    
+    private func hasAfter(condition: String) -> Bool {
+        let range = NSRange(location: 0, length: condition.utf16.count)
+        for transform in afters {
+            if transform.regex.firstMatch(in: condition, options: [], range: range) != nil {
+                return true
+            }
+        }
+        return false
+    }
+    
+    private func hasAfterInTransition(state index: Int, machine: Machine) -> Bool {
+        let transitions = machine.transitions.filter { $0.source == index}
+        return transitions.first(where: {
+            hasAfter(condition: $0.condition)
+        }) != nil
     }
     
 }
