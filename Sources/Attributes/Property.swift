@@ -18,8 +18,18 @@ struct Property<Root: Modifiable, Schema: SchemaProtocol> {
         self.wrappedValue = wrappedValue
     }
     
-    init(available: Bool, type: AttributeType, validate: AnyValidator<Root>) {
-        let attribute: SchemaAttribute<Root, Schema> = SchemaAttribute(available: available, type: type, validate: validate)
+    init(
+        available: Bool,
+        @TriggerBuilder<Root> trigger triggerBuilder: @escaping () -> [AnyTrigger<Root>] = { [] },
+        type: AttributeType,
+        @ValidatorBuilder<Root> validate validatorBuilder: @escaping () -> [AnyValidator<Root>] = { [] }
+    ) {
+        let attribute: SchemaAttribute<Root, Schema> = SchemaAttribute(
+            available: available,
+            trigger: AnyTrigger(triggerBuilder()),
+            type: type,
+            validate: AnyValidator(validatorBuilder())
+        )
         self.init(wrappedValue: attribute)
     }
     

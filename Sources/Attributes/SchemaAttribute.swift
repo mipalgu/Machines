@@ -9,6 +9,8 @@ struct SchemaAttribute<Root: Modifiable, Schema: SchemaProtocol> {
     
     var available: Bool
     
+    var trigger: AnyTrigger<Root>
+    
     var type: AttributeType
     
     var validate: AnyValidator<Root>
