@@ -6,15 +6,15 @@
 //
 
 @propertyWrapper
-struct Property<Root: Modifiable, Schema: SchemaProtocol> {
+struct Property<Root: Modifiable> {
     
-    var projectedValue: Property<Root, Schema> {
+    var projectedValue: Property<Root> {
         self
     }
     
-    var wrappedValue: SchemaAttribute<Root, Schema>
+    var wrappedValue: SchemaAttribute<Root>
     
-    init(wrappedValue: SchemaAttribute<Root, Schema>) {
+    init(wrappedValue: SchemaAttribute<Root>) {
         self.wrappedValue = wrappedValue
     }
     
@@ -24,7 +24,7 @@ struct Property<Root: Modifiable, Schema: SchemaProtocol> {
         type: AttributeType,
         @ValidatorBuilder<Root> validate validatorBuilder: @escaping () -> [AnyValidator<Root>] = { [] }
     ) {
-        let attribute: SchemaAttribute<Root, Schema> = SchemaAttribute(
+        let attribute: SchemaAttribute<Root> = SchemaAttribute(
             available: available,
             trigger: AnyTrigger(triggerBuilder()),
             type: type,

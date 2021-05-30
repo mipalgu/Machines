@@ -5,7 +5,7 @@
 //  Created by Morgan McColl on 30/5/21.
 //
 
-struct SchemaAttribute<Root: Modifiable, Schema: SchemaProtocol> {
+struct SchemaAttribute<Root: Modifiable> {
     
     var available: Bool
     

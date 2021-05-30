@@ -5,8 +5,8 @@
 //  Created by Morgan McColl on 30/5/21.
 //
 
-enum SchemaProperty<Root: Modifiable, Schema: SchemaProtocol> {
+enum SchemaProperty<Root: Modifiable> {
     
-    case property(Property<Root, Schema>)
+    case property(SchemaAttribute<Root>)
     
 }

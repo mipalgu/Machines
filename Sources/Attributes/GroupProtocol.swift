@@ -8,12 +8,23 @@
 protocol GroupProtocol {
     
     associatedtype Root: Modifiable
-    associatedtype Schema: SchemaProtocol
     
     var path: Path<Root, AttributeGroup> { get }
     
-    var properties: [SchemaProperty<Root, Schema>] { get }
+    var properties: [SchemaProperty<Root>] { get }
     
-    var validate: AnyValidator<Root> { get }
+}
+
+extension GroupProtocol {
+    
+    var properties: [SchemaProperty<Root>] {
+        let mirror = Mirror(reflecting: self)
+        return mirror.children.compactMap {
+            if let val = $0.value as? Property<Root> {
+                return .property(val.wrappedValue)
+            }
+            return nil
+        }
+    }
     
 }

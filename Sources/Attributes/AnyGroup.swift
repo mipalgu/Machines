@@ -5,13 +5,11 @@
 //  Created by Morgan McColl on 30/5/21.
 //
 
-struct AnyGroup<Root: Modifiable, Schema: SchemaProtocol>: GroupProtocol {
+struct AnyGroup<Root: Modifiable>: GroupProtocol {
     
     private let _path: () -> Path<Root, AttributeGroup>
     
-    private let _properties: () -> [SchemaProperty<Root, Schema>]
-    
-    private let _validate: () -> AnyValidator<Root>
+    private let _properties: () -> [SchemaProperty<Root>]
     
     let base: Any
     
@@ -19,18 +17,13 @@ struct AnyGroup<Root: Modifiable, Schema: SchemaProtocol>: GroupProtocol {
         _path()
     }
     
-    var properties: [SchemaProperty<Root, Schema>] {
+    var properties: [SchemaProperty<Root>] {
         _properties()
     }
     
-    var validate: AnyValidator<Root> {
-        _validate()
-    }
-    
-    init<Base: GroupProtocol>(_ base: Base) where Base.Root == Root, Base.Schema == Schema {
+    init<Base: GroupProtocol>(_ base: Base) where Base.Root == Root {
         self._path = { base.path }
         self._properties = { base.properties }
-        self._validate = { base.validate }
         self.base = base
     }
     
