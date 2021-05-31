@@ -57,6 +57,16 @@ public struct AnyTrigger<Root>: TriggerProtocol {
         _trigger(&root)
     }
     
+    public func toNewRoot<NewPath: PathProtocol>(path: NewPath) -> AnyTrigger<NewPath.Root> where NewPath.Value == Root {
+        AnyTrigger<NewPath.Root> {
+            let result = self.performTrigger(&$0[keyPath: path.path])
+            switch result {
+            case .failure(let error):
+                return .failure(AttributeError(message: error.message, path: Path<NewPath.Root, error>(path: path.path.appending(path: error.path.partialKeyPath), ancestors: [])))
+            }
+        }
+    }
+    
 }
 
 extension AnyTrigger: ExpressibleByArrayLiteral {

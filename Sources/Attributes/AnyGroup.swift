@@ -5,7 +5,7 @@
 //  Created by Morgan McColl on 30/5/21.
 //
 
-struct AnyGroup<Root: Modifiable>: GroupProtocol {
+public struct AnyGroup<Root: Modifiable>: GroupProtocol {
     
     private let _path: () -> Path<Root, AttributeGroup>
     
@@ -13,15 +13,15 @@ struct AnyGroup<Root: Modifiable>: GroupProtocol {
     
     let base: Any
     
-    var path: Path<Root, AttributeGroup> {
+    public var path: Path<Root, AttributeGroup> {
         _path()
     }
     
-    var properties: [SchemaProperty] {
+    public var properties: [SchemaProperty] {
         _properties()
     }
     
-    init<Base: GroupProtocol>(_ base: Base) where Base.Root == Root {
+    public init<Base: GroupProtocol>(_ base: Base) where Base.Root == Root {
         self._path = { base.path }
         self._properties = { base.properties }
         self.base = base

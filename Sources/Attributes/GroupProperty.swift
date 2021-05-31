@@ -65,6 +65,10 @@ struct GroupBoolProperty {
         self.init(label: label, available: available, trigger: AnyTrigger(triggerBuilder()), validator: AnyValidator(validatorBuilder()))
     }
     
+    init<Trigger: TriggerProtocol>(label: String, available: Bool = true, trigger: Trigger, @ValidatorBuilder<AttributeGroup> validate validatorBuilder: @escaping () -> [AnyValidator<AttributeGroup>] = { [] }) where Trigger.Root == AttributeGroup {
+        self.init(label: label, available: available, trigger: AnyTrigger(trigger), validator: AnyValidator(validatorBuilder()))
+    }
+    
     private init(
         label: String,
         available: Bool = true,

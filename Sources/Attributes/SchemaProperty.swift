@@ -5,8 +5,10 @@
 //  Created by Morgan McColl on 30/5/21.
 //
 
-enum SchemaProperty {
+public enum SchemaProperty<Root> {
     
-    case property(SchemaAttribute<AttributeGroup>)
+    case property(SchemaAttribute<Root>)
+    
+    func get
     
 }
