@@ -14,16 +14,49 @@ public struct VHDLCompiler {
         
         var regex: NSRegularExpression
         
+        var raw: String
+        
         var transformation: String
+        
+        private func getValue(value: String) -> String? {
+            let components = value.components(separatedBy: "\(raw)")
+            guard components.count > 1 else {
+                return nil
+            }
+            return components[1]
+        }
+        
+        func parse(in string: String, matches: [NSTextCheckingResult]) -> String {
+            var workingString = string
+            var indexDifference = 0
+            matches.forEach {
+                guard let originalRange = Range($0.range) else {
+                    return
+                }
+                let lower = String.Index(utf16Offset: originalRange.lowerBound, in: workingString)
+                let upper = String.Index(utf16Offset: originalRange.upperBound, in: workingString)
+                let size = originalRange.count
+                let newRange = (String.Index(utf16Offset: originalRange.lowerBound + indexDifference, in: workingString))..<(String.Index(utf16Offset: originalRange.upperBound + indexDifference, in: workingString))
+                let candidate = String(workingString[newRange])
+                guard let value = getValue(value: candidate) else {
+                    return
+                }
+                let newString = "ringletCounter >= \(value) * \(transformation)"
+                let newStringSize = newString.count
+                indexDifference += newStringSize - size
+                workingString = workingString[String.Index(utf16Offset: 0, in: workingString)..<lower] + newString + workingString[upper..<String.Index(utf16Offset: workingString.count, in: workingString)]
+            }
+            return workingString
+        }
         
     }
     
     private var afters: [RegexTransformation] = [
-        RegexTransformation(regex: try! NSRegularExpression(pattern: "[aA][fF][tT][eE][rR]_[pP][sS]\\(\\d+\\)"), transformation: "RINGLETS_PER_PS"),
-        RegexTransformation(regex: try! NSRegularExpression(pattern: "[aA][fF][tT][eE][rR]_[nN][sS]\\(\\d+\\)"), transformation: "RINGLETS_PER_NS"),
-        RegexTransformation(regex: try! NSRegularExpression(pattern: "[aA][fF][tT][eE][rR]_[uU][sS]\\(\\d+\\)"), transformation: "RINGLETS_PER_US"),
-        RegexTransformation(regex: try! NSRegularExpression(pattern: "[aA][fF][tT][eE][rR]_[mM][sS]\\(\\d+\\)"), transformation: "RINGLETS_PER_MS"),
-        RegexTransformation(regex: try! NSRegularExpression(pattern: "[aA][fF][tT][eE][rR]\\(\\d+\\)"), transformation: "RINGLETS_PER_S")
+        RegexTransformation(regex: try! NSRegularExpression(pattern: "[a][f][t][e][r]_[p][s]\\(\\d+\\)"), raw: "after_ps",transformation: "RINGLETS_PER_PS"),
+        RegexTransformation(regex: try! NSRegularExpression(pattern: "[a][f][t][e][r]_[n][s]\\(\\d+\\)"), raw: "after_ns", transformation: "RINGLETS_PER_NS"),
+        RegexTransformation(regex: try! NSRegularExpression(pattern: "[a][f][t][e][r]_[u][s]\\(\\d+\\)"), raw: "after_us", transformation: "RINGLETS_PER_US"),
+        RegexTransformation(regex: try! NSRegularExpression(pattern: "[a][f][t][e][r]_[m][s]\\(\\d+\\)"), raw: "after_ms",transformation: "RINGLETS_PER_MS"),
+        RegexTransformation(regex: try! NSRegularExpression(pattern: "[a][f][t][e][r]\\(\\d+\\)"), raw: "after", transformation: "RINGLETS_PER_S")
     ]
     
     
@@ -365,18 +398,18 @@ public struct VHDLCompiler {
     }
     
     private func replaceAfters(condition: String) -> String {
-        let range = NSRange(location: 0, length: condition.utf16.count)
-        var strcopy = condition
-        let matches = afters.flatMap {
-            $0.regex.matches(in: condition, options: [], range: range)
-        }.sorted(by: {
-            let lhs0 = $0.lowerBound
-            let lhs1 = $0.upperBound
-            let rhs0 = $1.range.lowerBound
-            let rhs1 = $1.range.upperBound
-            return (lhs0 < rhs0) || (lhs0 == rhs0 && lhs1 <= rhs1)
-        })
-        return String(mutableString)
+        afters.reduce(condition) {
+            let range = NSRange(location: 0, length: $0.utf16.count)
+            let matches = $1.regex.matches(in: condition, options: [], range: range)
+            return $1.parse(in: $0, matches: matches)
+        }
+//        .sorted(by: {
+//            let lhs0 = $0.lowerBound
+//            let lhs1 = $0.upperBound
+//            let rhs0 = $1.range.lowerBound
+//            let rhs1 = $1.range.upperBound
+//            return (lhs0 < rhs0) || (lhs0 == rhs0 && lhs1 <= rhs1)
+//        })
     }
     
     private func transitionExpression(expression: String, transitionBefore: String?) -> String {
