@@ -27,7 +27,7 @@ extension GroupProtocol {
         }
     }
     
-    func findProperty<Path: PathProtocol>(path: Path) -> SchemaProperty<Path.Root>? {
+    func findProperty<Path: PathProtocol>(path: Path) -> SchemaProperty<Path.Root>? where Path.Root == Root {
         guard let index = path.fullPath.firstIndex(where: { $0.partialKeyPath == self.path.keyPath }) else {
             return nil
         }
@@ -38,17 +38,14 @@ extension GroupProtocol {
         }
         if subpath.count == 2 {
             //property of me
-            return properties.first(where: {
+            return properties.first {
                 switch $0 {
                 case .property(let attribute):
-                    guard let keyPath = subpath[0].partialKeyPath as? KeyPath<Root, AttributeGroup> else {
-                        return false
-                    }
-                    return keyPath.appending(path: \AttributeGroup.attributes[attribute.label]) == path.keyPath
+                    return self.path.keyPath.appending(path: \AttributeGroup.attributes[attribute.label]) == path.keyPath
                 default:
                     return false
                 }
-            })?.toNewRoot(path: path)
+            }?.toNewRoot(path: self.path)
         }
         //itsa me
         return nil

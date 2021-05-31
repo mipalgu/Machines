@@ -28,7 +28,7 @@ public extension SchemaProtocol {
     }
     
     func findProperty<Path: PathProtocol>(path: Path) -> SchemaAttribute<Root> where Path.Root == Root, Path.Value == Attribute {
-        guard let property = groups.compactMap { $0.findProperty(path: path) }.first else {
+        guard let property = groups.compactMap({ $0.findProperty(path: path) }).first else {
             fatalError()
         }
         switch property {

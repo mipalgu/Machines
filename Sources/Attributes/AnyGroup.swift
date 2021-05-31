@@ -9,7 +9,7 @@ public struct AnyGroup<Root: Modifiable>: GroupProtocol {
     
     private let _path: () -> Path<Root, AttributeGroup>
     
-    private let _properties: () -> [SchemaProperty]
+    private let _properties: () -> [SchemaProperty<AttributeGroup>]
     
     let base: Any
     
@@ -17,7 +17,7 @@ public struct AnyGroup<Root: Modifiable>: GroupProtocol {
         _path()
     }
     
-    public var properties: [SchemaProperty] {
+    public var properties: [SchemaProperty<AttributeGroup>] {
         _properties()
     }
     
