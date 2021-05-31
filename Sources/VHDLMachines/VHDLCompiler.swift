@@ -33,10 +33,10 @@ public struct VHDLCompiler {
                 guard let originalRange = Range($0.range) else {
                     return
                 }
-                let lower = String.Index(utf16Offset: originalRange.lowerBound, in: workingString)
-                let upper = String.Index(utf16Offset: originalRange.upperBound, in: workingString)
                 let size = originalRange.count
-                let newRange = (String.Index(utf16Offset: originalRange.lowerBound + indexDifference, in: workingString))..<(String.Index(utf16Offset: originalRange.upperBound + indexDifference, in: workingString))
+                let lower = String.Index(utf16Offset: originalRange.lowerBound + indexDifference, in: workingString)
+                let upper = String.Index(utf16Offset: originalRange.upperBound + indexDifference, in: workingString)
+                let newRange = lower..<upper
                 let candidate = String(workingString[newRange])
                 guard let value = getValue(value: candidate) else {
                     return
@@ -52,11 +52,11 @@ public struct VHDLCompiler {
     }
     
     private var afters: [RegexTransformation] = [
-        RegexTransformation(regex: try! NSRegularExpression(pattern: "[a][f][t][e][r]_[p][s]\\(\\d+\\)"), raw: "after_ps",transformation: "RINGLETS_PER_PS"),
-        RegexTransformation(regex: try! NSRegularExpression(pattern: "[a][f][t][e][r]_[n][s]\\(\\d+\\)"), raw: "after_ns", transformation: "RINGLETS_PER_NS"),
-        RegexTransformation(regex: try! NSRegularExpression(pattern: "[a][f][t][e][r]_[u][s]\\(\\d+\\)"), raw: "after_us", transformation: "RINGLETS_PER_US"),
-        RegexTransformation(regex: try! NSRegularExpression(pattern: "[a][f][t][e][r]_[m][s]\\(\\d+\\)"), raw: "after_ms",transformation: "RINGLETS_PER_MS"),
-        RegexTransformation(regex: try! NSRegularExpression(pattern: "[a][f][t][e][r]\\(\\d+\\)"), raw: "after", transformation: "RINGLETS_PER_S")
+        RegexTransformation(regex: try! NSRegularExpression(pattern: "after_ps\\(.+\\)"), raw: "after_ps",transformation: "RINGLETS_PER_PS"),
+        RegexTransformation(regex: try! NSRegularExpression(pattern: "after_ns\\(.+\\)"), raw: "after_ns", transformation: "RINGLETS_PER_NS"),
+        RegexTransformation(regex: try! NSRegularExpression(pattern: "after_us\\(.+\\)"), raw: "after_us", transformation: "RINGLETS_PER_US"),
+        RegexTransformation(regex: try! NSRegularExpression(pattern: "after_ms\\(.+\\)"), raw: "after_ms",transformation: "RINGLETS_PER_MS"),
+        RegexTransformation(regex: try! NSRegularExpression(pattern: "after\\(.+\\)"), raw: "after", transformation: "RINGLETS_PER_S")
     ]
     
     
@@ -401,6 +401,9 @@ public struct VHDLCompiler {
         afters.reduce(condition) {
             let range = NSRange(location: 0, length: $0.utf16.count)
             let matches = $1.regex.matches(in: condition, options: [], range: range)
+            if matches.count == 0 {
+                return $0
+            }
             return $1.parse(in: $0, matches: matches)
         }
 //        .sorted(by: {
