@@ -51,22 +51,32 @@ struct GroupBoolProperty {
     }
     
     init(label: String, available: Bool = true, @TriggerBuilder<AttributeGroup> trigger triggerBuilder: @escaping () -> [AnyTrigger<AttributeGroup>] = { [] }) {
-        ValidatorBuilder<AttributeGroup>
-        self.init(label: label, available: available, trigger: triggerBuilder, validate: temp)
+        self.init(
+            label: label,
+            available: available,
+            trigger: AnyTrigger(triggerBuilder()),
+            validator: Path(path: \AttributeGroup.self, ancestors: []).attributes[label].validate {
+                $0.required()
+            }
+        )
+    }
+    
+    init(label: String, available: Bool = true, @TriggerBuilder<AttributeGroup> trigger triggerBuilder: @escaping () -> [AnyTrigger<AttributeGroup>] = { [] }, @ValidatorBuilder<AttributeGroup> validate validatorBuilder: @escaping () -> [AnyValidator<AttributeGroup>] = { [] }) {
+        self.init(label: label, available: available, trigger: AnyTrigger(triggerBuilder()), validator: AnyValidator(validatorBuilder()))
     }
     
     private init(
         label: String,
         available: Bool = true,
-        @TriggerBuilder<AttributeGroup> trigger triggerBuilder: @escaping () -> [AnyTrigger<AttributeGroup>] = { [] },
-        @ValidatorBuilder<AttributeGroup> validate validatorBuilder: @escaping () -> [AnyValidator<AttributeGroup>] = { [] }
+        trigger: AnyTrigger<AttributeGroup>,
+        validator: AnyValidator<AttributeGroup>
     ) {
         let attribute: SchemaAttribute<AttributeGroup> = SchemaAttribute(
             available: available,
             label: label,
-            trigger: AnyTrigger(triggerBuilder()),
+            trigger: trigger,
             type: .bool,
-            validate: AnyValidator(validatorBuilder())
+            validate: validator
         )
         self.init(wrappedValue: attribute)
     }
