@@ -29,9 +29,9 @@ public struct SchemaAttribute<Root> {
         SchemaAttribute<Path.Root>(
             available: self.available,
             label: self.label,
-            trigger: ,
+            trigger: self.trigger.toNewRoot(path: path),
             type: self.type,
-            validate: <#T##AnyValidator<Path.Root>#>
+            validate: self.validate.toNewRoot(path: path)
         )
     }
     

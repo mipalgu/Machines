@@ -9,6 +9,11 @@ public enum SchemaProperty<Root> {
     
     case property(SchemaAttribute<Root>)
     
-    func get
+    func toNewRoot<Path: PathProtocol>(path: Path) -> SchemaProperty<Path.Root> where Path.Value == Root {
+        switch self {
+        case .property(let attribute):
+            return .property(attribute.toNewRoot(path: path))
+        }
+    }
     
 }

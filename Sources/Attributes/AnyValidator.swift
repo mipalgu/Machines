@@ -88,6 +88,12 @@ public struct AnyValidator<Root>: ValidatorProtocol {
         return try self._validate(root)
     }
     
+    public func toNewRoot<NewPath: PathProtocol>(path: NewPath) -> AnyValidator<NewPath.Root> where NewPath.Value == Root {
+        AnyValidator<NewPath.Root>(validate: {
+            try performValidation($0[keyPath: path.path])
+        })
+    }
+    
 }
 
 extension AnyValidator: ExpressibleByArrayLiteral {
