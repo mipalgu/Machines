@@ -72,14 +72,18 @@ public struct AnyPath<Root> {
     
     let _isSame: (PartialKeyPath<Root>) -> Bool
     
-    private init<P: ReadOnlyPathProtocol>(_ path: P, isOptional: Bool, isNil: @escaping (Root) -> Bool, isSame: @escaping (PartialKeyPath<Root>) -> Bool) where P.Root == Root {
-        self.ancestors = path.ancestors
-        self.partialKeyPath = path.keyPath
-        self.targetType = P.Value.self
-        self._value = { $0[keyPath: path.keyPath] as Any }
-        self.isOptional = isOptional || (path.ancestors.last?.isOptional ?? false)
-        self._isNil = { root in path.ancestors.last?.isNil(root) ?? false || isNil(root) }
+    private init(_ path: PartialKeyPath<Root>, ancestors: [AnyPath<Root>], targetType: Any.Type, isOptional: Bool, isNil: @escaping (Root) -> Bool, isSame: @escaping (PartialKeyPath<Root>) -> Bool) {
+        self.ancestors = ancestors
+        self.partialKeyPath = path
+        self.targetType = targetType
+        self._value = { $0[keyPath: path] as Any }
+        self.isOptional = isOptional || (ancestors.last?.isOptional ?? false)
+        self._isNil = { root in ancestors.last?.isNil(root) ?? false || isNil(root) }
         self._isSame = isSame
+    }
+    
+    private init<P: ReadOnlyPathProtocol>(_ path: P, isOptional: Bool, isNil: @escaping (Root) -> Bool, isSame: @escaping (PartialKeyPath<Root>) -> Bool) where P.Root == Root {
+        self.init(path.keyPath, ancestors: path.ancestors, targetType: P.Value.self, isOptional: isOptional, isNil: isNil, isSame: isSame)
     }
     
     public init<P: ReadOnlyPathProtocol>(_ path: P) where P.Root == Root {
@@ -132,6 +136,23 @@ public struct AnyPath<Root> {
     
     public func isSame<Path: ReadOnlyPathProtocol>(as path: Path) -> Bool where Path.Root == Root {
         return self._isSame(path.keyPath)
+    }
+    
+    public func appending<Value>(_ path: AnyPath<Value>) -> AnyPath<Root>? {
+        guard
+            let keyPath = self.partialKeyPath as? KeyPath<Root, Value>,
+            let newPartialKeyPath = self.partialKeyPath.appending(path: path.partialKeyPath)
+        else {
+            return nil
+        }
+        return AnyPath(
+            newPartialKeyPath,
+            ancestors: [],
+            targetType: Any.self,
+            isOptional: path.isOptional,
+            isNil: { path.isNil($0[keyPath: keyPath]) },
+            isSame: { $0 == newPartialKeyPath }
+        )
     }
     
 }

@@ -62,7 +62,12 @@ public struct AnyTrigger<Root>: TriggerProtocol {
             let result = self.performTrigger(&$0[keyPath: path.path])
             switch result {
             case .failure(let error):
-                return .failure(AttributeError(message: error.message, path: Path<NewPath.Root, error>(path: path.path.appending(path: error.path.partialKeyPath), ancestors: [])))
+                guard let newPath = AnyPath(path).appending(error.path) else {
+                    return .failure(AttributeError<NewPath.Root>(message: error.message, path: Path(path: \.self, ancestors: [])))
+                }
+                return .failure(AttributeError(message: error.message, path: newPath))
+            case .success(let result):
+                return .success(result)
             }
         }
     }
