@@ -11,16 +11,16 @@ protocol GroupProtocol {
     
     var path: Path<Root, AttributeGroup> { get }
     
-    var properties: [SchemaProperty<Root>] { get }
+    var properties: [SchemaProperty] { get }
     
 }
 
 extension GroupProtocol {
     
-    var properties: [SchemaProperty<Root>] {
+    var properties: [SchemaProperty] {
         let mirror = Mirror(reflecting: self)
         return mirror.children.compactMap {
-            if let val = $0.value as? Property<Root> {
+            if let val = $0.value as? GroupProperty {
                 return .property(val.wrappedValue)
             }
             return nil

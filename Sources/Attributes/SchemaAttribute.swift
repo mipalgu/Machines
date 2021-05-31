@@ -5,9 +5,11 @@
 //  Created by Morgan McColl on 30/5/21.
 //
 
-struct SchemaAttribute<Root: Modifiable> {
+struct SchemaAttribute<Root> {
     
     var available: Bool
+    
+    var label: String
     
     var trigger: AnyTrigger<Root>
     

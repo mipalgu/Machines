@@ -5,8 +5,8 @@
 //  Created by Morgan McColl on 30/5/21.
 //
 
-enum SchemaProperty<Root: Modifiable> {
+enum SchemaProperty {
     
-    case property(SchemaAttribute<Root>)
+    case property(SchemaAttribute<AttributeGroup>)
     
 }

@@ -26,23 +26,26 @@ extension SchemaProtocol {
     }
     
 }
-//
-//struct VHDLSettings: GroupProtocol {
-//
-//    var path: Path<EmptyModifiable, AttributeGroup>
-//
-//    typealias Root = EmptyModifiable
-//
-//    @Property<Root>(available: true, trigger: { path.trigger { $0.when({ _ in true }, then: { IdentityTrigger(path: EmptyModifiable.path) }) } }, type: .line)
-//    var initialState
-//
-//}
-//
-//struct TestSchema: SchemaProtocol {
-//
-//    typealias Root = EmptyModifiable
-//
-//    @Group(VHDLSettings(path: EmptyModifiable.path.attributes[0]))
-//    var settings
-//
-//}
+
+struct VHDLSettings: GroupProtocol {
+
+    var path: Path<EmptyModifiable, AttributeGroup>
+
+    typealias Root = EmptyModifiable
+
+    @GroupBoolProperty(trigger: .makeAvailable(\.suspendedState))
+    var isSuspensible
+    
+    @GroupProperty(available: false, type: .line)
+    var suspendedState
+
+}
+
+struct TestSchema: SchemaProtocol {
+
+    typealias Root = EmptyModifiable
+
+    @Group(VHDLSettings(path: EmptyModifiable.path.attributes[0]))
+    var settings
+
+}
