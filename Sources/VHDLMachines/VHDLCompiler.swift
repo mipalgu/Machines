@@ -41,7 +41,7 @@ public struct VHDLCompiler {
                 guard let value = getValue(value: candidate) else {
                     return
                 }
-                let newString = "ringletCounter >= \(value) * \(transformation)"
+                let newString = "(ringletCounter >= \(value) * \(transformation))"
                 let newStringSize = newString.count
                 indexDifference += newStringSize - size
                 workingString = workingString[String.Index(utf16Offset: 0, in: workingString)..<lower] + newString + workingString[upper..<String.Index(utf16Offset: workingString.count, in: workingString)]
@@ -52,11 +52,11 @@ public struct VHDLCompiler {
     }
     
     private var afters: [RegexTransformation] = [
-        RegexTransformation(regex: try! NSRegularExpression(pattern: "after_ps\\(.+\\)"), raw: "after_ps",transformation: "RINGLETS_PER_PS"),
-        RegexTransformation(regex: try! NSRegularExpression(pattern: "after_ns\\(.+\\)"), raw: "after_ns", transformation: "RINGLETS_PER_NS"),
-        RegexTransformation(regex: try! NSRegularExpression(pattern: "after_us\\(.+\\)"), raw: "after_us", transformation: "RINGLETS_PER_US"),
-        RegexTransformation(regex: try! NSRegularExpression(pattern: "after_ms\\(.+\\)"), raw: "after_ms",transformation: "RINGLETS_PER_MS"),
-        RegexTransformation(regex: try! NSRegularExpression(pattern: "after\\(.+\\)"), raw: "after", transformation: "RINGLETS_PER_S")
+        RegexTransformation(regex: try! NSRegularExpression(pattern: "after_ps\\([\\w\\d\\s\\+\\-\\*/]+\\)"), raw: "after_ps",transformation: "RINGLETS_PER_PS"),
+        RegexTransformation(regex: try! NSRegularExpression(pattern: "after_ns\\([\\w\\d\\s\\+\\-\\*/]+\\)"), raw: "after_ns", transformation: "RINGLETS_PER_NS"),
+        RegexTransformation(regex: try! NSRegularExpression(pattern: "after_us\\([\\w\\d\\s\\+\\-\\*/]+\\)"), raw: "after_us", transformation: "RINGLETS_PER_US"),
+        RegexTransformation(regex: try! NSRegularExpression(pattern: "after_ms\\([\\w\\d\\s\\+\\-\\*/]+\\)"), raw: "after_ms",transformation: "RINGLETS_PER_MS"),
+        RegexTransformation(regex: try! NSRegularExpression(pattern: "after\\([\\w\\d\\s\\+\\-\\*/]+\\)"), raw: "after", transformation: "RINGLETS_PER_S")
     ]
     
     
