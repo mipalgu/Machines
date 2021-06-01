@@ -12,20 +12,31 @@ public struct VHDLCompiler {
     
     private var helper: FileHelpers = FileHelpers()
     
-    private var internalStates: String {
-        foldWithNewLine(
-            components: [
-                "constant ReadSnapshot: std_logic_vector(3 downto 0) := \"0000\";",
-                "constant OnSuspend: std_logic_vector(3 downto 0) := \"0001\";",
-                "constant OnResume: std_logic_vector(3 downto 0) := \"0010\";",
-                "constant OnEntry: std_logic_vector(3 downto 0) := \"0011\";",
-                "constant NoOnEntry: std_logic_vector(3 downto 0) := \"0100\";",
-                "constant CheckTransition: std_logic_vector(3 downto 0) := \"0101\";",
-                "constant OnExit: std_logic_vector(3 downto 0) := \"0110\";",
-                "constant Internal: std_logic_vector(3 downto 0) := \"0111\";",
-                "constant WriteSnapshot: std_logic_vector(3 downto 0) := \"1000\";",
-                "signal internalState: std_logic_vector(3 downto 0) := ReadSnapshot;"
-            ],
+    private func internalStates(machine: Machine) -> String {
+        let suspensibleComponents = [
+            "constant ReadSnapshot: std_logic_vector(3 downto 0) := \"0000\";",
+            "constant OnSuspend: std_logic_vector(3 downto 0) := \"0001\";",
+            "constant OnResume: std_logic_vector(3 downto 0) := \"0010\";",
+            "constant OnEntry: std_logic_vector(3 downto 0) := \"0011\";",
+            "constant NoOnEntry: std_logic_vector(3 downto 0) := \"0100\";",
+            "constant CheckTransition: std_logic_vector(3 downto 0) := \"0101\";",
+            "constant OnExit: std_logic_vector(3 downto 0) := \"0110\";",
+            "constant Internal: std_logic_vector(3 downto 0) := \"0111\";",
+            "constant WriteSnapshot: std_logic_vector(3 downto 0) := \"1000\";",
+            "signal internalState: std_logic_vector(3 downto 0) := ReadSnapshot;"
+        ]
+        let defaultComponents = [
+            "constant ReadSnapshot: std_logic_vector(2 downto 0) := \"000\";",
+            "constant OnEntry: std_logic_vector(2 downto 0) := \"001\";",
+            "constant NoOnEntry: std_logic_vector(2 downto 0) := \"010\";",
+            "constant CheckTransition: std_logic_vector(2 downto 0) := \"011\";",
+            "constant OnExit: std_logic_vector(2 downto 0) := \"100\";",
+            "constant Internal: std_logic_vector(2 downto 0) := \"101\";",
+            "constant WriteSnapshot: std_logic_vector(2 downto 0) := \"110\";",
+            "signal internalState: std_logic_vector(2 downto 0) := ReadSnapshot;"
+        ]
+        return foldWithNewLine(
+            components: machine.suspendedState == nil ? defaultComponents : suspensibleComponents,
             initial: "-- Internal State Representation Bits",
             indentation: 1
         )
@@ -72,11 +83,8 @@ public struct VHDLCompiler {
                 returnables + ["end if;"]
     }
     
-    private func readSnapshotLogic(machine: Machine, indentation: Int) -> String {
-        let initialState = toStateName(name: machine.states[machine.initialState].name)
-        let suspendedState = toStateName(name: machine.states[machine.suspendedState!].name)
-        let parameters = machine.isParameterised ? readParameterLogic(machine: machine) : []
-        return foldWithNewLineExceptFirst(
+    private func commandLogic(initialState: String, suspendedState: String, indentation: Int, parameters: [String]) -> String {
+        foldWithNewLineExceptFirst(
             components: parameters + [
                 "if (command = COMMAND_RESTART and currentState /= \(initialState)) then",
                 foldWithNewLineExceptFirst(
@@ -164,6 +172,26 @@ public struct VHDLCompiler {
                     initial: "",
                     indentation: indentation + 1
                 ),
+                "end if;"
+            ],
+            initial: "",
+            indentation: indentation
+        )
+    }
+    
+    private func readSnapshotLogic(machine: Machine, indentation: Int) -> String {
+        let parameters = machine.isParameterised ? readParameterLogic(machine: machine) : []
+        if machine.suspendedState != nil {
+            let initialState = toStateName(name: machine.states[machine.initialState].name)
+            let suspendedState = toStateName(name: machine.states[machine.suspendedState!].name)
+            return commandLogic(initialState: initialState, suspendedState: suspendedState, indentation: indentation, parameters: parameters)
+        }
+        return foldWithNewLineExceptFirst(
+            components: parameters + [
+                "if (previousRinglet /= currentState) then",
+                foldWithNewLine(components: ["internalState <= onEntry;"], initial: "", indentation: 1),
+                "else",
+                foldWithNewLine(components: ["internalState <= noOnEntry;"], initial: "", indentation: 1),
                 "end if;"
             ],
             initial: "",
@@ -499,13 +527,19 @@ public struct VHDLCompiler {
     }
     
     private func actionCase(machine: Machine, indentation: Int) -> String {
+        var suspendActions: [String] = []
+        if machine.suspendedState != nil {
+            suspendActions = [
+                "when OnResume =>",
+                onResume(machine: machine, indentation: indentation + 1),
+                "when OnSuspend =>",
+                onSuspend(machine: machine, indentation: indentation + 1)
+            ]
+        }
         let components = [
             "    when ReadSnapshot =>",
-            readSnapshot(machine: machine, indentation: indentation),
-            "when OnSuspend =>",
-            onSuspend(machine: machine, indentation: indentation + 1),
-            "when OnResume =>",
-            onResume(machine: machine, indentation: indentation + 1),
+            readSnapshot(machine: machine, indentation: indentation)
+        ] + suspendActions + [
             "when OnEntry =>",
             onEntry(machine: machine, indentation: indentation + 1),
             "when NoOnEntry =>",
@@ -610,25 +644,43 @@ public struct VHDLCompiler {
         return "\(variable.name): \(variable.type) range \(range.0) to \(range.1) := \(defaultValue)\(semiColon)" + (variable.comment == nil ? "" : " -- \(variable.comment!)")
     }
     
+    private func removeLastSemicolon(data: String) -> String {
+        var splitData = data.split(separator: "\n")
+        guard var lastLine = splitData.last else {
+            return data
+        }
+        lastLine.removeAll(where: { $0 == ";" })
+        splitData[splitData.count - 1] = lastLine
+        return foldWithNewLine(components: splitData.map { String($0) })
+    }
+    
     private func createPortBlock(machine: Machine) -> String {
         guard !machine.clocks.isEmpty else {
             fatalError("No clock found for machine")
         }
-        return """
-             port (
-         \(foldWithNewLine(components: machine.clocks.map { clockToSignal(clk: $0) }, initial: "", indentation: 2));
-         \(foldWithNewLine(components: machine.externalSignals.map { signalToEntityDeclaration(signal: $0) }, initial: indent(count: 2) + "suspended: out std_logic;", indentation: 2))
-         \(foldWithNewLine(
-            components: machine.isParameterised ? machine.parameterSignals.map { toParameterDeclaration(parameter: $0) } : [],
+        let declaration = removeLastSemicolon(data: foldWithNewLineExceptFirst(
+            components: [
+                foldWithNewLineExceptFirst(components: machine.clocks.map { clockToSignal(clk: $0) }, initial: "", indentation: 2),
+                foldWithNewLineExceptFirst(components: machine.externalSignals.map { signalToEntityDeclaration(signal: $0) }, initial: "", indentation: 2),
+                machine.suspendedState != nil ? "suspended: out std_logic;" : "",
+                foldWithNewLine(
+                   components: machine.isParameterised ? machine.parameterSignals.map { toParameterDeclaration(parameter: $0) } : [],
+                   initial: "",
+                   indentation: 2
+                ),
+                foldWithNewLine(
+                    components: machine.isParameterised ? machine.returnableSignals.map(toReturnDeclaration) : [],
+                    initial: "",
+                    indentation: 2
+                ),
+                machine.suspendedState != nil ? "command: in std_logic_vector(1 downto 0);" : ""
+            ],
             initial: "",
             indentation: 2
-         ))
-         \(foldWithNewLine(
-            components: machine.isParameterised ? machine.returnableSignals.map(toReturnDeclaration) : [],
-             initial: "",
-             indentation: 2
-         ))
-                 command: in std_logic_vector(1 downto 0)
+        ))
+        return """
+             port (
+                \(declaration)
              );
          """
     }
@@ -659,7 +711,7 @@ public struct VHDLCompiler {
     }
     
     private func clockToSignal(clk: Clock) -> String {
-        "\(clk.name): in std_logic"
+        "\(clk.name): in std_logic;"
     }
     
     private func foldWithNewLine(components: [String], initial: String = "", indentation: Int = 0) -> String {
@@ -736,8 +788,8 @@ public struct VHDLCompiler {
     private func stateRepresenation(machine: Machine) -> String {
         let states = machine.states
         let initialState = machine.states[machine.initialState].name
-        let suspendedState = machine.states[machine.suspendedState!].name
-        let defaultState = machine.isParameterised ? suspendedState : initialState
+        let suspendedState = machine.suspendedState != nil ? machine.states[machine.suspendedState!].name : ""
+        let defaultState = machine.isParameterised && machine.suspendedState != nil ? suspendedState : initialState
         let stateLength = findBinaryLength(count: states.count)
         return """
          -- State Representation Bits
@@ -751,9 +803,10 @@ public struct VHDLCompiler {
             components: [
                 "signal currentState: std_logic_vector(\(stateLength - 1) downto 0) := \(toStateName(name: defaultState));",
                 "signal targetState: std_logic_vector(\(stateLength - 1) downto 0) := \(toStateName(name: defaultState));",
-                "signal previousRinglet: std_logic_vector(\(stateLength - 1) downto 0) := \"\(String(repeating: "Z", count: stateLength) )\";",
+                "signal previousRinglet: std_logic_vector(\(stateLength - 1) downto 0) := \"\(String(repeating: "Z", count: stateLength) )\";"
+            ] + (machine.suspendedState == nil ? [] : [
                 "signal suspendedFrom: std_logic_vector(\(stateLength - 1) downto 0) := \(toStateName(name: initialState));"
-            ],
+            ]),
             initial: "",
             indentation: 1
          ))
@@ -874,7 +927,7 @@ public struct VHDLCompiler {
         let hasAfters = machine.states.indices.first(where: { hasAfterInTransition(state: $0, machine: machine) }) != nil
         return foldWithNewLine(
             components: [
-                internalStates,
+                internalStates(machine: machine),
                 stateRepresenation(machine: machine),
                 machine.suspendedState != nil ? suspensionCommands : "",
                 hasAfters ? afterVariables(driving: machine.clocks[machine.drivingClock]) : "",

@@ -60,7 +60,7 @@ public class VHDLMachinesCompilerTests: XCTestCase {
             states: [defaultState(name: "Initial"), defaultState(name: "Suspended"), defaultState(name: "State0")],
             transitions: [ VHDLMachines.Transition(condition: "false", source: 0, target: 1), VHDLMachines.Transition(condition: "after_ms(50) or after(2) or after_rt(20000) or after_ps(x * (5 + (2 - 3)))", source: 0, target: 1), VHDLMachines.Transition(condition: "true", source: 0, target: 1), VHDLMachines.Transition(condition: "xx = '1'", source: 1, target: 2), VHDLMachines.Transition(condition: "x = '1'", source: 1, target: 2), VHDLMachines.Transition(condition: "true", source: 1, target: 0) ],
             initialState: 0,
-            suspendedState: 1,
+            suspendedState: nil,
             architectureHead: "some code\n    with indentation\nend;",
             architectureBody: "some async code\n    with indentation\nend;"
         )
