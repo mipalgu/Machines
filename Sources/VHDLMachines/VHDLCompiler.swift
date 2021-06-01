@@ -10,56 +10,6 @@ import IO
 
 public struct VHDLCompiler {
     
-    struct RegexTransformation {
-        
-        var regex: NSRegularExpression
-        
-        var raw: String
-        
-        var transformation: String
-        
-        private func getValue(value: String) -> String? {
-            let components = value.components(separatedBy: "\(raw)")
-            guard components.count > 1 else {
-                return nil
-            }
-            return components[1]
-        }
-        
-        func parse(in string: String, matches: [NSTextCheckingResult]) -> String {
-            var workingString = string
-            var indexDifference = 0
-            matches.forEach {
-                guard let originalRange = Range($0.range) else {
-                    return
-                }
-                let size = originalRange.count
-                let lower = String.Index(utf16Offset: originalRange.lowerBound + indexDifference, in: workingString)
-                let upper = String.Index(utf16Offset: originalRange.upperBound + indexDifference, in: workingString)
-                let newRange = lower..<upper
-                let candidate = String(workingString[newRange])
-                guard let value = getValue(value: candidate) else {
-                    return
-                }
-                let newString = "(ringletCounter >= \(value) * \(transformation))"
-                let newStringSize = newString.count
-                indexDifference += newStringSize - size
-                workingString = workingString[String.Index(utf16Offset: 0, in: workingString)..<lower] + newString + workingString[upper..<String.Index(utf16Offset: workingString.count, in: workingString)]
-            }
-            return workingString
-        }
-        
-    }
-    
-    private var afters: [RegexTransformation] = [
-        RegexTransformation(regex: try! NSRegularExpression(pattern: "after_ps\\([\\w\\d\\s\\+\\-\\*/]+\\)"), raw: "after_ps",transformation: "RINGLETS_PER_PS"),
-        RegexTransformation(regex: try! NSRegularExpression(pattern: "after_ns\\([\\w\\d\\s\\+\\-\\*/]+\\)"), raw: "after_ns", transformation: "RINGLETS_PER_NS"),
-        RegexTransformation(regex: try! NSRegularExpression(pattern: "after_us\\([\\w\\d\\s\\+\\-\\*/]+\\)"), raw: "after_us", transformation: "RINGLETS_PER_US"),
-        RegexTransformation(regex: try! NSRegularExpression(pattern: "after_ms\\([\\w\\d\\s\\+\\-\\*/]+\\)"), raw: "after_ms",transformation: "RINGLETS_PER_MS"),
-        RegexTransformation(regex: try! NSRegularExpression(pattern: "after\\([\\w\\d\\s\\+\\-\\*/]+\\)"), raw: "after", transformation: "RINGLETS_PER_S")
-    ]
-    
-    
     private var helper: FileHelpers = FileHelpers()
     
     private var internalStates: String {
@@ -274,10 +224,13 @@ public struct VHDLCompiler {
     }
     
     private func actionForStates(machine: Machine, actionName: String, trailers: [String]? = nil) -> [String] {
-        guard let trailers = trailers else {
+        guard let unwrappedTrailers = trailers else {
             return machine.states.map { $0.actions[actionName] ?? "" }
         }
-        return machine.states.indices.map { machine.states[$0].actions[actionName] ?? "" + "\n" + trailers[$0] }
+        return machine.states.indices.map { (i: Int) -> String in
+            let actionCode = machine.states[i].actions[actionName] ?? ""
+            return foldWithNewLine(components: [actionCode, unwrappedTrailers[i]])
+        }
     }
     
     private func onEntry(machine: Machine, indentation: Int) -> String {
@@ -392,28 +345,6 @@ public struct VHDLCompiler {
         }
         return value
     }
-    
-    private func replaceAfter(value: String, regex: RegexTransformation) -> String {
-        "(ringlet_counter >= \(value) * \(regex.transformation))"
-    }
-    
-//    private func replaceAfters(condition: String) -> String {
-//        afters.reduce(condition) {
-//            let range = NSRange(location: 0, length: $0.utf16.count)
-//            let matches = $1.regex.matches(in: $0, options: [], range: range)
-//            if matches.count == 0 {
-//                return $0
-//            }
-//            return $1.parse(in: $0, matches: matches)
-//        }
-////        .sorted(by: {
-////            let lhs0 = $0.lowerBound
-////            let lhs1 = $0.upperBound
-////            let rhs0 = $1.range.lowerBound
-////            let rhs1 = $1.range.upperBound
-////            return (lhs0 < rhs0) || (lhs0 == rhs0 && lhs1 <= rhs1)
-////        })
-//    }
     
     private func replaceAfter(expression: String, after: String) -> String {
         if after == "after_ps" {
@@ -960,13 +891,9 @@ public struct VHDLCompiler {
     }
     
     private func hasAfter(condition: String) -> Bool {
-        let range = NSRange(location: 0, length: condition.utf16.count)
-        for transform in afters {
-            if transform.regex.firstMatch(in: condition, options: [], range: range) != nil {
-                return true
-            }
-        }
-        return false
+        condition.contains("after(") || condition.contains("after_ps(") ||
+            condition.contains("after_ns(") || condition.contains("after_us(") ||
+            condition.contains("after_ms(") || condition.contains("after_rt(")
     }
     
     private func hasAfterInTransition(state index: Int, machine: Machine) -> Bool {
