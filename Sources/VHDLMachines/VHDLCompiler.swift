@@ -64,16 +64,20 @@ public struct VHDLCompiler {
     }
     
     private func writeOutputLogic(machine: Machine) -> [String] {
-        ["if (currentState = \(toStateName(name: machine.states[machine.suspendedState!].name)))"] +
-            machine.returnableSignals.map { "    \(toReturnable(name: $0.name)) <= \($0.name);" } +
-        ["end if;"]
+        if !machine.isParameterised {
+            return []
+        }
+        let returnables = machine.returnableSignals.map { "    \(toReturnable(name: $0.name)) <= \($0.name);" }
+        return ["if (currentState = \(toStateName(name: machine.states[machine.suspendedState!].name)))"] +
+                returnables + ["end if;"]
     }
     
     private func readSnapshotLogic(machine: Machine, indentation: Int) -> String {
         let initialState = toStateName(name: machine.states[machine.initialState].name)
         let suspendedState = toStateName(name: machine.states[machine.suspendedState!].name)
+        let parameters = machine.isParameterised ? readParameterLogic(machine: machine) : []
         return foldWithNewLineExceptFirst(
-            components: readParameterLogic(machine: machine) + [
+            components: parameters + [
                 "if (command = COMMAND_RESTART and currentState /= \(initialState)) then",
                 foldWithNewLineExceptFirst(
                     components: [
@@ -615,12 +619,12 @@ public struct VHDLCompiler {
          \(foldWithNewLine(components: machine.clocks.map { clockToSignal(clk: $0) }, initial: "", indentation: 2));
          \(foldWithNewLine(components: machine.externalSignals.map { signalToEntityDeclaration(signal: $0) }, initial: indent(count: 2) + "suspended: out std_logic;", indentation: 2))
          \(foldWithNewLine(
-            components: machine.parameterSignals.map { toParameterDeclaration(parameter: $0) },
+            components: machine.isParameterised ? machine.parameterSignals.map { toParameterDeclaration(parameter: $0) } : [],
             initial: "",
             indentation: 2
          ))
          \(foldWithNewLine(
-             components: machine.returnableSignals.map(toReturnDeclaration),
+            components: machine.isParameterised ? machine.returnableSignals.map(toReturnDeclaration) : [],
              initial: "",
              indentation: 2
          ))
@@ -865,15 +869,20 @@ public struct VHDLCompiler {
     }
     
     private func createArhictecure(machine: Machine) -> String {
+        let parameters = machine.isParameterised ? parameters(machine: machine) : ""
+        let returns = machine.isParameterised ? outputs(machine: machine) : ""
+        let hasAfters = machine.states.indices.first(where: { hasAfterInTransition(state: $0, machine: machine) }) != nil
         return foldWithNewLine(
             components: [
                 internalStates,
                 stateRepresenation(machine: machine),
-                suspensionCommands,
-                afterVariables(driving: machine.clocks[machine.drivingClock]),
-                snapshots(machine: machine),
-                parameters(machine: machine),
-                outputs(machine: machine),
+                machine.suspendedState != nil ? suspensionCommands : "",
+                hasAfters ? afterVariables(driving: machine.clocks[machine.drivingClock]) : "",
+                snapshots(machine: machine)
+            ] + [
+                parameters,
+                returns
+            ] + [
                 machineVariables(signals: machine.machineSignals, variables: machine.machineVariables),
                 architectureHead(head: machine.architectureHead)
             ],
