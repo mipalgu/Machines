@@ -75,7 +75,7 @@ public struct VHDLCompiler {
     }
     
     private func writeOutputLogic(machine: Machine) -> [String] {
-        if !machine.isParameterised {
+        if !machine.isParameterised || machine.suspendedState == nil {
             return []
         }
         let returnables = machine.returnableSignals.map { "    \(toReturnable(name: $0.name)) <= \($0.name);" }
@@ -660,15 +660,15 @@ public struct VHDLCompiler {
         }
         let declaration = removeLastSemicolon(data: foldWithNewLineExceptFirst(
             components: [
-                foldWithNewLineExceptFirst(components: machine.clocks.map { clockToSignal(clk: $0) }, initial: "", indentation: 2),
+                " " + foldWithNewLineExceptFirst(components: machine.clocks.map { clockToSignal(clk: $0) }, initial: "", indentation: 2),
                 foldWithNewLineExceptFirst(components: machine.externalSignals.map { signalToEntityDeclaration(signal: $0) }, initial: "", indentation: 2),
                 machine.suspendedState != nil ? "suspended: out std_logic;" : "",
-                foldWithNewLine(
+                foldWithNewLineExceptFirst(
                    components: machine.isParameterised ? machine.parameterSignals.map { toParameterDeclaration(parameter: $0) } : [],
                    initial: "",
                    indentation: 2
                 ),
-                foldWithNewLine(
+                foldWithNewLineExceptFirst(
                     components: machine.isParameterised ? machine.returnableSignals.map(toReturnDeclaration) : [],
                     initial: "",
                     indentation: 2
