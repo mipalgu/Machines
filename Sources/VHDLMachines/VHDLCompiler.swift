@@ -649,7 +649,10 @@ public struct VHDLCompiler {
         guard var lastLine = splitData.last else {
             return data
         }
-        lastLine.removeAll(where: { $0 == ";" })
+        guard let lastIndex = lastLine.indices.reversed().first(where: { lastLine[$0] == ";" }) else {
+            return data
+        }
+        lastLine.remove(at: lastIndex)
         splitData[splitData.count - 1] = lastLine
         return foldWithNewLine(components: splitData.map { String($0) })
     }
