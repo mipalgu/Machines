@@ -400,7 +400,7 @@ public struct VHDLCompiler {
     private func replaceAfters(condition: String) -> String {
         afters.reduce(condition) {
             let range = NSRange(location: 0, length: $0.utf16.count)
-            let matches = $1.regex.matches(in: condition, options: [], range: range)
+            let matches = $1.regex.matches(in: $0, options: [], range: range)
             if matches.count == 0 {
                 return $0
             }
@@ -420,7 +420,7 @@ public struct VHDLCompiler {
         guard let before = transitionBefore else {
             return transformedExpression
         }
-        return "\(transformedExpression) and (not (\(before)))"
+        return "(\(transformedExpression)) and (not (\(before)))"
     }
     
     private func transitionsToCode(transitions: [VHDLTransition]) -> String {
