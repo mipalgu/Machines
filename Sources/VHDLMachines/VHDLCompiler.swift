@@ -397,22 +397,92 @@ public struct VHDLCompiler {
         "(ringlet_counter >= \(value) * \(regex.transformation))"
     }
     
-    private func replaceAfters(condition: String) -> String {
-        afters.reduce(condition) {
-            let range = NSRange(location: 0, length: $0.utf16.count)
-            let matches = $1.regex.matches(in: $0, options: [], range: range)
-            if matches.count == 0 {
-                return $0
-            }
-            return $1.parse(in: $0, matches: matches)
+//    private func replaceAfters(condition: String) -> String {
+//        afters.reduce(condition) {
+//            let range = NSRange(location: 0, length: $0.utf16.count)
+//            let matches = $1.regex.matches(in: $0, options: [], range: range)
+//            if matches.count == 0 {
+//                return $0
+//            }
+//            return $1.parse(in: $0, matches: matches)
+//        }
+////        .sorted(by: {
+////            let lhs0 = $0.lowerBound
+////            let lhs1 = $0.upperBound
+////            let rhs0 = $1.range.lowerBound
+////            let rhs1 = $1.range.upperBound
+////            return (lhs0 < rhs0) || (lhs0 == rhs0 && lhs1 <= rhs1)
+////        })
+//    }
+    
+    private func replaceAfter(expression: String, after: String) -> String {
+        if after == "after_ps" {
+            return "(ringletCounter >= (\(expression)) * RINGLETS_PER_PS)"
         }
-//        .sorted(by: {
-//            let lhs0 = $0.lowerBound
-//            let lhs1 = $0.upperBound
-//            let rhs0 = $1.range.lowerBound
-//            let rhs1 = $1.range.upperBound
-//            return (lhs0 < rhs0) || (lhs0 == rhs0 && lhs1 <= rhs1)
-//        })
+        if after == "after_ns" {
+            return "(ringletCounter >= (\(expression)) * RINGLETS_PER_NS)"
+        }
+        if after == "after_us" {
+            return "(ringletCounter >= (\(expression)) * RINGLETS_PER_US)"
+        }
+        if after == "after_ms" {
+            return "(ringletCounter >= (\(expression)) * RINGLETS_PER_MS)"
+        }
+        if after == "after" {
+            return "(ringletCounter >= (\(expression)) * RINGLETS_PER_S)"
+        }
+        return "(ringletCounter >= (\(expression)))"
+    }
+    
+    private func replaceAfters(condition: String) -> String {
+        var aftersStack: String = ""
+        var afterStack: String = ""
+        let afters: Set<String> = ["after_ps(", "after_ns(", "after_us(", "after_ms(", "after_rt("]
+        let after: Set<String> = ["after("]
+        var creatingAfter: Bool = false
+        var bracketCount: Int = 0
+        var expression: String = ""
+        var currentAfter: String = ""
+        var newString = ""
+        condition.forEach {
+            if creatingAfter {
+                if $0 == ")" {
+                    bracketCount -= 1
+                    if bracketCount == 0 {
+                        let replacement = replaceAfter(expression: expression, after: currentAfter)
+                        newString.append(replacement)
+                        creatingAfter = false
+                        return
+                    }
+                }else if $0 == "(" {
+                    bracketCount += 1
+                }
+                expression.append($0)
+                return
+            }
+            aftersStack.append($0)
+            afterStack.append($0)
+            newString.append($0)
+            if aftersStack.count > 9 {
+                aftersStack = String(aftersStack[String.Index(utf16Offset: 1, in: aftersStack)..<String.Index(utf16Offset: 10, in: aftersStack)])
+            }
+            if afterStack.count > 7 {
+                afterStack = String(afterStack[String.Index(utf16Offset: 1, in: afterStack)..<String.Index(utf16Offset: 8, in: afterStack)])
+            }
+            if afters.contains(aftersStack) {
+                bracketCount = 1
+                creatingAfter = true
+                currentAfter = String(aftersStack[String.Index(utf16Offset: 0, in: aftersStack)..<String.Index(utf16Offset: 9, in: aftersStack)])
+                newString.removeSubrange(String.Index(utf16Offset: newString.count - 9, in: newString)..<String.Index(utf16Offset: newString.count, in: newString))
+            }
+            if after.contains(afterStack) {
+                bracketCount = 1
+                creatingAfter = true
+                currentAfter = "after"
+                newString.removeSubrange(String.Index(utf16Offset: newString.count - 7, in: newString)..<String.Index(utf16Offset: newString.count, in: newString))
+            }
+        }
+        return newString
     }
     
     private func transitionExpression(expression: String, transitionBefore: String?) -> String {
