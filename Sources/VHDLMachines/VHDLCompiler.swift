@@ -663,7 +663,7 @@ public struct VHDLCompiler {
         }
         let declaration = removeLastSemicolon(data: foldWithNewLineExceptFirst(
             components: [
-                " " + foldWithNewLineExceptFirst(components: machine.clocks.map { clockToSignal(clk: $0) }, initial: "", indentation: 2),
+                foldWithNewLineExceptFirst(components: machine.clocks.map { clockToSignal(clk: $0) }, initial: "", indentation: 2),
                 foldWithNewLineExceptFirst(components: machine.externalSignals.map { signalToEntityDeclaration(signal: $0) }, initial: "", indentation: 2),
                 machine.suspendedState != nil ? "suspended: out std_logic;" : "",
                 foldWithNewLineExceptFirst(
@@ -683,7 +683,7 @@ public struct VHDLCompiler {
         ))
         return """
              port (
-                \(declaration)
+                 \(declaration)
              );
          """
     }
