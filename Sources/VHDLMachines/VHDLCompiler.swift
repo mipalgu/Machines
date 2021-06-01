@@ -236,7 +236,7 @@ public struct VHDLCompiler {
     private func onEntry(machine: Machine, indentation: Int) -> String {
         let trailers: [String] = machine.states.indices.map { hasAfterInTransition(state: $0, machine: machine) }.map {
             if $0 {
-                return "ringlet_count := 0;"
+                return "ringlet_counter := 0;"
             }
             return ""
         }
@@ -258,27 +258,48 @@ public struct VHDLCompiler {
     }
     
     private func internalAction(machine: Machine, indentation: Int) -> String {
-        codeForStatesStatement(
+        let trailers: [String] = machine.states.indices.map { hasAfterInTransition(state: $0, machine: machine) }.map {
+            if $0 {
+                return "ringlet_counter := ringlet_counter + 1;"
+            }
+            return ""
+        }
+        return codeForStatesStatement(
             names: machine.states.map(\.name),
-            code: actionForStates(machine: machine, actionName: "Internal"),
+            code: actionForStates(machine: machine, actionName: "Internal", trailers: trailers),
             indentation: indentation,
             trailer: "internalState <= WriteSnapshot;"
         )
     }
     
-    private func actionsForStates(machine: Machine, actionsNames: [String]) -> [String] {
-        machine.states.map { state in
+    private func actionsForStates(machine: Machine, actionsNames: [String], trailers: [String]? = nil) -> [String] {
+        guard let unwrappedTrailers = trailers else {
+            return machine.states.map { state in
+                let actions = actionsNames.map { name in
+                    state.actions[name] ?? ""
+                }
+                return foldWithNewLine(components: actions)
+            }
+        }
+        return machine.states.indices.map { index in
+            let state = machine.states[index]
             let actions = actionsNames.map { name in
                 state.actions[name] ?? ""
             }
-            return foldWithNewLine(components: actions)
+            return foldWithNewLine(components: actions + [unwrappedTrailers[index]])
         }
     }
     
     private func onResume(machine: Machine, indentation: Int) -> String {
-        codeForStatesStatement(
+        let trailers = machine.states.indices.map { (index: Int) -> String in
+            if hasAfterInTransition(state: index, machine: machine) {
+                return "ringlet_counter := 0;"
+            }
+            return ""
+        }
+        return codeForStatesStatement(
             names: machine.states.map(\.name),
-            code: actionsForStates(machine: machine, actionsNames: ["OnResume", "OnEntry"]),
+            code: actionsForStates(machine: machine, actionsNames: ["OnResume", "OnEntry"], trailers: trailers),
             indentation: indentation,
             trailer: "internalState <= CheckTransition;"
         )
@@ -348,21 +369,21 @@ public struct VHDLCompiler {
     
     private func replaceAfter(expression: String, after: String) -> String {
         if after == "after_ps" {
-            return "(ringletCounter >= (\(expression)) * RINGLETS_PER_PS)"
+            return "(ringlet_counter >= (\(expression)) * RINGLETS_PER_PS)"
         }
         if after == "after_ns" {
-            return "(ringletCounter >= (\(expression)) * RINGLETS_PER_NS)"
+            return "(ringlet_counter >= (\(expression)) * RINGLETS_PER_NS)"
         }
         if after == "after_us" {
-            return "(ringletCounter >= (\(expression)) * RINGLETS_PER_US)"
+            return "(ringlet_counter >= (\(expression)) * RINGLETS_PER_US)"
         }
         if after == "after_ms" {
-            return "(ringletCounter >= (\(expression)) * RINGLETS_PER_MS)"
+            return "(ringlet_counter >= (\(expression)) * RINGLETS_PER_MS)"
         }
         if after == "after" {
-            return "(ringletCounter >= (\(expression)) * RINGLETS_PER_S)"
+            return "(ringlet_counter >= (\(expression)) * RINGLETS_PER_S)"
         }
-        return "(ringletCounter >= (\(expression)))"
+        return "(ringlet_counter >= (\(expression)))"
     }
     
     private func replaceAfters(condition: String) -> String {
