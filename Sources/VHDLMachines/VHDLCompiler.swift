@@ -357,17 +357,15 @@ public struct VHDLCompiler {
         
     }
     
-    private func toDecimal(value: String) -> String {
-        if let intVal = Int(value) {
-            return "\(intVal).0"
+    private func toDecimal(expression: String) -> String {
+        guard let decimal = Double(expression) else {
+            return expression
         }
-        if let doubleVal = Double(value) {
-            return "\(doubleVal)"
-        }
-        return value
+        return String(decimal)
     }
     
     private func replaceAfter(expression: String, after: String) -> String {
+        let expression = toDecimal(expression: expression)
         if after == "after_ps" {
             return "(ringlet_counter >= (\(expression)) * RINGLETS_PER_PS)"
         }
