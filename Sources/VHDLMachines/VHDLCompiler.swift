@@ -450,6 +450,7 @@ public struct VHDLCompiler {
                     bracketCount -= 1
                     if bracketCount == 0 {
                         let replacement = replaceAfter(expression: expression, after: currentAfter)
+                        expression = ""
                         newString.append(replacement)
                         creatingAfter = false
                         return
@@ -464,22 +465,22 @@ public struct VHDLCompiler {
             afterStack.append($0)
             newString.append($0)
             if aftersStack.count > 9 {
-                aftersStack = String(aftersStack[String.Index(utf16Offset: 1, in: aftersStack)..<String.Index(utf16Offset: 10, in: aftersStack)])
+                aftersStack = String(aftersStack[String.Index(utf16Offset: 1, in: aftersStack)..<String.Index(utf16Offset: aftersStack.count, in: aftersStack)])
             }
-            if afterStack.count > 7 {
-                afterStack = String(afterStack[String.Index(utf16Offset: 1, in: afterStack)..<String.Index(utf16Offset: 8, in: afterStack)])
+            if afterStack.count > 6 {
+                afterStack = String(afterStack[String.Index(utf16Offset: 1, in: afterStack)..<String.Index(utf16Offset: afterStack.count, in: afterStack)])
             }
             if afters.contains(aftersStack) {
                 bracketCount = 1
                 creatingAfter = true
-                currentAfter = String(aftersStack[String.Index(utf16Offset: 0, in: aftersStack)..<String.Index(utf16Offset: 9, in: aftersStack)])
+                currentAfter = String(aftersStack[String.Index(utf16Offset: 0, in: aftersStack)..<String.Index(utf16Offset: 8, in: aftersStack)])
                 newString.removeSubrange(String.Index(utf16Offset: newString.count - 9, in: newString)..<String.Index(utf16Offset: newString.count, in: newString))
             }
             if after.contains(afterStack) {
                 bracketCount = 1
                 creatingAfter = true
                 currentAfter = "after"
-                newString.removeSubrange(String.Index(utf16Offset: newString.count - 7, in: newString)..<String.Index(utf16Offset: newString.count, in: newString))
+                newString.removeSubrange(String.Index(utf16Offset: newString.count - 6, in: newString)..<String.Index(utf16Offset: newString.count, in: newString))
             }
         }
         return newString
