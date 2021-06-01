@@ -223,14 +223,26 @@ public struct VHDLCompiler {
         )
     }
     
-    private func actionForStates(machine: Machine, actionName: String) -> [String] {
-        machine.states.map { $0.actions[actionName] ?? "" }
+    private func actionForStates(machine: Machine, actionName: String, trailers: [String]? = nil) -> [String] {
+        guard let unwrappedTrailers = trailers else {
+            return machine.states.map { $0.actions[actionName] ?? "" }
+        }
+        return machine.states.indices.map { (i: Int) -> String in
+            let actionCode = machine.states[i].actions[actionName] ?? ""
+            return foldWithNewLine(components: [actionCode, unwrappedTrailers[i]])
+        }
     }
     
     private func onEntry(machine: Machine, indentation: Int) -> String {
-        codeForStatesStatement(
+        let trailers: [String] = machine.states.indices.map { hasAfterInTransition(state: $0, machine: machine) }.map {
+            if $0 {
+                return "ringlet_counter := 0;"
+            }
+            return ""
+        }
+        return codeForStatesStatement(
             names: machine.states.map(\.name),
-            code: actionForStates(machine: machine, actionName: "OnEntry"),
+            code: actionForStates(machine: machine, actionName: "OnEntry", trailers: trailers),
             indentation: indentation,
             trailer: "internalState <= CheckTransition;"
         )
@@ -246,27 +258,48 @@ public struct VHDLCompiler {
     }
     
     private func internalAction(machine: Machine, indentation: Int) -> String {
-        codeForStatesStatement(
+        let trailers: [String] = machine.states.indices.map { hasAfterInTransition(state: $0, machine: machine) }.map {
+            if $0 {
+                return "ringlet_counter := ringlet_counter + 1;"
+            }
+            return ""
+        }
+        return codeForStatesStatement(
             names: machine.states.map(\.name),
-            code: actionForStates(machine: machine, actionName: "Internal"),
+            code: actionForStates(machine: machine, actionName: "Internal", trailers: trailers),
             indentation: indentation,
             trailer: "internalState <= WriteSnapshot;"
         )
     }
     
-    private func actionsForStates(machine: Machine, actionsNames: [String]) -> [String] {
-        machine.states.map { state in
+    private func actionsForStates(machine: Machine, actionsNames: [String], trailers: [String]? = nil) -> [String] {
+        guard let unwrappedTrailers = trailers else {
+            return machine.states.map { state in
+                let actions = actionsNames.map { name in
+                    state.actions[name] ?? ""
+                }
+                return foldWithNewLine(components: actions)
+            }
+        }
+        return machine.states.indices.map { index in
+            let state = machine.states[index]
             let actions = actionsNames.map { name in
                 state.actions[name] ?? ""
             }
-            return foldWithNewLine(components: actions)
+            return foldWithNewLine(components: actions + [unwrappedTrailers[index]])
         }
     }
     
     private func onResume(machine: Machine, indentation: Int) -> String {
-        codeForStatesStatement(
+        let trailers = machine.states.indices.map { (index: Int) -> String in
+            if hasAfterInTransition(state: index, machine: machine) {
+                return "ringlet_counter := 0;"
+            }
+            return ""
+        }
+        return codeForStatesStatement(
             names: machine.states.map(\.name),
-            code: actionsForStates(machine: machine, actionsNames: ["OnResume", "OnEntry"]),
+            code: actionsForStates(machine: machine, actionsNames: ["OnResume", "OnEntry"], trailers: trailers),
             indentation: indentation,
             trailer: "internalState <= CheckTransition;"
         )
@@ -324,11 +357,93 @@ public struct VHDLCompiler {
         
     }
     
-    private func transitionExpression(expression: String, transitionBefore: String?) -> String {
-        guard let before = transitionBefore else {
-            return expression
+    private func toDecimal(value: String) -> String {
+        if let intVal = Int(value) {
+            return "\(intVal).0"
         }
-        return "\(expression) and (not (\(before)))"
+        if let doubleVal = Double(value) {
+            return "\(doubleVal)"
+        }
+        return value
+    }
+    
+    private func replaceAfter(expression: String, after: String) -> String {
+        if after == "after_ps" {
+            return "(ringlet_counter >= (\(expression)) * RINGLETS_PER_PS)"
+        }
+        if after == "after_ns" {
+            return "(ringlet_counter >= (\(expression)) * RINGLETS_PER_NS)"
+        }
+        if after == "after_us" {
+            return "(ringlet_counter >= (\(expression)) * RINGLETS_PER_US)"
+        }
+        if after == "after_ms" {
+            return "(ringlet_counter >= (\(expression)) * RINGLETS_PER_MS)"
+        }
+        if after == "after" {
+            return "(ringlet_counter >= (\(expression)) * RINGLETS_PER_S)"
+        }
+        return "(ringlet_counter >= (\(expression)))"
+    }
+    
+    private func replaceAfters(condition: String) -> String {
+        var aftersStack: String = ""
+        var afterStack: String = ""
+        let afters: Set<String> = ["after_ps(", "after_ns(", "after_us(", "after_ms(", "after_rt("]
+        let after: Set<String> = ["after("]
+        var creatingAfter: Bool = false
+        var bracketCount: Int = 0
+        var expression: String = ""
+        var currentAfter: String = ""
+        var newString = ""
+        condition.forEach {
+            if creatingAfter {
+                if $0 == ")" {
+                    bracketCount -= 1
+                    if bracketCount == 0 {
+                        let replacement = replaceAfter(expression: expression, after: currentAfter)
+                        expression = ""
+                        newString.append(replacement)
+                        creatingAfter = false
+                        return
+                    }
+                }else if $0 == "(" {
+                    bracketCount += 1
+                }
+                expression.append($0)
+                return
+            }
+            aftersStack.append($0)
+            afterStack.append($0)
+            newString.append($0)
+            if aftersStack.count > 9 {
+                aftersStack = String(aftersStack[String.Index(utf16Offset: 1, in: aftersStack)..<String.Index(utf16Offset: aftersStack.count, in: aftersStack)])
+            }
+            if afterStack.count > 6 {
+                afterStack = String(afterStack[String.Index(utf16Offset: 1, in: afterStack)..<String.Index(utf16Offset: afterStack.count, in: afterStack)])
+            }
+            if afters.contains(aftersStack) {
+                bracketCount = 1
+                creatingAfter = true
+                currentAfter = String(aftersStack[String.Index(utf16Offset: 0, in: aftersStack)..<String.Index(utf16Offset: 8, in: aftersStack)])
+                newString.removeSubrange(String.Index(utf16Offset: newString.count - 9, in: newString)..<String.Index(utf16Offset: newString.count, in: newString))
+            }
+            if after.contains(afterStack) {
+                bracketCount = 1
+                creatingAfter = true
+                currentAfter = "after"
+                newString.removeSubrange(String.Index(utf16Offset: newString.count - 6, in: newString)..<String.Index(utf16Offset: newString.count, in: newString))
+            }
+        }
+        return newString
+    }
+    
+    private func transitionExpression(expression: String, transitionBefore: String?) -> String {
+        let transformedExpression = replaceAfters(condition: expression)
+        guard let before = transitionBefore else {
+            return transformedExpression
+        }
+        return "(\(transformedExpression)) and (not (\(before)))"
     }
     
     private func transitionsToCode(transitions: [VHDLTransition]) -> String {
@@ -794,6 +909,19 @@ public struct VHDLCompiler {
         let newList = Array(components[1..<components.count])
         return foldWithNewLine(components: [components[0]], initial: initial, indentation: 0) +
             "\n" + foldWithNewLine(components: newList, initial: "", indentation: indentation)
+    }
+    
+    private func hasAfter(condition: String) -> Bool {
+        condition.contains("after(") || condition.contains("after_ps(") ||
+            condition.contains("after_ns(") || condition.contains("after_us(") ||
+            condition.contains("after_ms(") || condition.contains("after_rt(")
+    }
+    
+    private func hasAfterInTransition(state index: Int, machine: Machine) -> Bool {
+        let transitions = machine.transitions.filter { $0.source == index}
+        return transitions.first(where: {
+            hasAfter(condition: $0.condition)
+        }) != nil
     }
     
 }
