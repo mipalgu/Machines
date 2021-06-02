@@ -7,7 +7,7 @@
 
 import Attributes
 
-struct SchemaMutator<Schema: SchemaProtocol>: MachineMutator where Schema.Root == Machine {
+struct SchemaMutator<Schema: MachineSchema>: MachineMutator {
 
     var schema: Schema
     
@@ -24,7 +24,7 @@ struct SchemaMutator<Schema: SchemaProtocol>: MachineMutator where Schema.Root =
     }
     
     func newState(machine: inout Machine) -> Result<Bool, AttributeError<Machine>> {
-        
+//        schema.didCreateNewState(machine: &<#T##Machine#>, state: <#T##State#>, index: <#T##Int#>)
     }
     
     func validate(machine: Machine) throws {
