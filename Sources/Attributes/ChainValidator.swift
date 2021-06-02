@@ -7,13 +7,13 @@
 
 import Foundation
 
-struct ChainValidator<Path: ReadOnlyPathProtocol>: ValidatorProtocol {
+struct ChainValidator<Path: ReadOnlyPathProtocol, Validator: ValidatorProtocol>: ValidatorProtocol where Path.Value == Validator.Root {
 
   var path: Path
 
-  var validator: AnyValidator<Path.Value>
+  var validator: Validator
 
-  init(path: Path, validator: AnyValidator<Path.Value>) {
+  init(path: Path, validator: Validator) {
     self.path = path
     self.validator = validator
   }
