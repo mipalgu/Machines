@@ -11,4 +11,8 @@ struct VHDLMachinesSchema: SchemaProtocol {
     
     typealias Root = Machine
     
+    let trigger: AnyTrigger<Root>
+    
+    let validator: AnyValidator<Machine>
+    
 }

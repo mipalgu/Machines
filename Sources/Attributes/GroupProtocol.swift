@@ -13,6 +13,8 @@ public protocol GroupProtocol {
     
     var properties: [SchemaProperty<AttributeGroup>] { get }
     
+    var validator: AnyValidator<AttributeGroup> { get }
+    
 }
 
 extension GroupProtocol {
@@ -25,6 +27,19 @@ extension GroupProtocol {
             }
             return nil
         }
+    }
+    
+    private func propertyToValidator(property: SchemaProperty<AttributeGroup>) -> AnyValidator<AttributeGroup> {
+        switch property {
+        case .property(let attribute):
+            return attribute.validate
+        }
+    }
+    
+    public var validator: AnyValidator<AttributeGroup>  {
+        AnyValidator(properties.map {
+            propertyToValidator(property: $0)
+        })
     }
     
     func findProperty<Path: PathProtocol>(path: Path) -> SchemaProperty<Path.Root>? where Path.Root == Root {

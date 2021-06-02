@@ -7,15 +7,15 @@
 
 public struct SchemaAttribute<Root> {
     
-    var available: Bool
+    public var available: Bool
     
-    var label: String
+    public var label: String
     
-    var trigger: AnyTrigger<Root>
+    public var trigger: AnyTrigger<Root>
     
-    var type: AttributeType
+    public var type: AttributeType
     
-    var validate: AnyValidator<Root>
+    public var validate: AnyValidator<Root>
     
     public init(available: Bool, label: String, trigger: AnyTrigger<Root>, type: AttributeType, validate: AnyValidator<Root>) {
         self.available = available

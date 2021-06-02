@@ -60,6 +60,10 @@ import Foundation
 
 public protocol Modifiable {
     
+    static var path: Path<Self, Self> { get }
+    
+    var attributes: [AttributeGroup] { get }
+    
     var errorBag: ErrorBag<Self> { get }
     
     /// Add a new item to a table/collection attribute.
