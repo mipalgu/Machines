@@ -16,28 +16,28 @@ struct SchemaMutator<Schema: MachineSchema>: MachineMutator {
     
     func newDependency(_ dependency: MachineDependency, machine: inout Machine) -> Result<Bool, AttributeError<Machine>> {
         guard let index = machine.dependencies.firstIndex(where: { $0 == dependency }) else {
-            return .failure(.init(message: "Failed to find added dependency", path: Machine.path.dependencies))
+            return .failure(AttributeError(message: "Failed to find added dependency", path: Machine.path.dependencies))
         }
         return schema.didCreateDependency(machine: &machine, dependency: dependency, index: index)
     }
     
     func newState(machine: inout Machine) -> Result<Bool, AttributeError<Machine>> {
         guard let newState = machine.states.last, let index = machine.states.lastIndex(of: newState) else {
-            return .failure(.init(message: "Failed to find added state", path: Machine.path.states))
+            return .failure(AttributeError(message: "Failed to find added state", path: Machine.path.states))
         }
         return schema.didCreateNewState(machine: &machine, state: newState, index: index)
     }
     
     func newTransition(source: StateName, target: StateName, condition: Expression?, machine: inout Machine) -> Result<Bool, AttributeError<Machine>> {
         guard let stateIndex = machine.states.firstIndex(where: { $0.name == source }) else {
-            return .failure(.init(message: "Failed to find state for new transition", path: Machine.path.states))
+            return .failure(AttributeError(message: "Failed to find state for new transition", path: Machine.path.states))
         }
         guard
             let transitionIndex = machine.states[stateIndex].transitions.lastIndex(where: {
                 $0.condition == (condition ?? "") && $0.target == target
             })
         else {
-            return .failure(.init(message: "Failed to find added transition", path: Machine.path.states[stateIndex].transitions))
+            return .failure(AttributeError(message: "Failed to find added transition", path: Machine.path.states[stateIndex].transitions))
         }
         let transition = machine.states[stateIndex].transitions[transitionIndex]
         return schema.didCreateNewTransition(machine: &machine, transition: transition, stateIndex: stateIndex, transitionIndex: transitionIndex)
@@ -65,7 +65,7 @@ struct SchemaMutator<Schema: MachineSchema>: MachineMutator {
     
     func delete(transitions: IndexSet, attachedTo sourceState: StateName, machine: inout Machine) -> Result<Bool, AttributeError<Machine>> {
         guard let stateIndex = machine.states.firstIndex(where: { $0.name == sourceState }) else {
-            return .failure(.init(message: "Failed to find state for deleted transitions", path: Machine.path.states))
+            return .failure(AttributeError(message: "Failed to find state for deleted transitions", path: Machine.path.states))
         }
         let state = machine.states[stateIndex]
         let deletedTransitions = state.transitions.indices.compactMap { (i: Int) -> Transition? in
@@ -89,7 +89,7 @@ struct SchemaMutator<Schema: MachineSchema>: MachineMutator {
     
     func deleteTransition(atIndex index: Int, attachedTo sourceState: StateName, machine: inout Machine) -> Result<Bool, AttributeError<Machine>> {
         guard let stateIndex = machine.states.firstIndex(where: { $0.name == sourceState }) else {
-            return .failure(.init(message: "Failed to find state for deleted transition", path: Machine.path.states))
+            return .failure(AttributeError(message: "Failed to find state for deleted transition", path: Machine.path.states))
         }
         return schema.didDeleteTransition(machine: &machine, transition: machine.states[stateIndex].transitions[index], stateIndex: stateIndex, at: index)
     }
