@@ -319,7 +319,8 @@ public struct Machine: PathContainer, Modifiable, MutatorContainer, Dependencies
     }
     
     public mutating func moveItems<Path: PathProtocol, T>(table attribute: Path, from source: IndexSet, to destination: Int) -> Result<Bool, AttributeError<Machine>> where Path.Root == Machine, Path.Value == [T]  {
-        let items = self[keyPath: path.keyPath].enumerated().filter { source.contains($0.0) }.map(\.element)
+        let indices = Array(source)
+        let items = indices.map { self[keyPath: attribute.keyPath][$0] }
         self[keyPath: attribute.path].move(fromOffsets: source, toOffset: destination)
         return perform { [mutator] machine in
             mutator.didMoveItems(attribute: attribute, machine: &machine, from: source, to: destination, items: items)
