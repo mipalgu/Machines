@@ -8,90 +8,46 @@
 import Foundation
 import Attributes
 
-struct SchemaMutator<Schema: MachineSchema>: MachineMutator {
+struct SchemaMutator<Schema: MachineSchema>: MachineMutator, MachineModifier, MachineAttributesMutator {
     
     var dependencyLayout: [Field]
 
     var schema: Schema
     
-    func newDependency(_ dependency: MachineDependency, machine: inout Machine) -> Result<Bool, AttributeError<Machine>> {
-        guard let index = machine.dependencies.firstIndex(where: { $0 == dependency }) else {
-            return .failure(AttributeError(message: "Failed to find added dependency", path: Machine.path.dependencies))
-        }
-        return schema.didCreateDependency(machine: &machine, dependency: dependency, index: index)
+    func didCreateDependency(machine: inout Machine, dependency: MachineDependency, index: Int) -> Result<Bool, AttributeError<Machine>> {
+        schema.didCreateDependency(machine: &machine, dependency: dependency, index: index)
     }
     
-    func newState(machine: inout Machine) -> Result<Bool, AttributeError<Machine>> {
-        guard let newState = machine.states.last, let index = machine.states.lastIndex(of: newState) else {
-            return .failure(AttributeError(message: "Failed to find added state", path: Machine.path.states))
-        }
-        return schema.didCreateNewState(machine: &machine, state: newState, index: index)
+    func didCreateNewState(machine: inout Machine, state: State, index: Int) -> Result<Bool, AttributeError<Machine>> {
+        schema.didCreateNewState(machine: &machine, state: state, index: index)
     }
     
-    func newTransition(source: StateName, target: StateName, condition: Expression?, machine: inout Machine) -> Result<Bool, AttributeError<Machine>> {
-        guard let stateIndex = machine.states.firstIndex(where: { $0.name == source }) else {
-            return .failure(AttributeError(message: "Failed to find state for new transition", path: Machine.path.states))
-        }
-        guard
-            let transitionIndex = machine.states[stateIndex].transitions.lastIndex(where: {
-                $0.condition == (condition ?? "") && $0.target == target
-            })
-        else {
-            return .failure(AttributeError(message: "Failed to find added transition", path: Machine.path.states[stateIndex].transitions))
-        }
-        let transition = machine.states[stateIndex].transitions[transitionIndex]
-        return schema.didCreateNewTransition(machine: &machine, transition: transition, stateIndex: stateIndex, transitionIndex: transitionIndex)
+    func didCreateNewTransition(machine: inout Machine, transition: Transition, stateIndex: Int, transitionIndex: Int) -> Result<Bool, AttributeError<Machine>> {
+        schema.didCreateNewTransition(machine: &machine, transition: transition, stateIndex: stateIndex, transitionIndex: transitionIndex)
     }
     
-    func delete(dependencies: IndexSet, machine: inout Machine) -> Result<Bool, AttributeError<Machine>> {
-        let dependencyArray = machine.dependencies.indices.compactMap { (i: Int) -> MachineDependency? in
-            if dependencies.contains(i) {
-                return machine.dependencies[i]
-            }
-            return nil
-        }
-        return schema.didDeleteDependencies(machine: &machine, dependency: dependencyArray, at: dependencies)
+    func didDeleteDependencies(machine: inout Machine, dependency: [MachineDependency], at: IndexSet) -> Result<Bool, AttributeError<Machine>> {
+        schema.didDeleteDependencies(machine: &machine, dependency: dependency, at: at)
     }
     
-    func delete(states: IndexSet, machine: inout Machine) -> Result<Bool, AttributeError<Machine>> {
-        let statesArray = machine.states.indices.compactMap { (i: Int) -> State? in
-            if states.contains(i) {
-                return machine.states[i]
-            }
-            return nil
-        }
-        return schema.didDeleteStates(machine: &machine, state: statesArray, at: states)
+    func didDeleteStates(machine: inout Machine, state: [State], at: IndexSet) -> Result<Bool, AttributeError<Machine>> {
+        schema.didDeleteStates(machine: &machine, state: state, at: at)
     }
     
-    func delete(transitions: IndexSet, attachedTo sourceState: StateName, machine: inout Machine) -> Result<Bool, AttributeError<Machine>> {
-        guard let stateIndex = machine.states.firstIndex(where: { $0.name == sourceState }) else {
-            return .failure(AttributeError(message: "Failed to find state for deleted transitions", path: Machine.path.states))
-        }
-        let state = machine.states[stateIndex]
-        let deletedTransitions = state.transitions.indices.compactMap { (i: Int) -> Transition? in
-            if transitions.contains(i) {
-                return state.transitions[i]
-            }
-            return nil
-        }
-        return schema.didDeleteTransitions(machine: &machine, transition: deletedTransitions, stateIndex: stateIndex, at: transitions)
+    func didDeleteTransitions(machine: inout Machine, transition: [Transition], stateIndex: Int, at: IndexSet) -> Result<Bool, AttributeError<Machine>> {
+        schema.didDeleteTransitions(machine: &machine, transition: transition, stateIndex: stateIndex, at: at)
     }
     
-    func deleteDependency(atIndex index: Int, machine: inout Machine) -> Result<Bool, AttributeError<Machine>> {
-        let dependency = machine.dependencies[index]
-        return schema.didDeleteDependency(machine: &machine, dependency: dependency, at: index)
+    func didDeleteDependency(machine: inout Machine, dependency: MachineDependency, at: Int) -> Result<Bool, AttributeError<Machine>> {
+        schema.didDeleteDependency(machine: &machine, dependency: dependency, at: at)
     }
     
-    func deleteState(atIndex index: Int, machine: inout Machine) -> Result<Bool, AttributeError<Machine>> {
-        let state = machine.states[index]
-        return schema.didDeleteState(machine: &machine, state: state, at: index)
+    func didDeleteState(machine: inout Machine, state: State, at: Int) -> Result<Bool, AttributeError<Machine>> {
+        schema.didDeleteState(machine: &machine, state: state, at: at)
     }
     
-    func deleteTransition(atIndex index: Int, attachedTo sourceState: StateName, machine: inout Machine) -> Result<Bool, AttributeError<Machine>> {
-        guard let stateIndex = machine.states.firstIndex(where: { $0.name == sourceState }) else {
-            return .failure(AttributeError(message: "Failed to find state for deleted transition", path: Machine.path.states))
-        }
-        return schema.didDeleteTransition(machine: &machine, transition: machine.states[stateIndex].transitions[index], stateIndex: stateIndex, at: index)
+    func didDeleteTransition(machine: inout Machine, transition: Transition, stateIndex: Int, at: Int) -> Result<Bool, AttributeError<Machine>> {
+        schema.didDeleteTransition(machine: &machine, transition: transition, stateIndex: stateIndex, at: at)
     }
     
     private func findTrigger<Path: PathProtocol, T>(path: Path) -> AnyTrigger<Machine> where Path.Root == Machine, Path.Value == T {
@@ -102,14 +58,13 @@ struct SchemaMutator<Schema: MachineSchema>: MachineMutator {
         return schema.trigger
     }
     
-    func addItem<Path, T>(_ item: T, to attribute: Path, machine: inout Machine) -> Result<Bool, AttributeError<Path.Root>> where Path : PathProtocol, Path.Root == Machine, Path.Value == [T] {
+    func didAddItem<Path, T>(_ item: T, to attribute: Path, machine: inout Machine) -> Result<Bool, AttributeError<Path.Root>> where Path : PathProtocol, Path.Root == Machine, Path.Value == [T] {
         let trigger = findTrigger(path: attribute)
-        machine[keyPath: attribute.path].append(item)
         return trigger.performTrigger(&machine)
     }
     
-    func deleteItems<Path: PathProtocol, T>(table attribute: Path, items: IndexSet, machine: inout Machine) -> Result<Bool, AttributeError<Path.Root>> where Path.Root == Machine, Path.Value == [T] {
-        let indexes = Array<Int>(items).sorted(by: >)
+    func didDeleteItems<Path: PathProtocol, T>(table attribute: Path, indices: IndexSet, machine: inout Machine, items: [T]) -> Result<Bool, AttributeError<Path.Root>> where Path.Root == Machine, Path.Value == [T] {
+        let indexes = Array<Int>(indices).sorted(by: >)
         let trigger = AnyTrigger<Machine>(indexes.map { findTrigger(path: attribute[$0]) })
         indexes.forEach {
             machine[keyPath: attribute.path].remove(at: $0)

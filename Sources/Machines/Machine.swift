@@ -330,15 +330,22 @@ public struct Machine: PathContainer, Modifiable, MutatorContainer, Dependencies
             return .failure(AttributeError<Machine>(message: "The dependency '\(dependency.name)' already exists.", path: self.path.dependencies[self.dependencies.count]))
         }
         self.dependencies.append(dependency)
+        guard let index = self.dependencies.firstIndex(where: { $0 == dependency }) else {
+            return .failure(AttributeError(message: "Failed to find added dependency", path: Machine.path.dependencies))
+        }
         return perform { [mutator] machine in
-            mutator.newDependency(dependency, machine: &machine)
+            mutator.didCreateDependency(machine: &machine, dependency: dependency, index: index)
         }
     }
     
     /// Add a new empty state to the machine.
     public mutating func newState() -> Result<Bool, AttributeError<Machine>> {
-        perform { [mutator] machine in
-            mutator.newState(machine: &machine)
+        // NEED TO CREATE STATE HERE
+        guard let newState = self.states.last, let index = self.states.lastIndex(of: newState) else {
+            return .failure(AttributeError(message: "Failed to find added state", path: Machine.path.states))
+        }
+        return perform { [mutator] machine in
+            mutator.didCreateNewState(machine: &machine, state: newState, index: index)
         }
     }
     
@@ -350,9 +357,17 @@ public struct Machine: PathContainer, Modifiable, MutatorContainer, Dependencies
         else {
             return .failure(ValidationError(message: "You must attach a transition to a source and target state", path: Machine.path))
         }
-        self.states[index].transitions.append(Transition(condition: condition, target: target))
+        let transition = Transition(condition: condition, target: target)
+        self.states[index].transitions.append(transition)
+        guard
+            let transitionIndex = self.states[index].transitions.lastIndex(where: {
+                $0 == transition
+            })
+        else {
+            return .failure(AttributeError(message: "Failed to find added transition", path: Machine.path.states[index].transitions))
+        }
         return perform { [mutator] machine in
-            mutator.newTransition(source: source, target: target, condition: condition, machine: &machine)
+            mutator.didCreateNewTransition(machine: &machine, transition: transition, stateIndex: index, transitionIndex: transitionIndex)
         }
     }
     
@@ -374,9 +389,10 @@ public struct Machine: PathContainer, Modifiable, MutatorContainer, Dependencies
     }
     
     public mutating func delete(dependencies: IndexSet) -> Result<Bool, AttributeError<Machine>> {
+        let deletedDependencies = self.dependencies.enumerated().filter { dependencies.contains($0.0) }.map(\.element)
         self.dependencies = self.dependencies.enumerated().filter { !dependencies.contains($0.0) }.map(\.element)
         return perform { [mutator] machine in
-            mutator.delete(dependencies: dependencies, machine: &machine)
+            mutator.didDeleteDependencies(machine: &machine, dependency: deletedDependencies, at: dependencies)
         }
     }
     
@@ -388,7 +404,8 @@ public struct Machine: PathContainer, Modifiable, MutatorContainer, Dependencies
         {
             return .failure(ValidationError(message: "You cannot delete the initial state", path: Machine.path.states[initialIndex]))
         }
-        let deletedStates = Set(self.states.enumerated().filter { states.contains($0.0)  }.map(\.element.name))
+        let deletedStatesArray = self.states.enumerated().filter { states.contains($0.0)  }.map(\.element)
+        let deletedStates = Set(deletedStatesArray.map(\.name))
         self.states = self.states.enumerated().filter { !states.contains($0.0) }.map(\.element)
         self.states = self.states.map {
             var state = $0
@@ -396,7 +413,7 @@ public struct Machine: PathContainer, Modifiable, MutatorContainer, Dependencies
             return state
         }
         return perform { [mutator] machine in
-            mutator.delete(states: states, machine: &machine)
+            mutator.didDeleteStates(machine: &machine, state: deletedStatesArray, at: states)
         }
     }
     
@@ -404,9 +421,10 @@ public struct Machine: PathContainer, Modifiable, MutatorContainer, Dependencies
         guard let stateIndex = self.states.firstIndex(where: { $0.name == sourceState }) else {
             return .failure(ValidationError(message: "Unable to find state with name \(sourceState)", path: Machine.path.states))
         }
+        let deletedTransitions = self.states[stateIndex].transitions.enumerated().filter { transitions.contains($0.0) }.map { $1 }
         self.states[stateIndex].transitions = self.states[stateIndex].transitions.enumerated().filter { !transitions.contains($0.0) }.map { $1 }
         return perform { [mutator] machine in
-            mutator.delete(transitions: transitions, attachedTo: sourceState, machine: &machine)
+            mutator.didDeleteTransitions(machine: &machine, transition: deletedTransitions, stateIndex: stateIndex, at: transitions)
         }
     }
     
@@ -414,9 +432,10 @@ public struct Machine: PathContainer, Modifiable, MutatorContainer, Dependencies
         if index < 0 || index >= self.dependencies.count {
             return .failure(AttributeError<Machine>(message: "Invalid index \(index) for deleting a dependency.", path: self.path.dependencies))
         }
+        let dependency = self.dependencies[index]
         self.dependencies.remove(at: index)
         return perform { [mutator] machine in
-            mutator.deleteDependency(atIndex: index, machine: &machine)
+            mutator.didDeleteDependency(machine: &machine, dependency: dependency, at: index)
         }
     }
     
@@ -429,6 +448,7 @@ public struct Machine: PathContainer, Modifiable, MutatorContainer, Dependencies
         if name == self.initialState {
             return .failure(ValidationError(message: "Can't delete the initial state", path: Machine.path.states[index]))
         }
+        let state = self.states[index]
         self.states.remove(at: index)
         self.states = self.states.map {
             var state = $0
@@ -436,7 +456,7 @@ public struct Machine: PathContainer, Modifiable, MutatorContainer, Dependencies
             return state
         }
         return perform { [mutator] machine in
-            mutator.deleteState(atIndex: index, machine: &machine)
+            mutator.didDeleteState(machine: &machine, state: state, at: index)
         }
     }
     
@@ -448,9 +468,10 @@ public struct Machine: PathContainer, Modifiable, MutatorContainer, Dependencies
         guard self.states[stateIndex].transitions.count >= index else {
             return .failure(ValidationError(message: "Cannot delete transition that does not exist", path: Machine.path.states[stateIndex].transitions))
         }
+        let transition = self.states[stateIndex].transitions[index]
         self.states[stateIndex].transitions.remove(at: index)
         return perform { [mutator] machine in
-            mutator.deleteTransition(atIndex: index, attachedTo: sourceState, machine: &machine)
+            mutator.didDeleteTransition(machine: &machine, transition: transition, stateIndex: stateIndex, at: index)
         }
     }
     
