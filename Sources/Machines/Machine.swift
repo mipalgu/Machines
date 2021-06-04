@@ -312,19 +312,25 @@ public struct Machine: PathContainer, Modifiable, MutatorContainer, Dependencies
     
     /// Add a new item to a table attribute.
     public mutating func addItem<Path: PathProtocol, T>(_ item: T, to attribute: Path) -> Result<Bool, AttributeError<Machine>> where Path.Root == Machine, Path.Value == [T] {
-        perform { [mutator] machine in
+        self[keyPath: attribute.path].append(item)
+        return perform { [mutator] machine in
             mutator.addItem(item, to: attribute, machine: &machine)
         }
     }
     
     public mutating func moveItems<Path: PathProtocol, T>(table attribute: Path, from source: IndexSet, to destination: Int) -> Result<Bool, AttributeError<Machine>> where Path.Root == Machine, Path.Value == [T]  {
-        perform { [mutator] machine in
+        self[keyPath: attribute.path].move(fromOffsets: source, toOffset: destination)
+        return perform { [mutator] machine in
             mutator.moveItems(attribute: attribute, machine: &machine, from: source, to: destination)
         }
     }
     
     public mutating func newDependency(_ dependency: MachineDependency) -> Result<Bool, AttributeError<Machine>> {
-        perform { [mutator] machine in
+        if self.dependencies.contains(where: { $0.name == dependency.name }) {
+            return .failure(AttributeError<Machine>(message: "The dependency '\(dependency.name)' already exists.", path: self.path.dependencies[self.dependencies.count]))
+        }
+        self.dependencies.append(dependency)
+        return perform { [mutator] machine in
             mutator.newDependency(dependency, machine: &machine)
         }
     }
@@ -338,14 +344,25 @@ public struct Machine: PathContainer, Modifiable, MutatorContainer, Dependencies
     
     /// Add a new empty transition to the machine.
     public mutating func newTransition(source: StateName, target: StateName, condition: Expression? = nil) -> Result<Bool, AttributeError<Machine>> {
-        perform { [mutator] machine in
+        guard
+            let index = self.states.indices.first(where: { self.states[$0].name == source }),
+            nil != self.states.first(where: { $0.name == target })
+        else {
+            return .failure(ValidationError(message: "You must attach a transition to a source and target state", path: Machine.path))
+        }
+        self.states[index].transitions.append(Transition(condition: condition, target: target))
+        return perform { [mutator] machine in
             mutator.newTransition(source: source, target: target, condition: condition, machine: &machine)
         }
     }
     
     /// Delete a specific item in a table attribute.
     public mutating func deleteItem<Path: PathProtocol, T>(table attribute: Path, atIndex index: Int) -> Result<Bool, AttributeError<Machine>> where Path.Root == Machine, Path.Value == [T] {
-        perform { [mutator] machine in
+        if self[keyPath: attribute.path].count <= index || index < 0 {
+            return .failure(ValidationError(message: "Invalid index '\(index)'", path: attribute))
+        }
+        self[keyPath: attribute.path].remove(at: index)
+        return perform { [mutator] machine in
             mutator.deleteItem(attribute: attribute, atIndex: index, machine: &machine)
         }
     }
@@ -357,40 +374,82 @@ public struct Machine: PathContainer, Modifiable, MutatorContainer, Dependencies
     }
     
     public mutating func delete(dependencies: IndexSet) -> Result<Bool, AttributeError<Machine>> {
-        perform { [mutator] machine in
+        self.dependencies = self.dependencies.enumerated().filter { !dependencies.contains($0.0) }.map(\.element)
+        return perform { [mutator] machine in
             mutator.delete(dependencies: dependencies, machine: &machine)
         }
     }
     
     /// Delete a set of states and transitions.
     public mutating func delete(states: IndexSet) -> Result<Bool, AttributeError<Machine>> {
-        perform { [mutator] machine in
+        if
+            let initialIndex = self.states.enumerated().first(where: { $0.1.name == self.initialState })?.0,
+            states.contains(initialIndex)
+        {
+            return .failure(ValidationError(message: "You cannot delete the initial state", path: Machine.path.states[initialIndex]))
+        }
+        let deletedStates = Set(self.states.enumerated().filter { states.contains($0.0)  }.map(\.element.name))
+        self.states = self.states.enumerated().filter { !states.contains($0.0) }.map(\.element)
+        self.states = self.states.map {
+            var state = $0
+            state.transitions.removeAll(where: { deletedStates.contains($0.target) })
+            return state
+        }
+        return perform { [mutator] machine in
             mutator.delete(states: states, machine: &machine)
         }
     }
     
     public mutating func delete(transitions: IndexSet, attachedTo sourceState: StateName) -> Result<Bool, AttributeError<Machine>> {
-        perform { [mutator] machine in
+        guard let stateIndex = self.states.firstIndex(where: { $0.name == sourceState }) else {
+            return .failure(ValidationError(message: "Unable to find state with name \(sourceState)", path: Machine.path.states))
+        }
+        self.states[stateIndex].transitions = self.states[stateIndex].transitions.enumerated().filter { !transitions.contains($0.0) }.map { $1 }
+        return perform { [mutator] machine in
             mutator.delete(transitions: transitions, attachedTo: sourceState, machine: &machine)
         }
     }
     
     public mutating func deleteDependency(atIndex index: Int) -> Result<Bool, AttributeError<Machine>> {
-        perform { [mutator] machine in
+        if index < 0 || index >= self.dependencies.count {
+            return .failure(AttributeError<Machine>(message: "Invalid index \(index) for deleting a dependency.", path: self.path.dependencies))
+        }
+        self.dependencies.remove(at: index)
+        return perform { [mutator] machine in
             mutator.deleteDependency(atIndex: index, machine: &machine)
         }
     }
     
     /// Delete a state at a specific index.
     public mutating func deleteState(atIndex index: Int) -> Result<Bool, AttributeError<Machine>> {
-        perform { [mutator] machine in
+        if index >= self.states.count  {
+            return .failure(ValidationError(message: "Can't delete state that doesn't exist", path: Machine.path.states))
+        }
+        let name = self.states[index].name
+        if name == self.initialState {
+            return .failure(ValidationError(message: "Can't delete the initial state", path: Machine.path.states[index]))
+        }
+        self.states.remove(at: index)
+        self.states = self.states.map {
+            var state = $0
+            state.transitions.removeAll(where: { $0.target == name })
+            return state
+        }
+        return perform { [mutator] machine in
             mutator.deleteState(atIndex: index, machine: &machine)
         }
     }
     
     /// Delete a transition at a specific index.
     public mutating func deleteTransition(atIndex index: Int, attachedTo sourceState: StateName) -> Result<Bool, AttributeError<Machine>> {
-        perform { [mutator] machine in
+        guard let stateIndex = self.states.indices.first(where: { self.states[$0].name == sourceState }) else {
+            return .failure(ValidationError(message: "Cannot delete a transition attached to a state that does not exist", path: Machine.path.states))
+        }
+        guard self.states[stateIndex].transitions.count >= index else {
+            return .failure(ValidationError(message: "Cannot delete transition that does not exist", path: Machine.path.states[stateIndex].transitions))
+        }
+        self.states[stateIndex].transitions.remove(at: index)
+        return perform { [mutator] machine in
             mutator.deleteTransition(atIndex: index, attachedTo: sourceState, machine: &machine)
         }
     }
