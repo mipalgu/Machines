@@ -8,7 +8,7 @@
 import Foundation
 import Attributes
 
-protocol MachineAttributesMutator {
+public protocol MachineAttributesMutator {
     
     func didAddItem<Path, T>(_ item: T, to attribute: Path, machine: inout Machine) -> Result<Bool, AttributeError<Path.Root>> where Path : PathProtocol, Path.Root == Machine, Path.Value == [T]
     

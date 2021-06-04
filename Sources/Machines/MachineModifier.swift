@@ -8,7 +8,7 @@
 import Foundation
 import Attributes
 
-protocol MachineModifier {
+public protocol MachineModifier {
     
     func didModify<Path>(attribute: Path, value: Path.Value, machine: inout Machine) -> Result<Bool, AttributeError<Path.Root>> where Path : PathProtocol, Path.Root == Machine
     

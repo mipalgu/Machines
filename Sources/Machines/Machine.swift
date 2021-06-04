@@ -79,7 +79,7 @@ import Attributes
 /// - SeeAlso: `SwiftMachinesConvertible`.
 public struct Machine: PathContainer, Modifiable, MutatorContainer, DependenciesContainer {
     
-    public typealias Mutator = MachineMutator
+    public typealias Mutator = MachineMutator & MachineAttributesMutator & MachineModifier
     
     public enum Semantics: String, Hashable, Codable, CaseIterable {
         case other
@@ -105,7 +105,7 @@ public struct Machine: PathContainer, Modifiable, MutatorContainer, Dependencies
         return Machine.Semantics.allCases.filter { $0 != .other }
     }
     
-    public let mutator: MachineMutator
+    public let mutator: Mutator
     
     public private(set) var errorBag: ErrorBag<Machine> = ErrorBag()
     
@@ -269,7 +269,7 @@ public struct Machine: PathContainer, Modifiable, MutatorContainer, Dependencies
     /// but detail additional field for custom semantics provided by a
     /// particular scheduler.
     public init(
-        mutator: MachineMutator,
+        mutator: Mutator,
         filePath: URL,
         initialState: StateName,
         states: [State] = [],
@@ -314,14 +314,15 @@ public struct Machine: PathContainer, Modifiable, MutatorContainer, Dependencies
     public mutating func addItem<Path: PathProtocol, T>(_ item: T, to attribute: Path) -> Result<Bool, AttributeError<Machine>> where Path.Root == Machine, Path.Value == [T] {
         self[keyPath: attribute.path].append(item)
         return perform { [mutator] machine in
-            mutator.addItem(item, to: attribute, machine: &machine)
+            mutator.didAddItem(item, to: path, machine: &machine)
         }
     }
     
     public mutating func moveItems<Path: PathProtocol, T>(table attribute: Path, from source: IndexSet, to destination: Int) -> Result<Bool, AttributeError<Machine>> where Path.Root == Machine, Path.Value == [T]  {
+        let items = self[keyPath: path.keyPath].enumerated().filter { source.contains($0.0) }.map(\.element)
         self[keyPath: attribute.path].move(fromOffsets: source, toOffset: destination)
         return perform { [mutator] machine in
-            mutator.moveItems(attribute: attribute, machine: &machine, from: source, to: destination)
+            mutator.didMoveItems(attribute: attribute, machine: &machine, from: source, to: destination, items: items)
         }
     }
     
