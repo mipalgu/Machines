@@ -64,29 +64,23 @@ struct SchemaMutator<Schema: MachineSchema>: MachineMutator, MachineModifier, Ma
     }
     
     func didDeleteItems<Path: PathProtocol, T>(table attribute: Path, indices: IndexSet, machine: inout Machine, items: [T]) -> Result<Bool, AttributeError<Path.Root>> where Path.Root == Machine, Path.Value == [T] {
-        let indexes = Array<Int>(indices).sorted(by: >)
+        let indexes = Array<Int>(indices)
         let trigger = AnyTrigger<Machine>(indexes.map { findTrigger(path: attribute[$0]) })
-        indexes.forEach {
-            machine[keyPath: attribute.path].remove(at: $0)
-        }
         return trigger.performTrigger(&machine)
     }
     
-    func deleteItem<Path: PathProtocol, T>(attribute: Path, atIndex: Int, machine: inout Machine) -> Result<Bool, AttributeError<Path.Root>> where Path.Root == Machine, Path.Value == [T] {
+    func didDeleteItem<Path: PathProtocol, T>(attribute: Path, atIndex: Int, machine: inout Machine, item: T) -> Result<Bool, AttributeError<Path.Root>> where Path.Root == Machine, Path.Value == [T] {
         let trigger: AnyTrigger<Machine> = findTrigger(path: attribute)
-        machine[keyPath: attribute.path].remove(at: atIndex)
         return trigger.performTrigger(&machine)
     }
     
-    func moveItems<Path: PathProtocol, T>(attribute: Path, machine: inout Machine, from source: IndexSet, to destination: Int) -> Result<Bool, AttributeError<Path.Root>> where Path.Root == Machine, Path.Value == [T] {
+    func didMoveItems<Path: PathProtocol, T>(attribute: Path, machine: inout Machine, from source: IndexSet, to destination: Int, items: [T]) -> Result<Bool, AttributeError<Path.Root>> where Path.Root == Machine, Path.Value == [T] {
         let trigger = findTrigger(path: attribute)
-        machine[keyPath: attribute.path].move(fromOffsets: source, toOffset: destination)
         return trigger.performTrigger(&machine)
     }
     
-    func modify<Path>(attribute: Path, value: Path.Value, machine: inout Machine) -> Result<Bool, AttributeError<Path.Root>> where Path : PathProtocol, Path.Root == Machine {
+    func didModify<Path>(attribute: Path, value: Path.Value, machine: inout Machine) -> Result<Bool, AttributeError<Path.Root>> where Path : PathProtocol, Path.Root == Machine {
         let trigger = findTrigger(path: attribute)
-        machine[keyPath: attribute.path] = value
         return trigger.performTrigger(&machine)
     }
     

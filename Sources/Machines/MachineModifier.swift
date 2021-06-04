@@ -10,7 +10,7 @@ import Attributes
 
 protocol MachineModifier {
     
-    func modify<Path>(attribute: Path, value: Path.Value, machine: inout Machine) -> Result<Bool, AttributeError<Path.Root>> where Path : PathProtocol, Path.Root == Machine
+    func didModify<Path>(attribute: Path, value: Path.Value, machine: inout Machine) -> Result<Bool, AttributeError<Path.Root>> where Path : PathProtocol, Path.Root == Machine
     
     func validate(machine: Machine) throws
     
