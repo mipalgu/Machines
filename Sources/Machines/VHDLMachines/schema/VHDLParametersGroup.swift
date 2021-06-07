@@ -19,13 +19,9 @@ struct VHDLParametersGroup: GroupProtocol {
     @GroupProperty(
         label: "is_parameterised",
         available: true,
-        trigger: <#T##() -> [AnyTrigger<AttributeGroup>]#>,
+        trigger: { [] },
         type: .bool,
-        validate: {
-            path.validate(builder: {
-                $0.attributes["is_parameterised"].required()
-            })
-        }
+        validate: AnyValidator(RequiredValidator(path: path.attributes["is_parameterised"].wrappedValue))
     )
     var isParameterised
     
