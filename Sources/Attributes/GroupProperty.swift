@@ -35,6 +35,24 @@ public struct GroupProperty {
         self.init(wrappedValue: attribute)
     }
     
+    public init(
+        label: String,
+        available: Bool = true,
+        @TriggerBuilder<AttributeGroup> trigger triggerBuilder: @escaping () -> [AnyTrigger<AttributeGroup>] = { [] },
+        type: AttributeType,
+        validate: AnyValidator<Attribute>
+    ) {
+        let path = ReadOnlyPath<AttributeGroup, AttributeGroup>(keyPath: \.self, ancestors: [])
+        let attribute: SchemaAttribute<AttributeGroup> = SchemaAttribute(
+            available: available,
+            label: label,
+            trigger: AnyTrigger(triggerBuilder()),
+            type: type,
+            validate: AnyValidator<AttributeGroup>(ChainValidator(path: path.attributes[label].wrappedValue, validator: validate))
+        )
+        self.init(wrappedValue: attribute)
+    }
+    
 }
 
 @propertyWrapper

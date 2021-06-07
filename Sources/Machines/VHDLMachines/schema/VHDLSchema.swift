@@ -14,4 +14,6 @@ struct VHDLSchema: MachineSchema {
     
     var dependencyLayout: [Field] = []
     
+    var parameters = VHDLParametersGroup()
+    
 }

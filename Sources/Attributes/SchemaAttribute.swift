@@ -17,7 +17,7 @@ public struct SchemaAttribute<Root> {
     
     public var validate: AnyValidator<Root>
     
-    public init(available: Bool, label: String, trigger: AnyTrigger<Root>, type: AttributeType, validate: AnyValidator<Root>) {
+    public init(available: Bool, label: String, trigger: AnyTrigger<Root> = AnyTrigger(), type: AttributeType, validate: AnyValidator<Root> = AnyValidator()) {
         self.available = available
         self.label = label
         self.trigger = trigger
