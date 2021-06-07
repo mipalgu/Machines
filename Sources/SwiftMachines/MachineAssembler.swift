@@ -577,7 +577,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         if nil == machine.parameters {
             str += "    return (AnyControllableFiniteStateMachine(fsm), [" + dependencies + "])\n"
         } else {
-            str += "    return (AnyParameterisedFiniteStateMachine(fsm), [" + dependencies + "])\n"
+            str += "    return (AnyParameterisedFiniteStateMachine(fsm, newMachine: { let tempFSM = make_parameterised_\(machine.name)(name: machineName, gateway: gateway, clock: clock, caller: caller); let result = tempFSM.parametersFromDictionary($0); if result == false { fatalError(\"Unable to call \(fsmName) with parameters: \\($0)\") }; return tempFSM }), [" + dependencies + "])\n"
         }
         return str
     }
