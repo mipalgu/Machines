@@ -8,7 +8,7 @@
 import Foundation
 import Attributes
 
-protocol MachineSchema: SchemaProtocol, MachineMutator where Root == Machine {}
+protocol MachineSchema: SchemaProtocol, MachineMutatorResponder where Root == Machine {}
 
 extension MachineSchema {
     

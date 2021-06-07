@@ -8,7 +8,7 @@
 import Foundation
 import Attributes
 
-struct SchemaMutator<Schema: MachineSchema>: MachineMutator, MachineModifier, MachineAttributesMutator {
+struct SchemaMutator<Schema: MachineSchema>: MachineMutatorResponder, MachineModifier, MachineAttributesMutator {
     
     var dependencyLayout: [Field]
 

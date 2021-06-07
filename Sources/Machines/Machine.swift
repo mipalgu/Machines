@@ -79,7 +79,7 @@ import Attributes
 /// - SeeAlso: `SwiftMachinesConvertible`.
 public struct Machine: PathContainer, Modifiable, MutatorContainer, DependenciesContainer {
     
-    public typealias Mutator = MachineMutator & MachineAttributesMutator & MachineModifier
+    public typealias Mutator = MachineMutatorResponder & MachineAttributesMutator & MachineModifier
     
     public enum Semantics: String, Hashable, Codable, CaseIterable {
         case other
@@ -228,18 +228,20 @@ public struct Machine: PathContainer, Modifiable, MutatorContainer, Dependencies
     ) {
         self.semantics = semantics
         switch semantics {
-        case .clfsm:
-            self.mutator = CXXBaseConverter()
-        case .swiftfsm:
-            self.mutator = SwiftfsmConverter()
-        case .ucfsm:
-            self.mutator = CXXBaseConverter()
-        case .spartanfsm:
-            self.mutator = CXXBaseConverter()
-        case .vhdl:
-            self.mutator = VHDLMachinesConverter()
+//        case .clfsm:
+//            self.mutator = CXXBaseConverter()
+//        case .swiftfsm:
+//            self.mutator = SwiftfsmConverter()
+//        case .ucfsm:
+//            self.mutator = CXXBaseConverter()
+//        case .spartanfsm:
+//            self.mutator = CXXBaseConverter()
+//        case .vhdl:
+//            self.mutator = VHDLMachinesConverter()
         case .other:
             fatalError("Use the mutator constructor if you wish to use an undefined semantics")
+        default:
+            fatalError("Semantics not supported")
         }
         self.filePath = filePath
         self.initialState = initialState
