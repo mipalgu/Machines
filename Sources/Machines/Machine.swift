@@ -491,9 +491,10 @@ public struct Machine: PathContainer, Modifiable, MutatorContainer, Dependencies
     
     /// Modify a specific attributes value.
     public mutating func modify<Path: PathProtocol>(attribute: Path, value: Path.Value) -> Result<Bool, AttributeError<Machine>> where Path.Root == Machine {
+        let oldValue = self[keyPath: attribute.keyPath]
         self[keyPath: attribute.path] = value
-        perform { [mutator] machine in
-            mutator.modify(attribute: attribute, value: value, machine: &machine)
+        return perform { [mutator] machine in
+            mutator.didModify(attribute: attribute, oldValue: oldValue, newValue: value, machine: &machine)
         }
     }
     

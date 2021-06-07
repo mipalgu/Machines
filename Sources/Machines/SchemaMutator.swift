@@ -58,7 +58,7 @@ struct SchemaMutator<Schema: MachineSchema>: MachineMutatorResponder, MachineMod
         return schema.trigger
     }
     
-    func didAddItem<Path, T>(_ item: T, to attribute: Path, machine: inout Machine) -> Result<Bool, AttributeError<Path.Root>> where Path : PathProtocol, Path.Root == Machine, Path.Value == [T] {
+    func didAddItem<Path: PathProtocol, T>(_ item: T, to attribute: Path, machine: inout Machine) -> Result<Bool, AttributeError<Path.Root>> where Path.Root == Machine, Path.Value == [T] {
         let trigger = findTrigger(path: attribute)
         return trigger.performTrigger(&machine)
     }
@@ -79,7 +79,7 @@ struct SchemaMutator<Schema: MachineSchema>: MachineMutatorResponder, MachineMod
         return trigger.performTrigger(&machine)
     }
     
-    func didModify<Path>(attribute: Path, value: Path.Value, machine: inout Machine) -> Result<Bool, AttributeError<Path.Root>> where Path : PathProtocol, Path.Root == Machine {
+    func didModify<Path: PathProtocol>(attribute: Path, oldValue: Path.Value, newValue: Path.Value, machine: inout Machine) -> Result<Bool, AttributeError<Path.Root>> where Path.Root == Machine {
         let trigger = findTrigger(path: attribute)
         return trigger.performTrigger(&machine)
     }
