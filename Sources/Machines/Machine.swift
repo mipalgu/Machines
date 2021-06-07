@@ -380,15 +380,25 @@ public struct Machine: PathContainer, Modifiable, MutatorContainer, Dependencies
         if self[keyPath: attribute.path].count <= index || index < 0 {
             return .failure(ValidationError(message: "Invalid index '\(index)'", path: attribute))
         }
+        let item = self[keyPath: attribute.keyPath][index]
         self[keyPath: attribute.path].remove(at: index)
         return perform { [mutator] machine in
-            mutator.deleteItem(attribute: attribute, atIndex: index, machine: &machine)
+            mutator.didDeleteItem(attribute: attribute, atIndex: index, machine: &machine, item: item)
         }
     }
     
     public mutating func deleteItems<Path: PathProtocol, T>(table attribute: Path, items: IndexSet) -> Result<Bool, AttributeError<Machine>> where Path.Root == Machine, Path.Value == [T] {
-        perform { [mutator] machine in
-            mutator.deleteItems(table: attribute, items: items, machine: &machine)
+        if self[keyPath: attribute.path].count <= items.max() ?? -1 || (items.min() ?? -1) < 0 {
+            return .failure(ValidationError(message: "Invalid indexes '\(items)'", path: attribute))
+        }
+        let itemObjs = Array(items).map {
+            self[keyPath: attribute.keyPath][$0]
+        }
+        Array(items).sorted(by: >).forEach {
+            self[keyPath: attribute.path].remove(at: $0)
+        }
+        return perform { [mutator] machine in
+            mutator.didDeleteItems(table: attribute, indices: items, machine: &machine, items: itemObjs)
         }
     }
     
