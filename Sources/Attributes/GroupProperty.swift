@@ -6,19 +6,19 @@
 //
 
 @propertyWrapper
-struct GroupProperty {
+public struct GroupProperty {
     
-    var projectedValue: GroupProperty {
+    public var projectedValue: GroupProperty {
         self
     }
     
-    var wrappedValue: SchemaAttribute<AttributeGroup>
+    public var wrappedValue: SchemaAttribute<AttributeGroup>
     
-    init(wrappedValue: SchemaAttribute<AttributeGroup>) {
+    public init(wrappedValue: SchemaAttribute<AttributeGroup>) {
         self.wrappedValue = wrappedValue
     }
     
-    init(
+    public init(
         label: String,
         available: Bool = true,
         @TriggerBuilder<AttributeGroup> trigger triggerBuilder: @escaping () -> [AnyTrigger<AttributeGroup>] = { [] },
@@ -38,19 +38,19 @@ struct GroupProperty {
 }
 
 @propertyWrapper
-struct GroupBoolProperty {
+public struct GroupBoolProperty {
     
-    var projectedValue: GroupBoolProperty {
+    public var projectedValue: GroupBoolProperty {
         self
     }
     
-    var wrappedValue: SchemaAttribute<AttributeGroup>
+    public var wrappedValue: SchemaAttribute<AttributeGroup>
     
-    init(wrappedValue: SchemaAttribute<AttributeGroup>) {
+    public init(wrappedValue: SchemaAttribute<AttributeGroup>) {
         self.wrappedValue = wrappedValue
     }
     
-    init(label: String, available: Bool = true, @TriggerBuilder<AttributeGroup> trigger triggerBuilder: @escaping () -> [AnyTrigger<AttributeGroup>] = { [] }) {
+    public init(label: String, available: Bool = true, @TriggerBuilder<AttributeGroup> trigger triggerBuilder: @escaping () -> [AnyTrigger<AttributeGroup>] = { [] }) {
         self.init(
             label: label,
             available: available,
@@ -61,11 +61,11 @@ struct GroupBoolProperty {
         )
     }
     
-    init(label: String, available: Bool = true, @TriggerBuilder<AttributeGroup> trigger triggerBuilder: @escaping () -> [AnyTrigger<AttributeGroup>] = { [] }, @ValidatorBuilder<AttributeGroup> validate validatorBuilder: @escaping () -> [AnyValidator<AttributeGroup>] = { [] }) {
+    public init(label: String, available: Bool = true, @TriggerBuilder<AttributeGroup> trigger triggerBuilder: @escaping () -> [AnyTrigger<AttributeGroup>] = { [] }, @ValidatorBuilder<AttributeGroup> validate validatorBuilder: @escaping () -> [AnyValidator<AttributeGroup>] = { [] }) {
         self.init(label: label, available: available, trigger: AnyTrigger(triggerBuilder()), validator: AnyValidator(validatorBuilder()))
     }
     
-    init<Trigger: TriggerProtocol>(label: String, available: Bool = true, trigger: Trigger, @ValidatorBuilder<AttributeGroup> validate validatorBuilder: @escaping () -> [AnyValidator<AttributeGroup>] = { [] }) where Trigger.Root == AttributeGroup {
+    public init<Trigger: TriggerProtocol>(label: String, available: Bool = true, trigger: Trigger, @ValidatorBuilder<AttributeGroup> validate validatorBuilder: @escaping () -> [AnyValidator<AttributeGroup>] = { [] }) where Trigger.Root == AttributeGroup {
         self.init(label: label, available: available, trigger: AnyTrigger(trigger), validator: AnyValidator(validatorBuilder()))
     }
     

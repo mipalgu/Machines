@@ -6,7 +6,7 @@
 //
 
 @resultBuilder
-struct TriggerBuilder<Root> {
+public struct TriggerBuilder<Root> {
     
     func buildBlock() -> [AnyTrigger<Root>] { [] }
     
