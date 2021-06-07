@@ -217,7 +217,7 @@ public final class MachineArrangmentAssembler: ErrorContainer {
         let arrangement = """
             FlattenedMetaArrangement(
                     name: \(name),
-                    fsms: \(fsms),
+                    fsms: \(entries.isEmpty ? "[:]" : fsms),
                     rootFSMs: \(rootFsms)
                 )
             """
