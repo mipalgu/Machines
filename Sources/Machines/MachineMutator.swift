@@ -92,3 +92,20 @@ public protocol MachineMutator: DependencyLayoutContainer {
     func validate(machine: Machine) throws
     
 }
+
+extension MachineMutator {
+    
+    public func deleteItems<Path: PathProtocol, T>(table attribute: Path, items: IndexSet, machine: inout Machine) -> Result<Bool, AttributeError<Path.Root>> where Path.Root == Machine, Path.Value == [T] {
+        var triggers: Bool = false
+        for index in items.sorted(by: >) {
+            switch self.deleteItem(attribute: attribute, atIndex: index, machine: &machine) {
+            case .failure(let error):
+                return .failure(error)
+            case .success(let triggersActivated):
+                triggers = triggers || triggersActivated
+            }
+        }
+        return .success(triggers)
+    }
+    
+}
