@@ -316,7 +316,7 @@ public struct Machine: PathContainer, Modifiable, MutatorContainer, Dependencies
     public mutating func addItem<Path: PathProtocol, T>(_ item: T, to attribute: Path) -> Result<Bool, AttributeError<Machine>> where Path.Root == Machine, Path.Value == [T] {
         self[keyPath: attribute.path].append(item)
         return perform { [mutator] machine in
-            mutator.didAddItem(item, to: path, machine: &machine)
+            mutator.didAddItem(item, to: attribute, machine: &machine)
         }
     }
     
