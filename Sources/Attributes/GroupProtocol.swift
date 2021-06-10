@@ -13,11 +13,18 @@ public protocol GroupProtocol {
     
     var properties: [SchemaProperty<AttributeGroup>] { get }
     
+    @ValidatorBuilder<AttributeGroup>
+    var extraValidator: AnyValidator<AttributeGroup> { get }
+    
     var validator: AnyValidator<AttributeGroup> { get }
     
 }
 
 extension GroupProtocol {
+    
+    public var extraValidator: AnyValidator<AttributeGroup> {
+        AnyValidator()
+    }
     
     var properties: [SchemaProperty<AttributeGroup>] {
         let mirror = Mirror(reflecting: self)
@@ -37,9 +44,10 @@ extension GroupProtocol {
     }
     
     public var validator: AnyValidator<AttributeGroup>  {
-        AnyValidator(properties.map {
+        let propertyValidators = properties.map {
             propertyToValidator(property: $0)
-        })
+        }
+        return AnyValidator(propertyValidators + [extraValidator])
     }
     
     func findProperty<Path: PathProtocol>(path: Path) -> SchemaProperty<Path.Root>? where Path.Root == Root {
