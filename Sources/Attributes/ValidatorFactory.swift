@@ -74,6 +74,9 @@ public struct ValidatorFactory<Value> {
             if required && path.isNil(root) {
                 throw AttributeError(message: "Does not exist", path: AnyPath(path))
             }
+            if !required && path.isNil(root) {
+                return
+            }
             try _make().performValidation(root[keyPath: path.keyPath])
         }
     }
