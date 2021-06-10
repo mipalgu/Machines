@@ -43,7 +43,10 @@ public extension SchemaProtocol {
     
     func makeValidator(root: Root) -> AnyValidator<Root> {
         AnyValidator(groups.enumerated().map {
-            AnyValidator($1.makeValidator(root: root, path: Root.path.attributes[$0]))
+            let path = Root.path.attributes[$0]
+            let propertiesValidator = ChainValidator(path: path, validator: $1.propertiesValidator)
+            let extraValidator = $1.groupValidator(root: root, path: path)
+            return AnyValidator([AnyValidator(propertiesValidator), extraValidator])
         })
     }
     

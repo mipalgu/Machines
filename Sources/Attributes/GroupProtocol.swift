@@ -15,7 +15,7 @@ public protocol GroupProtocol {
     
     var propertiesValidator: AnyValidator<AttributeGroup> { get }
     
-    func makeValidator(root: Root, path: ReadOnlyPath<Root, AttributeGroup>) -> AnyValidator<Root>
+    func groupValidator(root: Root, path: ReadOnlyPath<Root, AttributeGroup>) -> AnyValidator<Root>
     
 }
 
@@ -73,7 +73,7 @@ extension GroupProtocol {
         return nil
     }
     
-    public func makeValidator(root: Root, path: ReadOnlyPath<Root, AttributeGroup>) -> AnyValidator<Root> {
+    public func groupValidator(root: Root, path: ReadOnlyPath<Root, AttributeGroup>) -> AnyValidator<Root> {
         return AnyValidator()
     }
     
