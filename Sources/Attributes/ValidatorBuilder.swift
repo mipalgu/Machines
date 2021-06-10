@@ -56,33 +56,33 @@
  *
  */
 
-@_functionBuilder
+@resultBuilder
 public struct ValidatorBuilder<Root> {
     
-    public func buildBlock() -> [AnyValidator<Root>] { [] }
+    public func buildBlock() -> AnyValidator<Root> { [] }
 
     public func makeValidator(@ValidatorBuilder _ content: () -> [AnyValidator<Root>]) -> AnyValidator<Root> {
         AnyValidator(content())
     }
     
-    public static func buildBlock<V0: ValidatorProtocol>(_ v0: V0) -> [AnyValidator<Root>] where V0.Root == Root {
-        return [AnyValidator(v0)]
+    public static func buildBlock<V0: ValidatorProtocol>(_ v0: V0) -> AnyValidator<Root> where V0.Root == Root {
+        return AnyValidator([AnyValidator(v0)])
     }
     
-    public static func buildBlock<V0: ValidatorProtocol, V1: ValidatorProtocol>(_ v0: V0, _ v1: V1) -> [AnyValidator<Root>] where V0.Root == Root, V1.Root == Root {
-        return [AnyValidator(v0), AnyValidator(v1)]
+    public static func buildBlock<V0: ValidatorProtocol, V1: ValidatorProtocol>(_ v0: V0, _ v1: V1) -> AnyValidator<Root> where V0.Root == Root, V1.Root == Root {
+        return AnyValidator([AnyValidator(v0), AnyValidator(v1)])
     }
     
     public static func buildBlock<
         V0: ValidatorProtocol,
         V1: ValidatorProtocol,
         V2: ValidatorProtocol
-    >(_ v0: V0, _ v1: V1, _ v2: V2) -> [AnyValidator<Root>] where
+    >(_ v0: V0, _ v1: V1, _ v2: V2) -> AnyValidator<Root> where
         V0.Root == Root,
         V1.Root == Root,
         V2.Root == Root
     {
-        return [AnyValidator(v0), AnyValidator(v1), AnyValidator(v2)]
+        return AnyValidator([AnyValidator(v0), AnyValidator(v1), AnyValidator(v2)])
     }
     
     public static func buildBlock<
@@ -90,13 +90,13 @@ public struct ValidatorBuilder<Root> {
         V1: ValidatorProtocol,
         V2: ValidatorProtocol,
         V3: ValidatorProtocol
-    >(_ v0: V0, _ v1: V1, _ v2: V2, _ v3: V3) -> [AnyValidator<Root>] where
+    >(_ v0: V0, _ v1: V1, _ v2: V2, _ v3: V3) -> AnyValidator<Root> where
         V0.Root == Root,
         V1.Root == Root,
         V2.Root == Root,
         V3.Root == Root
     {
-        return [AnyValidator(v0), AnyValidator(v1), AnyValidator(v2), AnyValidator(v3)]
+        return AnyValidator([AnyValidator(v0), AnyValidator(v1), AnyValidator(v2), AnyValidator(v3)])
     }
     
     public static func buildBlock<
@@ -105,20 +105,20 @@ public struct ValidatorBuilder<Root> {
         V2: ValidatorProtocol,
         V3: ValidatorProtocol,
         V4: ValidatorProtocol
-    >(_ v0: V0, _ v1: V1, _ v2: V2, _ v3: V3, _ v4: V4) -> [AnyValidator<Root>] where
+    >(_ v0: V0, _ v1: V1, _ v2: V2, _ v3: V3, _ v4: V4) -> AnyValidator<Root> where
         V0.Root == Root,
         V1.Root == Root,
         V2.Root == Root,
         V3.Root == Root,
         V4.Root == Root
     {
-        return [
+        return AnyValidator([
             AnyValidator(v0),
             AnyValidator(v1),
             AnyValidator(v2),
             AnyValidator(v3),
             AnyValidator(v4)
-        ]
+        ])
     }
     
     public static func buildBlock<
@@ -128,7 +128,7 @@ public struct ValidatorBuilder<Root> {
         V3: ValidatorProtocol,
         V4: ValidatorProtocol,
         V5: ValidatorProtocol
-    >(_ v0: V0, _ v1: V1, _ v2: V2, _ v3: V3, _ v4: V4, _ v5: V5) -> [AnyValidator<Root>] where
+    >(_ v0: V0, _ v1: V1, _ v2: V2, _ v3: V3, _ v4: V4, _ v5: V5) -> AnyValidator<Root> where
         V0.Root == Root,
         V1.Root == Root,
         V2.Root == Root,
@@ -136,14 +136,14 @@ public struct ValidatorBuilder<Root> {
         V4.Root == Root,
         V5.Root == Root
     {
-        return [
+        return AnyValidator([
             AnyValidator(v0),
             AnyValidator(v1),
             AnyValidator(v2),
             AnyValidator(v3),
             AnyValidator(v4),
             AnyValidator(v5)
-        ]
+        ])
     }
     
     public static func buildBlock<
@@ -154,7 +154,7 @@ public struct ValidatorBuilder<Root> {
         V4: ValidatorProtocol,
         V5: ValidatorProtocol,
         V6: ValidatorProtocol
-    >(_ v0: V0, _ v1: V1, _ v2: V2, _ v3: V3, _ v4: V4, _ v5: V5, _ v6: V6) -> [AnyValidator<Root>] where
+    >(_ v0: V0, _ v1: V1, _ v2: V2, _ v3: V3, _ v4: V4, _ v5: V5, _ v6: V6) -> AnyValidator<Root> where
         V0.Root == Root,
         V1.Root == Root,
         V2.Root == Root,
@@ -163,7 +163,7 @@ public struct ValidatorBuilder<Root> {
         V5.Root == Root,
         V6.Root == Root
     {
-        return [
+        return AnyValidator([
             AnyValidator(v0),
             AnyValidator(v1),
             AnyValidator(v2),
@@ -171,7 +171,7 @@ public struct ValidatorBuilder<Root> {
             AnyValidator(v4),
             AnyValidator(v5),
             AnyValidator(v6)
-        ]
+        ])
     }
     
     public static func buildBlock<
@@ -183,7 +183,7 @@ public struct ValidatorBuilder<Root> {
         V5: ValidatorProtocol,
         V6: ValidatorProtocol,
         V7: ValidatorProtocol
-    >(_ v0: V0, _ v1: V1, _ v2: V2, _ v3: V3, _ v4: V4, _ v5: V5, _ v6: V6, _ v7: V7) -> [AnyValidator<Root>] where
+    >(_ v0: V0, _ v1: V1, _ v2: V2, _ v3: V3, _ v4: V4, _ v5: V5, _ v6: V6, _ v7: V7) -> AnyValidator<Root> where
         V0.Root == Root,
         V1.Root == Root,
         V2.Root == Root,
@@ -193,7 +193,7 @@ public struct ValidatorBuilder<Root> {
         V6.Root == Root,
         V7.Root == Root
     {
-        return [
+        return AnyValidator([
             AnyValidator(v0),
             AnyValidator(v1),
             AnyValidator(v2),
@@ -202,7 +202,7 @@ public struct ValidatorBuilder<Root> {
             AnyValidator(v5),
             AnyValidator(v6),
             AnyValidator(v7)
-        ]
+        ])
     }
     
     public static func buildBlock<
@@ -215,7 +215,7 @@ public struct ValidatorBuilder<Root> {
         V6: ValidatorProtocol,
         V7: ValidatorProtocol,
         V8: ValidatorProtocol
-    >(_ v0: V0, _ v1: V1, _ v2: V2, _ v3: V3, _ v4: V4, _ v5: V5, _ v6: V6, _ v7: V7, _ v8: V8) -> [AnyValidator<Root>] where
+    >(_ v0: V0, _ v1: V1, _ v2: V2, _ v3: V3, _ v4: V4, _ v5: V5, _ v6: V6, _ v7: V7, _ v8: V8) -> AnyValidator<Root> where
         V0.Root == Root,
         V1.Root == Root,
         V2.Root == Root,
@@ -226,7 +226,7 @@ public struct ValidatorBuilder<Root> {
         V7.Root == Root,
         V8.Root == Root
     {
-        return [
+        return AnyValidator([
             AnyValidator(v0),
             AnyValidator(v1),
             AnyValidator(v2),
@@ -236,7 +236,7 @@ public struct ValidatorBuilder<Root> {
             AnyValidator(v6),
             AnyValidator(v7),
             AnyValidator(v8)
-        ]
+        ])
     }
     
     public static func buildBlock<
@@ -250,7 +250,7 @@ public struct ValidatorBuilder<Root> {
         V7: ValidatorProtocol,
         V8: ValidatorProtocol,
         V9: ValidatorProtocol
-    >(_ v0: V0, _ v1: V1, _ v2: V2, _ v3: V3, _ v4: V4, _ v5: V5, _ v6: V6, _ v7: V7, _ v8: V8, _ v9: V9) -> [AnyValidator<Root>] where
+    >(_ v0: V0, _ v1: V1, _ v2: V2, _ v3: V3, _ v4: V4, _ v5: V5, _ v6: V6, _ v7: V7, _ v8: V8, _ v9: V9) -> AnyValidator<Root> where
         V0.Root == Root,
         V1.Root == Root,
         V2.Root == Root,
@@ -262,7 +262,7 @@ public struct ValidatorBuilder<Root> {
         V8.Root == Root,
         V9.Root == Root
     {
-        return [
+        return AnyValidator([
             AnyValidator(v0),
             AnyValidator(v1),
             AnyValidator(v2),
@@ -273,7 +273,7 @@ public struct ValidatorBuilder<Root> {
             AnyValidator(v7),
             AnyValidator(v8),
             AnyValidator(v9)
-        ]
+        ])
     }
     
     public static func buildBlock<
@@ -288,7 +288,7 @@ public struct ValidatorBuilder<Root> {
         V8: ValidatorProtocol,
         V9: ValidatorProtocol,
         V10: ValidatorProtocol
-    >(_ v0: V0, _ v1: V1, _ v2: V2, _ v3: V3, _ v4: V4, _ v5: V5, _ v6: V6, _ v7: V7, _ v8: V8, _ v9: V9, _ v10: V10) -> [AnyValidator<Root>] where
+    >(_ v0: V0, _ v1: V1, _ v2: V2, _ v3: V3, _ v4: V4, _ v5: V5, _ v6: V6, _ v7: V7, _ v8: V8, _ v9: V9, _ v10: V10) -> AnyValidator<Root> where
         V0.Root == Root,
         V1.Root == Root,
         V2.Root == Root,
@@ -301,7 +301,7 @@ public struct ValidatorBuilder<Root> {
         V9.Root == Root,
         V10.Root == Root
     {
-        return [
+        return AnyValidator([
             AnyValidator(v0),
             AnyValidator(v1),
             AnyValidator(v2),
@@ -313,7 +313,7 @@ public struct ValidatorBuilder<Root> {
             AnyValidator(v8),
             AnyValidator(v9),
             AnyValidator(v10)
-        ]
+        ])
     }
     
     public static func buildBlock<
@@ -329,7 +329,7 @@ public struct ValidatorBuilder<Root> {
         V9: ValidatorProtocol,
         V10: ValidatorProtocol,
         V11: ValidatorProtocol
-    >(_ v0: V0, _ v1: V1, _ v2: V2, _ v3: V3, _ v4: V4, _ v5: V5, _ v6: V6, _ v7: V7, _ v8: V8, _ v9: V9, _ v10: V10, _ v11: V11) -> [AnyValidator<Root>] where
+    >(_ v0: V0, _ v1: V1, _ v2: V2, _ v3: V3, _ v4: V4, _ v5: V5, _ v6: V6, _ v7: V7, _ v8: V8, _ v9: V9, _ v10: V10, _ v11: V11) -> AnyValidator<Root> where
         V0.Root == Root,
         V1.Root == Root,
         V2.Root == Root,
@@ -343,7 +343,7 @@ public struct ValidatorBuilder<Root> {
         V10.Root == Root,
         V11.Root == Root
     {
-        return [
+        return AnyValidator([
             AnyValidator(v0),
             AnyValidator(v1),
             AnyValidator(v2),
@@ -356,7 +356,7 @@ public struct ValidatorBuilder<Root> {
             AnyValidator(v9),
             AnyValidator(v10),
             AnyValidator(v11)
-        ]
+        ])
     }
     
 }
