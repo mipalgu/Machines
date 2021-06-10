@@ -13,9 +13,9 @@ public protocol SchemaProtocol {
     
     var trigger: AnyTrigger<Root> { get }
     
-    var validator: AnyValidator<Root> { get }
-    
     func findProperty<Path: PathProtocol>(path: Path) -> SchemaAttribute<Root> where Path.Root == Root, Path.Value == Attribute
+    
+    func makeValidator(root: Root) -> AnyValidator<Root>
     
 }
 
@@ -31,12 +31,6 @@ public extension SchemaProtocol {
         }
     }
     
-    var validator: AnyValidator<Root> {
-        AnyValidator(groups.enumerated().map {
-            AnyValidator(ChainValidator(path: Root.path.attributes[$0], validator: $1.validator))
-        })
-    }
-    
     func findProperty<Path: PathProtocol>(path: Path) -> SchemaAttribute<Root> where Path.Root == Root {
         guard let property = groups.compactMap({ $0.findProperty(path: path) }).first else {
             fatalError()
@@ -45,6 +39,12 @@ public extension SchemaProtocol {
         case .property(let attribute):
             return attribute
         }
+    }
+    
+    func makeValidator(root: Root) -> AnyValidator<Root> {
+        AnyValidator(groups.enumerated().map {
+            AnyValidator($1.makeValidator(root: root, path: Root.path.attributes[$0]))
+        })
     }
     
 }

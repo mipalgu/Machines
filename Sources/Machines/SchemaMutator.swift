@@ -85,7 +85,7 @@ struct SchemaMutator<Schema: MachineSchema>: MachineMutatorResponder, MachineMod
     }
     
     func validate(machine: Machine) throws {
-        try schema.validator.performValidation(machine)
+        try schema.makeValidator(root: machine).performValidation(machine)
     }
 
 }
