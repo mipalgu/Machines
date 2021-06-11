@@ -10,8 +10,6 @@ import Attributes
 
 struct VHDLParametersGroup: GroupProtocol {
     
-    typealias Root = Machine
-    
     let path: Path<Machine, AttributeGroup> = Machine.path.attributes[0]
     
     @BoolProperty(label: "is_parameterised")
