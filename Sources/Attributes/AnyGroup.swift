@@ -53,7 +53,7 @@ public struct AnyGroup<Root: Modifiable>: GroupProtocol {
         self._properties = { base.properties }
         self._propertiesValidator = { base.propertiesValidator }
         self._triggers = { base.triggers }
-        self._extraValidation = { AnyValidator(base.extraValidation) }
+        self._extraValidation = { base.extraValidation }
         self.base = base
     }
     

@@ -57,17 +57,21 @@
  */
 
 @propertyWrapper
-public struct GroupIntegerProperty {
+public struct IntegerProperty<Root> {
     
-    public var projectedValue: GroupIntegerProperty {
+    public var projectedValue: IntegerProperty<Root> {
         self
     }
     
-    public var wrappedValue: SchemaAttribute<AttributeGroup>
+    public var wrappedValue: SchemaAttribute<Root>
     
-    public init(wrappedValue: SchemaAttribute<AttributeGroup>) {
+    public init(wrappedValue: SchemaAttribute<Root>) {
         self.wrappedValue = wrappedValue
     }
+    
+}
+
+extension IntegerProperty where Root == AttributeGroup {
     
     public init(
         label: String,

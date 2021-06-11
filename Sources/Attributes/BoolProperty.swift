@@ -57,17 +57,21 @@
  */
 
 @propertyWrapper
-public struct GroupBoolProperty {
+public struct BoolProperty<Root> {
     
-    public var projectedValue: GroupBoolProperty {
+    public var projectedValue: BoolProperty<Root> {
         self
     }
     
-    public var wrappedValue: SchemaAttribute<AttributeGroup>
+    public var wrappedValue: SchemaAttribute<Root>
     
-    public init(wrappedValue: SchemaAttribute<AttributeGroup>) {
+    public init(wrappedValue: SchemaAttribute<Root>) {
         self.wrappedValue = wrappedValue
     }
+    
+}
+
+extension BoolProperty where Root == AttributeGroup {
     
     public init(
         label: String,
