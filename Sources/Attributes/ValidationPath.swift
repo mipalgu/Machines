@@ -74,8 +74,8 @@ public struct ValidationPath<P: ReadOnlyPathProtocol>: _ValidationPath {
         self._validate = _validate
     }
     
-    public func validate(@ValidatorBuilder<PathType.Root> builder: (Self) -> [AnyValidator<PathType.Root>]) -> AnyValidator<PathType.Root> {
-        return AnyValidator(builder(self))
+    public func validate(@ValidatorBuilder<PathType.Root> builder: (Self) -> AnyValidator<PathType.Root>) -> AnyValidator<PathType.Root> {
+        return builder(self)
     }
     
     public subscript<AppendedValue>(dynamicMember member: KeyPath<P.Value, AppendedValue>) -> ValidationPath<ReadOnlyPath<P.Root, AppendedValue>> {

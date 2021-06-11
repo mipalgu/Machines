@@ -158,8 +158,8 @@ extension Path {
 
 extension Path {
     
-    public func validate(@ValidatorBuilder<Root> builder: (ValidationPath<Path<Root, Value>>) -> [AnyValidator<Root>]) -> AnyValidator<Root> {
-        return AnyValidator(builder(ValidationPath(path: Path(path: self.path, ancestors: self.fullPath))))
+    public func validate(@ValidatorBuilder<Root> builder: (ValidationPath<Path<Root, Value>>) -> AnyValidator<Root>) -> AnyValidator<Root> {
+        return builder(ValidationPath(path: Path(path: self.path, ancestors: self.fullPath)))
     }
     
 }

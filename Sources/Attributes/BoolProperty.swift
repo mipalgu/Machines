@@ -59,7 +59,7 @@
 @propertyWrapper
 public struct GroupBoolProperty {
     
-    public var projectedValue: Self {
+    public var projectedValue: GroupBoolProperty {
         self
     }
     
@@ -94,10 +94,10 @@ struct TestGroup<Root: Modifiable>: GroupProtocol {
     
     var path: Path<Root, AttributeGroup>
     
-    @GroupBoolProperty(label: "test", validation: .required().equalsTrue())
+    @BoolProperty(label: "test", validation: .required().equalsTrue())
     var boolProperty
     
-    @GroupBoolProperty(label: "test2", validation: .required().equalsFalse())
+    @BoolProperty(label: "test2", validation: .required().equalsFalse())
     var boolProperty2
     
     var extraValidation: AnyValidator<AttributeGroup> {

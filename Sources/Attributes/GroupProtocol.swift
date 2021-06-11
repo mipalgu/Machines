@@ -23,6 +23,8 @@ public protocol GroupProtocol {
 
 extension GroupProtocol {
     
+    public typealias BoolProperty = GroupBoolProperty
+    
     var validate: ValidationPath<ReadOnlyPath<AttributeGroup, AttributeGroup>> {
         ValidationPath(path: ReadOnlyPath(keyPath: \.self, ancestors: []))
     }
@@ -77,10 +79,6 @@ extension GroupProtocol {
         }
         //itsa me
         return nil
-    }
-    
-    public func groupValidator(path: ValidationPath<ReadOnlyPath<Root, AttributeGroup>>) -> [AnyValidator<Root>] {
-        return []
     }
     
 }

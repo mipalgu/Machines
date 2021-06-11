@@ -102,15 +102,15 @@ extension ValidatorFactory {
 
     public func `if`(
         _ condition: @escaping (Value) -> Bool,
-        @ValidatorBuilder<Value> then builder: @escaping () -> [AnyValidator<Value>]
+        @ValidatorBuilder<Value> then builder: @escaping () -> AnyValidator<Value>
     ) -> ValidatorFactory<Value> {
         push { $0.if(condition, then: builder) }
     }
 
     public func `if`(
         _ condition: @escaping (Value) -> Bool,
-        @ValidatorBuilder<Value> then builder1: @escaping () -> [AnyValidator<Value>],
-        @ValidatorBuilder<Value> else builder2: @escaping () -> [AnyValidator<Value>]
+        @ValidatorBuilder<Value> then builder1: @escaping () -> AnyValidator<Value>,
+        @ValidatorBuilder<Value> else builder2: @escaping () -> AnyValidator<Value>
     ) -> ValidatorFactory<Value> {
         push { $0.if(condition, then: builder1, else: builder2) }
     }
