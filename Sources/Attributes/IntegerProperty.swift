@@ -1,6 +1,6 @@
 /*
- * BoolProperty.swift
- * Attributes
+ * IntProperty.swift
+ * 
  *
  * Created by Callum McColl on 11/6/21.
  * Copyright © 2021 Callum McColl. All rights reserved.
@@ -57,9 +57,9 @@
  */
 
 @propertyWrapper
-public struct GroupBoolProperty {
+public struct GroupIntegerProperty {
     
-    public var projectedValue: GroupBoolProperty {
+    public var projectedValue: GroupIntegerProperty {
         self
     }
     
@@ -72,14 +72,14 @@ public struct GroupBoolProperty {
     public init(
         label: String,
         available: Bool = true,
-        validation validatorFactories: ValidatorFactory<Bool> ...
+        validation validatorFactories: ValidatorFactory<Int> ...
     ) {
-        let path = ReadOnlyPath(keyPath: \AttributeGroup.self, ancestors: []).attributes[label].wrappedValue.lineAttribute.boolValue
+        let path = ReadOnlyPath(keyPath: \AttributeGroup.self, ancestors: []).attributes[label].wrappedValue.lineAttribute.integerValue
         let validator = AnyValidator(validatorFactories.map { $0.make(path: path) })
         let attribute: SchemaAttribute<AttributeGroup> = SchemaAttribute(
             available: available,
             label: label,
-            type: .bool,
+            type: .integer,
             validate: validator
         )
         self.init(wrappedValue: attribute)

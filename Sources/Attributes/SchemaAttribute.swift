@@ -11,16 +11,13 @@ public struct SchemaAttribute<Root> {
     
     public var label: String
     
-    public var trigger: AnyTrigger<Root>
-    
     public var type: AttributeType
     
     public var validate: AnyValidator<Root>
     
-    public init(available: Bool, label: String, trigger: AnyTrigger<Root> = AnyTrigger(), type: AttributeType, validate: AnyValidator<Root> = AnyValidator()) {
+    public init(available: Bool, label: String, type: AttributeType, validate: AnyValidator<Root> = AnyValidator()) {
         self.available = available
         self.label = label
-        self.trigger = trigger
         self.type = type
         self.validate = validate
     }
@@ -29,7 +26,6 @@ public struct SchemaAttribute<Root> {
         SchemaAttribute<Path.Root>(
             available: self.available,
             label: self.label,
-            trigger: self.trigger.toNewRoot(path: path),
             type: self.type,
             validate: self.validate.toNewRoot(path: path)
         )

@@ -53,7 +53,8 @@ struct SchemaMutator<Schema: MachineSchema>: MachineMutatorResponder, MachineMod
     private func findTrigger<Path: PathProtocol, T>(path: Path) -> AnyTrigger<Machine> where Path.Root == Machine, Path.Value == T {
         if path.ancestors.contains(AnyPath(Machine.path.attributes)) {
             let property = schema.findProperty(path: path)
-            return property.trigger
+            //return property.trigger
+            return AnyTrigger() // Replace with proper implementation
         }
         return schema.trigger
     }

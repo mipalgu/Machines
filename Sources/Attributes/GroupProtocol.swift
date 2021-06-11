@@ -15,6 +15,9 @@ public protocol GroupProtocol {
     
     var propertiesValidator: AnyValidator<AttributeGroup> { get }
     
+    @TriggerBuilder<AttributeGroup>
+    var triggers: AnyTrigger<AttributeGroup> { get }
+    
     @ValidatorBuilder<AttributeGroup>
     var extraValidation: AnyValidator<AttributeGroup> { get }
     
@@ -23,9 +26,15 @@ public protocol GroupProtocol {
 public extension GroupProtocol {
     
     typealias BoolProperty = GroupBoolProperty
+    typealias IntegerProperty = GroupIntegerProperty
     
     var validate: ValidationPath<ReadOnlyPath<AttributeGroup, AttributeGroup>> {
         ValidationPath(path: ReadOnlyPath(keyPath: \.self, ancestors: []))
+    }
+    
+    @TriggerBuilder<AttributeGroup>
+    var triggers: AnyTrigger<AttributeGroup> {
+        AnyTrigger<AttributeGroup>()
     }
     
     @ValidatorBuilder<AttributeGroup>
@@ -36,7 +45,10 @@ public extension GroupProtocol {
     var properties: [SchemaProperty<AttributeGroup>] {
         let mirror = Mirror(reflecting: self)
         return mirror.children.compactMap {
-            if let val = $0.value as? GroupProperty {
+            if let val = $0.value as? BoolProperty {
+                return .property(val.wrappedValue)
+            }
+            if let val = $0.value as? IntegerProperty {
                 return .property(val.wrappedValue)
             }
             return nil
