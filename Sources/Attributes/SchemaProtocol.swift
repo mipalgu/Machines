@@ -38,6 +38,8 @@ public extension SchemaProtocol {
         switch property {
         case .property(let attribute):
             return attribute
+        case .complex(let complexAttribute, _):
+            return complexAttribute
         }
     }
     

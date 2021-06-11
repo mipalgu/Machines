@@ -113,6 +113,8 @@ public extension Attributable {
         switch property {
         case .property(let attribute):
             return attribute.validate
+        case .complex(let complexAttribute, _):
+            return complexAttribute.validate
         }
     }
     
@@ -138,6 +140,8 @@ public extension Attributable {
                 switch $0 {
                 case .property(let attribute):
                     return self.path.keyPath.appending(path: pathToAttributes.appending(path: \.[attribute.label])) == path.keyPath
+                case .complex(let complexAttribute, _):
+                    return self.path.keyPath.appending(path: pathToAttributes.appending(path: \.[complexAttribute.label])) == path.keyPath
                 }
             }?.toNewRoot(path: self.path)
         }
