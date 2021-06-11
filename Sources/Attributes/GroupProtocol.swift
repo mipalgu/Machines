@@ -8,7 +8,6 @@
 public protocol GroupProtocol {
     
     associatedtype Root: Modifiable
-    associatedtype ExtraValidator: ValidatorProtocol where ExtraValidator.Root == AttributeGroup
     
     var path: Path<Root, AttributeGroup> { get }
     
@@ -17,20 +16,21 @@ public protocol GroupProtocol {
     var propertiesValidator: AnyValidator<AttributeGroup> { get }
     
     @ValidatorBuilder<AttributeGroup>
-    var extraValidation: Self.ExtraValidator { get }
+    var extraValidation: AnyValidator<AttributeGroup> { get }
     
 }
 
-extension GroupProtocol {
+public extension GroupProtocol {
     
-    public typealias BoolProperty = GroupBoolProperty
+    typealias BoolProperty = GroupBoolProperty
     
     var validate: ValidationPath<ReadOnlyPath<AttributeGroup, AttributeGroup>> {
         ValidationPath(path: ReadOnlyPath(keyPath: \.self, ancestors: []))
     }
     
-    public var extraValidator: AnyValidator<AttributeGroup> {
-        AnyValidator()
+    @ValidatorBuilder<AttributeGroup>
+    var extraValidation: AnyValidator<AttributeGroup> {
+        AnyValidator<AttributeGroup>()
     }
     
     var properties: [SchemaProperty<AttributeGroup>] {
@@ -50,11 +50,11 @@ extension GroupProtocol {
         }
     }
     
-    public var propertiesValidator: AnyValidator<AttributeGroup>  {
+    var propertiesValidator: AnyValidator<AttributeGroup>  {
         let propertyValidators = properties.map {
             propertyToValidator(property: $0)
         }
-        return AnyValidator(propertyValidators + [extraValidator])
+        return AnyValidator(propertyValidators + [extraValidation])
     }
     
     func findProperty<Path: PathProtocol>(path: Path) -> SchemaProperty<Path.Root>? where Path.Root == Root {

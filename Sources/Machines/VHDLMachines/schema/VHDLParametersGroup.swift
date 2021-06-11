@@ -12,17 +12,9 @@ struct VHDLParametersGroup: GroupProtocol {
     
     typealias Root = Machine
     
-    var path: Path<Machine, AttributeGroup>
+    let path: Path<Machine, AttributeGroup> = Machine.path.attributes[0]
     
-    var properties: [SchemaProperty<AttributeGroup>]
-    
-    @GroupProperty(
-        label: "is_parameterised",
-        available: true,
-        trigger: { [] },
-        type: .bool,
-        validate: AnyValidator(RequiredValidator(path: path.attributes["is_parameterised"].wrappedValue))
-    )
+    @BoolProperty(label: "is_parameterised")
     var isParameterised
     
 }
