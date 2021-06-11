@@ -137,6 +137,15 @@ public struct Path<Root, Value>: PathProtocol {
         return Path<Root, AppendedValue>(path: path.appending(path: member), ancestors: fullPath)
     }
     
+    public func appending<NewValue>(path: Path<Value, NewValue>) -> Path<Root, NewValue> {
+        return Path<Root, NewValue>(
+            path: self.path.appending(path: path.path),
+            ancestors: self.ancestors + path.ancestors.map {
+                $0.changeRoot(path: self)
+            }
+        )
+    }
+    
     public func isNil(_ root: Root) -> Bool {
         return self._isNil(root)
     }

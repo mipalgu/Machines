@@ -10,9 +10,9 @@ import Attributes
 
 struct VHDLParametersGroup: GroupProtocol {
     
-    let path: Path<Machine, AttributeGroup> = Machine.path.attributes[0]
+    let path = Machine.path.attributes[0]
     
-    @BoolProperty(label: "is_parameterised")
+    @BoolProperty(label: "is_parameterised", validation: .required())
     var isParameterised
     
 }

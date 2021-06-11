@@ -18,7 +18,9 @@ public struct AnyGroup<Root: Modifiable>: GroupProtocol {
     
     private let _path: () -> Path<Root, AttributeGroup>
     
-    private let _properties: () -> [SchemaProperty<AttributeGroup>]
+    private let _pathToAttributes: () -> Path<AttributeGroup, [String : Attribute]>
+    
+    private let _properties: () -> [SchemaAttribute<AttributeGroup>]
     
     private let _propertiesValidator: () -> AnyValidator<AttributeGroup>
     
@@ -32,7 +34,11 @@ public struct AnyGroup<Root: Modifiable>: GroupProtocol {
         _path()
     }
     
-    public var properties: [SchemaProperty<AttributeGroup>] {
+    public var pathToAttributes: Path<AttributeGroup, [String : Attribute]> {
+        _pathToAttributes()
+    }
+    
+    public var properties: [SchemaAttribute<AttributeGroup>] {
         _properties()
     }
     
@@ -50,6 +56,7 @@ public struct AnyGroup<Root: Modifiable>: GroupProtocol {
     
     public init<Base: GroupProtocol>(_ base: Base) where Base.Root == Root {
         self._path = { base.path }
+        self._pathToAttributes = { base.pathToAttributes }
         self._properties = { base.properties }
         self._propertiesValidator = { base.propertiesValidator }
         self._triggers = { base.triggers }

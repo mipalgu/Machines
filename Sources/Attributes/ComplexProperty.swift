@@ -1,5 +1,5 @@
 /*
- * Attributable.swift
+ * ComplexProperty.swift
  * 
  *
  * Created by Callum McColl on 12/6/21.
@@ -56,81 +56,40 @@
  *
  */
 
-public protocol Attributable {
+protocol SchemaAttributeConvertible {
     
-    associatedtype Root: Modifiable
-    associatedtype AttributeRoot
-    
-    var path: Path<Root, AttributeRoot> { get }
-    
-    var pathToAttributes: Path<AttributeRoot, [String: Attribute]> { get }
-
-    var properties: [SchemaAttribute<AttributeRoot>] { get }
-    
-    var propertiesValidator: AnyValidator<AttributeRoot> { get }
-    
-    var triggers: AnyTrigger<AttributeRoot> { get }
-    
-    var extraValidation: AnyValidator<AttributeRoot> { get }
+    var schemaAttribute: Any { get }
     
 }
 
-public extension Attributable {
+@propertyWrapper
+public struct ComplexProperty<Root, Base: ComplexProtocol> where Base.Root == Root {
     
-    typealias BoolProperty = Attributes.BoolProperty<AttributeRoot>
-    typealias IntegerProperty = Attributes.IntegerProperty<AttributeRoot>
-    typealias ComplexProperty<Base> = Attributes.ComplexProperty<AttributeRoot, Base> where Base: ComplexProtocol, Base.Root == AttributeRoot
-    
-    var triggers: AnyTrigger<AttributeRoot> {
-        AnyTrigger<AttributeRoot>()
+    public var projectedValue: ComplexProperty<Root, Base> {
+        self
     }
     
-    var extraValidation: AnyValidator<AttributeRoot> {
-        AnyValidator<AttributeRoot>()
+    public var wrappedValue: Base
+    
+    public var available: Bool
+    
+    public var label: String
+    
+    public init(base: Base, available: Bool = true, label: String) {
+        self.wrappedValue = base
+        self.available = available
+        self.label = label
     }
     
-    var validate: ValidationPath<ReadOnlyPath<AttributeRoot, AttributeRoot>> {
-        ValidationPath(path: ReadOnlyPath(keyPath: \.self, ancestors: []))
-    }
+}
+
+extension ComplexProperty: SchemaAttributeConvertible {
     
-    var properties: [SchemaAttribute<AttributeRoot>] {
-        let mirror = Mirror(reflecting: self)
-        return mirror.children.compactMap {
-            if let val = $0.value as? BoolProperty {
-                return val.wrappedValue
-            }
-            if let val = $0.value as? IntegerProperty {
-                return val.wrappedValue
-            }
-            if let val = $0.value as? SchemaAttributeConvertible, let attribute = val.schemaAttribute as? SchemaAttribute<AttributeRoot> {
-                return attribute
-            }
-            return nil
+    var schemaAttribute: Any {
+        let fields = wrappedValue.properties.compactMap {
+            $0.available ? Field(name: $0.label, type: $0.type) : nil
         }
-    }
-    
-    var propertiesValidator: AnyValidator<AttributeRoot>  {
-        let propertyValidators = properties.map(\.validate)
-        return AnyValidator(propertyValidators + [AnyValidator(extraValidation)])
-    }
-    
-    func findProperty<Path: PathProtocol>(path: Path) -> SchemaAttribute<Path.Root>? where Path.Root == Root {
-        guard let index = path.fullPath.firstIndex(where: { $0.partialKeyPath == self.path.keyPath }) else {
-            return nil
-        }
-        let subpath = path.fullPath[index..<path.fullPath.count]
-        if subpath.count > 2 {
-            //complex?
-            return nil
-        }
-        if subpath.count == 2 {
-            //property of me
-            return properties.first {
-                path.keyPath == self.path.keyPath.appending(path: pathToAttributes.keyPath.appending(path: \.[$0.label]))
-            }?.toNewRoot(path: self.path)
-        }
-        //itsa me
-        return nil
+        return SchemaAttribute<Root>(available: available, label: label, type: .complex(layout: fields))
     }
     
 }

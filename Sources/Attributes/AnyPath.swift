@@ -138,6 +138,18 @@ public struct AnyPath<Root> {
         return self._isSame(path.keyPath)
     }
     
+    public func changeRoot<Prefix: ReadOnlyPathProtocol>(path: Prefix) -> AnyPath<Prefix.Root> where Prefix.Value == Root {
+        let newPath = (path.keyPath as PartialKeyPath<Prefix.Root>).appending(path: partialKeyPath as AnyKeyPath)!
+        return AnyPath<Prefix.Root>(
+            newPath,
+            ancestors: self.ancestors.map { $0.changeRoot(path: path) },
+            targetType: targetType,
+            isOptional: isOptional,
+            isNil: { root in path.ancestors.last?.isNil(root) ?? false || _isNil(root[keyPath: path.keyPath]) },
+            isSame: { path in path == newPath }
+        )
+    }
+    
     public func appending<Value>(_ path: AnyPath<Value>) -> AnyPath<Root>? {
         guard
             let keyPath = self.partialKeyPath as? KeyPath<Root, Value>,

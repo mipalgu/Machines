@@ -56,12 +56,20 @@
  *
  */
 
-public protocol ComplexProtocol: Attributable where AttributeRoot == [String: Attribute] {}
+public protocol ComplexProtocol: Attributable where AttributeRoot == [String: Attribute] {
+    
+    @TriggerBuilder<AttributeRoot>
+    var triggers: AnyTrigger<AttributeRoot> { get }
+    
+    @ValidatorBuilder<AttributeRoot>
+    var extraValidation: AnyValidator<AttributeRoot> { get }
+    
+}
 
 public extension ComplexProtocol {
     
-    var pathToAttributes: KeyPath<AttributeRoot, [String : Attribute]> {
-        \.self
+    var pathToAttributes: Path<[String: Attribute], [String: Attribute]> {
+        Path<[String: Attribute], [String: Attribute]>(path: \.self, ancestors: [])
     }
     
 }

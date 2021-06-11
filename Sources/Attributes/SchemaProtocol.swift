@@ -35,12 +35,7 @@ public extension SchemaProtocol {
         guard let property = groups.compactMap({ $0.findProperty(path: path) }).first else {
             fatalError()
         }
-        switch property {
-        case .property(let attribute):
-            return attribute
-        case .complex(let complexAttribute, _):
-            return complexAttribute
-        }
+        return property
     }
     
     func makeValidator(root: Root) -> AnyValidator<Root> {
