@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct Parameter: ExternalType {
+public struct Parameter: ExternalType, Codable {
     
     public var mode: Mode = .input
     

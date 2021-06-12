@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct MachineSignal: Variable {
+public struct MachineSignal: Variable, Codable {
     
     public var type: SignalType
     

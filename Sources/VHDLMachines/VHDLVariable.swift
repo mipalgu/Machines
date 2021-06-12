@@ -28,3 +28,46 @@ public struct VHDLVariable: Variable {
     }
     
 }
+
+extension VHDLVariable: Codable {
+    
+    enum CodingKeys: CodingKey {
+        case type, name, defaultValue, range, comment
+    }
+    
+    public init(from: Decoder) throws {
+        let container = try from.container(keyedBy: CodingKeys.self)
+        type = try container.decode(VariableType.self, forKey: .type)
+        name = try container.decode(String.self, forKey: .name)
+        defaultValue = try container.decode(String?.self, forKey: .defaultValue)
+        comment = try container.decode(String?.self, forKey: .comment)
+        guard let rangeRaw = try container.decode(String?.self, forKey: .range) else {
+            range = nil
+            return
+        }
+        let components = rangeRaw.split(separator: ",")
+        guard
+            components.count == 2,
+            let minRange = Int(components[0]),
+            let maxRange = Int(components[1])
+        else {
+            range = nil
+            return
+        }
+        range = (minRange, maxRange)
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(type, forKey: .type)
+        try container.encode(name, forKey: .name)
+        try container.encode(defaultValue, forKey: .defaultValue)
+        try container.encode(comment, forKey: .comment)
+        guard let range = range else {
+            try container.encode(Optional<String>(nil), forKey: .range)
+            return
+        }
+        try container.encode(Optional<String>("\(range.0),\(range.1)"), forKey: .range)
+    }
+    
+}

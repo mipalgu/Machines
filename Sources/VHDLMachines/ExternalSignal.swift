@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct ExternalSignal: ExternalType {
+public struct ExternalSignal: ExternalType, Codable {
     
     public var type: SignalType
     

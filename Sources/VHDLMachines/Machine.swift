@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct Machine {
+public struct Machine: Codable {
     
     public var name: MachineName
     

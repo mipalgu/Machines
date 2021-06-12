@@ -7,9 +7,9 @@
 
 import Foundation
 
-public struct Clock {
+public struct Clock: Codable {
     
-    public enum FrequencyUnit: String, CaseIterable {
+    public enum FrequencyUnit: String, CaseIterable, Codable {
         
         case Hz = "Hz"
         
