@@ -9,7 +9,7 @@ import Foundation
 
 public struct VHDLVariable: Variable {
     
-    public var type: VariableType
+    public var type: String
     
     public var name: String
     
@@ -19,7 +19,7 @@ public struct VHDLVariable: Variable {
     
     public var comment: String?
     
-    public init(type: VariableType, name: String, defaultValue: String?, range: (Int, Int)?, comment: String?) {
+    public init(type: String, name: String, defaultValue: String?, range: (Int, Int)?, comment: String?) {
         self.type = type
         self.name = name
         self.defaultValue = defaultValue
@@ -37,7 +37,7 @@ extension VHDLVariable: Codable {
     
     public init(from: Decoder) throws {
         let container = try from.container(keyedBy: CodingKeys.self)
-        type = try container.decode(VariableType.self, forKey: .type)
+        type = try container.decode(String.self, forKey: .type)
         name = try container.decode(String.self, forKey: .name)
         defaultValue = try container.decode(String?.self, forKey: .defaultValue)
         comment = try container.decode(String?.self, forKey: .comment)

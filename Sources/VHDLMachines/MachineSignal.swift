@@ -9,7 +9,7 @@ import Foundation
 
 public struct MachineSignal: Variable, Codable {
     
-    public var type: SignalType
+    public var type: String
     
     public var name: String
     
@@ -17,7 +17,7 @@ public struct MachineSignal: Variable, Codable {
     
     public var comment: String?
     
-    public init(type: SignalType, name: String, defaultValue: String?, comment: String?) {
+    public init(type: String, name: String, defaultValue: String?, comment: String?) {
         self.type = type
         self.name = name
         self.defaultValue = defaultValue
