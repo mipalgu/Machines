@@ -5,17 +5,17 @@
 //  Created by Morgan McColl on 31/5/21.
 //
 
-public struct IdentityTrigger<Path: PathProtocol>: TriggerProtocol {
+public struct WhenChanged<Path: PathProtocol>: TriggerProtocol {
     
     public typealias Root = Path.Root
     
     let path: Path
     
-    public init(path: Path) {
+    public init(_ path: Path) {
         self.path = path
     }
     
-    public func when(_ condition: @escaping (Root) -> Bool, @TriggerBuilder<Root> then builder: (IdentityTrigger<Path>) -> [AnyTrigger<Root>]) -> ConditionalTrigger<AnyTrigger<Path.Root>> {
+    public func when(_ condition: @escaping (Root) -> Bool, @TriggerBuilder<Root> then builder: (WhenChanged<Path>) -> [AnyTrigger<Root>]) -> ConditionalTrigger<AnyTrigger<Path.Root>> {
         ConditionalTrigger(condition: condition, trigger: AnyTrigger(builder(self)))
     }
     

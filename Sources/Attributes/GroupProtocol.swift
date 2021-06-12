@@ -7,8 +7,7 @@
 
 public protocol GroupProtocol: Attributable where AttributeRoot == AttributeGroup {
     
-    @TriggerBuilder<AttributeRoot>
-    var triggers: AnyTrigger<AttributeRoot> { get }
+    var triggers: AnyTrigger<Root> { get }
     
     @ValidatorBuilder<AttributeRoot>
     var extraValidation: AnyValidator<AttributeRoot> { get }

@@ -58,8 +58,8 @@
 
 public protocol ComplexProtocol: Attributable where AttributeRoot == [String: Attribute] {
     
-    @TriggerBuilder<AttributeRoot>
-    var triggers: AnyTrigger<AttributeRoot> { get }
+    @TriggerBuilder<Root>
+    var triggers: AnyTrigger<Root> { get }
     
     @ValidatorBuilder<AttributeRoot>
     var extraValidation: AnyValidator<AttributeRoot> { get }

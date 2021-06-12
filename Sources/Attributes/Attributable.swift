@@ -69,7 +69,7 @@ public protocol Attributable {
     
     var propertiesValidator: AnyValidator<AttributeRoot> { get }
     
-    var triggers: AnyTrigger<AttributeRoot> { get }
+    var triggers: AnyTrigger<Root> { get }
     
     var extraValidation: AnyValidator<AttributeRoot> { get }
     
@@ -81,8 +81,8 @@ public extension Attributable {
     typealias IntegerProperty = Attributes.IntegerProperty<AttributeRoot>
     typealias ComplexProperty<Base> = Attributes.ComplexProperty<AttributeRoot, Base> where Base: ComplexProtocol, Base.Root == AttributeRoot
     
-    var triggers: AnyTrigger<AttributeRoot> {
-        AnyTrigger<AttributeRoot>()
+    var triggers: AnyTrigger<Root> {
+        AnyTrigger<Root>()
     }
     
     var extraValidation: AnyValidator<AttributeRoot> {
@@ -131,6 +131,10 @@ public extension Attributable {
         }
         //itsa me
         return nil
+    }
+    
+    func path(for attribute: SchemaAttribute<AttributeRoot>) -> Path<Root, Attribute> {
+        self.path.appending(path: self.pathToAttributes)[attribute.label].wrappedValue
     }
     
 }

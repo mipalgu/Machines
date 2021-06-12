@@ -175,8 +175,8 @@ extension Path {
 
 extension Path {
     
-    public func trigger(@TriggerBuilder<Root> builder: (IdentityTrigger<Path<Root, Value>>) -> [AnyTrigger<Root>]) -> AnyTrigger<Root> {
-        return AnyTrigger(builder(IdentityTrigger(path: Path(path: self.path, ancestors: self.fullPath))))
+    public func trigger(@TriggerBuilder<Root> builder: (WhenChanged<Path<Root, Value>>) -> [AnyTrigger<Root>]) -> AnyTrigger<Root> {
+        return AnyTrigger(builder(WhenChanged(Path(path: self.path, ancestors: self.fullPath))))
     }
     
 }

@@ -24,7 +24,7 @@ public struct AnyGroup<Root: Modifiable>: GroupProtocol {
     
     private let _propertiesValidator: () -> AnyValidator<AttributeGroup>
     
-    private let _triggers: () -> AnyTrigger<AttributeGroup>
+    private let _triggers: () -> AnyTrigger<Root>
     
     private let _extraValidation: () -> AnyValidator<AttributeGroup>
     
@@ -46,7 +46,7 @@ public struct AnyGroup<Root: Modifiable>: GroupProtocol {
         self._propertiesValidator()
     }
     
-    public var triggers: AnyTrigger<AttributeGroup> {
+    public var triggers: AnyTrigger<Root> {
         self._triggers()
     }
     
