@@ -8,6 +8,8 @@
 import Foundation
 
 enum LHS<TypeGeneric: TypeProtocol> {
+    
     case label(value: String)
     case declaration(value: Declaration<TypeGeneric>)
+    
 }
