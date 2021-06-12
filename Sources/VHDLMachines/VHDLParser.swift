@@ -16,4 +16,6 @@ public struct VHDLParser {
         return machine
     }
     
+    public init(){}
+    
 }
