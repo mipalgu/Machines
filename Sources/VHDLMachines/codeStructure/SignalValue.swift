@@ -16,3 +16,13 @@ enum SignalValue: ValueProtocol {
     case hex(value: BinaryNumber)
     case octal(value: BinaryNumber)
 }
+
+enum ArithmeticSignalValue: ValueProtocol {
+    
+    typealias TypeGeneric = ArithmeticSignalType
+    
+    case bit(value: BinaryNumber)
+    case bitvector(value: BinaryNumber)
+    case hex(value: BinaryNumber)
+    case octal(value: BinaryNumber)
+}

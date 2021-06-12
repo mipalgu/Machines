@@ -10,6 +10,4 @@ import Foundation
 enum SignalType: TypeProtocol {
     case std_logic
     case std_logic_vector(lower: UInt, upper: UInt, isDownTo: Bool) //lower and upper represent size
-    case unsigned(lower: UInt, upper: UInt, isDownTo: Bool) //lower and upper represent size
-    case signed(lower: UInt, upper: UInt, isDownTo: Bool) //lower and upper represent size
 }
