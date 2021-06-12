@@ -45,7 +45,11 @@ public struct Machine: Codable {
     
     public var architectureBody: String?
     
-    public var isParameterised: Bool
+    private var _isParameterised: Bool
+    
+    public var isParameterised: Bool {
+        _isParameterised && suspendedState != nil
+    }
     
     public init(
         name: MachineName,
@@ -78,7 +82,7 @@ public struct Machine: Codable {
         self.dependentMachines = dependentMachines
         self.machineVariables = machineVariables
         self.machineSignals = machineSignals
-        self.isParameterised = isParameterised
+        self._isParameterised = isParameterised
         self.parameterSignals = parameterSignals
         self.returnableSignals = returnableSignals
         self.states = states

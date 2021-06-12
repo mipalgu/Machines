@@ -12,20 +12,31 @@ public struct VHDLCompiler {
     
     private var helper: FileHelpers = FileHelpers()
     
-    private var internalStates: String {
-        foldWithNewLine(
-            components: [
-                "constant ReadSnapshot: std_logic_vector(3 downto 0) := \"0000\";",
-                "constant OnSuspend: std_logic_vector(3 downto 0) := \"0001\";",
-                "constant OnResume: std_logic_vector(3 downto 0) := \"0010\";",
-                "constant OnEntry: std_logic_vector(3 downto 0) := \"0011\";",
-                "constant NoOnEntry: std_logic_vector(3 downto 0) := \"0100\";",
-                "constant CheckTransition: std_logic_vector(3 downto 0) := \"0101\";",
-                "constant OnExit: std_logic_vector(3 downto 0) := \"0110\";",
-                "constant Internal: std_logic_vector(3 downto 0) := \"0111\";",
-                "constant WriteSnapshot: std_logic_vector(3 downto 0) := \"1000\";",
-                "signal internalState: std_logic_vector(3 downto 0) := ReadSnapshot;"
-            ],
+    private func internalStates(machine: Machine) -> String {
+        let suspensibleComponents = [
+            "constant ReadSnapshot: std_logic_vector(3 downto 0) := \"0000\";",
+            "constant OnSuspend: std_logic_vector(3 downto 0) := \"0001\";",
+            "constant OnResume: std_logic_vector(3 downto 0) := \"0010\";",
+            "constant OnEntry: std_logic_vector(3 downto 0) := \"0011\";",
+            "constant NoOnEntry: std_logic_vector(3 downto 0) := \"0100\";",
+            "constant CheckTransition: std_logic_vector(3 downto 0) := \"0101\";",
+            "constant OnExit: std_logic_vector(3 downto 0) := \"0110\";",
+            "constant Internal: std_logic_vector(3 downto 0) := \"0111\";",
+            "constant WriteSnapshot: std_logic_vector(3 downto 0) := \"1000\";",
+            "signal internalState: std_logic_vector(3 downto 0) := ReadSnapshot;"
+        ]
+        let defaultComponents = [
+            "constant ReadSnapshot: std_logic_vector(2 downto 0) := \"000\";",
+            "constant OnEntry: std_logic_vector(2 downto 0) := \"001\";",
+            "constant NoOnEntry: std_logic_vector(2 downto 0) := \"010\";",
+            "constant CheckTransition: std_logic_vector(2 downto 0) := \"011\";",
+            "constant OnExit: std_logic_vector(2 downto 0) := \"100\";",
+            "constant Internal: std_logic_vector(2 downto 0) := \"101\";",
+            "constant WriteSnapshot: std_logic_vector(2 downto 0) := \"110\";",
+            "signal internalState: std_logic_vector(2 downto 0) := ReadSnapshot;"
+        ]
+        return foldWithNewLine(
+            components: machine.suspendedState == nil ? defaultComponents : suspensibleComponents,
             initial: "-- Internal State Representation Bits",
             indentation: 1
         )
@@ -64,16 +75,17 @@ public struct VHDLCompiler {
     }
     
     private func writeOutputLogic(machine: Machine) -> [String] {
-        ["if (currentState = \(toStateName(name: machine.states[machine.suspendedState!].name)))"] +
-            machine.returnableSignals.map { "    \(toReturnable(name: $0.name)) <= \($0.name);" } +
-        ["end if;"]
+        if !machine.isParameterised || machine.suspendedState == nil {
+            return []
+        }
+        let returnables = machine.returnableSignals.map { "    \(toReturnable(name: $0.name)) <= \($0.name);" }
+        return ["if (currentState = \(toStateName(name: machine.states[machine.suspendedState!].name)))"] +
+                returnables + ["end if;"]
     }
     
-    private func readSnapshotLogic(machine: Machine, indentation: Int) -> String {
-        let initialState = toStateName(name: machine.states[machine.initialState].name)
-        let suspendedState = toStateName(name: machine.states[machine.suspendedState!].name)
-        return foldWithNewLineExceptFirst(
-            components: readParameterLogic(machine: machine) + [
+    private func commandLogic(initialState: String, suspendedState: String, indentation: Int, parameters: [String]) -> String {
+        foldWithNewLineExceptFirst(
+            components: parameters + [
                 "if (command = COMMAND_RESTART and currentState /= \(initialState)) then",
                 foldWithNewLineExceptFirst(
                     components: [
@@ -167,6 +179,26 @@ public struct VHDLCompiler {
         )
     }
     
+    private func readSnapshotLogic(machine: Machine, indentation: Int) -> String {
+        let parameters = machine.isParameterised ? readParameterLogic(machine: machine) : []
+        if machine.suspendedState != nil {
+            let initialState = toStateName(name: machine.states[machine.initialState].name)
+            let suspendedState = toStateName(name: machine.states[machine.suspendedState!].name)
+            return commandLogic(initialState: initialState, suspendedState: suspendedState, indentation: indentation, parameters: parameters)
+        }
+        return foldWithNewLineExceptFirst(
+            components: parameters + [
+                "if (previousRinglet /= currentState) then",
+                foldWithNewLine(components: ["internalState <= onEntry;"], initial: "", indentation: 1),
+                "else",
+                foldWithNewLine(components: ["internalState <= noOnEntry;"], initial: "", indentation: 1),
+                "end if;"
+            ],
+            initial: "",
+            indentation: indentation
+        )
+    }
+    
     private func readSnapshotVariables(machine: Machine, indentation: Int) -> String {
         var signals = machine.externalSignals.filter { $0.mode == .input || $0.mode == .inputoutput || $0.mode == .buffer }.map { "\($0.name) <= \(toExternal(name: $0.name));" }
         if signals.count > 0 {
@@ -223,14 +255,26 @@ public struct VHDLCompiler {
         )
     }
     
-    private func actionForStates(machine: Machine, actionName: String) -> [String] {
-        machine.states.map { $0.actions[actionName] ?? "" }
+    private func actionForStates(machine: Machine, actionName: String, trailers: [String]? = nil) -> [String] {
+        guard let unwrappedTrailers = trailers else {
+            return machine.states.map { $0.actions[actionName] ?? "" }
+        }
+        return machine.states.indices.map { (i: Int) -> String in
+            let actionCode = machine.states[i].actions[actionName] ?? ""
+            return foldWithNewLine(components: [actionCode, unwrappedTrailers[i]])
+        }
     }
     
     private func onEntry(machine: Machine, indentation: Int) -> String {
-        codeForStatesStatement(
+        let trailers: [String] = machine.states.indices.map { hasAfterInTransition(state: $0, machine: machine) }.map {
+            if $0 {
+                return "ringlet_counter := 0;"
+            }
+            return ""
+        }
+        return codeForStatesStatement(
             names: machine.states.map(\.name),
-            code: actionForStates(machine: machine, actionName: "OnEntry"),
+            code: actionForStates(machine: machine, actionName: "OnEntry", trailers: trailers),
             indentation: indentation,
             trailer: "internalState <= CheckTransition;"
         )
@@ -246,27 +290,48 @@ public struct VHDLCompiler {
     }
     
     private func internalAction(machine: Machine, indentation: Int) -> String {
-        codeForStatesStatement(
+        let trailers: [String] = machine.states.indices.map { hasAfterInTransition(state: $0, machine: machine) }.map {
+            if $0 {
+                return "ringlet_counter := ringlet_counter + 1;"
+            }
+            return ""
+        }
+        return codeForStatesStatement(
             names: machine.states.map(\.name),
-            code: actionForStates(machine: machine, actionName: "Internal"),
+            code: actionForStates(machine: machine, actionName: "Internal", trailers: trailers),
             indentation: indentation,
             trailer: "internalState <= WriteSnapshot;"
         )
     }
     
-    private func actionsForStates(machine: Machine, actionsNames: [String]) -> [String] {
-        machine.states.map { state in
+    private func actionsForStates(machine: Machine, actionsNames: [String], trailers: [String]? = nil) -> [String] {
+        guard let unwrappedTrailers = trailers else {
+            return machine.states.map { state in
+                let actions = actionsNames.map { name in
+                    state.actions[name] ?? ""
+                }
+                return foldWithNewLine(components: actions)
+            }
+        }
+        return machine.states.indices.map { index in
+            let state = machine.states[index]
             let actions = actionsNames.map { name in
                 state.actions[name] ?? ""
             }
-            return foldWithNewLine(components: actions)
+            return foldWithNewLine(components: actions + [unwrappedTrailers[index]])
         }
     }
     
     private func onResume(machine: Machine, indentation: Int) -> String {
-        codeForStatesStatement(
+        let trailers = machine.states.indices.map { (index: Int) -> String in
+            if hasAfterInTransition(state: index, machine: machine) {
+                return "ringlet_counter := 0;"
+            }
+            return ""
+        }
+        return codeForStatesStatement(
             names: machine.states.map(\.name),
-            code: actionsForStates(machine: machine, actionsNames: ["OnResume", "OnEntry"]),
+            code: actionsForStates(machine: machine, actionsNames: ["OnResume", "OnEntry"], trailers: trailers),
             indentation: indentation,
             trailer: "internalState <= CheckTransition;"
         )
@@ -324,11 +389,91 @@ public struct VHDLCompiler {
         
     }
     
-    private func transitionExpression(expression: String, transitionBefore: String?) -> String {
-        guard let before = transitionBefore else {
+    private func toDecimal(expression: String) -> String {
+        guard let decimal = Double(expression) else {
             return expression
         }
-        return "\(expression) and (not (\(before)))"
+        return String(decimal)
+    }
+    
+    private func replaceAfter(expression: String, after: String) -> String {
+        let expression = toDecimal(expression: expression)
+        if after == "after_ps" {
+            return "(ringlet_counter >= (\(expression)) * RINGLETS_PER_PS)"
+        }
+        if after == "after_ns" {
+            return "(ringlet_counter >= (\(expression)) * RINGLETS_PER_NS)"
+        }
+        if after == "after_us" {
+            return "(ringlet_counter >= (\(expression)) * RINGLETS_PER_US)"
+        }
+        if after == "after_ms" {
+            return "(ringlet_counter >= (\(expression)) * RINGLETS_PER_MS)"
+        }
+        if after == "after" {
+            return "(ringlet_counter >= (\(expression)) * RINGLETS_PER_S)"
+        }
+        return "(ringlet_counter >= (\(expression)))"
+    }
+    
+    private func replaceAfters(condition: String) -> String {
+        var aftersStack: String = ""
+        var afterStack: String = ""
+        let afters: Set<String> = ["after_ps(", "after_ns(", "after_us(", "after_ms(", "after_rt("]
+        let after: Set<String> = ["after("]
+        var creatingAfter: Bool = false
+        var bracketCount: Int = 0
+        var expression: String = ""
+        var currentAfter: String = ""
+        var newString = ""
+        condition.forEach {
+            if creatingAfter {
+                if $0 == ")" {
+                    bracketCount -= 1
+                    if bracketCount == 0 {
+                        let replacement = replaceAfter(expression: expression, after: currentAfter)
+                        expression = ""
+                        newString.append(replacement)
+                        creatingAfter = false
+                        return
+                    }
+                }else if $0 == "(" {
+                    bracketCount += 1
+                }
+                expression.append($0)
+                return
+            }
+            aftersStack.append($0)
+            afterStack.append($0)
+            newString.append($0)
+            if aftersStack.count > 9 {
+                aftersStack = String(aftersStack[String.Index(utf16Offset: 1, in: aftersStack)..<String.Index(utf16Offset: aftersStack.count, in: aftersStack)])
+            }
+            if afterStack.count > 6 {
+                afterStack = String(afterStack[String.Index(utf16Offset: 1, in: afterStack)..<String.Index(utf16Offset: afterStack.count, in: afterStack)])
+            }
+            if afters.contains(aftersStack) {
+                bracketCount = 1
+                creatingAfter = true
+                currentAfter = String(aftersStack[String.Index(utf16Offset: 0, in: aftersStack)..<String.Index(utf16Offset: 8, in: aftersStack)])
+                newString.removeSubrange(String.Index(utf16Offset: newString.count - 9, in: newString)..<String.Index(utf16Offset: newString.count, in: newString))
+            }
+            if after.contains(afterStack) {
+                bracketCount = 1
+                creatingAfter = true
+                currentAfter = "after"
+                newString.removeSubrange(String.Index(utf16Offset: newString.count - 6, in: newString)..<String.Index(utf16Offset: newString.count, in: newString))
+            }
+        }
+        return newString
+    }
+    
+    private func transitionExpression(expression: String, transitionBefore: String?) -> String {
+        let transformedExpression = replaceAfters(condition: expression)
+        guard let before = transitionBefore else {
+            return transformedExpression
+        }
+        return "(\(transformedExpression)) and (not (\(before)))"
     }
     
     private func transitionsToCode(transitions: [VHDLTransition]) -> String {
@@ -382,13 +527,19 @@ public struct VHDLCompiler {
     }
     
     private func actionCase(machine: Machine, indentation: Int) -> String {
+        var suspendActions: [String] = []
+        if machine.suspendedState != nil {
+            suspendActions = [
+                "when OnResume =>",
+                onResume(machine: machine, indentation: indentation + 1),
+                "when OnSuspend =>",
+                onSuspend(machine: machine, indentation: indentation + 1)
+            ]
+        }
         let components = [
             "    when ReadSnapshot =>",
-            readSnapshot(machine: machine, indentation: indentation),
-            "when OnSuspend =>",
-            onSuspend(machine: machine, indentation: indentation + 1),
-            "when OnResume =>",
-            onResume(machine: machine, indentation: indentation + 1),
+            readSnapshot(machine: machine, indentation: indentation)
+        ] + suspendActions + [
             "when OnEntry =>",
             onEntry(machine: machine, indentation: indentation + 1),
             "when NoOnEntry =>",
@@ -493,25 +644,46 @@ public struct VHDLCompiler {
         return "\(variable.name): \(variable.type) range \(range.0) to \(range.1) := \(defaultValue)\(semiColon)" + (variable.comment == nil ? "" : " -- \(variable.comment!)")
     }
     
+    private func removeLastSemicolon(data: String) -> String {
+        var splitData = data.split(separator: "\n")
+        guard var lastLine = splitData.last else {
+            return data
+        }
+        guard let lastIndex = lastLine.indices.reversed().first(where: { lastLine[$0] == ";" }) else {
+            return data
+        }
+        lastLine.remove(at: lastIndex)
+        splitData[splitData.count - 1] = lastLine
+        return foldWithNewLine(components: splitData.map { String($0) })
+    }
+    
     private func createPortBlock(machine: Machine) -> String {
         guard !machine.clocks.isEmpty else {
             fatalError("No clock found for machine")
         }
-        return """
-             port (
-         \(foldWithNewLine(components: machine.clocks.map { clockToSignal(clk: $0) }, initial: "", indentation: 2));
-         \(foldWithNewLine(components: machine.externalSignals.map { signalToEntityDeclaration(signal: $0) }, initial: indent(count: 2) + "suspended: out std_logic;", indentation: 2))
-         \(foldWithNewLine(
-            components: machine.parameterSignals.map { toParameterDeclaration(parameter: $0) },
+        let declaration = removeLastSemicolon(data: foldWithNewLineExceptFirst(
+            components: [
+                foldWithNewLineExceptFirst(components: machine.clocks.map { clockToSignal(clk: $0) }, initial: "", indentation: 2),
+                foldWithNewLineExceptFirst(components: machine.externalSignals.map { signalToEntityDeclaration(signal: $0) }, initial: "", indentation: 2),
+                machine.suspendedState != nil ? "suspended: out std_logic;" : "",
+                foldWithNewLineExceptFirst(
+                   components: machine.isParameterised ? machine.parameterSignals.map { toParameterDeclaration(parameter: $0) } : [],
+                   initial: "",
+                   indentation: 2
+                ),
+                foldWithNewLineExceptFirst(
+                    components: machine.isParameterised ? machine.returnableSignals.map(toReturnDeclaration) : [],
+                    initial: "",
+                    indentation: 2
+                ),
+                machine.suspendedState != nil ? "command: in std_logic_vector(1 downto 0);" : ""
+            ],
             initial: "",
             indentation: 2
-         ))
-         \(foldWithNewLine(
-             components: machine.returnableSignals.map(toReturnDeclaration),
-             initial: "",
-             indentation: 2
-         ))
-                 command: in std_logic_vector(1 downto 0)
+        ))
+        return """
+             port (
+                 \(declaration)
              );
          """
     }
@@ -542,7 +714,7 @@ public struct VHDLCompiler {
     }
     
     private func clockToSignal(clk: Clock) -> String {
-        "\(clk.name): in std_logic"
+        "\(clk.name): in std_logic;"
     }
     
     private func foldWithNewLine(components: [String], initial: String = "", indentation: Int = 0) -> String {
@@ -619,8 +791,8 @@ public struct VHDLCompiler {
     private func stateRepresenation(machine: Machine) -> String {
         let states = machine.states
         let initialState = machine.states[machine.initialState].name
-        let suspendedState = machine.states[machine.suspendedState!].name
-        let defaultState = machine.isParameterised ? suspendedState : initialState
+        let suspendedState = machine.suspendedState != nil ? machine.states[machine.suspendedState!].name : ""
+        let defaultState = machine.isParameterised && machine.suspendedState != nil ? suspendedState : initialState
         let stateLength = findBinaryLength(count: states.count)
         return """
          -- State Representation Bits
@@ -634,9 +806,10 @@ public struct VHDLCompiler {
             components: [
                 "signal currentState: std_logic_vector(\(stateLength - 1) downto 0) := \(toStateName(name: defaultState));",
                 "signal targetState: std_logic_vector(\(stateLength - 1) downto 0) := \(toStateName(name: defaultState));",
-                "signal previousRinglet: std_logic_vector(\(stateLength - 1) downto 0) := \"\(String(repeating: "Z", count: stateLength) )\";",
+                "signal previousRinglet: std_logic_vector(\(stateLength - 1) downto 0) := \"\(String(repeating: "Z", count: stateLength) )\";"
+            ] + (machine.suspendedState == nil ? [] : [
                 "signal suspendedFrom: std_logic_vector(\(stateLength - 1) downto 0) := \(toStateName(name: initialState));"
-            ],
+            ]),
             initial: "",
             indentation: 1
          ))
@@ -752,15 +925,20 @@ public struct VHDLCompiler {
     }
     
     private func createArhictecure(machine: Machine) -> String {
+        let parameters = machine.isParameterised ? parameters(machine: machine) : ""
+        let returns = machine.isParameterised ? outputs(machine: machine) : ""
+        let hasAfters = machine.states.indices.first(where: { hasAfterInTransition(state: $0, machine: machine) }) != nil
         return foldWithNewLine(
             components: [
-                internalStates,
+                internalStates(machine: machine),
                 stateRepresenation(machine: machine),
-                suspensionCommands,
-                afterVariables(driving: machine.clocks[machine.drivingClock]),
-                snapshots(machine: machine),
-                parameters(machine: machine),
-                outputs(machine: machine),
+                machine.suspendedState != nil ? suspensionCommands : "",
+                hasAfters ? afterVariables(driving: machine.clocks[machine.drivingClock]) : "",
+                snapshots(machine: machine)
+            ] + [
+                parameters,
+                returns
+            ] + [
                 machineVariables(signals: machine.machineSignals, variables: machine.machineVariables),
                 architectureHead(head: machine.architectureHead)
             ],
@@ -794,6 +972,19 @@ public struct VHDLCompiler {
         let newList = Array(components[1..<components.count])
         return foldWithNewLine(components: [components[0]], initial: initial, indentation: 0) +
             "\n" + foldWithNewLine(components: newList, initial: "", indentation: indentation)
+    }
+    
+    private func hasAfter(condition: String) -> Bool {
+        condition.contains("after(") || condition.contains("after_ps(") ||
+            condition.contains("after_ns(") || condition.contains("after_us(") ||
+            condition.contains("after_ms(") || condition.contains("after_rt(")
+    }
+    
+    private func hasAfterInTransition(state index: Int, machine: Machine) -> Bool {
+        let transitions = machine.transitions.filter { $0.source == index}
+        return transitions.first(where: {
+            hasAfter(condition: $0.condition)
+        }) != nil
     }
     
 }
