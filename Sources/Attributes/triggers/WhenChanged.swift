@@ -22,8 +22,11 @@ public struct WhenChanged<Path: PathProtocol, Trigger: TriggerProtocol>: Trigger
         self.trigger = trigger
     }
     
-    public func performTrigger(_ root: inout Path.Root) -> Result<Bool, AttributeError<Path.Root>> {
-        trigger.performTrigger(&root)
+    public func performTrigger(_ root: inout Path.Root, for path: AnyPath<Root>) -> Result<Bool, AttributeError<Path.Root>> {
+        if isTriggerForPath(path) {
+            return trigger.performTrigger(&root, for: path)
+        }
+        return .success(false)
     }
     
     public func isTriggerForPath(_ path: AnyPath<Path.Root>) -> Bool {

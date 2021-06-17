@@ -73,7 +73,7 @@ public struct SyncTrigger<Source: PathProtocol, Target: PathProtocol>: TriggerPr
         self.target = target
     }
     
-    public func performTrigger(_ root: inout Source.Root) -> Result<Bool, AttributeError<Source.Root>> {
+    public func performTrigger(_ root: inout Source.Root, for _: AnyPath<Root>) -> Result<Bool, AttributeError<Source.Root>> {
         root[keyPath: target.path] = root[keyPath: source.keyPath]
         return .success(true)
     }

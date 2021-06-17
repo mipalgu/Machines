@@ -67,9 +67,9 @@ public struct ConditionalTrigger<Trigger: TriggerProtocol>: TriggerProtocol {
         self.trigger = trigger
     }
     
-    public func performTrigger(_ root: inout Trigger.Root) -> Result<Bool, AttributeError<Trigger.Root>> {
+    public func performTrigger(_ root: inout Trigger.Root, for path: AnyPath<Trigger.Root>) -> Result<Bool, AttributeError<Trigger.Root>> {
         if condition(root) {
-            return trigger.performTrigger(&root)
+            return trigger.performTrigger(&root, for: path)
         }
         return .success(false)
     }

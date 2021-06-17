@@ -58,7 +58,7 @@
 
 public struct IdentityTrigger<Root>: TriggerProtocol {
     
-    public func performTrigger(_: inout Root) -> Result<Bool, AttributeError<Root>> {
+    public func performTrigger(_: inout Root, for _: AnyPath<Root>) -> Result<Bool, AttributeError<Root>> {
         .success(false)
     }
     
