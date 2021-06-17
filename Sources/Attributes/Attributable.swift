@@ -137,4 +137,8 @@ public extension Attributable {
         self.path.appending(path: self.pathToAttributes)[attribute.label].wrappedValue
     }
     
+    func WhenChanged(_ attribute: SchemaAttribute<AttributeRoot>) -> Attributes.WhenChanged<Path<Root, Attribute>, IdentityTrigger<Root>> {
+        Attributes.WhenChanged(path(for: attribute))
+    }
+    
 }

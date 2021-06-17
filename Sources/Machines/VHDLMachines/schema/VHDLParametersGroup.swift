@@ -14,8 +14,8 @@ struct VHDLParametersGroup: GroupProtocol {
     
     @TriggerBuilder<Machine>
     var triggers: AnyTrigger<Machine> {
-        WhenChanged(path(for: isParameterised)).sync(target: path(for: somethingElse))
-        WhenChanged(path(for: isParameterised)).sync(target: path(for: somethingElse))
+        WhenChanged(isParameterised).sync(target: path(for: somethingElse))
+        WhenChanged(isParameterised).sync(target: path(for: somethingElse))
     }
     
     @BoolProperty(label: "is_parameterised", validation: .required())
