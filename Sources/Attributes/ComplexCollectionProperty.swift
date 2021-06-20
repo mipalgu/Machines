@@ -1,6 +1,6 @@
 /*
- * SwiftfsmSchema.swift
- * Machines
+ * ComplexCollectionProperty.swift
+ * Attributes
  *
  * Created by Callum McColl on 21/6/21.
  * Copyright © 2021 Callum McColl. All rights reserved.
@@ -56,69 +56,34 @@
  *
  */
 
-import Attributes
-
-public struct SwiftfsmSchema: SchemaProtocol {
+@propertyWrapper
+public struct ComplexCollectionProperty<Root, Base: ComplexProtocol> where Base.Root == Root {
     
-    public typealias Root = Machine
+    public var projectedValue: ComplexCollectionProperty<Root, Base> {
+        self
+    }
     
-    public var trigger: AnyTrigger<Machine> = []
+    public var wrappedValue: Base
     
-    var variables: SwiftfsmVariables
+    public var available: Bool
     
-}
-
-public struct SwiftfsmVariables: GroupProtocol {
+    public var label: String
     
-    public let path = Machine.path.attributes[0]
-
-    @TableProperty(
-        label: "external_variables",
-        columns: [
-            .enumerated(label: "access_type", validValues: ["sensor", "actuator", "environment"]),
-            .line(label: "label", validation: .required().alphaunderscore().notEmpty()),
-            .expression(label: "type", language: .swift, validation: .required().alphaunderscore().notEmpty()),
-            .expression(label: "value", language: .swift, validation: .required())
-        ],
-        available: true,
-        validation: .required()
-    )
-    var externalVariables
-    
-    @TableProperty(
-        label: "machine_variables",
-        columns: [
-            .enumerated(label: "access_type", validValues: ["let", "var"]),
-            .line(label: "label", validation: .required().alphaunderscore().notEmpty()),
-            .expression(label: "type", language: .swift, validation: .required().alphaunderscore().notEmpty()),
-            .expression(label: "initial_value", language: .swift, validation: .required())
-        ],
-        available: true,
-        validation: .required()
-    )
-    var machineVariables
-    
-    @ComplexProperty(base: SwiftfsmParameters(), available: false, label: "parameters")
-    var parameters
+    public init(base: Base, available: Bool = true, label: String) {
+        self.wrappedValue = base
+        self.available = available
+        self.label = label
+    }
     
 }
 
-public struct SwiftfsmParameters: ComplexProtocol {
+extension ComplexCollectionProperty: SchemaAttributeConvertible {
     
-    public let path = Machine.path.attributes[0].attributes["parameters"].wrappedValue.complexValue
-    
-    @BoolProperty(label: "enable_parameters", available: true, validation: .required())
-    var enableParameters
-    
-    @TableProperty(
-        label: "parameters",
-        columns: [
-            .line(label: "label", validation: .required().alphaunderscore().notEmpty()),
-            .expression(label: "type", language: .swift, validation: .required().alphaunderscore().notEmpty()),
-            .expression(label: "default_value", language: .swift, validation: .required())
-        ],
-        available: false
-    )
-    var parameters
+    var schemaAttribute: Any {
+        let fields = wrappedValue.properties.compactMap {
+            $0.available ? Field(name: $0.label, type: $0.type) : nil
+        }
+        return SchemaAttribute<[String: Attribute]>(available: available, label: label, type: .collection(type: .complex(layout: fields)), validate: AnyValidator([wrappedValue.propertiesValidator, wrappedValue.extraValidation])).toNewRoot(path: wrappedValue.path)
+    }
     
 }
