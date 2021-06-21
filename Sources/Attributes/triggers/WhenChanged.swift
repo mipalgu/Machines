@@ -56,50 +56,8 @@ extension WhenChanged where Trigger == IdentityTrigger<Path.Root> {
         MakeAvailableTrigger(field: field, after: order, source: self.actualPath, fields: fields, attributes: attributes)
     }
     
-}
-
-public struct MakeAvailableTrigger<Source: PathProtocol, Fields: PathProtocol, Attributes: PathProtocol>: TriggerProtocol where Source.Root == Fields.Root, Fields.Root == Attributes.Root, Fields.Value == [Field], Attributes.Value == [String: Attribute] {
-    
-    public typealias Root = Fields.Root
-    
-    public var path: AnyPath<Root> {
-        AnyPath(source)
-    }
-    
-    let field: Field
-    
-    let order: [String]
-    
-    let source: Source
-    
-    let fields: Fields
-    
-    let attributes: Attributes
-    
-    public init(field: Field, after order: [String], source: Source, fields: Fields, attributes: Attributes) {
-        self.field = field
-        self.order = order
-        self.source = source
-        self.fields = fields
-        self.attributes = attributes
-    }
-    
-    public func performTrigger(_ root: inout Source.Root, for _: AnyPath<Root>) -> Result<Bool, AttributeError<Source.Root>> {
-        if nil != root[keyPath: fields.keyPath].first(where: { $0.name == field.name }) {
-            return .success(false)
-        }
-        let indices = order.compactMap {
-            root[keyPath: fields.path].lazy.map(\.name).firstIndex(of: $0)
-        }
-        root[keyPath: fields.path].insert(field, at: indices.first ?? 0)
-        if nil == root[keyPath: attributes.keyPath][field.name] {
-            root[keyPath: attributes.path][field.name] = field.type.defaultValue
-        }
-        return .success(true)
-    }
-    
-    public func isTriggerForPath(_ path: AnyPath<Root>) -> Bool {
-        path.isChild(of: self.path) || path.isSame(as: self.path)
+    public func makeUnavailable<FieldsPath: PathProtocol>(field: Field, fields: FieldsPath) -> MakeUnavailableTrigger<Path, FieldsPath> where FieldsPath.Root == Root, FieldsPath.Value == [Field] {
+        MakeUnavailableTrigger(field: field, source: actualPath, fields: fields)
     }
     
 }

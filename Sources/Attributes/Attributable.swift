@@ -217,5 +217,31 @@ public extension Attributable {
             )
         }
     }
+    
+    func WhenTrue(_ attribute: SchemaAttribute<AttributeRoot>, makeUnavailable hiddenAttribute: SchemaAttribute<AttributeRoot>) -> Attributes.WhenChanged<Path<Root, Attribute>, ConditionalTrigger<AnyTrigger<Root>>> {
+        if attribute.type != .bool {
+            fatalError("Calling `WhenTrue` when attributes type is not `bool`.")
+        }
+        let attributePath = path(for: attribute)
+        return Attributes.WhenChanged(attributePath).when({ attributePath.boolValue.isNil($0) ? false : $0[keyPath: attributePath.boolValue.keyPath] }) { trigger in
+            trigger.makeUnavailable(
+                field: Field(name: hiddenAttribute.label, type: hiddenAttribute.type),
+                fields: Path(path: path.path.appending(path: pathToFields.path), ancestors: [])
+            )
+        }
+    }
+    
+    func WhenFalse(_ attribute: SchemaAttribute<AttributeRoot>, makeUnavailable hiddenAttribute: SchemaAttribute<AttributeRoot>) -> Attributes.WhenChanged<Path<Root, Attribute>, ConditionalTrigger<AnyTrigger<Root>>> {
+        if attribute.type != .bool {
+            fatalError("Calling `WhenTrue` when attributes type is not `bool`.")
+        }
+        let attributePath = path(for: attribute)
+        return Attributes.WhenChanged(attributePath).when({ attributePath.boolValue.isNil($0) ? false : !$0[keyPath: attributePath.boolValue.keyPath] }) { trigger in
+            trigger.makeUnavailable(
+                field: Field(name: hiddenAttribute.label, type: hiddenAttribute.type),
+                fields: Path(path: path.path.appending(path: pathToFields.path), ancestors: [])
+            )
+        }
+    }
 
 }

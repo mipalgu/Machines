@@ -129,6 +129,18 @@ public struct SwiftfsmRinglet: GroupProtocol {
     
     public let path = Machine.path.attributes[1]
     
+    @TriggerBuilder<Machine>
+    public var triggers: AnyTrigger<Machine> {
+        WhenTrue(useCustomRinglet, makeAvailable: actions)
+        WhenTrue(useCustomRinglet, makeAvailable: ringletVariables)
+        WhenTrue(useCustomRinglet, makeAvailable: imports)
+        WhenTrue(useCustomRinglet, makeAvailable: execute)
+        WhenFalse(useCustomRinglet, makeUnavailable: actions)
+        WhenFalse(useCustomRinglet, makeUnavailable: ringletVariables)
+        WhenFalse(useCustomRinglet, makeUnavailable: imports)
+        WhenFalse(useCustomRinglet, makeUnavailable: execute)
+    }
+    
     @BoolProperty(label: "use_custom_ringlet", available: true, validation: .required())
     var useCustomRinglet
     
