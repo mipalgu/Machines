@@ -81,6 +81,9 @@ public extension Attributable {
     typealias IntegerProperty = Attributes.IntegerProperty<AttributeRoot>
     typealias ComplexProperty<Base> = Attributes.ComplexProperty<AttributeRoot, Base> where Base: ComplexProtocol, Base.Root == AttributeRoot
     typealias TableProperty = Attributes.TableProperty<AttributeRoot>
+    typealias CollectionProperty = Attributes.CollectionProperty<AttributeRoot>
+    typealias ComplexCollectionProperty<Base> = Attributes.ComplexCollectionProperty<AttributeRoot, Base> where Base: ComplexProtocol, Base.Root == AttributeRoot
+    typealias CodeProperty = Attributes.CodeProperty<AttributeRoot>
     
     var triggers: AnyTrigger<Root> {
         AnyTrigger<Root>()

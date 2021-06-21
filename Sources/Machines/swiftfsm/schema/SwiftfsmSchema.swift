@@ -122,3 +122,34 @@ public struct SwiftfsmParameters: ComplexProtocol {
     var parameters
     
 }
+
+public struct SwiftfsmRinglet: GroupProtocol {
+    
+    public let path = Machine.path.attributes[1]
+    
+    @BoolProperty(label: "use_custom_ringlet", available: true, validation: .required())
+    var useCustomRinglet
+    
+    @CollectionProperty(label: "actions", available: false, lines: .required().alphaunderscore().notEmpty())
+    var actions
+    
+    @TableProperty(
+        label: "ringlet_variables",
+        columns: [
+            .enumerated(label: "access_type", validValues: ["let", "var"], validation: .required()),
+            .line(label: "label", validation: .required().alphaunderscore().notEmpty()),
+            .expression(label: "type", language: .swift, validation: .required().alphaunderscorefirst().notEmpty()),
+            .expression(label: "initial_value", language: .swift, validation: .required().alphaunderscorefirst().notEmpty())
+        ],
+        available: false,
+        validation: .required()
+    )
+    var ringletVariables
+    
+    @CodeProperty(label: "imports", available: false, validation: .required())
+    var imports
+    
+    @CodeProperty(label: "execute", available: false, validation: .required())
+    var execute
+    
+}
