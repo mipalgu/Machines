@@ -1,6 +1,6 @@
 /*
- * CodeProperty.swift
- * Attributes
+ * EnumeratedProperty.swift
+ * 
  *
  * Created by Callum McColl on 21/6/21.
  * Copyright © 2021 Callum McColl. All rights reserved.
@@ -57,9 +57,9 @@
  */
 
 @propertyWrapper
-public struct CodeProperty<Root> {
+public struct EnumeratedProperty<Root> {
     
-    public var projectedValue: CodeProperty<Root> {
+    public var projectedValue: EnumeratedProperty<Root> {
         self
     }
     
@@ -71,20 +71,20 @@ public struct CodeProperty<Root> {
     
 }
 
-extension CodeProperty where Root == AttributeGroup {
+extension EnumeratedProperty where Root == AttributeGroup {
     
     public init(
         label: String,
-        language: Language,
+        validValues: Set<String>,
         available: Bool = true,
-        validation validatorFactories: ValidatorFactory<Code> ...
+        validation validatorFactories: ValidatorFactory<String> ...
     ) {
-        let path = ReadOnlyPath(keyPath: \AttributeGroup.self, ancestors: []).attributes[label].wrappedValue.blockAttribute.codeValue
+        let path = ReadOnlyPath(keyPath: \AttributeGroup.self, ancestors: []).attributes[label].wrappedValue.lineAttribute.enumeratedValue
         let validator = AnyValidator(validatorFactories.map { $0.make(path: path) })
         let attribute: SchemaAttribute<AttributeGroup> = SchemaAttribute(
             available: available,
             label: label,
-            type: .code(language: language),
+            type: .enumerated(validValues: validValues),
             validate: validator
         )
         self.init(wrappedValue: attribute)

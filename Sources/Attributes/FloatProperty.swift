@@ -1,5 +1,5 @@
 /*
- * CodeProperty.swift
+ * FloatProperty.swift
  * Attributes
  *
  * Created by Callum McColl on 21/6/21.
@@ -57,9 +57,9 @@
  */
 
 @propertyWrapper
-public struct CodeProperty<Root> {
+public struct FloatProperty<Root> {
     
-    public var projectedValue: CodeProperty<Root> {
+    public var projectedValue: FloatProperty<Root> {
         self
     }
     
@@ -71,20 +71,19 @@ public struct CodeProperty<Root> {
     
 }
 
-extension CodeProperty where Root == AttributeGroup {
+extension FloatProperty where Root == AttributeGroup {
     
     public init(
         label: String,
-        language: Language,
         available: Bool = true,
-        validation validatorFactories: ValidatorFactory<Code> ...
+        validation validatorFactories: ValidatorFactory<Double> ...
     ) {
-        let path = ReadOnlyPath(keyPath: \AttributeGroup.self, ancestors: []).attributes[label].wrappedValue.blockAttribute.codeValue
+        let path = ReadOnlyPath(keyPath: \AttributeGroup.self, ancestors: []).attributes[label].wrappedValue.lineAttribute.floatValue
         let validator = AnyValidator(validatorFactories.map { $0.make(path: path) })
         let attribute: SchemaAttribute<AttributeGroup> = SchemaAttribute(
             available: available,
             label: label,
-            type: .code(language: language),
+            type: .float,
             validate: validator
         )
         self.init(wrappedValue: attribute)

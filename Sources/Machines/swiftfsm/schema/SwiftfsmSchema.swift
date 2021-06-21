@@ -64,7 +64,9 @@ public struct SwiftfsmSchema: SchemaProtocol {
     
     public var trigger: AnyTrigger<Machine> = []
     
-    var variables: SwiftfsmVariables
+    var variables = SwiftfsmVariables()
+    
+    var ringlet = SwiftfsmRinglet()
     
 }
 
@@ -146,10 +148,47 @@ public struct SwiftfsmRinglet: GroupProtocol {
     )
     var ringletVariables
     
-    @CodeProperty(label: "imports", available: false, validation: .required())
+    @CodeProperty(label: "imports", language: .swift, available: false, validation: .required())
     var imports
     
-    @CodeProperty(label: "execute", available: false, validation: .required())
+    @CodeProperty(label: "execute", language: .swift, available: false, validation: .required())
     var execute
     
 }
+
+public struct SwiftfsmSettings: GroupProtocol {
+    
+    public let path = Machine.path.attributes[2]
+    
+    @EnumeratedProperty(label: "suspend_state", validValues: [])
+    var suspendState
+    
+//    @ComplexProperty(base: SwiftfsmModuleDependencies(), available: true, label: "module_dependencies")
+//    var moduleDependencies
+    
+}
+
+//public struct SwiftfsmModuleDependencies: ComplexProtocol {
+//    
+//    public let path = Machine.path.attributes[2].attributes["module_dependencies"].wrappedValue.complexValue
+//    
+//    @ComplexCollectionProperty(base: SwiftfsmPackage(), available: true, label: "packages")
+//    var packages
+//    
+//}
+//
+//public struct SwiftfsmPackage: ComplexProtocol {
+//    
+//    @CollectionProperty(label: "products", available: true, lines: .required())
+//    var products
+//    
+//    @CollectionProperty(label: "qualifiers", available: true, lines: .required())
+//    var qualifiers
+//    
+//    @CollectionProperty(label: "targets_to_import", available: true, lines: .required())
+//    var targetsToImport
+//    
+//    @LineProperty(label: "url", available: true, validation: .required())
+//    var url
+//    
+//}

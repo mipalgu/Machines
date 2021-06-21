@@ -1,5 +1,5 @@
 /*
- * CodeProperty.swift
+ * EnumerableCollectionProperty.swift
  * Attributes
  *
  * Created by Callum McColl on 21/6/21.
@@ -57,9 +57,9 @@
  */
 
 @propertyWrapper
-public struct CodeProperty<Root> {
+public struct EnumerableCollectionProperty<Root> {
     
-    public var projectedValue: CodeProperty<Root> {
+    public var projectedValue: EnumerableCollectionProperty<Root> {
         self
     }
     
@@ -71,20 +71,20 @@ public struct CodeProperty<Root> {
     
 }
 
-extension CodeProperty where Root == AttributeGroup {
+extension EnumerableCollectionProperty where Root == AttributeGroup {
     
     public init(
         label: String,
-        language: Language,
+        validValues: Set<String>,
         available: Bool = true,
-        validation validatorFactories: ValidatorFactory<Code> ...
+        validation validatorFactories: ValidatorFactory<Set<String>> ...
     ) {
-        let path = ReadOnlyPath(keyPath: \AttributeGroup.self, ancestors: []).attributes[label].wrappedValue.blockAttribute.codeValue
+        let path = ReadOnlyPath(keyPath: \AttributeGroup.self, ancestors: []).attributes[label].wrappedValue.blockAttribute.enumerableCollectionValue
         let validator = AnyValidator(validatorFactories.map { $0.make(path: path) })
         let attribute: SchemaAttribute<AttributeGroup> = SchemaAttribute(
             available: available,
             label: label,
-            type: .code(language: language),
+            type: .enumerableCollection(validValues: validValues),
             validate: validator
         )
         self.init(wrappedValue: attribute)
