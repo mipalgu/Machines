@@ -83,7 +83,7 @@ extension ComplexCollectionProperty: SchemaAttributeConvertible {
         let fields = wrappedValue.properties.compactMap {
             $0.available ? Field(name: $0.label, type: $0.type) : nil
         }
-        return SchemaAttribute<[String: Attribute]>(available: available, label: label, type: .collection(type: .complex(layout: fields)), validate: AnyValidator([wrappedValue.propertiesValidator, wrappedValue.extraValidation])).toNewRoot(path: wrappedValue.path)
+        return SchemaAttribute<Attribute>(available: available, label: label, type: .collection(type: .complex(layout: fields)), validate: AnyValidator([wrappedValue.propertiesValidator, wrappedValue.extraValidation])).toNewRoot(path: wrappedValue.path)
     }
     
 }

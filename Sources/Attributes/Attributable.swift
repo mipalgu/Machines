@@ -63,6 +63,8 @@ public protocol Attributable {
     
     var path: Path<Root, AttributeRoot> { get }
     
+    var pathToFields: Path<AttributeRoot, [Field]> { get }
+    
     var pathToAttributes: Path<AttributeRoot, [String: Attribute]> { get }
 
     var properties: [SchemaAttribute<AttributeRoot>] { get }
@@ -79,11 +81,18 @@ public extension Attributable {
     
     typealias BoolProperty = Attributes.BoolProperty<AttributeRoot>
     typealias IntegerProperty = Attributes.IntegerProperty<AttributeRoot>
-    typealias ComplexProperty<Base> = Attributes.ComplexProperty<AttributeRoot, Base> where Base: ComplexProtocol, Base.Root == AttributeRoot
-    typealias TableProperty = Attributes.TableProperty<AttributeRoot>
+    typealias FloatProperty = Attributes.FloatProperty<AttributeRoot>
+    typealias ExpressionProperty = Attributes.ExpressionProperty<AttributeRoot>
+    typealias EnumeratedProperty = Attributes.EnumeratedProperty<AttributeRoot>
+    typealias LineProperty = Attributes.LineProperty<AttributeRoot>
+    
+    typealias CodeProperty = Attributes.CodeProperty<AttributeRoot>
+    typealias TextProperty = Attributes.TextProperty<AttributeRoot>
+    typealias EnumerableCollectionProperty = Attributes.EnumerableCollectionProperty<AttributeRoot>
     typealias CollectionProperty = Attributes.CollectionProperty<AttributeRoot>
     typealias ComplexCollectionProperty<Base> = Attributes.ComplexCollectionProperty<AttributeRoot, Base> where Base: ComplexProtocol, Base.Root == AttributeRoot
-    typealias CodeProperty = Attributes.CodeProperty<AttributeRoot>
+    typealias ComplexProperty<Base> = Attributes.ComplexProperty<AttributeRoot, Base> where Base: ComplexProtocol, Base.Root == AttributeRoot
+    typealias TableProperty = Attributes.TableProperty<AttributeRoot>
     
     var triggers: AnyTrigger<Root> {
         AnyTrigger<Root>()
@@ -100,16 +109,38 @@ public extension Attributable {
     var properties: [SchemaAttribute<AttributeRoot>] {
         let mirror = Mirror(reflecting: self)
         return mirror.children.compactMap {
-            if let val = $0.value as? BoolProperty {
+            switch $0.value {
+            case let val as BoolProperty:
                 return val.wrappedValue
-            }
-            if let val = $0.value as? IntegerProperty {
+            case let val as IntegerProperty:
                 return val.wrappedValue
+            case let val as FloatProperty:
+                return val.wrappedValue
+            case let val as ExpressionProperty:
+                return val.wrappedValue
+            case let val as EnumeratedProperty:
+                return val.wrappedValue
+            case let val as LineProperty:
+                return val.wrappedValue
+            case let val as CodeProperty:
+                return val.wrappedValue
+            case let val as TextProperty:
+                return val.wrappedValue
+            case let val as EnumerableCollectionProperty:
+                return val.wrappedValue
+            case let val as CollectionProperty:
+                return val.wrappedValue
+            case let val as TableProperty:
+                return val.wrappedValue
+            case let val as SchemaAttributeConvertible:
+                if let attribute = val.schemaAttribute as? SchemaAttribute<AttributeRoot> {
+                    return attribute
+                } else {
+                    fallthrough
+                }
+            default:
+                return nil
             }
-            if let val = $0.value as? SchemaAttributeConvertible, let attribute = val.schemaAttribute as? SchemaAttribute<AttributeRoot> {
-                return attribute
-            }
-            return nil
         }
     }
     
@@ -145,4 +176,46 @@ public extension Attributable {
         Attributes.WhenChanged(path(for: attribute))
     }
     
+    func WhenTrue(_ attribute: SchemaAttribute<AttributeRoot>, makeAvailable hiddenAttribute: SchemaAttribute<AttributeRoot>) -> Attributes.WhenChanged<Path<Root, Attribute>, ConditionalTrigger<AnyTrigger<Root>>> {
+        if attribute.type != .bool {
+            fatalError("Calling `WhenTrue` when attributes type is not `bool`.")
+        }
+        let order: [String]
+        if let index = properties.firstIndex(where: { $0.label == hiddenAttribute.label }) {
+            order = Array(properties[0..<index].map(\.label))
+        } else {
+            order = []
+        }
+        let attributePath = path(for: attribute)
+        return Attributes.WhenChanged(attributePath).when({ attributePath.boolValue.isNil($0) ? false : $0[keyPath: attributePath.boolValue.keyPath] }) { trigger in
+            trigger.makeAvailable(
+                field: Field(name: hiddenAttribute.label, type: hiddenAttribute.type),
+                after: order,
+                fields: Path(path: path.path.appending(path: pathToFields.path), ancestors: []),
+                attributes: Path(path: path.path.appending(path: pathToAttributes.path), ancestors: [])
+            )
+        }
+    }
+    
+    func WhenFalse(_ attribute: SchemaAttribute<AttributeRoot>, makeAvailable hiddenAttribute: SchemaAttribute<AttributeRoot>) -> Attributes.WhenChanged<Path<Root, Attribute>, ConditionalTrigger<AnyTrigger<Root>>> {
+        if attribute.type != .bool {
+            fatalError("Calling `WhenTrue` when attributes type is not `bool`.")
+        }
+        let order: [String]
+        if let index = properties.firstIndex(where: { $0.label == hiddenAttribute.label }) {
+            order = Array(properties[0..<index].map(\.label))
+        } else {
+            order = []
+        }
+        let attributePath = path(for: attribute)
+        return Attributes.WhenChanged(attributePath).when({ attributePath.boolValue.isNil($0) ? false : !$0[keyPath: attributePath.boolValue.keyPath] }) { trigger in
+            trigger.makeAvailable(
+                field: Field(name: hiddenAttribute.label, type: hiddenAttribute.type),
+                after: order,
+                fields: Path(path: path.path.appending(path: pathToFields.path), ancestors: []),
+                attributes: Path(path: path.path.appending(path: pathToAttributes.path), ancestors: [])
+            )
+        }
+    }
+
 }

@@ -16,6 +16,10 @@ public protocol GroupProtocol: Attributable where AttributeRoot == AttributeGrou
 
 public extension GroupProtocol {
     
+    var pathToFields: Path<AttributeRoot, [Field]> {
+        Path<AttributeGroup, AttributeGroup>(path: \.self, ancestors: []).fields
+    }
+    
     var pathToAttributes: Path<AttributeGroup, [String: Attribute]> {
         Path<AttributeGroup, AttributeGroup>(path: \.self, ancestors: []).attributes
     }

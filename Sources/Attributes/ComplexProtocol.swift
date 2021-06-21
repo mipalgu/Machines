@@ -56,7 +56,7 @@
  *
  */
 
-public protocol ComplexProtocol: Attributable where AttributeRoot == [String: Attribute] {
+public protocol ComplexProtocol: Attributable where AttributeRoot == Attribute {
     
     @TriggerBuilder<Root>
     var triggers: AnyTrigger<Root> { get }
@@ -68,8 +68,12 @@ public protocol ComplexProtocol: Attributable where AttributeRoot == [String: At
 
 public extension ComplexProtocol {
     
-    var pathToAttributes: Path<[String: Attribute], [String: Attribute]> {
-        Path<[String: Attribute], [String: Attribute]>(path: \.self, ancestors: [])
+    var pathToFields: Path<Attribute, [Field]> {
+        Path<Attribute, Attribute>(path: \.self, ancestors: []).blockAttribute.complexFields
+    }
+    
+    var pathToAttributes: Path<Attribute, [String: Attribute]> {
+        Path<Attribute, Attribute>(path: \.self, ancestors: []).blockAttribute.complexValue
     }
     
 }

@@ -107,7 +107,7 @@ public struct SwiftfsmVariables: GroupProtocol {
 
 public struct SwiftfsmParameters: ComplexProtocol {
     
-    public let path = Machine.path.attributes[0].attributes["parameters"].wrappedValue.complexValue
+    public let path = Machine.path.attributes[0].attributes["parameters"].wrappedValue
     
     @BoolProperty(label: "enable_parameters", available: true, validation: .required())
     var enableParameters
