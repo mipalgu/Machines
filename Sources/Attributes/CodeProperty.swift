@@ -57,21 +57,17 @@
  */
 
 @propertyWrapper
-public struct CodeProperty<Root> {
+public struct CodeProperty {
     
-    public var projectedValue: CodeProperty<Root> {
+    public var projectedValue: CodeProperty {
         self
     }
     
-    public var wrappedValue: SchemaAttribute<Root>
+    public var wrappedValue: SchemaAttribute
     
-    public init(wrappedValue: SchemaAttribute<Root>) {
+    public init(wrappedValue: SchemaAttribute) {
         self.wrappedValue = wrappedValue
     }
-    
-}
-
-extension CodeProperty where Root == AttributeGroup {
     
     public init(
         label: String,
@@ -79,9 +75,9 @@ extension CodeProperty where Root == AttributeGroup {
         available: Bool = true,
         validation validatorFactories: ValidatorFactory<Code> ...
     ) {
-        let path = ReadOnlyPath(keyPath: \AttributeGroup.self, ancestors: []).attributes[label].wrappedValue.blockAttribute.codeValue
+        let path = ReadOnlyPath(keyPath: \Attribute.self, ancestors: []).blockAttribute.codeValue
         let validator = AnyValidator(validatorFactories.map { $0.make(path: path) })
-        let attribute: SchemaAttribute<AttributeGroup> = SchemaAttribute(
+        let attribute = SchemaAttribute(
             available: available,
             label: label,
             type: .code(language: language),

@@ -56,7 +56,7 @@
  *
  */
 
-public struct MakeAvailableTrigger<Source: PathProtocol, Fields: PathProtocol, Attributes: PathProtocol>: TriggerProtocol where Source.Root == Fields.Root, Fields.Root == Attributes.Root, Fields.Value == [Field], Attributes.Value == [String: Attribute] {
+public struct MakeAvailableTrigger<Source: ReadOnlyPathProtocol, Fields: PathProtocol, Attributes: PathProtocol>: TriggerProtocol where Source.Root == Fields.Root, Fields.Root == Attributes.Root, Fields.Value == [Field], Attributes.Value == [String: Attribute] {
     
     public typealias Root = Fields.Root
     
@@ -96,7 +96,7 @@ public struct MakeAvailableTrigger<Source: PathProtocol, Fields: PathProtocol, A
         return .success(true)
     }
     
-    public func isTriggerForPath(_ path: AnyPath<Root>) -> Bool {
+    public func isTriggerForPath(_ path: AnyPath<Root>, in _: Root) -> Bool {
         path.isChild(of: self.path) || path.isSame(as: self.path)
     }
     

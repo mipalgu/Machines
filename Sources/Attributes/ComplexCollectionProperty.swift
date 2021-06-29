@@ -57,9 +57,9 @@
  */
 
 @propertyWrapper
-public struct ComplexCollectionProperty<Root, Base: ComplexProtocol> where Base.Root == Root {
+public struct ComplexCollectionProperty<Base: ComplexProtocol> {
     
-    public var projectedValue: ComplexCollectionProperty<Root, Base> {
+    public var projectedValue: ComplexCollectionProperty<Base> {
         self
     }
     
@@ -83,7 +83,7 @@ extension ComplexCollectionProperty: SchemaAttributeConvertible {
         let fields = wrappedValue.properties.compactMap {
             $0.available ? Field(name: $0.label, type: $0.type) : nil
         }
-        return SchemaAttribute<Attribute>(available: available, label: label, type: .collection(type: .complex(layout: fields)), validate: AnyValidator([wrappedValue.propertiesValidator, wrappedValue.extraValidation])).toNewRoot(path: wrappedValue.path)
+        return SchemaAttribute(available: available, label: label, type: .collection(type: .complex(layout: fields)), validate: AnyValidator([wrappedValue.propertiesValidator, wrappedValue.extraValidation]))
     }
     
 }

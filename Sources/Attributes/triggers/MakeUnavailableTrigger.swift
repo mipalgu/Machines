@@ -84,7 +84,7 @@ public struct MakeUnavailableTrigger<Source: PathProtocol, Fields: PathProtocol>
         return .success(true)
     }
     
-    public func isTriggerForPath(_ path: AnyPath<Root>) -> Bool {
+    public func isTriggerForPath(_ path: AnyPath<Root>, in _: Root) -> Bool {
         path.isChild(of: self.path) || path.isSame(as: self.path)
     }
     

@@ -50,39 +50,24 @@ struct SchemaMutator<Schema: MachineSchema>: MachineMutatorResponder, MachineMod
         schema.didDeleteTransition(machine: &machine, transition: transition, stateIndex: stateIndex, at: at)
     }
     
-    private func findTrigger<Path: PathProtocol, T>(path: Path) -> AnyTrigger<Machine> where Path.Root == Machine, Path.Value == T {
-        if path.ancestors.contains(AnyPath(Machine.path.attributes)) {
-            let property = schema.findProperty(path: path)
-            //return property.trigger
-            return AnyTrigger() // Replace with proper implementation
-        }
-        return schema.trigger
-    }
-    
     func didAddItem<Path: PathProtocol, T>(_ item: T, to attribute: Path, machine: inout Machine) -> Result<Bool, AttributeError<Path.Root>> where Path.Root == Machine, Path.Value == [T] {
-        let trigger = findTrigger(path: attribute)
-        return trigger.performTrigger(&machine, for: AnyPath(attribute))
+        return schema.trigger.performTrigger(&machine, for: AnyPath(attribute))
     }
     
     func didDeleteItems<Path: PathProtocol, T>(table attribute: Path, indices: IndexSet, machine: inout Machine, items: [T]) -> Result<Bool, AttributeError<Path.Root>> where Path.Root == Machine, Path.Value == [T] {
-        let indexes = Array<Int>(indices)
-        let trigger = AnyTrigger<Machine>(indexes.map { findTrigger(path: attribute[$0]) })
-        return trigger.performTrigger(&machine, for: AnyPath(attribute))
+        return schema.trigger.performTrigger(&machine, for: AnyPath(attribute))
     }
     
     func didDeleteItem<Path: PathProtocol, T>(attribute: Path, atIndex: Int, machine: inout Machine, item: T) -> Result<Bool, AttributeError<Path.Root>> where Path.Root == Machine, Path.Value == [T] {
-        let trigger: AnyTrigger<Machine> = findTrigger(path: attribute)
-        return trigger.performTrigger(&machine, for: AnyPath(attribute))
+        return schema.trigger.performTrigger(&machine, for: AnyPath(attribute))
     }
     
     func didMoveItems<Path: PathProtocol, T>(attribute: Path, machine: inout Machine, from source: IndexSet, to destination: Int, items: [T]) -> Result<Bool, AttributeError<Path.Root>> where Path.Root == Machine, Path.Value == [T] {
-        let trigger = findTrigger(path: attribute)
-        return trigger.performTrigger(&machine, for: AnyPath(attribute))
+        return schema.trigger.performTrigger(&machine, for: AnyPath(attribute))
     }
     
     func didModify<Path: PathProtocol>(attribute: Path, oldValue: Path.Value, newValue: Path.Value, machine: inout Machine) -> Result<Bool, AttributeError<Path.Root>> where Path.Root == Machine {
-        let trigger = findTrigger(path: attribute)
-        return trigger.performTrigger(&machine, for: AnyPath(attribute))
+        return schema.trigger.performTrigger(&machine, for: AnyPath(attribute))
     }
     
     func validate(machine: Machine) throws {

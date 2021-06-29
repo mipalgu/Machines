@@ -5,7 +5,7 @@
 //  Created by Morgan McColl on 31/5/21.
 //
 
-public struct WhenChanged<Path: PathProtocol, Trigger: TriggerProtocol>: TriggerProtocol where Path.Root == Trigger.Root {
+public struct WhenChanged<Path: ReadOnlyPathProtocol, Trigger: TriggerProtocol>: TriggerProtocol where Path.Root == Trigger.Root {
 
     public typealias Root = Path.Root
     
@@ -23,13 +23,13 @@ public struct WhenChanged<Path: PathProtocol, Trigger: TriggerProtocol>: Trigger
     }
     
     public func performTrigger(_ root: inout Path.Root, for path: AnyPath<Root>) -> Result<Bool, AttributeError<Path.Root>> {
-        if isTriggerForPath(path) {
+        if isTriggerForPath(path, in: root) {
             return trigger.performTrigger(&root, for: path)
         }
         return .success(false)
     }
     
-    public func isTriggerForPath(_ path: AnyPath<Path.Root>) -> Bool {
+    public func isTriggerForPath(_ path: AnyPath<Path.Root>, in _: Root) -> Bool {
         path.isChild(of: self.path) || path.isSame(as: self.path)
     }
     

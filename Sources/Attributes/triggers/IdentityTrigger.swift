@@ -62,7 +62,7 @@ public struct IdentityTrigger<Root>: TriggerProtocol {
         .success(false)
     }
     
-    public func isTriggerForPath(_ path: AnyPath<Root>) -> Bool {
+    public func isTriggerForPath(_: AnyPath<Root>, in _: Root) -> Bool {
         true
     }
     

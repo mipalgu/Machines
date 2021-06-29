@@ -57,30 +57,26 @@
  */
 
 @propertyWrapper
-public struct FloatProperty<Root> {
+public struct FloatProperty {
     
-    public var projectedValue: FloatProperty<Root> {
+    public var projectedValue: FloatProperty {
         self
     }
     
-    public var wrappedValue: SchemaAttribute<Root>
+    public var wrappedValue: SchemaAttribute
     
-    public init(wrappedValue: SchemaAttribute<Root>) {
+    public init(wrappedValue: SchemaAttribute) {
         self.wrappedValue = wrappedValue
     }
-    
-}
-
-extension FloatProperty where Root == AttributeGroup {
     
     public init(
         label: String,
         available: Bool = true,
         validation validatorFactories: ValidatorFactory<Double> ...
     ) {
-        let path = ReadOnlyPath(keyPath: \AttributeGroup.self, ancestors: []).attributes[label].wrappedValue.lineAttribute.floatValue
+        let path = ReadOnlyPath(keyPath: \Attribute.self, ancestors: []).lineAttribute.floatValue
         let validator = AnyValidator(validatorFactories.map { $0.make(path: path) })
-        let attribute: SchemaAttribute<AttributeGroup> = SchemaAttribute(
+        let attribute = SchemaAttribute(
             available: available,
             label: label,
             type: .float,

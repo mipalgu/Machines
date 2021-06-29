@@ -60,14 +60,15 @@ public protocol Attributable {
     
     associatedtype Root: Modifiable
     associatedtype AttributeRoot
+    associatedtype SearchPath: ConvertibleSearchablePath where SearchPath.Root == Root, SearchPath.Value == AttributeRoot
     
-    var path: Path<Root, AttributeRoot> { get }
+    var path: SearchPath { get }
     
     var pathToFields: Path<AttributeRoot, [Field]> { get }
     
     var pathToAttributes: Path<AttributeRoot, [String: Attribute]> { get }
 
-    var properties: [SchemaAttribute<AttributeRoot>] { get }
+    var properties: [SchemaAttribute] { get }
     
     var propertiesValidator: AnyValidator<AttributeRoot> { get }
     
@@ -79,20 +80,9 @@ public protocol Attributable {
 
 public extension Attributable {
     
-    typealias BoolProperty = Attributes.BoolProperty<AttributeRoot>
-    typealias IntegerProperty = Attributes.IntegerProperty<AttributeRoot>
-    typealias FloatProperty = Attributes.FloatProperty<AttributeRoot>
-    typealias ExpressionProperty = Attributes.ExpressionProperty<AttributeRoot>
-    typealias EnumeratedProperty = Attributes.EnumeratedProperty<AttributeRoot>
-    typealias LineProperty = Attributes.LineProperty<AttributeRoot>
+    typealias ComplexCollectionProperty<Base> = Attributes.ComplexCollectionProperty<Base> where Base: ComplexProtocol, Base.Root == AttributeRoot
     
-    typealias CodeProperty = Attributes.CodeProperty<AttributeRoot>
-    typealias TextProperty = Attributes.TextProperty<AttributeRoot>
-    typealias EnumerableCollectionProperty = Attributes.EnumerableCollectionProperty<AttributeRoot>
-    typealias CollectionProperty = Attributes.CollectionProperty<AttributeRoot>
-    typealias ComplexCollectionProperty<Base> = Attributes.ComplexCollectionProperty<AttributeRoot, Base> where Base: ComplexProtocol, Base.Root == AttributeRoot
-    typealias ComplexProperty<Base> = Attributes.ComplexProperty<AttributeRoot, Base> where Base: ComplexProtocol, Base.Root == AttributeRoot
-    typealias TableProperty = Attributes.TableProperty<AttributeRoot>
+    typealias ComplexProperty<Base> = Attributes.ComplexProperty<Base> where Base: ComplexProtocol, Base.Root == AttributeRoot
     
     var triggers: AnyTrigger<Root> {
         AnyTrigger<Root>()
@@ -106,7 +96,7 @@ public extension Attributable {
         ValidationPath(path: ReadOnlyPath(keyPath: \.self, ancestors: []))
     }
     
-    var properties: [SchemaAttribute<AttributeRoot>] {
+    var properties: [SchemaAttribute] {
         let mirror = Mirror(reflecting: self)
         return mirror.children.compactMap {
             switch $0.value {
@@ -133,7 +123,7 @@ public extension Attributable {
             case let val as TableProperty:
                 return val.wrappedValue
             case let val as SchemaAttributeConvertible:
-                if let attribute = val.schemaAttribute as? SchemaAttribute<AttributeRoot> {
+                if let attribute = val.schemaAttribute as? SchemaAttribute {
                     return attribute
                 } else {
                     fallthrough
@@ -145,38 +135,42 @@ public extension Attributable {
     }
     
     var propertiesValidator: AnyValidator<AttributeRoot>  {
-        let propertyValidators = properties.map(\.validate)
+        let propertyValidators = properties.map {
+            $0.validate.toNewRoot(path: pathToAttributes[$0.label].wrappedValue)
+        }
         return AnyValidator(propertyValidators + [AnyValidator(extraValidation)])
     }
     
-    func findProperty<Path: PathProtocol>(path: Path) -> SchemaAttribute<Path.Root>? where Path.Root == Root {
-        guard let index = path.fullPath.firstIndex(where: { $0.partialKeyPath == self.path.keyPath }) else {
+    func findProperty(path: AnyPath<Root>, in root: Root) -> SchemaAttribute? {
+        guard let property = properties.first(where: {
+            let searchPath = self.path(for: $0)
+            return searchPath.isAncestorOrSame(of: path, in: root)
+        }) else {
             return nil
         }
-        let subpath = path.fullPath[index..<path.fullPath.count]
-        if subpath.count > 2 {
-            //complex?
+        switch property.type {
+        case .block(.complex), .block(.collection), .block(.table):
             return nil
+        default:
+            return property
         }
-        if subpath.count == 2 {
-            //property of me
-            return properties.first {
-                path.keyPath == self.path.keyPath.appending(path: pathToAttributes.keyPath.appending(path: \.[$0.label]))
-            }?.toNewRoot(path: self.path)
+    }
+    
+    func path(for attribute: SchemaAttribute) -> AnySearchablePath<Root, Attribute> {
+        self.path.appending(path: self.pathToAttributes[attribute.label].wrappedValue)
+    }
+    
+    func path(for attribute: SchemaAttribute, in path: Path<Root, AttributeRoot>) -> Path<Root, Attribute> {
+        pathToAttributes.changeRoot(path: path)[attribute.label].wrappedValue
+    }
+    
+    func WhenChanged(_ attribute: SchemaAttribute) -> some TriggerProtocol {
+        ForEach(path(for: attribute)) {
+            Attributes.WhenChanged($0)
         }
-        //itsa me
-        return nil
     }
     
-    func path(for attribute: SchemaAttribute<AttributeRoot>) -> Path<Root, Attribute> {
-        self.path.appending(path: self.pathToAttributes)[attribute.label].wrappedValue
-    }
-    
-    func WhenChanged(_ attribute: SchemaAttribute<AttributeRoot>) -> Attributes.WhenChanged<Path<Root, Attribute>, IdentityTrigger<Root>> {
-        Attributes.WhenChanged(path(for: attribute))
-    }
-    
-    func WhenTrue(_ attribute: SchemaAttribute<AttributeRoot>, makeAvailable hiddenAttribute: SchemaAttribute<AttributeRoot>) -> Attributes.WhenChanged<Path<Root, Attribute>, ConditionalTrigger<AnyTrigger<Root>>> {
+    func WhenTrue(_ attribute: SchemaAttribute, makeAvailable hiddenAttribute: SchemaAttribute) -> some TriggerProtocol {
         if attribute.type != .bool {
             fatalError("Calling `WhenTrue` when attributes type is not `bool`.")
         }
@@ -186,18 +180,22 @@ public extension Attributable {
         } else {
             order = []
         }
-        let attributePath = path(for: attribute)
-        return Attributes.WhenChanged(attributePath).when({ attributePath.boolValue.isNil($0) ? false : $0[keyPath: attributePath.boolValue.keyPath] }) { trigger in
-            trigger.makeAvailable(
-                field: Field(name: hiddenAttribute.label, type: hiddenAttribute.type),
-                after: order,
-                fields: Path(path: path.path.appending(path: pathToFields.path), ancestors: []),
-                attributes: Path(path: path.path.appending(path: pathToAttributes.path), ancestors: [])
-            )
+        return ForEach(self.path) { path in
+            let attributePath = self.path(for: attribute, in: path)
+            Attributes.WhenChanged(attributePath).when {
+                attributePath.boolValue.isNil($0) ? false : $0[keyPath: attributePath.boolValue.keyPath]
+            } then: { (trigger: WhenChanged<Path<Root, Attribute>, IdentityTrigger<Root>>) in
+                trigger.makeAvailable(
+                    field: Field(name: hiddenAttribute.label, type: hiddenAttribute.type),
+                    after: order,
+                    fields: pathToFields.changeRoot(path: path),
+                    attributes: pathToAttributes.changeRoot(path: path)
+                )
+            }
         }
     }
     
-    func WhenFalse(_ attribute: SchemaAttribute<AttributeRoot>, makeAvailable hiddenAttribute: SchemaAttribute<AttributeRoot>) -> Attributes.WhenChanged<Path<Root, Attribute>, ConditionalTrigger<AnyTrigger<Root>>> {
+    func WhenFalse(_ attribute: SchemaAttribute, makeAvailable hiddenAttribute: SchemaAttribute) -> some TriggerProtocol {
         if attribute.type != .bool {
             fatalError("Calling `WhenTrue` when attributes type is not `bool`.")
         }
@@ -207,40 +205,52 @@ public extension Attributable {
         } else {
             order = []
         }
-        let attributePath = path(for: attribute)
-        return Attributes.WhenChanged(attributePath).when({ attributePath.boolValue.isNil($0) ? false : !$0[keyPath: attributePath.boolValue.keyPath] }) { trigger in
-            trigger.makeAvailable(
-                field: Field(name: hiddenAttribute.label, type: hiddenAttribute.type),
-                after: order,
-                fields: Path(path: path.path.appending(path: pathToFields.path), ancestors: []),
-                attributes: Path(path: path.path.appending(path: pathToAttributes.path), ancestors: [])
-            )
+        return ForEach(self.path) { path in
+            let attributePath = self.path(for: attribute, in: path)
+            Attributes.WhenChanged(attributePath).when {
+                attributePath.boolValue.isNil($0) ? false : !$0[keyPath: attributePath.boolValue.keyPath]
+            } then: { (trigger: WhenChanged<Path<Root, Attribute>, IdentityTrigger<Root>>) in
+                trigger.makeAvailable(
+                    field: Field(name: hiddenAttribute.label, type: hiddenAttribute.type),
+                    after: order,
+                    fields: pathToFields.changeRoot(path: path),
+                    attributes: pathToAttributes.changeRoot(path: path)
+                )
+            }
         }
     }
     
-    func WhenTrue(_ attribute: SchemaAttribute<AttributeRoot>, makeUnavailable hiddenAttribute: SchemaAttribute<AttributeRoot>) -> Attributes.WhenChanged<Path<Root, Attribute>, ConditionalTrigger<AnyTrigger<Root>>> {
+    func WhenTrue(_ attribute: SchemaAttribute, makeUnavailable hiddenAttribute: SchemaAttribute) -> some TriggerProtocol {
         if attribute.type != .bool {
             fatalError("Calling `WhenTrue` when attributes type is not `bool`.")
         }
-        let attributePath = path(for: attribute)
-        return Attributes.WhenChanged(attributePath).when({ attributePath.boolValue.isNil($0) ? false : $0[keyPath: attributePath.boolValue.keyPath] }) { trigger in
-            trigger.makeUnavailable(
-                field: Field(name: hiddenAttribute.label, type: hiddenAttribute.type),
-                fields: Path(path: path.path.appending(path: pathToFields.path), ancestors: [])
-            )
+        return ForEach(self.path) { path in
+            let attributePath = self.path(for: attribute, in: path)
+            Attributes.WhenChanged(attributePath).when {
+                attributePath.boolValue.isNil($0) ? false : $0[keyPath: attributePath.boolValue.keyPath]
+            } then: { (trigger: WhenChanged<Path<Root, Attribute>, IdentityTrigger<Root>>) in
+                trigger.makeUnavailable(
+                    field: Field(name: hiddenAttribute.label, type: hiddenAttribute.type),
+                    fields: pathToFields.changeRoot(path: path)
+                )
+            }
         }
     }
     
-    func WhenFalse(_ attribute: SchemaAttribute<AttributeRoot>, makeUnavailable hiddenAttribute: SchemaAttribute<AttributeRoot>) -> Attributes.WhenChanged<Path<Root, Attribute>, ConditionalTrigger<AnyTrigger<Root>>> {
+    func WhenFalse(_ attribute: SchemaAttribute, makeUnavailable hiddenAttribute: SchemaAttribute) -> some TriggerProtocol {
         if attribute.type != .bool {
             fatalError("Calling `WhenTrue` when attributes type is not `bool`.")
         }
-        let attributePath = path(for: attribute)
-        return Attributes.WhenChanged(attributePath).when({ attributePath.boolValue.isNil($0) ? false : !$0[keyPath: attributePath.boolValue.keyPath] }) { trigger in
-            trigger.makeUnavailable(
-                field: Field(name: hiddenAttribute.label, type: hiddenAttribute.type),
-                fields: Path(path: path.path.appending(path: pathToFields.path), ancestors: [])
-            )
+        return ForEach(self.path) { path in
+            let attributePath = self.path(for: attribute, in: path)
+            Attributes.WhenChanged(attributePath).when {
+                attributePath.boolValue.isNil($0) ? false : !$0[keyPath: attributePath.boolValue.keyPath]
+            } then: { (trigger: WhenChanged<Path<Root, Attribute>, IdentityTrigger<Root>>) in
+                trigger.makeUnavailable(
+                    field: Field(name: hiddenAttribute.label, type: hiddenAttribute.type),
+                    fields: pathToFields.changeRoot(path: path)
+                )
+            }
         }
     }
 

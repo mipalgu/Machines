@@ -57,30 +57,26 @@
  */
 
 @propertyWrapper
-public struct TextProperty<Root> {
+public struct TextProperty {
     
-    public var projectedValue: TextProperty<Root> {
+    public var projectedValue: TextProperty {
         self
     }
     
-    public var wrappedValue: SchemaAttribute<Root>
+    public var wrappedValue: SchemaAttribute
     
-    public init(wrappedValue: SchemaAttribute<Root>) {
+    public init(wrappedValue: SchemaAttribute) {
         self.wrappedValue = wrappedValue
     }
-    
-}
-
-extension TextProperty where Root == AttributeGroup {
     
     public init(
         label: String,
         available: Bool = true,
         validation validatorFactories: ValidatorFactory<String> ...
     ) {
-        let path = ReadOnlyPath(keyPath: \AttributeGroup.self, ancestors: []).attributes[label].wrappedValue.blockAttribute.textValue
+        let path = ReadOnlyPath(keyPath: \Attribute.self, ancestors: []).blockAttribute.textValue
         let validator = AnyValidator(validatorFactories.map { $0.make(path: path) })
-        let attribute: SchemaAttribute<AttributeGroup> = SchemaAttribute(
+        let attribute = SchemaAttribute(
             available: available,
             label: label,
             type: .text,

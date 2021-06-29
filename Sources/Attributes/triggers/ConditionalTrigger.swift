@@ -74,8 +74,8 @@ public struct ConditionalTrigger<Trigger: TriggerProtocol>: TriggerProtocol {
         return .success(false)
     }
     
-    public func isTriggerForPath(_ path: AnyPath<Trigger.Root>) -> Bool {
-        trigger.isTriggerForPath(path)
+    public func isTriggerForPath(_ path: AnyPath<Trigger.Root>, in root: Trigger.Root) -> Bool {
+        trigger.isTriggerForPath(path, in: root)
     }
     
 }

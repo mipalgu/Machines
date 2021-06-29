@@ -14,15 +14,15 @@
 //@ValidatorBuilder<Root>
 //var extraValidation: [AnyValidator<Root>] { get }
 
-public struct AnyGroup<Root: Modifiable>: GroupProtocol {
+public struct AnyGroup<Root: Modifiable> {
     
-    private let _path: () -> Path<Root, AttributeGroup>
+    private let _path: () -> AnySearchablePath<Root, AttributeGroup>
     
     private let _pathToFields: () -> Path<AttributeGroup, [Field]>
     
     private let _pathToAttributes: () -> Path<AttributeGroup, [String : Attribute]>
     
-    private let _properties: () -> [SchemaAttribute<AttributeGroup>]
+    private let _properties: () -> [SchemaAttribute]
     
     private let _propertiesValidator: () -> AnyValidator<AttributeGroup>
     
@@ -30,9 +30,11 @@ public struct AnyGroup<Root: Modifiable>: GroupProtocol {
     
     private let _extraValidation: () -> AnyValidator<AttributeGroup>
     
+    private let _findProperty: (AnyPath<Root>, Root) -> SchemaAttribute?
+    
     let base: Any
     
-    public var path: Path<Root, AttributeGroup> {
+    public var path: AnySearchablePath<Root, AttributeGroup> {
         _path()
     }
     
@@ -44,7 +46,7 @@ public struct AnyGroup<Root: Modifiable>: GroupProtocol {
         _pathToAttributes()
     }
     
-    public var properties: [SchemaAttribute<AttributeGroup>] {
+    public var properties: [SchemaAttribute] {
         _properties()
     }
     
@@ -61,14 +63,19 @@ public struct AnyGroup<Root: Modifiable>: GroupProtocol {
     }
     
     public init<Base: GroupProtocol>(_ base: Base) where Base.Root == Root {
-        self._path = { base.path }
+        self._path = { AnySearchablePath(base.path) }
         self._pathToFields = { base.pathToFields }
         self._pathToAttributes = { base.pathToAttributes }
         self._properties = { base.properties }
         self._propertiesValidator = { base.propertiesValidator }
         self._triggers = { base.triggers }
         self._extraValidation = { base.extraValidation }
+        self._findProperty = { base.findProperty(path: $0, in: $1) }
         self.base = base
+    }
+    
+    func findProperty(path: AnyPath<Root>, in root: Root) -> SchemaAttribute? {
+        self._findProperty(path, root)
     }
     
 }

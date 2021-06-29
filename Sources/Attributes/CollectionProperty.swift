@@ -57,28 +57,24 @@
  */
 
 @propertyWrapper
-public struct CollectionProperty<Root> {
+public struct CollectionProperty {
     
-    public var projectedValue: CollectionProperty<Root> {
+    public var projectedValue: CollectionProperty {
         self
     }
     
-    public var wrappedValue: SchemaAttribute<Root>
+    public var wrappedValue: SchemaAttribute
     
-    public init(wrappedValue: SchemaAttribute<Root>) {
+    public init(wrappedValue: SchemaAttribute) {
         self.wrappedValue = wrappedValue
     }
-    
-}
-
-extension CollectionProperty where Root == AttributeGroup {
     
     public init(
         label: String,
         available: Bool = true,
         bools validatorFactories: ValidatorFactory<Bool> ...
     ) {
-        let path = ReadOnlyPath(keyPath: \AttributeGroup.self, ancestors: []).attributes[label].wrappedValue.blockAttribute.collectionValue
+        let path = ReadOnlyPath(keyPath: \Attribute.self, ancestors: []).blockAttribute.collectionValue
         let validator = ValidationPath(path: path).validate {
             $0.each { (_, elementPath) in
                 AnyValidator(validatorFactories.map {
@@ -86,7 +82,7 @@ extension CollectionProperty where Root == AttributeGroup {
                 })
             }
         }
-        let attribute: SchemaAttribute<AttributeGroup> = SchemaAttribute(
+        let attribute = SchemaAttribute(
             available: available,
             label: label,
             type: .bool,
@@ -100,7 +96,7 @@ extension CollectionProperty where Root == AttributeGroup {
         available: Bool = true,
         integers validatorFactories: ValidatorFactory<Int> ...
     ) {
-        let path = ReadOnlyPath(keyPath: \AttributeGroup.self, ancestors: []).attributes[label].wrappedValue.blockAttribute.collectionValue
+        let path = ReadOnlyPath(keyPath: \Attribute.self, ancestors: []).blockAttribute.collectionValue
         let validator = ValidationPath(path: path).validate {
             $0.each { (_, elementPath) in
                 AnyValidator(validatorFactories.map {
@@ -108,7 +104,7 @@ extension CollectionProperty where Root == AttributeGroup {
                 })
             }
         }
-        let attribute: SchemaAttribute<AttributeGroup> = SchemaAttribute(
+        let attribute = SchemaAttribute(
             available: available,
             label: label,
             type: .integer,
@@ -122,7 +118,7 @@ extension CollectionProperty where Root == AttributeGroup {
         available: Bool = true,
         floats validatorFactories: ValidatorFactory<Double> ...
     ) {
-        let path = ReadOnlyPath(keyPath: \AttributeGroup.self, ancestors: []).attributes[label].wrappedValue.blockAttribute.collectionValue
+        let path = ReadOnlyPath(keyPath: \Attribute.self, ancestors: []).blockAttribute.collectionValue
         let validator = ValidationPath(path: path).validate {
             $0.each { (_, elementPath) in
                 AnyValidator(validatorFactories.map {
@@ -130,7 +126,7 @@ extension CollectionProperty where Root == AttributeGroup {
                 })
             }
         }
-        let attribute: SchemaAttribute<AttributeGroup> = SchemaAttribute(
+        let attribute = SchemaAttribute(
             available: available,
             label: label,
             type: .float,
@@ -145,7 +141,7 @@ extension CollectionProperty where Root == AttributeGroup {
         expressions validatorFactories: ValidatorFactory<Expression> ...,
         language: Language
     ) {
-        let path = ReadOnlyPath(keyPath: \AttributeGroup.self, ancestors: []).attributes[label].wrappedValue.blockAttribute.collectionValue
+        let path = ReadOnlyPath(keyPath: \Attribute.self, ancestors: []).blockAttribute.collectionValue
         let validator = ValidationPath(path: path).validate {
             $0.each { (_, elementPath) in
                 AnyValidator(validatorFactories.map {
@@ -153,7 +149,7 @@ extension CollectionProperty where Root == AttributeGroup {
                 })
             }
         }
-        let attribute: SchemaAttribute<AttributeGroup> = SchemaAttribute(
+        let attribute = SchemaAttribute(
             available: available,
             label: label,
             type: .expression(language: language),
@@ -168,7 +164,7 @@ extension CollectionProperty where Root == AttributeGroup {
         enumerations validatorFactories: ValidatorFactory<String> ...,
         validValues: Set<String>
     ) {
-        let path = ReadOnlyPath(keyPath: \AttributeGroup.self, ancestors: []).attributes[label].wrappedValue.blockAttribute.collectionValue
+        let path = ReadOnlyPath(keyPath: \Attribute.self, ancestors: []).blockAttribute.collectionValue
         let validator = ValidationPath(path: path).validate {
             $0.each { (_, elementPath) in
                 AnyValidator(validatorFactories.map {
@@ -176,7 +172,7 @@ extension CollectionProperty where Root == AttributeGroup {
                 })
             }
         }
-        let attribute: SchemaAttribute<AttributeGroup> = SchemaAttribute(
+        let attribute = SchemaAttribute(
             available: available,
             label: label,
             type: .enumerated(validValues: validValues),
@@ -190,7 +186,7 @@ extension CollectionProperty where Root == AttributeGroup {
         available: Bool = true,
         lines validatorFactories: ValidatorFactory<String> ...
     ) {
-        let path = ReadOnlyPath(keyPath: \AttributeGroup.self, ancestors: []).attributes[label].wrappedValue.blockAttribute.collectionValue
+        let path = ReadOnlyPath(keyPath: \Attribute.self, ancestors: []).blockAttribute.collectionValue
         let validator = ValidationPath(path: path).validate {
             $0.each { (_, elementPath) in
                 AnyValidator(validatorFactories.map {
@@ -198,7 +194,7 @@ extension CollectionProperty where Root == AttributeGroup {
                 })
             }
         }
-        let attribute: SchemaAttribute<AttributeGroup> = SchemaAttribute(
+        let attribute = SchemaAttribute(
             available: available,
             label: label,
             type: .line,

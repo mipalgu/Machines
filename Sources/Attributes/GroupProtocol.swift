@@ -9,14 +9,14 @@ public protocol GroupProtocol: Attributable where AttributeRoot == AttributeGrou
     
     var triggers: AnyTrigger<Root> { get }
     
-    @ValidatorBuilder<AttributeRoot>
+    @ValidatorBuilder<AttributeGroup>
     var extraValidation: AnyValidator<AttributeRoot> { get }
     
 }
 
 public extension GroupProtocol {
     
-    var pathToFields: Path<AttributeRoot, [Field]> {
+    var pathToFields: Path<AttributeGroup, [Field]> {
         Path<AttributeGroup, AttributeGroup>(path: \.self, ancestors: []).fields
     }
     

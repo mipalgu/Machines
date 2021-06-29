@@ -1,8 +1,8 @@
 /*
- * BoolProperty.swift
+ * ForEach.swift
  * Attributes
  *
- * Created by Callum McColl on 11/6/21.
+ * Created by Callum McColl on 30/6/21.
  * Copyright © 2021 Callum McColl. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,33 +56,35 @@
  *
  */
 
-@propertyWrapper
-public struct BoolProperty {
+public struct ForEach<SearchPath: SearchablePath, Trigger: TriggerProtocol>: TriggerProtocol where Trigger.Root == SearchPath.Root {
     
-    public var projectedValue: BoolProperty{
-        self
+    private let path: SearchPath
+    
+    private let builder: (Path<SearchPath.Root, SearchPath.Value>) -> Trigger
+    
+    public init(_ path: SearchPath, @TriggerBuilder<SearchPath.Root> each builder: @escaping (Path<SearchPath.Root, SearchPath.Value>) -> Trigger) {
+        self.path = path
+        self.builder = builder
     }
     
-    public var wrappedValue: SchemaAttribute
-    
-    public init(wrappedValue: SchemaAttribute) {
-        self.wrappedValue = wrappedValue
+    public func performTrigger(_ root: inout SearchPath.Root, for path: AnyPath<SearchPath.Root>) -> Result<Bool, AttributeError<SearchPath.Root>> {
+        var changed = false
+        for subpath in self.path.paths(in: root) {
+            let trigger = builder(subpath)
+            let result = trigger.performTrigger(&root, for: path)
+            switch result {
+            case .success(let shouldNotify):
+                changed = changed || shouldNotify
+                continue
+            case .failure(let error):
+                return .failure(error)
+            }
+        }
+        return .success(changed)
     }
     
-    public init(
-        label: String,
-        available: Bool = true,
-        validation validatorFactories: ValidatorFactory<Bool> ...
-    ) {
-        let path = ReadOnlyPath(keyPath: \Attribute.self, ancestors: []).lineAttribute.boolValue
-        let validator = AnyValidator(validatorFactories.map { $0.make(path: path) })
-        let attribute = SchemaAttribute(
-            available: available,
-            label: label,
-            type: .bool,
-            validate: validator
-        )
-        self.init(wrappedValue: attribute)
+    public func isTriggerForPath(_ path: AnyPath<SearchPath.Root>, in root: SearchPath.Root) -> Bool {
+        self.path.isAncestorOrSame(of: path, in: root)
     }
     
 }

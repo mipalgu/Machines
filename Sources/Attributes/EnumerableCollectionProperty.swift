@@ -57,21 +57,17 @@
  */
 
 @propertyWrapper
-public struct EnumerableCollectionProperty<Root> {
+public struct EnumerableCollectionProperty {
     
-    public var projectedValue: EnumerableCollectionProperty<Root> {
+    public var projectedValue: EnumerableCollectionProperty {
         self
     }
     
-    public var wrappedValue: SchemaAttribute<Root>
+    public var wrappedValue: SchemaAttribute
     
-    public init(wrappedValue: SchemaAttribute<Root>) {
+    public init(wrappedValue: SchemaAttribute) {
         self.wrappedValue = wrappedValue
     }
-    
-}
-
-extension EnumerableCollectionProperty where Root == AttributeGroup {
     
     public init(
         label: String,
@@ -79,9 +75,9 @@ extension EnumerableCollectionProperty where Root == AttributeGroup {
         available: Bool = true,
         validation validatorFactories: ValidatorFactory<Set<String>> ...
     ) {
-        let path = ReadOnlyPath(keyPath: \AttributeGroup.self, ancestors: []).attributes[label].wrappedValue.blockAttribute.enumerableCollectionValue
+        let path = ReadOnlyPath(keyPath: \Attribute.self, ancestors: []).blockAttribute.enumerableCollectionValue
         let validator = AnyValidator(validatorFactories.map { $0.make(path: path) })
-        let attribute: SchemaAttribute<AttributeGroup> = SchemaAttribute(
+        let attribute = SchemaAttribute(
             available: available,
             label: label,
             type: .enumerableCollection(validValues: validValues),

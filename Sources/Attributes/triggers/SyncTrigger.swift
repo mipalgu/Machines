@@ -78,7 +78,7 @@ public struct SyncTrigger<Source: PathProtocol, Target: PathProtocol>: TriggerPr
         return .success(true)
     }
     
-    public func isTriggerForPath(_ path: AnyPath<Root>) -> Bool {
+    public func isTriggerForPath(_ path: AnyPath<Root>, in _: Root) -> Bool {
         path.isChild(of: self.path) || path.isSame(as: self.path)
     }
     
