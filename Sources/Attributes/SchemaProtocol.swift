@@ -21,6 +21,8 @@ public protocol SchemaProtocol {
 
 public extension SchemaProtocol {
     
+    typealias Group = Attributes.Group<Root>
+    
     var trigger: AnyTrigger<Root> {
         AnyTrigger(groups.map(\.triggers))
     }
@@ -28,7 +30,7 @@ public extension SchemaProtocol {
     var groups: [AnyGroup<Root>] {
         let mirror = Mirror(reflecting: self)
         return mirror.children.compactMap {
-            if let val = $0.value as? Group<Root> {
+            if let val = $0.value as? Group {
                 return val.wrappedValue
             }
             return nil

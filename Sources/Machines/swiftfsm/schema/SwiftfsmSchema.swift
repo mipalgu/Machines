@@ -62,10 +62,13 @@ public struct SwiftfsmSchema: MachineSchema {
     
     public var dependencyLayout: [Field]
     
+    @Group
     var variables = SwiftfsmVariables()
     
+    @Group
     var ringlet = SwiftfsmRinglet()
     
+    @Group
     var settings = SwiftfsmSettings()
     
 }
