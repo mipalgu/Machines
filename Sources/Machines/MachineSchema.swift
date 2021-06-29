@@ -8,9 +8,9 @@
 import Foundation
 import Attributes
 
-protocol MachineSchema: SchemaProtocol, MachineMutatorResponder where Root == Machine {}
+public protocol MachineSchema: SchemaProtocol, MachineMutatorResponder where Root == Machine {}
 
-extension MachineSchema {
+public extension MachineSchema {
     
     func didCreateDependency(machine: inout Machine, dependency: MachineDependency, index: Int) -> Result<Bool, AttributeError<Machine>> {
         return .success(false)

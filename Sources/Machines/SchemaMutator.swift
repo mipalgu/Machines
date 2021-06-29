@@ -9,10 +9,12 @@ import Foundation
 import Attributes
 
 struct SchemaMutator<Schema: MachineSchema>: MachineMutatorResponder, MachineModifier, MachineAttributesMutator {
-    
-    var dependencyLayout: [Field]
 
     var schema: Schema
+    
+    var dependencyLayout: [Field] {
+        schema.dependencyLayout
+    }
     
     func didCreateDependency(machine: inout Machine, dependency: MachineDependency, index: Int) -> Result<Bool, AttributeError<Machine>> {
         schema.didCreateDependency(machine: &machine, dependency: dependency, index: index)

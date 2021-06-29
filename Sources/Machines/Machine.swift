@@ -230,14 +230,14 @@ public struct Machine: PathContainer, Modifiable, MutatorContainer, Dependencies
         switch semantics {
 //        case .clfsm:
 //            self.mutator = CXXBaseConverter()
-//        case .swiftfsm:
-//            self.mutator = SwiftfsmConverter()
 //        case .ucfsm:
 //            self.mutator = CXXBaseConverter()
 //        case .spartanfsm:
 //            self.mutator = CXXBaseConverter()
 //        case .vhdl:
 //            self.mutator = VHDLMachinesConverter()
+        case .swiftfsm:
+            self.mutator = SchemaMutator(schema: SwiftfsmSchema(dependencyLayout: []))
         case .other:
             fatalError("Use the mutator constructor if you wish to use an undefined semantics")
         default:

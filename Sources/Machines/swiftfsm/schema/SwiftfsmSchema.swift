@@ -58,13 +58,15 @@
 
 import Attributes
 
-public struct SwiftfsmSchema: SchemaProtocol {
+public struct SwiftfsmSchema: MachineSchema {
     
-    public typealias Root = Machine
+    public var dependencyLayout: [Field]
     
     var variables = SwiftfsmVariables()
     
     var ringlet = SwiftfsmRinglet()
+    
+    var settings = SwiftfsmSettings()
     
 }
 
@@ -108,6 +110,12 @@ public struct SwiftfsmParameters: ComplexProtocol {
     public typealias Root = Machine
     
     public let path = Machine.path.attributes[0].attributes["parameters"].wrappedValue
+    
+//    @TriggerBuilder<Machine>
+//    public var triggers: AnyTrigger<Machine> {
+//        WhenTrue(enableParameters, makeAvailable: parameters)
+//        WhenFalse(enableParameters, makeUnavailable: parameters)
+//    }
     
     @BoolProperty(label: "enable_parameters", validation: .required())
     var enableParameters
