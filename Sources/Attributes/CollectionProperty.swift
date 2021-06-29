@@ -71,7 +71,6 @@ public struct CollectionProperty {
     
     public init(
         label: String,
-        available: Bool = true,
         bools validatorFactories: ValidatorFactory<Bool> ...
     ) {
         let path = ReadOnlyPath(keyPath: \Attribute.self, ancestors: []).blockAttribute.collectionValue
@@ -83,7 +82,6 @@ public struct CollectionProperty {
             }
         }
         let attribute = SchemaAttribute(
-            available: available,
             label: label,
             type: .bool,
             validate: validator
@@ -93,7 +91,6 @@ public struct CollectionProperty {
     
     public init(
         label: String,
-        available: Bool = true,
         integers validatorFactories: ValidatorFactory<Int> ...
     ) {
         let path = ReadOnlyPath(keyPath: \Attribute.self, ancestors: []).blockAttribute.collectionValue
@@ -105,7 +102,6 @@ public struct CollectionProperty {
             }
         }
         let attribute = SchemaAttribute(
-            available: available,
             label: label,
             type: .integer,
             validate: validator
@@ -115,7 +111,6 @@ public struct CollectionProperty {
     
     public init(
         label: String,
-        available: Bool = true,
         floats validatorFactories: ValidatorFactory<Double> ...
     ) {
         let path = ReadOnlyPath(keyPath: \Attribute.self, ancestors: []).blockAttribute.collectionValue
@@ -127,7 +122,6 @@ public struct CollectionProperty {
             }
         }
         let attribute = SchemaAttribute(
-            available: available,
             label: label,
             type: .float,
             validate: validator
@@ -137,7 +131,6 @@ public struct CollectionProperty {
     
     public init(
         label: String,
-        available: Bool = true,
         expressions validatorFactories: ValidatorFactory<Expression> ...,
         language: Language
     ) {
@@ -150,7 +143,6 @@ public struct CollectionProperty {
             }
         }
         let attribute = SchemaAttribute(
-            available: available,
             label: label,
             type: .expression(language: language),
             validate: validator
@@ -160,7 +152,6 @@ public struct CollectionProperty {
     
     public init(
         label: String,
-        available: Bool = true,
         enumerations validatorFactories: ValidatorFactory<String> ...,
         validValues: Set<String>
     ) {
@@ -173,7 +164,6 @@ public struct CollectionProperty {
             }
         }
         let attribute = SchemaAttribute(
-            available: available,
             label: label,
             type: .enumerated(validValues: validValues),
             validate: validator
@@ -183,7 +173,6 @@ public struct CollectionProperty {
     
     public init(
         label: String,
-        available: Bool = true,
         lines validatorFactories: ValidatorFactory<String> ...
     ) {
         let path = ReadOnlyPath(keyPath: \Attribute.self, ancestors: []).blockAttribute.collectionValue
@@ -195,7 +184,6 @@ public struct CollectionProperty {
             }
         }
         let attribute = SchemaAttribute(
-            available: available,
             label: label,
             type: .line,
             validate: validator

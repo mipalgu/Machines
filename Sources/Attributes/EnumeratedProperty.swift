@@ -72,13 +72,11 @@ public struct EnumeratedProperty {
     public init(
         label: String,
         validValues: Set<String>,
-        available: Bool = true,
         validation validatorFactories: ValidatorFactory<String> ...
     ) {
         let path = ReadOnlyPath(keyPath: \Attribute.self, ancestors: []).lineAttribute.enumeratedValue
         let validator = AnyValidator(validatorFactories.map { $0.make(path: path) })
         let attribute = SchemaAttribute(
-            available: available,
             label: label,
             type: .enumerated(validValues: validValues),
             validate: validator

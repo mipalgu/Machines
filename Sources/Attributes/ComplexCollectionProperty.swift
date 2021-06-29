@@ -65,13 +65,10 @@ public struct ComplexCollectionProperty<Base: ComplexProtocol> {
     
     public var wrappedValue: Base
     
-    public var available: Bool
-    
     public var label: String
     
-    public init(base: Base, available: Bool = true, label: String) {
+    public init(base: Base, label: String) {
         self.wrappedValue = base
-        self.available = available
         self.label = label
     }
     
@@ -80,10 +77,10 @@ public struct ComplexCollectionProperty<Base: ComplexProtocol> {
 extension ComplexCollectionProperty: SchemaAttributeConvertible {
     
     var schemaAttribute: Any {
-        let fields = wrappedValue.properties.compactMap {
-            $0.available ? Field(name: $0.label, type: $0.type) : nil
+        let fields = wrappedValue.properties.map {
+            Field(name: $0.label, type: $0.type)
         }
-        return SchemaAttribute(available: available, label: label, type: .collection(type: .complex(layout: fields)), validate: AnyValidator([wrappedValue.propertiesValidator, wrappedValue.extraValidation]))
+        return SchemaAttribute(label: label, type: .collection(type: .complex(layout: fields)), validate: AnyValidator([wrappedValue.propertiesValidator, wrappedValue.extraValidation]))
     }
     
 }

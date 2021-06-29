@@ -72,13 +72,11 @@ public struct ExpressionProperty {
     public init(
         label: String,
         language: Language,
-        available: Bool = true,
         validation validatorFactories: ValidatorFactory<Expression> ...
     ) {
         let path = ReadOnlyPath(keyPath: \Attribute.self, ancestors: []).lineAttribute.expressionValue
         let validator = AnyValidator(validatorFactories.map { $0.make(path: path) })
         let attribute = SchemaAttribute(
-            available: available,
             label: label,
             type: .expression(language: language),
             validate: validator

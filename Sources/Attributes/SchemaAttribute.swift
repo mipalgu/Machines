@@ -7,16 +7,13 @@
 
 public struct SchemaAttribute {
     
-    public var available: Bool
-    
     public var label: String
     
     public var type: AttributeType
     
     public var validate: AnyValidator<Attribute>
     
-    public init(available: Bool, label: String, type: AttributeType, validate: AnyValidator<Attribute> = AnyValidator()) {
-        self.available = available
+    public init(label: String, type: AttributeType, validate: AnyValidator<Attribute> = AnyValidator()) {
         self.label = label
         self.type = type
         self.validate = validate

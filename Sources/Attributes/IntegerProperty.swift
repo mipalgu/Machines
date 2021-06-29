@@ -71,13 +71,11 @@ public struct IntegerProperty {
     
     public init(
         label: String,
-        available: Bool = true,
         validation validatorFactories: ValidatorFactory<Int> ...
     ) {
         let path = ReadOnlyPath(keyPath: \Attribute.self, ancestors: []).lineAttribute.integerValue
         let validator = AnyValidator(validatorFactories.map { $0.make(path: path) })
         let attribute = SchemaAttribute(
-            available: available,
             label: label,
             type: .integer,
             validate: validator

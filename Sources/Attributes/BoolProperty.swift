@@ -71,13 +71,11 @@ public struct BoolProperty {
     
     public init(
         label: String,
-        available: Bool = true,
         validation validatorFactories: ValidatorFactory<Bool> ...
     ) {
         let path = ReadOnlyPath(keyPath: \Attribute.self, ancestors: []).lineAttribute.boolValue
         let validator = AnyValidator(validatorFactories.map { $0.make(path: path) })
         let attribute = SchemaAttribute(
-            available: available,
             label: label,
             type: .bool,
             validate: validator

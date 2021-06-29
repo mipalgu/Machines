@@ -82,7 +82,6 @@ public struct SwiftfsmVariables: GroupProtocol {
             .expression(label: "type", language: .swift, validation: .required().alphaunderscore().notEmpty()),
             .expression(label: "value", language: .swift, validation: .required())
         ],
-        available: true,
         validation: .required()
     )
     var externalVariables
@@ -95,12 +94,11 @@ public struct SwiftfsmVariables: GroupProtocol {
             .expression(label: "type", language: .swift, validation: .required().alphaunderscore().notEmpty()),
             .expression(label: "initial_value", language: .swift, validation: .required())
         ],
-        available: true,
         validation: .required()
     )
     var machineVariables
     
-    @ComplexProperty(base: SwiftfsmParameters(), available: false, label: "parameters")
+    @ComplexProperty(base: SwiftfsmParameters(), label: "parameters")
     var parameters
     
 }
@@ -111,7 +109,7 @@ public struct SwiftfsmParameters: ComplexProtocol {
     
     public let path = Machine.path.attributes[0].attributes["parameters"].wrappedValue
     
-    @BoolProperty(label: "enable_parameters", available: true, validation: .required())
+    @BoolProperty(label: "enable_parameters", validation: .required())
     var enableParameters
     
     @TableProperty(
@@ -120,8 +118,7 @@ public struct SwiftfsmParameters: ComplexProtocol {
             .line(label: "label", validation: .required().alphaunderscore().notEmpty()),
             .expression(label: "type", language: .swift, validation: .required().alphaunderscore().notEmpty()),
             .expression(label: "default_value", language: .swift, validation: .required())
-        ],
-        available: false
+        ]
     )
     var parameters
     
@@ -143,10 +140,10 @@ public struct SwiftfsmRinglet: GroupProtocol {
         WhenFalse(useCustomRinglet, makeUnavailable: execute)
     }
     
-    @BoolProperty(label: "use_custom_ringlet", available: true, validation: .required())
+    @BoolProperty(label: "use_custom_ringlet", validation: .required())
     var useCustomRinglet
     
-    @CollectionProperty(label: "actions", available: false, lines: .required().alphaunderscore().notEmpty())
+    @CollectionProperty(label: "actions", lines: .required().alphaunderscore().notEmpty())
     var actions
     
     @TableProperty(
@@ -157,15 +154,14 @@ public struct SwiftfsmRinglet: GroupProtocol {
             .expression(label: "type", language: .swift, validation: .required().alphaunderscorefirst().notEmpty()),
             .expression(label: "initial_value", language: .swift, validation: .required().alphaunderscorefirst().notEmpty())
         ],
-        available: false,
         validation: .required()
     )
     var ringletVariables
     
-    @CodeProperty(label: "imports", language: .swift, available: false, validation: .required())
+    @CodeProperty(label: "imports", language: .swift, validation: .required())
     var imports
     
-    @CodeProperty(label: "execute", language: .swift, available: false, validation: .required())
+    @CodeProperty(label: "execute", language: .swift, validation: .required())
     var execute
     
 }
@@ -179,7 +175,7 @@ public struct SwiftfsmSettings: GroupProtocol {
     @EnumeratedProperty(label: "suspend_state", validValues: [])
     var suspendState
     
-    @ComplexProperty(base: SwiftfsmModuleDependencies(), available: true, label: "module_dependencies")
+    @ComplexProperty(base: SwiftfsmModuleDependencies(), label: "module_dependencies")
     var moduleDependencies
     
 }
@@ -190,7 +186,7 @@ public struct SwiftfsmModuleDependencies: ComplexProtocol {
     
     public let path = Machine.path.attributes[2].attributes["module_dependencies"].wrappedValue
     
-    @ComplexCollectionProperty(base: SwiftfsmPackage(), available: true, label: "packages")
+    @ComplexCollectionProperty(base: SwiftfsmPackage(), label: "packages")
     var packages
     
 }
@@ -209,16 +205,16 @@ public struct SwiftfsmPackage: ComplexProtocol {
             .collectionValue
     )
     
-    @CollectionProperty(label: "products", available: true, lines: .required())
+    @CollectionProperty(label: "products", lines: .required())
     var products
     
-    @CollectionProperty(label: "qualifiers", available: true, lines: .required())
+    @CollectionProperty(label: "qualifiers", lines: .required())
     var qualifiers
     
-    @CollectionProperty(label: "targets_to_import", available: true, lines: .required())
+    @CollectionProperty(label: "targets_to_import", lines: .required())
     var targetsToImport
     
-    @LineProperty(label: "url", available: true, validation: .required())
+    @LineProperty(label: "url", validation: .required())
     var url
     
 }
