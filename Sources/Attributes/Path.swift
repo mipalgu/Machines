@@ -138,12 +138,7 @@ public struct Path<Root, Value>: PathProtocol {
     }
     
     public func appending<NewValue>(path: Path<Value, NewValue>) -> Path<Root, NewValue> {
-        return Path<Root, NewValue>(
-            path: self.path.appending(path: path.path),
-            ancestors: self.ancestors + path.ancestors.map {
-                $0.changeRoot(path: self)
-            }
-        )
+        path.changeRoot(path: self)
     }
     
     public func changeRoot<Prefix: PathProtocol>(path: Prefix) -> Path<Prefix.Root, Value> where Prefix.Value == Root {
