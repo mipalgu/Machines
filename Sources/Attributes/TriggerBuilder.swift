@@ -10,12 +10,16 @@ public struct TriggerBuilder<Root> {
     
     func buildBlock() -> [AnyTrigger<Root>] { [] }
     
-    public func makeTrigger(@TriggerBuilder _ content: () -> [AnyTrigger<Root>]) -> AnyTrigger<Root> {
+    public func makeTrigger<Trigger: TriggerProtocol>(@TriggerBuilder _ content: () -> [Trigger]) -> AnyTrigger<Root> where Trigger.Root == Root {
         AnyTrigger(content())
     }
     
-    public static func buildBlock<V0: TriggerProtocol>(_ v0: V0) -> AnyTrigger<Root> where V0.Root == Root {
-        return AnyTrigger([AnyTrigger(v0)])
+    public func makeTrigger<Trigger: TriggerProtocol>(@TriggerBuilder _ content: () -> Trigger) -> Trigger where Trigger.Root == Root {
+        content()
+    }
+    
+    public static func buildBlock<V0: TriggerProtocol>(_ v0: V0) -> V0 where V0.Root == Root {
+        return v0
     }
     
     public static func buildBlock<V0: TriggerProtocol, V1: TriggerProtocol>(_ v0: V0, _ v1: V1) -> AnyTrigger<Root> where V0.Root == Root, V1.Root == Root {

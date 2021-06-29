@@ -17,7 +17,7 @@ public struct WhenChanged<Path: ReadOnlyPathProtocol, Trigger: TriggerProtocol>:
         AnyPath(actualPath)
     }
     
-    private init(actualPath: Path, trigger: Trigger) {
+    init(actualPath: Path, trigger: Trigger) {
         self.actualPath = actualPath
         self.trigger = trigger
     }
@@ -41,18 +41,18 @@ extension WhenChanged where Trigger == IdentityTrigger<Path.Root> {
         self.init(actualPath: path, trigger: IdentityTrigger())
     }
     
-    public func when(_ condition: @escaping (Root) -> Bool, @TriggerBuilder<Root> then builder: (WhenChanged<Path, Trigger>) -> AnyTrigger<Root>) -> WhenChanged<Path, ConditionalTrigger<AnyTrigger<Path.Root>>> {
-        WhenChanged<Path, ConditionalTrigger<AnyTrigger<Path.Root>>>(
+    public func when<NewTrigger: TriggerProtocol>(_ condition: @escaping (Root) -> Bool, @TriggerBuilder<Root> then builder: (WhenChanged<Path, Trigger>) -> NewTrigger) -> WhenChanged<Path, ConditionalTrigger<NewTrigger>> where NewTrigger.Root == Root {
+        WhenChanged<Path, ConditionalTrigger<NewTrigger>>(
             actualPath: actualPath,
-            trigger: ConditionalTrigger(condition: condition, trigger: AnyTrigger(builder(self)))
+            trigger: ConditionalTrigger(condition: condition, trigger: builder(self))
         )
     }
     
-    public func sync<TargetPath: PathProtocol>(target: TargetPath) -> SyncTrigger<Path, TargetPath> where TargetPath.Root == Root, TargetPath.Value == Path.Value {
+    public func sync<TargetPath: SearchablePath>(target: TargetPath) -> SyncTrigger<Path, TargetPath> where TargetPath.Root == Root, TargetPath.Value == Path.Value {
         SyncTrigger(source: actualPath, target: target)
     }
     
-    public func makeAvailable<FieldsPath: PathProtocol, AttributesPath: PathProtocol>(field: Field, after order: [String], fields: FieldsPath, attributes: AttributesPath) -> MakeAvailableTrigger<Path, FieldsPath, AttributesPath> where FieldsPath.Root == Root, FieldsPath.Value == [Field], AttributesPath.Root == Root, AttributesPath.Value == [String: Attribute] {
+    public func makeAvailable<FieldsPath: PathProtocol, AttributesPath: PathProtocol>(field: Field, after order: [String], fields: FieldsPath, attributes: AttributesPath) -> MakeAvailableTrigger<Path, FieldsPath, AttributesPath> where FieldsPath.Root == Root, FieldsPath.Value == [Field], AttributesPath.Value == [String: Attribute] {
         MakeAvailableTrigger(field: field, after: order, source: self.actualPath, fields: fields, attributes: attributes)
     }
     

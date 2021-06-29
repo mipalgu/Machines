@@ -56,7 +56,7 @@
  *
  */
 
-public struct SyncTrigger<Source: PathProtocol, Target: PathProtocol>: TriggerProtocol where Source.Root == Target.Root, Source.Value == Target.Value {
+public struct SyncTrigger<Source: PathProtocol, Target: SearchablePath>: TriggerProtocol where Source.Root == Target.Root, Source.Value == Target.Value {
     
     public typealias Root = Source.Root
     
@@ -74,7 +74,9 @@ public struct SyncTrigger<Source: PathProtocol, Target: PathProtocol>: TriggerPr
     }
     
     public func performTrigger(_ root: inout Source.Root, for _: AnyPath<Root>) -> Result<Bool, AttributeError<Source.Root>> {
-        root[keyPath: target.path] = root[keyPath: source.keyPath]
+        for path in target.paths(in: root) {
+            root[keyPath: path.path] = root[keyPath: source.keyPath]
+        }
         return .success(true)
     }
     

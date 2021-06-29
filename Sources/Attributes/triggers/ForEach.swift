@@ -88,3 +88,37 @@ public struct ForEach<SearchPath: SearchablePath, Trigger: TriggerProtocol>: Tri
     }
     
 }
+
+extension ForEach where Trigger == WhenChanged<Path<SearchPath.Root, SearchPath.Value>, IdentityTrigger<SearchPath.Root>> {
+    
+    public func when<NewTrigger: TriggerProtocol>(
+        _ condition: @escaping (Root) -> Bool,
+        @TriggerBuilder<Root> then builder: @escaping (Trigger) -> NewTrigger
+    ) -> ForEach<SearchPath, WhenChanged<Path<SearchPath.Root, SearchPath.Value>, ConditionalTrigger<NewTrigger>>> where NewTrigger.Root == Root {
+        ForEach<SearchPath, WhenChanged<Path<SearchPath.Root, SearchPath.Value>, ConditionalTrigger<NewTrigger>>>(self.path) { (actualPath) -> WhenChanged<Path<SearchPath.Root, SearchPath.Value>, ConditionalTrigger<NewTrigger>> in
+            WhenChanged<Path<SearchPath.Root, SearchPath.Value>, ConditionalTrigger<NewTrigger>>(
+                actualPath: actualPath,
+                trigger: ConditionalTrigger<NewTrigger>(condition: condition, trigger: builder(self.builder(actualPath)))
+            )
+        }
+    }
+    
+    public func sync<TargetPath: SearchablePath>(target: TargetPath) -> ForEach<SearchPath, SyncTrigger<Path<SearchPath.Root, SearchPath.Value>, TargetPath>> where TargetPath.Root == Root, TargetPath.Value == SearchPath.Value {
+        ForEach<SearchPath, SyncTrigger<Path<SearchPath.Root, SearchPath.Value>, TargetPath>>(path) {
+            SyncTrigger(source: $0, target: target)
+        }
+    }
+
+    public func makeAvailable<FieldsPath: PathProtocol, AttributesPath: PathProtocol>(field: Field, after order: [String], fields: FieldsPath, attributes: AttributesPath) -> ForEach<SearchPath, MakeAvailableTrigger<Path<SearchPath.Root, SearchPath.Value>, FieldsPath, AttributesPath>> where FieldsPath.Root == Root, FieldsPath.Value == [Field], AttributesPath.Value == [String: Attribute] {
+        ForEach<SearchPath, MakeAvailableTrigger<Path<SearchPath.Root, SearchPath.Value>, FieldsPath, AttributesPath>>(path) {
+            MakeAvailableTrigger(field: field, after: order, source: $0, fields: fields, attributes: attributes)
+        }
+    }
+
+    public func makeUnavailable<FieldsPath: PathProtocol>(field: Field, fields: FieldsPath) -> ForEach<SearchPath, MakeUnavailableTrigger<Path<SearchPath.Root, SearchPath.Value>, FieldsPath>> where FieldsPath.Root == Root, FieldsPath.Value == [Field] {
+        ForEach<SearchPath, MakeUnavailableTrigger<Path<SearchPath.Root, SearchPath.Value>, FieldsPath>>(path) {
+            MakeUnavailableTrigger(field: field, source: $0, fields: fields)
+        }
+    }
+    
+}
