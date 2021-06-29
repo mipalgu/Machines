@@ -21,6 +21,10 @@ public protocol SchemaProtocol {
 
 public extension SchemaProtocol {
     
+    var trigger: AnyTrigger<Root> {
+        AnyTrigger(groups.map(\.triggers))
+    }
+    
     var groups: [AnyGroup<Root>] {
         let mirror = Mirror(reflecting: self)
         return mirror.children.compactMap {

@@ -62,8 +62,6 @@ public struct SwiftfsmSchema: SchemaProtocol {
     
     public typealias Root = Machine
     
-    public var trigger: AnyTrigger<Machine> = []
-    
     var variables = SwiftfsmVariables()
     
     var ringlet = SwiftfsmRinglet()
@@ -71,6 +69,8 @@ public struct SwiftfsmSchema: SchemaProtocol {
 }
 
 public struct SwiftfsmVariables: GroupProtocol {
+    
+    public typealias Root = Machine
     
     public let path = Machine.path.attributes[0]
 
@@ -106,6 +106,8 @@ public struct SwiftfsmVariables: GroupProtocol {
 }
 
 public struct SwiftfsmParameters: ComplexProtocol {
+    
+    public typealias Root = Machine
     
     public let path = Machine.path.attributes[0].attributes["parameters"].wrappedValue
     
@@ -170,37 +172,53 @@ public struct SwiftfsmRinglet: GroupProtocol {
 
 public struct SwiftfsmSettings: GroupProtocol {
     
+    public typealias Root = Machine
+    
     public let path = Machine.path.attributes[2]
     
     @EnumeratedProperty(label: "suspend_state", validValues: [])
     var suspendState
     
-//    @ComplexProperty(base: SwiftfsmModuleDependencies(), available: true, label: "module_dependencies")
-//    var moduleDependencies
+    @ComplexProperty(base: SwiftfsmModuleDependencies(), available: true, label: "module_dependencies")
+    var moduleDependencies
     
 }
 
-//public struct SwiftfsmModuleDependencies: ComplexProtocol {
-//    
-//    public let path = Machine.path.attributes[2].attributes["module_dependencies"].wrappedValue.complexValue
-//    
-//    @ComplexCollectionProperty(base: SwiftfsmPackage(), available: true, label: "packages")
-//    var packages
-//    
-//}
-//
-//public struct SwiftfsmPackage: ComplexProtocol {
-//    
-//    @CollectionProperty(label: "products", available: true, lines: .required())
-//    var products
-//    
-//    @CollectionProperty(label: "qualifiers", available: true, lines: .required())
-//    var qualifiers
-//    
-//    @CollectionProperty(label: "targets_to_import", available: true, lines: .required())
-//    var targetsToImport
-//    
-//    @LineProperty(label: "url", available: true, validation: .required())
-//    var url
-//    
-//}
+public struct SwiftfsmModuleDependencies: ComplexProtocol {
+    
+    public typealias Root = Machine
+    
+    public let path = Machine.path.attributes[2].attributes["module_dependencies"].wrappedValue
+    
+    @ComplexCollectionProperty(base: SwiftfsmPackage(), available: true, label: "packages")
+    var packages
+    
+}
+
+public struct SwiftfsmPackage: ComplexProtocol {
+    
+    public typealias Root = Machine
+    
+    public let path = CollectionSearchPath(
+        Machine.path
+            .attributes[2]
+            .attributes["module_dependencies"]
+            .wrappedValue
+            .complexValue["packages"]
+            .wrappedValue
+            .collectionValue
+    )
+    
+    @CollectionProperty(label: "products", available: true, lines: .required())
+    var products
+    
+    @CollectionProperty(label: "qualifiers", available: true, lines: .required())
+    var qualifiers
+    
+    @CollectionProperty(label: "targets_to_import", available: true, lines: .required())
+    var targetsToImport
+    
+    @LineProperty(label: "url", available: true, validation: .required())
+    var url
+    
+}

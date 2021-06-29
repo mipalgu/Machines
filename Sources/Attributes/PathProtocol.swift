@@ -82,7 +82,11 @@ public protocol PathProtocol: ReadOnlyPathProtocol {
     associatedtype Root
     associatedtype Value
     
+    var readOnly: ReadOnlyPath<Root, Value> { get }
+    
     var path: WritableKeyPath<Root, Value> { get }
+    
+    func changeRoot<Prefix: PathProtocol>(path: Prefix) -> Path<Prefix.Root, Value> where Prefix.Value == Root
     
 }
 

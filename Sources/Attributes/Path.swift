@@ -146,11 +146,11 @@ public struct Path<Root, Value>: PathProtocol {
         )
     }
     
-    public func changeRoot<NewRoot>(path: Path<NewRoot, Root>) -> Path<NewRoot, Value> {
+    public func changeRoot<Prefix: PathProtocol>(path: Prefix) -> Path<Prefix.Root, Value> where Prefix.Value == Root {
         let ancestors = path.ancestors + self.ancestors.map {
             $0.changeRoot(path: path.readOnly)
         }
-        return Path<NewRoot, Value>(path: path.path.appending(path: self.path), ancestors: ancestors)
+        return Path<Prefix.Root, Value>(path: path.path.appending(path: self.path), ancestors: ancestors)
     }
     
     public func isNil(_ root: Root) -> Bool {

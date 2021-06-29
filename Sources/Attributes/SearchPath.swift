@@ -102,23 +102,27 @@ extension Path: ConvertibleSearchablePath {
     
 }
 
-public struct CollectionSearchPath<CollectionPath: PathProtocol, ElementPath: ConvertibleSearchablePath>: SearchablePath where CollectionPath.Value: MutableCollection, CollectionPath.Value.Index: BinaryInteger, CollectionPath.Value.Element == ElementPath.Root {
+public struct CollectionSearchPath<Root, Collection, Value>: ConvertibleSearchablePath where Collection: MutableCollection, Collection.Index: BinaryInteger {
     
-    public typealias Root = CollectionPath.Root
-    public typealias Value = ElementPath.Value
+    public typealias Root = Root
+    public typealias Value = Value
     
-    var collectionPath: CollectionPath
+    var collectionPath: Path<Root, Collection>
     
-    var elementPath: ElementPath
+    var elementPath: Path<Collection.Element, Value>
     
-    public init(collectionPath: CollectionPath, elementPath: ElementPath) {
+    public init(collectionPath: Path<Root, Collection>, elementPath: Path<Collection.Element, Value>) {
         self.collectionPath = collectionPath
         self.elementPath = elementPath
     }
     
-    public func isAncestorOrSame(of path: AnyPath<Root>, in root: CollectionPath.Root) -> Bool {
+    public init(_ collectionPath: Path<Root, Collection>) where Collection.Element == Value {
+        self.init(collectionPath: collectionPath, elementPath: Path(path: \.self, ancestors: []))
+    }
+    
+    public func isAncestorOrSame(of path: AnyPath<Root>, in root: Root) -> Bool {
         nil != root[keyPath: collectionPath.keyPath].indices.first {
-            let newElementPath = elementPath.toNewRoot(path: collectionPath[$0])
+            let newElementPath = elementPath.changeRoot(path: collectionPath[$0])
             return newElementPath.isAncestorOrSame(of: path, in: root)
         }
     }
@@ -127,6 +131,16 @@ public struct CollectionSearchPath<CollectionPath: PathProtocol, ElementPath: Co
             let newElementPath = elementPath.toNewRoot(path: collectionPath[index])
             return newElementPath.paths(in: root)
         }
+    }
+    
+    public func appending<Path: PathProtocol>(path: Path) -> AnySearchablePath<Root, Path.Value> where Path.Root == Value {
+        let newElementPath = path.changeRoot(path: elementPath)
+        return AnySearchablePath(CollectionSearchPath<Root, Collection, Path.Value>(collectionPath: self.collectionPath, elementPath: newElementPath))
+    }
+    
+    public func toNewRoot<Path: PathProtocol>(path: Path) -> AnySearchablePath<Path.Root, Value> where Path.Value == Root {
+        let newCollectionPath = collectionPath.changeRoot(path: path)
+        return AnySearchablePath(CollectionSearchPath<Path.Root, Collection, Value>(collectionPath: newCollectionPath, elementPath: elementPath))
     }
     
 }

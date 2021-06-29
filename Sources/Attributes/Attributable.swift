@@ -170,7 +170,7 @@ public extension Attributable {
         }
     }
     
-    func WhenTrue(_ attribute: SchemaAttribute, makeAvailable hiddenAttribute: SchemaAttribute) -> some TriggerProtocol {
+    func WhenTrue(_ attribute: SchemaAttribute, makeAvailable hiddenAttribute: SchemaAttribute) -> ForEach<Self.SearchPath, AnyTrigger<Self.Root>> {
         if attribute.type != .bool {
             fatalError("Calling `WhenTrue` when attributes type is not `bool`.")
         }
@@ -195,7 +195,7 @@ public extension Attributable {
         }
     }
     
-    func WhenFalse(_ attribute: SchemaAttribute, makeAvailable hiddenAttribute: SchemaAttribute) -> some TriggerProtocol {
+    func WhenFalse(_ attribute: SchemaAttribute, makeAvailable hiddenAttribute: SchemaAttribute) -> ForEach<Self.SearchPath, AnyTrigger<Self.Root>> {
         if attribute.type != .bool {
             fatalError("Calling `WhenTrue` when attributes type is not `bool`.")
         }
@@ -220,7 +220,7 @@ public extension Attributable {
         }
     }
     
-    func WhenTrue(_ attribute: SchemaAttribute, makeUnavailable hiddenAttribute: SchemaAttribute) -> some TriggerProtocol {
+    func WhenTrue(_ attribute: SchemaAttribute, makeUnavailable hiddenAttribute: SchemaAttribute) -> ForEach<Self.SearchPath, AnyTrigger<Self.Root>> {
         if attribute.type != .bool {
             fatalError("Calling `WhenTrue` when attributes type is not `bool`.")
         }
@@ -237,7 +237,7 @@ public extension Attributable {
         }
     }
     
-    func WhenFalse(_ attribute: SchemaAttribute, makeUnavailable hiddenAttribute: SchemaAttribute) -> some TriggerProtocol {
+    func WhenFalse(_ attribute: SchemaAttribute, makeUnavailable hiddenAttribute: SchemaAttribute) -> ForEach<Self.SearchPath, AnyTrigger<Self.Root>> {
         if attribute.type != .bool {
             fatalError("Calling `WhenTrue` when attributes type is not `bool`.")
         }

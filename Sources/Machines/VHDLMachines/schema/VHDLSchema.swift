@@ -8,12 +8,12 @@
 import Foundation
 import Attributes
 
-struct VHDLSchema: MachineSchema {
-    
-    var trigger: AnyTrigger<Machine> = AnyTrigger([])
-    
-    var dependencyLayout: [Field] = []
-    
-    var parameters = VHDLParametersGroup()
-    
-}
+//struct VHDLSchema: MachineSchema {
+//    
+//    var trigger: AnyTrigger<Machine> = AnyTrigger([])
+//    
+//    var dependencyLayout: [Field] = []
+//    
+//    var parameters = VHDLParametersGroup()
+//    
+//}
