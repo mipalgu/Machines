@@ -114,11 +114,11 @@ public struct SwiftfsmParameters: ComplexProtocol {
     
     public let path = Machine.path.attributes[0].attributes["parameters"].wrappedValue
     
-//    @TriggerBuilder<Machine>
-//    public var triggers: AnyTrigger<Machine> {
-//        WhenTrue(enableParameters, makeAvailable: parameters)
-//        WhenFalse(enableParameters, makeUnavailable: parameters)
-//    }
+    @TriggerBuilder<Machine>
+    public var triggers: some TriggerProtocol {
+        WhenTrue(enableParameters, makeAvailable: parameters)
+        WhenFalse(enableParameters, makeUnavailable: parameters)
+    }
     
     @BoolProperty(label: "enable_parameters", validation: .required())
     var enableParameters
