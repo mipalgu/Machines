@@ -5,7 +5,7 @@
 //  Created by Morgan McColl on 30/5/21.
 //
 
-@resultBuilder
+@_functionBuilder
 public struct TriggerBuilder<Root> {
     
     func buildBlock() -> [AnyTrigger<Root>] { [] }

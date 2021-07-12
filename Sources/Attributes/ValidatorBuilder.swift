@@ -56,7 +56,7 @@
  *
  */
 
-@resultBuilder
+@_functionBuilder
 public struct ValidatorBuilder<Root> {
     
     public func buildBlock() -> AnyValidator<Root> { [] }

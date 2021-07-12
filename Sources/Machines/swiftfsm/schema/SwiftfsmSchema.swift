@@ -62,14 +62,14 @@ public struct SwiftfsmSchema: MachineSchema {
     
     public var dependencyLayout: [Field]
     
-    @Group
-    var variables = SwiftfsmVariables()
+    @Group(wrappedValue: SwiftfsmVariables())
+    var variables
     
-    @Group
-    var ringlet = SwiftfsmRinglet()
+    @Group(wrappedValue: SwiftfsmRinglet())
+    var ringlet
     
-    @Group
-    var settings = SwiftfsmSettings()
+    @Group(wrappedValue: SwiftfsmSettings())
+    var settings
     
 }
 
@@ -83,9 +83,9 @@ public struct SwiftfsmVariables: GroupProtocol {
         label: "external_variables",
         columns: [
             .enumerated(label: "access_type", validValues: ["sensor", "actuator", "environment"]),
-            .line(label: "label", validation: .required().alphaunderscore().notEmpty()),
-            .expression(label: "type", language: .swift, validation: .required().alphaunderscore().notEmpty()),
-            .expression(label: "value", language: .swift, validation: .required())
+            .line(label: "label", validation: ValidatorFactory.required().alphaunderscore().notEmpty()),
+            .expression(label: "type", language: .swift, validation: ValidatorFactory.required().alphaunderscore().notEmpty()),
+            .expression(label: "value", language: .swift, validation: ValidatorFactory.required())
         ],
         validation: .required()
     )
@@ -95,9 +95,9 @@ public struct SwiftfsmVariables: GroupProtocol {
         label: "machine_variables",
         columns: [
             .enumerated(label: "access_type", validValues: ["let", "var"]),
-            .line(label: "label", validation: .required().alphaunderscore().notEmpty()),
-            .expression(label: "type", language: .swift, validation: .required().alphaunderscore().notEmpty()),
-            .expression(label: "initial_value", language: .swift, validation: .required())
+            .line(label: "label", validation: ValidatorFactory.required().alphaunderscore().notEmpty()),
+            .expression(label: "type", language: .swift, validation: ValidatorFactory.required().alphaunderscore().notEmpty()),
+            .expression(label: "initial_value", language: .swift, validation: ValidatorFactory.required())
         ],
         validation: .required()
     )
@@ -126,9 +126,9 @@ public struct SwiftfsmParameters: ComplexProtocol {
     @TableProperty(
         label: "parameters",
         columns: [
-            .line(label: "label", validation: .required().alphaunderscore().notEmpty()),
-            .expression(label: "type", language: .swift, validation: .required().alphaunderscore().notEmpty()),
-            .expression(label: "default_value", language: .swift, validation: .required())
+            .line(label: "label", validation: ValidatorFactory.required().alphaunderscore().notEmpty()),
+            .expression(label: "type", language: .swift, validation: ValidatorFactory.required().alphaunderscore().notEmpty()),
+            .expression(label: "default_value", language: .swift, validation: ValidatorFactory.required())
         ]
     )
     var parameters
@@ -154,16 +154,16 @@ public struct SwiftfsmRinglet: GroupProtocol {
     @BoolProperty(label: "use_custom_ringlet", validation: .required())
     var useCustomRinglet
     
-    @CollectionProperty(label: "actions", lines: .required().alphaunderscore().notEmpty())
+    @CollectionProperty(label: "actions", lines: ValidatorFactory.required().alphaunderscore().notEmpty())
     var actions
     
     @TableProperty(
         label: "ringlet_variables",
         columns: [
             .enumerated(label: "access_type", validValues: ["let", "var"], validation: .required()),
-            .line(label: "label", validation: .required().alphaunderscore().notEmpty()),
-            .expression(label: "type", language: .swift, validation: .required().alphaunderscorefirst().notEmpty()),
-            .expression(label: "initial_value", language: .swift, validation: .required().alphaunderscorefirst().notEmpty())
+            .line(label: "label", validation: ValidatorFactory.required().alphaunderscore().notEmpty()),
+            .expression(label: "type", language: .swift, validation: ValidatorFactory.required().alphaunderscorefirst().notEmpty()),
+            .expression(label: "initial_value", language: .swift, validation: ValidatorFactory.required().alphaunderscorefirst().notEmpty())
         ],
         validation: .required()
     )

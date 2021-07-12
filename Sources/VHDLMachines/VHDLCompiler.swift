@@ -925,7 +925,7 @@ public struct VHDLCompiler {
     }
     
     private func createArhictecure(machine: Machine) -> String {
-        let parameters = machine.isParameterised ? parameters(machine: machine) : ""
+        let parameters = machine.isParameterised ? self.parameters(machine: machine) : ""
         let returns = machine.isParameterised ? outputs(machine: machine) : ""
         let hasAfters = machine.states.indices.first(where: { hasAfterInTransition(state: $0, machine: machine) }) != nil
         return foldWithNewLine(
