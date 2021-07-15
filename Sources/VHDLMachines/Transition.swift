@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct Transition {
+public struct Transition: Codable {
     
     public var condition: String
     

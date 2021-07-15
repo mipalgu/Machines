@@ -740,7 +740,7 @@ public struct VHDLCompiler {
         return "\(name): \(signal.mode.rawValue) \(signal.type) := \(defaultValue);" + (signal.comment == nil ? "" : " -- \(signal.comment!)")
     }
     
-    private func signalToArchitectureDeclaration<T: Variable>(signal: T, with value: Bool = false, and comment: Bool = false) -> String where T.T == SignalType {
+    private func signalToArchitectureDeclaration<T: Variable>(signal: T, with value: Bool = false, and comment: Bool = false) -> String where T.T == String {
         let comment = comment ? " -- \(signal.comment ?? "")" : ""
         guard let defaultVal = signal.defaultValue else {
             return "signal \(signal.name): \(signal.type);\(comment)"
@@ -925,7 +925,7 @@ public struct VHDLCompiler {
     }
     
     private func createArhictecure(machine: Machine) -> String {
-        let parameters = machine.isParameterised ? parameters(machine: machine) : ""
+        let parameters = machine.isParameterised ? self.parameters(machine: machine) : ""
         let returns = machine.isParameterised ? outputs(machine: machine) : ""
         let hasAfters = machine.states.indices.first(where: { hasAfterInTransition(state: $0, machine: machine) }) != nil
         return foldWithNewLine(

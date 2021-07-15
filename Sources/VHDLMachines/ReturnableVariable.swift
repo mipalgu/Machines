@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct ReturnableVariable: ExternalType {
+public struct ReturnableVariable: ExternalType, Codable {
     
     public var defaultValue: String? = nil
     

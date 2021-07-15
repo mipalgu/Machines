@@ -58,8 +58,6 @@
 
 import Foundation
 import SwiftMachines
-import CXXBase
-import VHDLMachines
 
 public final class MachineGenerator {
     
@@ -70,64 +68,22 @@ public final class MachineGenerator {
     public var lastError: String? {
         return self.errors.last
     }
-    
+
     public init(swiftGenerator: SwiftMachines.MachineGenerator = SwiftMachines.MachineGenerator()) {
         self.swiftGenerator = swiftGenerator
     }
     
     public func generate(_ machine: Machine) -> (URL, [URL])? {
         self.errors = []
-        switch machine.semantics {
-        case .swiftfsm:
-            let swiftMachine: SwiftMachines.Machine
-            do {
-                swiftMachine = try machine.swiftMachine()
-            } catch let e as ConversionError<Machine> {
-                self.errors.append(e.message)
-                return nil
-            } catch let e {
-                self.errors.append("\(e)")
-                return nil
-            }
-            guard let results = self.swiftGenerator.generate(swiftMachine) else {
+        switch machine {
+        case .swiftMachine(let machine):
+            guard let results = self.swiftGenerator.generate(machine) else {
                 self.errors = []
                 return nil
             }
             return results
-        case .clfsm, .ucfsm:
-            let cxxMachine: CXXBase.Machine
-            do {
-                cxxMachine = try CXXBaseConverter().convert(machine: machine)
-            } catch let e as ConversionError<Machine> {
-                self.errors.append(e.message)
-                return nil
-            } catch let e {
-                self.errors.append("\(e)")
-                return nil
-            }
-            guard CXXGenerator().generate(machine: cxxMachine) else {
-                self.errors = []
-                return nil
-            }
-            return (cxxMachine.path, [])
-        case .vhdl:
-            let vhdlMachine: VHDLMachines.Machine
-            do {
-                vhdlMachine = try VHDLMachinesConverter().convert(machine: machine)
-            } catch let e as ConversionError<Machine> {
-                self.errors.append(e.message)
-                return nil
-            } catch let e {
-                self.errors.append("\(e)")
-                return nil
-            }
-            guard VHDLGenerator().generate(machine: vhdlMachine) else {
-                self.errors = []
-                return nil
-            }
-            return (vhdlMachine.path, [])
         default:
-            self.errors.append("\(machine.semantics) Machines are currently not supported")
+            self.errors.append("C++ Machines are currently not supported")
             return nil
         }
     }

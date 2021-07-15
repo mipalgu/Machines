@@ -5,28 +5,19 @@ import PackageDescription
 
 let package = Package(
     name: "Machines",
+    platforms: [.macOS(.v10_15)],
     products: [
         // Products define the executables and libraries produced by a package, and make them visible to other packages.
-        .library(name: "Machines", targets: ["Machines", "SwiftMachines", "CXXMachines"])
+        .library(name: "Machines", targets: ["Machines", "CLFSMMachines", "CXXBase", "CXXMachines", "SpartanFSMMachines", "SwiftMachines", "UCFSMMachines", "VHDLMachines"])
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
         // .package(url: /* package url */, from: "1.0.0"),
-      .package(url: "ssh://git.mipal.net/Users/Shared/git/swift_helpers.git",
-        .branch("master")
-      )
+        .package(name: "swift_helpers", url: "ssh://git.mipal.net/Users/Shared/git/swift_helpers.git", .branch("master"))
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
         // Targets can depend on other targets in this package, and on products in packages which this package depends on.
-        .target(
-            name: "XMI",
-            dependencies: []
-        ),
-        .target(
-            name: "Attributes",
-            dependencies: ["XMI", "swift_helpers"]
-        ),
         .target(
             name: "SwiftMachines",
             dependencies: ["swift_helpers", .product(name: "IO", package: "swift_helpers")]
@@ -57,23 +48,22 @@ let package = Package(
         ),
         .target(
             name: "Machines",
-            dependencies: ["swift_helpers", .product(name: "IO", package: "swift_helpers"), .product(name: "Functional", package: "swift_helpers"), "SwiftMachines", "CXXMachines", "XMI", "VHDLMachines", "Attributes", "CXXBase", "UCFSMMachines", "CLFSMMachines"]
+            dependencies: [.product(name: "swift_helpers", package: "swift_helpers"), .product(name: "IO", package: "swift_helpers"), .product(name: "Functional", package: "swift_helpers"), "SwiftMachines", "CXXMachines", "VHDLMachines", "CXXBase", "UCFSMMachines", "CLFSMMachines"]
         ),
-        .testTarget(name: "AttributesTests", dependencies: ["Attributes"]),
         .testTarget(
             name: "SwiftMachinesTests",
-            dependencies: ["SwiftMachines"]
+            dependencies: ["SwiftMachines", .product(name: "swift_helpers", package: "swift_helpers"), .product(name: "IO", package: "swift_helpers"), .product(name: "Functional", package: "swift_helpers")]
         ),
         .testTarget(
             name: "UCFSMMachinesTests",
-            dependencies: ["UCFSMMachines", "CLFSMMachines"]
+            dependencies: ["UCFSMMachines", "CLFSMMachines", .product(name: "swift_helpers", package: "swift_helpers"), .product(name: "IO", package: "swift_helpers"), .product(name: "Functional", package: "swift_helpers")]
         ),
         .testTarget(
             name: "VHDLMachinesTests",
-            dependencies: ["VHDLMachines", "Machines"]
+            dependencies: ["VHDLMachines", "Machines", .product(name: "swift_helpers", package: "swift_helpers"), .product(name: "IO", package: "swift_helpers"), .product(name: "Functional", package: "swift_helpers")]
         ),
         .testTarget(name: "MachinesTests",
-            dependencies: ["Machines", "XMI"]
+            dependencies: ["Machines", .product(name: "swift_helpers", package: "swift_helpers"), .product(name: "IO", package: "swift_helpers"), .product(name: "Functional", package: "swift_helpers")]
         )
     ]
 )

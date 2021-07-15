@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum Mode: String, CaseIterable {
+public enum Mode: String, CaseIterable, Codable {
     
     case input = "in"
     case output = "out"

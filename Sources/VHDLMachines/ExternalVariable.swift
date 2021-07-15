@@ -9,7 +9,7 @@ import Foundation
 
 public struct ExternalVariable: ExternalType {
     
-    public var type: VariableType
+    public var type: String
     
     public var name: String
     
@@ -21,7 +21,7 @@ public struct ExternalVariable: ExternalType {
     
     public var mode: Mode
     
-    public init(type: VariableType, name: String, mode: Mode, range: (Int, Int)? = nil, defaultValue: String?, comment: String?) {
+    public init(type: String, name: String, mode: Mode, range: (Int, Int)? = nil, defaultValue: String?, comment: String?) {
         self.type = type
         self.name = name
         self.mode = mode

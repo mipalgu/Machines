@@ -7,9 +7,9 @@
 
 import Foundation
 
-public struct ExternalSignal: ExternalType {
+public struct ExternalSignal: ExternalType, Codable {
     
-    public var type: SignalType
+    public var type: String
     
     public var name: String
     
@@ -19,7 +19,7 @@ public struct ExternalSignal: ExternalType {
     
     public var mode: Mode
     
-    public init(type: SignalType, name: String, mode: Mode, defaultValue: String?, comment: String?) {
+    public init(type: String, name: String, mode: Mode, defaultValue: String?, comment: String?) {
         self.type = type
         self.name = name
         self.mode = mode

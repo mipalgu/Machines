@@ -1,6 +1,5 @@
 import XCTest
 @testable import Machines
-import XMI
 
 final class MachinesTests: XCTestCase {
     static var allTests = [
