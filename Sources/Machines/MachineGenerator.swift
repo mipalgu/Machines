@@ -68,7 +68,7 @@ public final class MachineGenerator {
     public var lastError: String? {
         return self.errors.last
     }
-    
+
     public init(swiftGenerator: SwiftMachines.MachineGenerator = SwiftMachines.MachineGenerator()) {
         self.swiftGenerator = swiftGenerator
     }

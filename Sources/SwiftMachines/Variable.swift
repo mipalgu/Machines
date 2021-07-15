@@ -58,7 +58,7 @@
 
 public struct Variable {
     
-    public enum AccessType: String, Equatable, Hashable, Codable {
+    public enum AccessType: String, Equatable, Hashable, Codable, CaseIterable {
         
         case readAndWrite = "var"
         case readOnly = "let"

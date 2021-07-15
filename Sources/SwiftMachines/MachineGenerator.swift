@@ -219,7 +219,7 @@ public final class MachineGenerator {
         }
         var result: [URL] = [transitionList, stateImports, stateVars]
         if let stateExternals = state.externalVariables {
-            guard let stateExternalVariables = self.helpers.createFile("State_\(state.name)_ExternalVariables.swift", inDirectory: machine.filePath, withContents: stateExternals.lazy.map { $0.label }.combine("") { $0 + "\n" + $1 }) else {
+            guard let stateExternalVariables = self.helpers.createFile("State_\(state.name)_ExternalVariables.swift", inDirectory: machine.filePath, withContents: stateExternals.sorted { $0.label < $1.label }.lazy.map { $0.label }.combine("") { $0 + "\n" + $1 }) else {
                 return nil
             }
             result.append(stateExternalVariables)

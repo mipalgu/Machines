@@ -1,0 +1,1 @@
+(*portInputRegister(inputPort) & inputBit) == inputBit

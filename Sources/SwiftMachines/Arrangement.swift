@@ -66,6 +66,8 @@ public struct Arrangement {
     
     public var dependencies: [Machine.Dependency]
     
+    public var dispatchTable: DispatchTable?
+    
     public var machines: [Machine] {
         return self.dependencies.map { $0.machine }
     }
@@ -85,10 +87,35 @@ public struct Arrangement {
         return _process(self.machines)
     }
     
-    public init(name: String, filePath: URL, dependencies: [Machine.Dependency]) {
+    public var namespacedDependencies: (Set<String>, [NamespacedDependency]) {
+        var names: Set<String> = []
+        var machines: [URL: Machine] = [:]
+        let parser = MachineParser()
+        func process(_ url: URL, prefix: String, previous previousNames: [URL: String]) -> NamespacedDependency? {
+            guard let machine = machines[url] ?? parser.parseMachine(atPath: url.path) else {
+                return nil
+            }
+            machines[url] = machine
+            if nil != previousNames[url] {
+                return nil
+            }
+            let name = prefix + machine.name
+            names.insert(name)
+            var newPreviousNames = previousNames
+            newPreviousNames[url] = name
+            return NamespacedDependency(name: prefix, dependencies: machine.dependencies.compactMap { process($0.filePath, prefix: name + ".", previous: newPreviousNames) })
+        }
+        let deps = self.dependencies.compactMap {
+            process($0.filePath, prefix: "", previous: [:])
+        }
+        return (names, deps)
+    }
+    
+    public init(name: String, filePath: URL, dependencies: [Machine.Dependency], dispatchTable: DispatchTable? = nil) {
         self.name = name
         self.filePath = filePath
         self.dependencies = dependencies
+        self.dispatchTable = dispatchTable
     }
     
 }

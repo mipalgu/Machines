@@ -1060,7 +1060,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         // State variables.
         guard
             let _ = state.vars.failMap({ (v: Variable) -> Variable? in
-                if "_" == v.label.characters.first {
+                if "_" == v.label.first {
                     self.errors.append("\(v.label) cannot start with an underscore in state \(state.name)")
                     return nil
                 }
@@ -1287,7 +1287,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         for action in actions {
             actionsList += "\n        \(action): @escaping () -> Void = {},"
         }
-        str += "\(String(actionsList.characters.dropLast()))\n"
+        str += "\(String(actionsList.dropLast()))\n"
         str += "    ) {\n"
         for action in actions {
             str += "        self._\(action) = \(action)\n"
