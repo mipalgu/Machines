@@ -75,25 +75,15 @@ public final class MachineAssembler {
     
     public func assemble(_ machine: Machine, inDirectory buildDir: URL) -> (URL, [URL])? {
         self.errors = []
-        switch machine.semantics {
-        case .swiftfsm:
-            let swiftMachine: SwiftMachines.Machine
-            do {
-                swiftMachine = try machine.swiftMachine()
-            } catch let e as ConversionError<Machine> {
-                self.errors.append(e.message)
-                return nil
-            } catch let e {
-                self.errors.append("\(e)")
-                return nil
-            }
-            guard let results = self.swiftAssembler.assemble(swiftMachine, inDirectory: buildDir) else {
+        switch machine {
+        case .swiftMachine(let machine):
+            guard let results = self.swiftAssembler.assemble(machine, inDirectory: buildDir) else {
                 self.errors = self.swiftAssembler.errors
                 return nil
             }
             return results
         default:
-            self.errors.append("\(machine.semantics) Machines are currently not supported.")
+            self.errors.append("C++ Machines are currently not supported.")
             return nil
         }
     }

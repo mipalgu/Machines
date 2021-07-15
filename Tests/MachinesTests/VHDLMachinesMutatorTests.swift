@@ -8,7 +8,6 @@
 import Foundation
 import XCTest
 @testable import Machines
-import Attributes
 
 public class VHDLMachinesMutatorTests: XCTestCase {
     
