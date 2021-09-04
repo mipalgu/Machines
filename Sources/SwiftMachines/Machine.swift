@@ -104,8 +104,6 @@ public struct Machine {
 
     public var name: String
 
-    public var filePath: URL
-
     public var externalVariables: [Variable]
     
     public var environmentVariables: [Variable] {
@@ -182,7 +180,6 @@ public struct Machine {
 
     public init(
         name: String,
-        filePath: URL,
         externalVariables: [Variable],
         packageDependencies: [PackageDependency],
         swiftIncludeSearchPaths: [String],
@@ -202,7 +199,6 @@ public struct Machine {
         invocableMachines: [Dependency]
     ) {
         self.name = name
-        self.filePath = filePath
         self.externalVariables = externalVariables
         self.packageDependencies = packageDependencies
         self.swiftIncludeSearchPaths = swiftIncludeSearchPaths

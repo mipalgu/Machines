@@ -74,33 +74,33 @@ public final class MachineGenerator {
         self.varHelpers = varHelpers
     }
 
-    public func generate(_ machine: Machine) -> (URL, [URL])? {
+    public func generate(_ machine: Machine, at directory: URL) -> (URL, FileWrapper)? {
         guard
-            let machineDir = self.helpers.overwriteDirectory(machine.filePath, ignoringSubFiles: [machine.filePath.appendingPathComponent("dependencies", isDirectory: true)]),
+            let machineDir = self.helpers.overwriteDirectory(directory, ignoringSubFiles: [directory.appendingPathComponent("dependencies", isDirectory: true)]),
             let packageDependenciesPath = self.makePackageDependencies(forMachine: machine),
             let swiftIncludePath = self.helpers.createFile(
                 "SwiftIncludePath",
-                inDirectory: machine.filePath,
+                inDirectory: directory,
                 withContents: self.reduceList(machine.swiftIncludeSearchPaths)
             ),
             let includePath = self.helpers.createFile(
                 "IncludePath",
-                inDirectory: machine.filePath,
+                inDirectory: directory,
                 withContents: self.reduceList(machine.includeSearchPaths)
             ),
             let libPath = self.helpers.createFile(
                 "LibPath",
-                inDirectory: machine.filePath,
+                inDirectory: directory,
                 withContents: self.reduceList(machine.libSearchPaths)
             ),
             let imports = self.helpers.createFile(
                 "\(machine.name)_Imports.swift",
-                inDirectory: machine.filePath,
+                inDirectory: directory,
                 withContents: machine.imports
             ),
             let vars = self.helpers.createFile(
                 "\(machine.name)_Vars.swift",
-                inDirectory: machine.filePath,
+                inDirectory: directory,
                 withContents: machine.vars.reduce("") {
                     $0 + "\n" + self.varHelpers.makeDeclarationWithAvailableAssignment(forVariable: $1)
                 }
@@ -119,7 +119,7 @@ public final class MachineGenerator {
         if let includes = machine.includes {
             guard let bridgingHeader = self.helpers.createFile(
                 "\(machine.name)-Bridging-Header.h",
-                inDirectory: machine.filePath,
+                inDirectory: directory,
                 withContents: includes
             ) else {
                 return nil
@@ -130,19 +130,19 @@ public final class MachineGenerator {
             guard
                 let ringletImports = self.helpers.createFile(
                     "Ringlet_Imports.swift",
-                    inDirectory: machine.filePath,
+                    inDirectory: directory,
                     withContents: model.ringlet.imports
                 ),
                 let ringletVars = self.helpers.createFile(
                     "Ringlet_Vars.swift",
-                    inDirectory: machine.filePath,
+                    inDirectory: directory,
                     withContents: model.ringlet.vars.reduce("") {
                         $0 + "\n" + self.varHelpers.makeDeclarationWithAvailableAssignment(forVariable: $1)
                     }
                 ),
                 let ringletExecute = self.helpers.createFile(
                     "Ringlet_Execute.swift",
-                    inDirectory: machine.filePath,
+                    inDirectory: directory,
                     withContents: model.ringlet.execute
                 ),
                 let modelFile = self.makeModelFile(forMachine: machine, withModel: model)
