@@ -147,26 +147,18 @@ public final class MachineAssembler: Assembler, ErrorContainer {
     private func assemble(_ machine: Machine, isSubMachine: Bool) -> FileWrapper? {
         let errorMsg = "Unable to assemble machine \(machine.name)"
         let buildDir = FileWrapper(directoryWithFileWrappers: [:])
-        if let _ = machine.includes {
-            guard
-//                let bridgingPackageDir = self.packageInitializer.initialize(
-//                    withName: "\(machine.name)MachineBridging",
-//                    andType: .SystemModule
-//                ),
-                let bridgingPath = self.makeBridgingHeader(forMachine: machine),
-                let modulePath = self.makeBridgingModuleMap(forMachine: machine)
-            else {
-                self.errors.append(errorMsg)
-                return nil
-            }
-            //dependencies.append(bridgingPackageDir)
-            let bridgingPackageDir = FileWrapper(directoryWithFileWrappers: [bridgingPath.filename!: bridgingPath, modulePath.filename!: modulePath])
-            bridgingPackageDir.filename = machine.name + "MachineBridging"
-            buildDir.addFileWrapper(bridgingPackageDir)
-        }
         guard
-            //let packageDir = self.packageInitializer.initialize(withName: "\(machine.name)Machine", inDirectory: buildDir),
-            let package = self.makePackage(forMachine: machine, withAddedDependencies: []),
+            let bridgingPath = self.makeBridgingHeader(forMachine: machine),
+            let modulePath = self.makeBridgingModuleMap(forMachine: machine)
+        else {
+            self.errors.append(errorMsg)
+            return nil
+        }
+        let bridgingPackageDir = FileWrapper(directoryWithFileWrappers: [:])
+        bridgingPackageDir.addFileWrapper(bridgingPath)
+        bridgingPackageDir.addFileWrapper(modulePath)
+        bridgingPackageDir.filename = machine.name + "MachineBridging"
+        guard
             let factoryPath = self.makeFactory(forMachine: machine),
             let fsmPath = self.makeFiniteStateMachine(fromMachine: machine)
         else {
@@ -232,11 +224,22 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             srcDir.addFileWrapper(stateTypePath)
         }
         let sourcesDir = FileWrapper(directoryWithFileWrappers: [:])
+        sourcesDir.addFileWrapper(bridgingPackageDir)
         sourcesDir.addFileWrapper(srcDir)
         sourcesDir.filename = "Sources"
+        guard
+            let package = self.makePackage(forMachine: machine, withAddedDependencies: []),
+            let gitignore = self.makePackageGitIgnore(),
+            let tests = self.makeTests(forMachine: machine)
+        else {
+            self.errors.append(errorMsg)
+            return nil
+        }
         let packageDir = FileWrapper(directoryWithFileWrappers: [:])
         packageDir.addFileWrapper(package)
+        packageDir.addFileWrapper(gitignore)
         packageDir.addFileWrapper(sourcesDir)
+        packageDir.addFileWrapper(tests)
         packageDir.filename = machine.name + "Machine"
         buildDir.addFileWrapper(packageDir)
         return buildDir
@@ -244,12 +247,47 @@ public final class MachineAssembler: Assembler, ErrorContainer {
     
     private func encode(inFile name: String, contents: String) -> FileWrapper? {
         guard let data = contents.data(using: .utf8) else {
-            self.errors.append("Unable to endcode data for file \(name)")
+            self.errors.append("Unable to encode data for file \(name)")
             return nil
         }
         let wrapper = FileWrapper(regularFileWithContents: data)
         wrapper.filename = name
         return wrapper
+    }
+    
+    private func makeTests(forMachine machine: Machine) -> FileWrapper? {
+        let str = """
+            import XCTest
+            @testable import \(machine.name)Machine
+
+            final class \(machine.name)MachineTests: XCTestCase {
+                func testMachine() throws {
+                }
+            }
+            """
+        guard let file = encode(inFile: machine.name + "MachineTests.swift", contents: str) else {
+            return nil
+        }
+        let moduleDirectory = FileWrapper(directoryWithFileWrappers: [:])
+        moduleDirectory.addFileWrapper(file)
+        moduleDirectory.filename = machine.name + "MachineTests"
+        let testsDirectory = FileWrapper(directoryWithFileWrappers: [:])
+        testsDirectory.addFileWrapper(moduleDirectory)
+        testsDirectory.filename = "Tests"
+        return testsDirectory
+    }
+    
+    private func makePackageGitIgnore() -> FileWrapper? {
+        let str = """
+            .DS_Store
+            /.build
+            /Packages
+            /*.xcodeproj
+            xcuserdata/
+            DerivedData/
+            .swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
+            """
+        return encode(inFile: ".gitignore", contents: str)
     }
 
     private func makeBridgingHeader(forMachine machine: Machine) -> FileWrapper? {
@@ -284,7 +322,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         let allConstructedDependencies = addedDependencyList + constructedDependencies + mandatoryPackages
         let dependencies = allConstructedDependencies.isEmpty ? "" : "\n        " + allConstructedDependencies.combine("") { $0 + ",\n        " + $1 } + "\n    "
-        let products = Set((machine.packageDependencies.flatMap { $0.products } + mandatoryProducts) .map { "\"" + $0 + "\"" })
+        let products = Set((machine.packageDependencies.flatMap { $0.products + [machine.name + "MachineBridging"] } + mandatoryProducts) .map { "\"" + $0 + "\"" })
         let productList = products.sorted().combine("") { $0 + ", " + $1 }
         let str = """
             // swift-tools-version:5.1
@@ -295,11 +333,12 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                 products: [
                     .library(
                         name: "\(machine.name)Machine",
-                        targets: ["\(machine.name)Machine"]
+                        targets: ["\(machine.name)Machine", \(machine.name)MachineBridging]
                     )
                 ],
                 dependencies: [\(dependencies)],
                 targets: [
+                    .target(name: "\(machine.name)MachineBridging", dependencies: []),
                     .target(name: "\(machine.name)Machine", dependencies: [\(productList)], linkerSettings: [.linkedLibrary("FSM")])
                 ]
             )
