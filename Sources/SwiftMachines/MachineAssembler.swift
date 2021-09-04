@@ -103,138 +103,168 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             .path
     }
 
-    public func assemble(_ machine: Machine, inDirectory directory: URL) -> (URL, [URL])? {
-        return self.assemble(machine, inDirectory: directory, isSubMachine: false)
-    }
-
-    private func assemble(_ machine: Machine, inDirectory buildDir: URL, isSubMachine: Bool) -> (URL, [URL])? {
-        let errorMsg = "Unable to assemble \(machine.filePath.path)"
-        var dependencies: [URL] = []
+    public func assemble(_ machine: Machine, inDirectory directory: URL) -> (URL, FileWrapper)? {
         if
-            let data = try? Data(contentsOf: buildDir.appendingPathComponent("machine.json", isDirectory: false)),
+            let data = try? Data(contentsOf: directory.appendingPathComponent("machine.json", isDirectory: false)),
             let previousMachine = try? JSONDecoder().decode(MachineToken<Machine>.self, from: data),
-            previousMachine == MachineToken(data: machine)
+            previousMachine == MachineToken(data: machine),
+            let buildDir = try? FileWrapper(url: directory, options: .immediate)
         {
-            return (buildDir.appendingPathComponent(machine.name + "Machine", isDirectory: true), [])
+            return (directory, buildDir)
         }
-        guard
-            let buildDir = self.helpers.overwriteDirectory(buildDir)
-        else {
-            self.errors.append(errorMsg)
+        guard let wrapper = self.assemble(machine, isSubMachine: false) else {
             return nil
         }
-        var files: [URL] = []
-        if let _ = machine.includes {
-            guard
-                let bridgingPackageDir = self.packageInitializer.initialize(
-                    withName: "\(machine.name)MachineBridging",
-                    andType: .SystemModule,
-                    inDirectory: buildDir
-                ),
-                let bridgingPath = self.makeBridgingHeader(forMachine: machine, inDirectory: bridgingPackageDir),
-                let modulePath = self.makeBridgingModuleMap(forMachine: machine, inDirectory: bridgingPackageDir),
-                true == self.createAndTagGitRepo(inDirectory: bridgingPackageDir)
-            else {
-                self.errors.append(errorMsg)
-                return nil
-            }
-            dependencies.append(bridgingPackageDir)
-            files.append(contentsOf: [bridgingPackageDir.appendingPathComponent("Package.swift", isDirectory: false), bridgingPath, modulePath])
+        return writeAssembledWrapper(wrapper, forMachine: machine, to: directory) ? (directory, wrapper) : nil
+    }
+    
+    public func assemble(_ machine: Machine) -> FileWrapper? {
+        self.assemble(machine, isSubMachine: false)
+    }
+    
+    public func writeAssembledWrapper(_ wrapper: FileWrapper, forMachine machine: Machine, to directory: URL) -> Bool {
+        do {
+            try wrapper.write(to: directory, options: .atomic, originalContentsURL: nil)
+        } catch let e {
+            self.errors = [e.localizedDescription]
+            return false
         }
-        guard
-            let packageDir = self.packageInitializer.initialize(withName: "\(machine.name)Machine", inDirectory: buildDir),
-            let package = self.makePackage(forMachine: machine, inDirectory: packageDir, withAddedDependencies: dependencies),
-            let sourcesDir = self.helpers.overwriteSubDirectory("Sources", inDirectory: packageDir),
-            let srcDir = self.helpers.overwriteSubDirectory(machine.name + "Machine", inDirectory: sourcesDir),
-            let factoryPath = self.makeFactory(forMachine: machine, inDirectory: srcDir),
-            let fsmPath = self.makeFiniteStateMachine(fromMachine: machine, inDirectory: srcDir)
-        else {
+        let errorMsg = "Unable to assemble machine \(machine.name) in \(directory.path)"
+        guard true == self.createAndTagGitRepo(inDirectory: directory.appendingPathComponent(machine.name + "Machine", isDirectory: true)) else {
             self.errors.append(errorMsg)
-            return nil
+            return false
         }
-        files.append(contentsOf: [fsmPath, factoryPath])
-        if nil != machine.parameters {
-            guard
-                let parametersPath = self.makeParameters(forMachine: machine, inDirectory: srcDir),
-                let resultsPath = self.makeResultsContainer(forMachine: machine, inDirectory: srcDir)
-            else {
-                self.errors.append(errorMsg)
-                return nil
-            }
-            files.append(contentsOf: [parametersPath, resultsPath])
-        }
-        guard
-            let fsmVarsPath = self.makeFsmVars(forMachine: machine, inDirectory: srcDir),
-            let statePaths = self.makeStates(forMachine: machine, inDirectory: srcDir),
-            let transitionTypePath = self.makeTransition(forMachine: machine, inDirectory: srcDir)
-        else {
+        guard true == self.createAndTagGitRepo(inDirectory: directory.appendingPathComponent(machine.name + "MachineBridging", isDirectory: true)) else {
             self.errors.append(errorMsg)
-            return nil
-        }
-        files.append(contentsOf: [fsmVarsPath, package, transitionTypePath])
-        files.append(contentsOf: statePaths)
-        guard
-            let emptyStateTypePath = self.makeEmptyStateType(forMachine: machine.name, withActions: machine.model?.actions ?? ["onEntry", "onExit", "main"], inDirectory: srcDir),
-            let callbackStateTypePath = self.makeCallbackStateType(forMachine: machine.name, withActions: machine.model?.actions ?? ["onEntry", "onExit", "main"], inDirectory: srcDir)
-        else {
-            self.errors.append(errorMsg)
-            return nil
-        }
-        if let model = machine.model {
-            guard
-                let ringletPath = self.makeRinglet(forRinglet: model.ringlet, inMachine: machine, inDirectory: srcDir),
-                let stateTypePath = self.makeStateType(forMachine: machine.name, fromModel: model, inDirectory: srcDir)
-            else {
-                self.errors.append(errorMsg)
-                return nil
-            }
-            files.append(contentsOf: [ringletPath, stateTypePath])
-        } else {
-            guard
-                let ringletPath = self.makeMiPalRinglet(withMachineName: machine.name, inDirectory: srcDir),
-                let stateTypePath = self.makeMiPalStateType(forMachine: machine.name, inDirectory: srcDir)
-            else {
-                self.errors.append(errorMsg)
-                return nil
-            }
-            files.append(contentsOf: [ringletPath, stateTypePath])
-        }
-        files.append(contentsOf: [emptyStateTypePath, callbackStateTypePath])
-        guard true == self.createAndTagGitRepo(inDirectory: packageDir) else {
-            self.errors.append(errorMsg)
-            return nil
+            return false
         }
         if let data = try? JSONEncoder().encode(MachineToken(data: machine)) {
-            _ = try? data.write(to: buildDir.appendingPathComponent("machine.json", isDirectory: true))
+            _ = try? data.write(to: directory.appendingPathComponent("machine.json", isDirectory: true))
         }
-        return (packageDir, files)
+        return true
     }
 
-    public func makeBridgingHeader(forMachine machine: Machine, inDirectory path: URL) -> URL? {
-        let headerPath = path.appendingPathComponent("\(machine.name)-Bridging-Header.h", isDirectory: false)
-        let str = machine.includes ?? ""
-        guard true == self.helpers.createFile(atPath: headerPath, withContents: str) else {
-            self.errors.append("Unable to create \(headerPath.path)")
+    private func assemble(_ machine: Machine, isSubMachine: Bool) -> FileWrapper? {
+        let errorMsg = "Unable to assemble machine \(machine.name)"
+        let buildDir = FileWrapper(directoryWithFileWrappers: [:])
+        if let _ = machine.includes {
+            guard
+//                let bridgingPackageDir = self.packageInitializer.initialize(
+//                    withName: "\(machine.name)MachineBridging",
+//                    andType: .SystemModule
+//                ),
+                let bridgingPath = self.makeBridgingHeader(forMachine: machine),
+                let modulePath = self.makeBridgingModuleMap(forMachine: machine)
+            else {
+                self.errors.append(errorMsg)
+                return nil
+            }
+            //dependencies.append(bridgingPackageDir)
+            let bridgingPackageDir = FileWrapper(directoryWithFileWrappers: [bridgingPath.filename!: bridgingPath, modulePath.filename!: modulePath])
+            bridgingPackageDir.filename = machine.name + "MachineBridging"
+            buildDir.addFileWrapper(bridgingPackageDir)
+        }
+        guard
+            //let packageDir = self.packageInitializer.initialize(withName: "\(machine.name)Machine", inDirectory: buildDir),
+            let package = self.makePackage(forMachine: machine, withAddedDependencies: []),
+            let factoryPath = self.makeFactory(forMachine: machine),
+            let fsmPath = self.makeFiniteStateMachine(fromMachine: machine)
+        else {
+            self.errors.append(errorMsg)
             return nil
         }
-        return headerPath
+        let srcDir = FileWrapper(directoryWithFileWrappers: [:])
+        srcDir.addFileWrapper(factoryPath)
+        srcDir.addFileWrapper(fsmPath)
+        srcDir.filename = machine.name + "Machine"
+        if nil != machine.parameters {
+            guard
+                let parametersPath = self.makeParameters(forMachine: machine),
+                let resultsPath = self.makeResultsContainer(forMachine: machine)
+            else {
+                self.errors.append(errorMsg)
+                return nil
+            }
+            srcDir.addFileWrapper(parametersPath)
+            srcDir.addFileWrapper(resultsPath)
+        }
+        guard
+            let fsmVarsPath = self.makeFsmVars(forMachine: machine),
+            let statePaths = self.makeStates(forMachine: machine),
+            let transitionTypePath = self.makeTransition(forMachine: machine)
+        else {
+            self.errors.append(errorMsg)
+            return nil
+        }
+        srcDir.addFileWrapper(fsmVarsPath)
+        srcDir.addFileWrapper(transitionTypePath)
+        statePaths.forEach {
+            srcDir.addFileWrapper($0)
+        }
+        guard
+            let emptyStateTypePath = self.makeEmptyStateType(forMachine: machine.name, withActions: machine.model?.actions ?? ["onEntry", "onExit", "main"]),
+            let callbackStateTypePath = self.makeCallbackStateType(forMachine: machine.name, withActions: machine.model?.actions ?? ["onEntry", "onExit", "main"])
+        else {
+            self.errors.append(errorMsg)
+            return nil
+        }
+        srcDir.addFileWrapper(emptyStateTypePath)
+        srcDir.addFileWrapper(callbackStateTypePath)
+        if let model = machine.model {
+            guard
+                let ringletPath = self.makeRinglet(forRinglet: model.ringlet, inMachine: machine),
+                let stateTypePath = self.makeStateType(forMachine: machine.name, fromModel: model)
+            else {
+                self.errors.append(errorMsg)
+                return nil
+            }
+            srcDir.addFileWrapper(ringletPath)
+            srcDir.addFileWrapper(stateTypePath)
+        } else {
+            guard
+                let ringletPath = self.makeMiPalRinglet(withMachineName: machine.name),
+                let stateTypePath = self.makeMiPalStateType(forMachine: machine.name)
+            else {
+                self.errors.append(errorMsg)
+                return nil
+            }
+            srcDir.addFileWrapper(ringletPath)
+            srcDir.addFileWrapper(stateTypePath)
+        }
+        let sourcesDir = FileWrapper(directoryWithFileWrappers: [:])
+        sourcesDir.addFileWrapper(srcDir)
+        sourcesDir.filename = "Sources"
+        let packageDir = FileWrapper(directoryWithFileWrappers: [:])
+        packageDir.addFileWrapper(package)
+        packageDir.addFileWrapper(sourcesDir)
+        packageDir.filename = machine.name + "Machine"
+        buildDir.addFileWrapper(packageDir)
+        return buildDir
+    }
+    
+    private func encode(inFile name: String, contents: String) -> FileWrapper? {
+        guard let data = contents.data(using: .utf8) else {
+            self.errors.append("Unable to endcode data for file \(name)")
+            return nil
+        }
+        let wrapper = FileWrapper(regularFileWithContents: data)
+        wrapper.filename = name
+        return wrapper
     }
 
-    private func makeBridgingModuleMap(forMachine machine: Machine, inDirectory path: URL) -> URL? {
-        let modulePath = path.appendingPathComponent("module.modulemap", isDirectory: false)
+    private func makeBridgingHeader(forMachine machine: Machine) -> FileWrapper? {
+        encode(inFile: machine.name + "-Bridging-Header.h", contents: machine.includes ?? "")
+    }
+
+    private func makeBridgingModuleMap(forMachine machine: Machine) -> FileWrapper? {
         var str = "module \(machine.name)MachineBridging [system] [swift_infer_import_as_member] {\n"
         str += "    header \"\(machine.name)-Bridging-Header.h\"\n\n"
         str += "    export *\n"
         str += "}"
-        guard true == self.helpers.createFile(atPath: modulePath, withContents: str) else {
-            self.errors.append("Unable to create module.modulemap at \(modulePath.path)")
-            return nil
-        }
-        return modulePath
+        return encode(inFile: "module.modulemap", contents: str)
     }
 
-    private func makePackage(forMachine machine: Machine, inDirectory path: URL, withAddedDependencies addedDependencies: [(URL)]) -> URL? {
-        let packagePath = path.appendingPathComponent("Package.swift", isDirectory: false)
+    private func makePackage(forMachine machine: Machine, withAddedDependencies addedDependencies: [(URL)]) -> FileWrapper? {
         let mandatoryPackages: [String] = []
         let mandatoryProducts: [String] = []
         guard
@@ -275,23 +305,18 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             )
 
             """
-        guard true == self.helpers.createFile(atPath: packagePath, withContents: str) else {
-            self.errors.append("Unable to create Package.swift at \(packagePath.path)")
-            return nil
-        }
-        return packagePath
+        return encode(inFile: "Package.swift", contents: str)
     }
     
     private func makeImports(forMachine machine: Machine) -> [String] {
         return Set(machine.packageDependencies.flatMap { $0.targets.map { "import " + $0 } }).sorted()
     }
 
-    private func makeInvoker(forMachine machine: Machine, inDirectory path: URL) -> URL? {
+    private func makeInvoker(forMachine machine: Machine) -> FileWrapper? {
         guard let parameters = machine.parameters else {
             self.errors.append("Cannot create an invoker for a machine which has no parameters")
             return nil
         }
-        let invokerPath = path.appendingPathComponent("Invoker.swift", isDirectory: false)
         let parameterList = parameters.lazy.map {
             let str =  $0.label + ": " + $0.type
             guard let initialValue = $0.initialValue else {
@@ -330,15 +355,10 @@ public final class MachineAssembler: Assembler, ErrorContainer {
 
             }
         """
-        guard true == self.helpers.createFile(atPath: invokerPath, withContents: str) else {
-            self.errors.append("Unable to create \(invokerPath.path)")
-            return nil
-        }
-        return invokerPath
+        return encode(inFile: "Invoker.swift", contents: str)
     }
 
-    private func makeFactory(forMachine machine: Machine, inDirectory path: URL) -> URL? {
-        let factoryPath = path.appendingPathComponent("factory.swift", isDirectory: false)
+    private func makeFactory(forMachine machine: Machine) -> FileWrapper? {
         var str = """
             import swiftfsm
             """
@@ -360,11 +380,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         str += subFactory
         str += "\n\n"
-        guard true == self.helpers.createFile(atPath: factoryPath, withContents: str) else {
-            self.errors.append("Unable to create \(factoryPath.path)")
-            return nil
-        }
-        return factoryPath
+        return encode(inFile: "factory.swift", contents: str)
     }
 
     private func makeFactoryFunction(forMachine machine: Machine) -> String {
@@ -582,12 +598,11 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         return str
     }
     
-    private func makeParameters(forMachine machine: Machine, inDirectory path: URL) -> URL? {
+    private func makeParameters(forMachine machine: Machine) -> FileWrapper? {
         guard let machineParameters = machine.parameters else {
             self.errors.append("Attempting to create parameters when they don't exist.")
             return nil
         }
-        let machinePath = path.appendingPathComponent("\(machine.name)Parameters.swift", isDirectory: false)
         let str = self.makeVarsContent(
             forMachine: machine,
             name: "\(machine.name)Parameters",
@@ -595,36 +610,22 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             shouldIncludeDictionaryStringConvertible: true,
             shouldIncludeDictionaryConvertible: true
         )
-        guard true == self.helpers.createFile(atPath: machinePath, withContents: str) else {
-            self.errors.append("Unable to create \(machinePath.path)")
-            return nil
-        }
-        return machinePath
+        return encode(inFile: machine.name + "Parameters.swift", contents: str)
     }
     
-    private func makeResultsContainer(forMachine machine: Machine, inDirectory path: URL) -> URL? {
-        let machinePath = path.appendingPathComponent("\(machine.name)ResultsContainer.swift", isDirectory: false)
+    private func makeResultsContainer(forMachine machine: Machine) -> FileWrapper? {
         let str = self.makeVarsContent(
             forMachine: machine,
             name: "\(machine.name)ResultsContainer",
             vars: [Variable(accessType: .readAndWrite, label: "result", type: (machine.returnType ?? "Void") + "?", initialValue: "nil")],
             extraConformances: ["MutableResultContainer"]
         )
-        guard true == self.helpers.createFile(atPath: machinePath, withContents: str) else {
-            self.errors.append("Unable to create \(machinePath.path)")
-            return nil
-        }
-        return machinePath
+        return encode(inFile: machine.name + "ResultsContainer.swift", contents: str)
     }
 
-    private func makeFsmVars(forMachine machine: Machine, inDirectory path: URL) -> URL? {
-        let machinePath = path.appendingPathComponent("\(machine.name)Vars.swift", isDirectory: false)
+    private func makeFsmVars(forMachine machine: Machine) -> FileWrapper? {
         let str = self.makeVarsContent(forMachine: machine, name: "\(machine.name)Vars", vars: machine.vars)
-        guard true == self.helpers.createFile(atPath: machinePath, withContents: str) else {
-            self.errors.append("Unable to create \(machinePath.path)")
-            return nil
-        }
-        return machinePath
+        return encode(inFile: machine.name + "Vars.swift", contents: str)
     }
     
     private func makeVarsContent(forMachine machine: Machine, name: String, vars: [Variable], extraConformances: [String] = [], shouldIncludeDictionaryStringConvertible: Bool = false, shouldIncludeDictionaryConvertible: Bool = false) -> String {
@@ -705,8 +706,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         return str
     }
 
-    private func makeRinglet(forRinglet ringlet: Ringlet, inMachine machine: Machine, inDirectory path: URL) -> URL? {
-        let ringletPath = path.appendingPathComponent("\(machine.name)Ringlet.swift")
+    private func makeRinglet(forRinglet ringlet: Ringlet, inMachine machine: Machine) -> FileWrapper? {
         let stateType = machine.name + "State"
         var str = "import swiftfsm\n"
         str += self.makeImports(forMachine: machine).reduce("") { $0 + $1 + "\n" }
@@ -736,14 +736,10 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "        return ringlet\n"
         str += "    }\n\n"
         str += "}\n"
-        if (false == self.helpers.createFile(atPath: ringletPath, withContents: str)) {
-            return nil
-        }
-        return ringletPath
+        return encode(inFile: machine.name + "Ringlet.swift", contents: str)
     }
     
-    private func makeMiPalRinglet(withMachineName machine: String, inDirectory path: URL) -> URL? {
-        let ringletPath = path.appendingPathComponent("\(machine)Ringlet.swift")
+    private func makeMiPalRinglet(withMachineName machine: String) -> FileWrapper? {
         let stateType = machine + "State"
         let str = """
             import swiftfsm
@@ -813,20 +809,17 @@ public final class MachineAssembler: Assembler, ErrorContainer {
 
             }
             """
-        if (false == self.helpers.createFile(atPath: ringletPath, withContents: str)) {
-            return nil
-        }
-        return ringletPath
+        return encode(inFile: machine + "Ringlet.swift", contents: str)
     }
     
     
 
-    private func makeStates(forMachine machine: Machine, inDirectory path: URL) -> [URL]? {
-        var paths: [URL] = []
+    private func makeStates(forMachine machine: Machine) -> [FileWrapper]? {
+        var paths: [FileWrapper] = []
         paths.reserveCapacity(machine.states.count)
         for state in machine.states {
             guard
-                let statePath = self.makeState(state, forMachine: machine, inDirectory: path)
+                let statePath = self.makeState(state, forMachine: machine)
             else {
                 return nil
             }
@@ -835,8 +828,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         return paths
     }
 
-    private func makeState(_ state: State, forMachine machine: Machine, inDirectory path: URL) -> URL? {
-        let statePath = path.appendingPathComponent("State_\(state.name).swift", isDirectory: false)
+    private func makeState(_ state: State, forMachine machine: Machine) -> FileWrapper? {
         var str = "import swiftfsm\n"
         if let _ = machine.includes {
             str += "import \(machine.name)MachineBridging\n"
@@ -1013,11 +1005,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "            \"\"\"\n"
         str += "    }\n\n"
         str += "}\n"
-        if (false == self.helpers.createFile(atPath: statePath, withContents: str)) {
-            self.errors.append("Unable to create state at \(statePath.path)")
-            return nil
-        }
-        return statePath
+        return encode(inFile: "State_" + state.name + ".swift", contents: str)
     }
     
     private func makeParametersList(forMachine machine: Machine) -> (String, String) {
@@ -1102,8 +1090,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         return str
     }
 
-    private func makeStateType(forMachine machine: String, fromModel model: Model, inDirectory path: URL) -> URL? {
-        let stateTypePath = path.appendingPathComponent("\(machine)State.swift", isDirectory: false)
+    private func makeStateType(forMachine machine: String, fromModel model: Model) -> FileWrapper? {
         let stateType = machine + "State"
         let transitionType = machine + "StateTransition"
         var str = "import swiftfsm\n"
@@ -1141,15 +1128,10 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "        fatalError(\"Please implement your own clone.\")\n"
         str += "    }\n\n"
         str += "}\n"
-        if (false == self.helpers.createFile(atPath: stateTypePath, withContents: str)) {
-            self.errors.append("Unable to create \(stateType) at \(stateTypePath.path)")
-            return nil
-        }
-        return stateTypePath
+        return encode(inFile: machine + "State.swift", contents: str)
     }
     
-    private func makeMiPalStateType(forMachine machine: String, inDirectory path: URL) -> URL? {
-        let stateTypePath = path.appendingPathComponent("\(machine)State.swift", isDirectory: false)
+    private func makeMiPalStateType(forMachine machine: String) -> FileWrapper? {
         let stateType = machine + "State"
         let transitionType = machine + "StateTransition"
         let str = """
@@ -1238,15 +1220,10 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                 
             }
             """
-        if (false == self.helpers.createFile(atPath: stateTypePath, withContents: str)) {
-            self.errors.append("Unable to create \(stateType) at \(stateTypePath.path)")
-            return nil
-        }
-        return stateTypePath
+        return encode(inFile: machine + "State.swift", contents: str)
     }
 
-    public func makeEmptyStateType(forMachine machine: String, withActions actions: [String], inDirectory path: URL) -> URL? {
-        let emptyStateTypePath = path.appendingPathComponent("Empty\(machine)State.swift", isDirectory: false)
+    public func makeEmptyStateType(forMachine machine: String, withActions actions: [String]) -> FileWrapper? {
         let stateType = machine + "State"
         let transitionType = machine + "StateTransition"
         var str = "import swiftfsm\n\n"
@@ -1262,15 +1239,10 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "        return Empty\(stateType)(self.name, transitions: transitions)\n"
         str += "    }\n\n"
         str += "}\n"
-        if (false == self.helpers.createFile(atPath: emptyStateTypePath, withContents: str)) {
-            self.errors.append("Unable to create Empty\(stateType) at \(emptyStateTypePath.path)")
-            return nil
-        }
-        return emptyStateTypePath
+        return encode(inFile: "Empty" + machine + "State.swift", contents: str)
     }
 
-    public func makeCallbackStateType(forMachine machine: String, withActions actions: [String], inDirectory path: URL) -> URL? {
-        let callbackStateTypePath = path.appendingPathComponent("Callback\(machine)State.swift", isDirectory: false)
+    public func makeCallbackStateType(forMachine machine: String, withActions actions: [String]) -> FileWrapper? {
         let stateType = machine + "State"
         let transitionType = machine + "StateTransition"
         var str = "import swiftfsm\n\n"
@@ -1304,16 +1276,11 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "        return Callback\(stateType)(self.name, transitions: transitions, snapshotSensors: self.snapshotSensors, snapshotActuators: self.snapshotActuators)\n"
         str += "    }\n\n"
         str += "}\n"
-        if (false == self.helpers.createFile(atPath: callbackStateTypePath, withContents: str)) {
-            self.errors.append("Unable to create Callback\(stateType) at \(callbackStateTypePath.path)")
-            return nil
-        }
-        return callbackStateTypePath
+        return encode(inFile: "Callback" + machine + "State.swift", contents: str)
     }
     
-    public func makeFiniteStateMachine(fromMachine machine: Machine, inDirectory path: URL) -> URL? {
+    public func makeFiniteStateMachine(fromMachine machine: Machine) -> FileWrapper? {
         let name = machine.name + "FiniteStateMachine"
-        let fsmPath = path.appendingPathComponent(name + ".swift", isDirectory: false)
         var str = "import swiftfsm\n"
         str += self.makeImports(forMachine: machine).reduce("") { $0 + $1 + "\n" } + "\n"
         let conformance = nil == machine.parameters ? "MachineProtocol" : "ParameterisedMachineProtocol"
@@ -1658,12 +1625,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "            \"\"\"\n"
         str += "    }\n"
         str += "\n}"
-        // Create the file.
-        if (false == self.helpers.createFile(atPath: fsmPath, withContents: str)) {
-            self.errors.append("Unable to create \(name) at \(fsmPath.path)")
-            return nil
-        }
-        return fsmPath
+        return encode(inFile: name + ".swift", contents: str)
     }
 
     private func createAndTagGitRepo(inDirectory dir: URL) -> Bool {
@@ -1724,10 +1686,9 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         return str
     }
     
-    private func makeTransition(forMachine machine: Machine, inDirectory dir: URL) -> URL? {
+    private func makeTransition(forMachine machine: Machine) -> FileWrapper? {
         let name = machine.name + "StateTransition"
         let stateType = machine.name + "State"
-        let filePath = dir.appendingPathComponent(name + ".swift", isDirectory: false)
         let str = """
             import swiftfsm
             
@@ -1769,12 +1730,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                 
             }
             """
-        // Create the file.
-        if (false == self.helpers.createFile(atPath: filePath, withContents: str)) {
-            self.errors.append("Unable to create \(name) at \(filePath.path)")
-            return nil
-        }
-        return filePath
+        return encode(inFile: name + ".swift", contents: str)
     }
 
 }

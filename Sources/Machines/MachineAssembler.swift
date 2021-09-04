@@ -73,7 +73,7 @@ public final class MachineAssembler {
         self.swiftAssembler = swiftAssembler
     }
     
-    public func assemble(_ machine: Machine, inDirectory buildDir: URL) -> (URL, [URL])? {
+    public func assemble(_ machine: Machine, inDirectory buildDir: URL) -> (URL, FileWrapper)? {
         self.errors = []
         switch machine {
         case .swiftMachine(let machine):

@@ -60,7 +60,7 @@ import Foundation
 
 public protocol Assembler {
 
-    func assemble(_: Machine, inDirectory: URL) -> (URL, [URL])?
+    func assemble(_: Machine, inDirectory: URL) -> (URL, FileWrapper)?
 
     func packagePath(forMachine: Machine, builtInDirectory: URL) -> String
 
