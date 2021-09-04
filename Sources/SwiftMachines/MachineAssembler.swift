@@ -155,9 +155,9 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             return nil
         }
         let bridgingPackageDir = FileWrapper(directoryWithFileWrappers: [:])
+        bridgingPackageDir.preferredFilename = machine.name + "MachineBridging"
         bridgingPackageDir.addFileWrapper(bridgingPath)
         bridgingPackageDir.addFileWrapper(modulePath)
-        bridgingPackageDir.filename = machine.name + "MachineBridging"
         guard
             let factoryPath = self.makeFactory(forMachine: machine),
             let fsmPath = self.makeFiniteStateMachine(fromMachine: machine)
@@ -166,9 +166,9 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             return nil
         }
         let srcDir = FileWrapper(directoryWithFileWrappers: [:])
+        srcDir.preferredFilename = machine.name + "Machine"
         srcDir.addFileWrapper(factoryPath)
         srcDir.addFileWrapper(fsmPath)
-        srcDir.filename = machine.name + "Machine"
         if nil != machine.parameters {
             guard
                 let parametersPath = self.makeParameters(forMachine: machine),
@@ -226,7 +226,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         let sourcesDir = FileWrapper(directoryWithFileWrappers: [:])
         sourcesDir.addFileWrapper(bridgingPackageDir)
         sourcesDir.addFileWrapper(srcDir)
-        sourcesDir.filename = "Sources"
+        sourcesDir.preferredFilename = "Sources"
         guard
             let package = self.makePackage(forMachine: machine, withAddedDependencies: []),
             let gitignore = self.makePackageGitIgnore(),
@@ -240,7 +240,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         packageDir.addFileWrapper(gitignore)
         packageDir.addFileWrapper(sourcesDir)
         packageDir.addFileWrapper(tests)
-        packageDir.filename = machine.name + "Machine"
+        packageDir.preferredFilename = machine.name + "Machine"
         buildDir.addFileWrapper(packageDir)
         return buildDir
     }
@@ -251,7 +251,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             return nil
         }
         let wrapper = FileWrapper(regularFileWithContents: data)
-        wrapper.filename = name
+        wrapper.preferredFilename = name
         return wrapper
     }
     
@@ -270,10 +270,10 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         let moduleDirectory = FileWrapper(directoryWithFileWrappers: [:])
         moduleDirectory.addFileWrapper(file)
-        moduleDirectory.filename = machine.name + "MachineTests"
+        moduleDirectory.preferredFilename = machine.name + "MachineTests"
         let testsDirectory = FileWrapper(directoryWithFileWrappers: [:])
         testsDirectory.addFileWrapper(moduleDirectory)
-        testsDirectory.filename = "Tests"
+        testsDirectory.preferredFilename = "Tests"
         return testsDirectory
     }
     
@@ -322,8 +322,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         let allConstructedDependencies = addedDependencyList + constructedDependencies + mandatoryPackages
         let dependencies = allConstructedDependencies.isEmpty ? "" : "\n        " + allConstructedDependencies.combine("") { $0 + ",\n        " + $1 } + "\n    "
-        let products = Set((machine.packageDependencies.flatMap { $0.products + [machine.name + "MachineBridging"] } + mandatoryProducts) .map { "\"" + $0 + "\"" })
-        let productList = products.sorted().combine("") { $0 + ", " + $1 }
+        let products = Set((machine.packageDependencies.flatMap { $0.products } + mandatoryProducts) .map { "\"" + $0 + "\"" })
+        let productList = (products + ["\"" + machine.name + "MachineBridging\""]).sorted().combine("") { $0 + ", " + $1 }
         let str = """
             // swift-tools-version:5.1
             import PackageDescription
@@ -333,12 +333,12 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                 products: [
                     .library(
                         name: "\(machine.name)Machine",
-                        targets: ["\(machine.name)Machine", \(machine.name)MachineBridging]
+                        targets: ["\(machine.name)Machine"]
                     )
                 ],
                 dependencies: [\(dependencies)],
                 targets: [
-                    .target(name: "\(machine.name)MachineBridging", dependencies: []),
+                    .systemLibrary(name: "\(machine.name)MachineBridging"),
                     .target(name: "\(machine.name)Machine", dependencies: [\(productList)], linkerSettings: [.linkedLibrary("FSM")])
                 ]
             )
