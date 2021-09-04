@@ -87,6 +87,7 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
 
     public func compile(
         _ machine: Machine,
+        atDirectory machineDir: URL,
         withBuildDir buildDir: String,
         libExtension: String,
         swiftBuildConfig: SwiftBuildConfig = .debug,
@@ -99,6 +100,7 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
         self.errors = []
         return self.compileMachine(
             machine,
+            atDirectory: machineDir,
             withBuildDir: buildDir,
             libExtension: libExtension,
             swiftBuildConfig: swiftBuildConfig,
@@ -112,6 +114,7 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
 
     private func compileMachine(
         _ machine: Machine,
+        atDirectory machineDir: URL,
         withBuildDir buildDir: String,
         libExtension: String,
         swiftBuildConfig: SwiftBuildConfig = .debug,
@@ -122,7 +125,7 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
         andSwiftBuildFlags swiftBuildFlags: [String]
     ) -> Bool {
         print("Compile: \(machine.name)")
-        let buildDirPath = machine.filePath.appendingPathComponent(buildDir, isDirectory: true)
+        let buildDirPath = machineDir.appendingPathComponent(buildDir, isDirectory: true)
         guard let (buildPath, _) = self.assembler.assemble(machine, inDirectory: buildDirPath) else {
             self.errors = self.assembler.errors
             return false
@@ -137,6 +140,7 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
         print("Compiling at path: \(buildPath.path)")
         let args = self.makeCompilerFlags(
             forMachine: machine,
+            atDirectory: machineDir,
             swiftBuildConfig: swiftBuildConfig,
             withCCompilerFlags: cCompilerFlags,
             andCXXCompilerFlags: cxxCompilerFlags,
@@ -155,6 +159,7 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
 
     private func makeCompilerFlags(
         forMachine machine: Machine,
+        atDirectory machineDir: URL,
         swiftBuildConfig: SwiftBuildConfig,
         withCCompilerFlags cCompilerFlags: [String],
         andCXXCompilerFlags cxxCompilerFlags: [String],
@@ -162,9 +167,9 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
         andSwiftCompilerFlags swiftCompilerFlags: [String],
         andSwiftBuildFlags swiftBuildFlags: [String]
     ) -> [String] {
-        let swiftIncludeSearchPaths = machine.swiftIncludeSearchPaths.map { "-I\(self.expand($0, withMachine: machine))" }
-        let includeSearchPaths = machine.includeSearchPaths.map { "-I\(self.expand($0, withMachine: machine))" }
-        let libSearchPaths = machine.libSearchPaths.map { "-L\(self.expand($0, withMachine: machine))" }
+        let swiftIncludeSearchPaths = machine.swiftIncludeSearchPaths.map { "-I\(self.expand($0, withMachine: machine, atDirectory: machineDir))" }
+        let includeSearchPaths = machine.includeSearchPaths.map { "-I\(self.expand($0, withMachine: machine, atDirectory: machineDir))" }
+        let libSearchPaths = machine.libSearchPaths.map { "-L\(self.expand($0, withMachine: machine, atDirectory: machineDir))" }
         let mandatoryFlags = ["-Xlinker", "-lFSM"]
         var args: [String] = ["build"]
         args.append(contentsOf: ["-c", swiftBuildConfig.rawValue])
@@ -181,14 +186,14 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
         return args
     }
 
-    private func expand(_ path: String, withMachine machine: Machine) -> String {
+    private func expand(_ path: String, withMachine machine: Machine, atDirectory machineDir: URL) -> String {
         guard let first = path.first else {
             return path
         }
         if (first == "/") {
             return path
         }
-        return URL(fileURLWithPath: path, relativeTo: machine.filePath).path
+        return URL(fileURLWithPath: path, relativeTo: machineDir).path
     }
 
 }
