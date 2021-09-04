@@ -90,7 +90,7 @@ public final class MachineArrangmentAssembler: ErrorContainer {
         var files: [URL] = []
         let flattenedMachines = arrangement.flattenedMachines
         guard nil != flattenedMachines.failMap({
-            self.assembler.assemble($0, inDirectory: $0.filePath.appendingPathComponent(machineBuildDir, isDirectory: true))
+            return self.assembler.assemble($1, inDirectory: $0.appendingPathComponent(machineBuildDir, isDirectory: true))
         }) else {
             self.errors.append(contentsOf: self.assembler.errors)
             return nil

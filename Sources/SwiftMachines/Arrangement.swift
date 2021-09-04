@@ -68,20 +68,20 @@ public struct Arrangement {
     
     public var dispatchTable: DispatchTable?
     
-    public var machines: [Machine] {
-        return self.dependencies.map { $0.machine }
+    public var machines: [(URL, Machine)] {
+        return self.dependencies.map { ($0.filePath(relativeTo: self.filePath), $0.machine(relativeTo: self.filePath)) }
     }
     
-    public var flattenedMachines: [Machine] {
+    public var flattenedMachines: [(URL, Machine)] {
         var urls = Set<URL>()
-        func _process(_ machines: [Machine]) -> [Machine] {
-            return machines.flatMap { (machine) -> [Machine] in
-                let machineUrl = machine.filePath.resolvingSymlinksInPath().absoluteURL
+        func _process(_ machines: [(URL, Machine)]) -> [(URL, Machine)] {
+            return machines.flatMap { (url, machine) -> [(URL, Machine)] in
+                let machineUrl = url.resolvingSymlinksInPath().absoluteURL
                 if urls.contains(machineUrl) {
                     return []
                 }
                 urls.insert(machineUrl)
-                return [machine] + _process(machine.dependencies.map { $0.machine } )
+                return [(url, machine)] + _process(machine.dependencies.map { ($0.filePath(relativeTo: url), $0.machine(relativeTo: url)) } )
             }
         }
         return _process(self.machines)
@@ -103,10 +103,19 @@ public struct Arrangement {
             names.insert(name)
             var newPreviousNames = previousNames
             newPreviousNames[url] = name
-            return NamespacedDependency(name: prefix, dependencies: machine.dependencies.compactMap { process($0.filePath, prefix: name + ".", previous: newPreviousNames) })
+            return NamespacedDependency(
+                name: prefix,
+                dependencies: machine.dependencies.compactMap {
+                    process(
+                        $0.filePath(relativeTo: url),
+                        prefix: name + ".",
+                        previous: newPreviousNames
+                    )
+                }
+            )
         }
         let deps = self.dependencies.compactMap {
-            process($0.filePath, prefix: "", previous: [:])
+            process($0.filePath(relativeTo: self.filePath), prefix: "", previous: [:])
         }
         return (names, deps)
     }

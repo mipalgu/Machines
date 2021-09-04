@@ -125,7 +125,7 @@ public final class MachineArrangementCompiler {
             andSwiftBuildFlags: swiftBuildFlags
         )
         let machineArgs = arrangement.flattenedMachines.flatMap {
-            self.makeCompilerFlags(forMachine: $0)
+            self.makeCompilerFlags(forMachine: $1, atDirectory: $0)
         }
         let args = arrangementArgs + machineArgs
         print(args.reduce("swift build") { "\($0) \($1)" })
@@ -153,10 +153,10 @@ public final class MachineArrangementCompiler {
         return outputURL
     }
     
-    private func makeCompilerFlags(forMachine machine: Machine) -> [String] {
-        let swiftIncludeSearchPaths = machine.swiftIncludeSearchPaths.map { "-I\(self.expand($0, withMachine: machine))" }
-        let includeSearchPaths = machine.includeSearchPaths.map { "-I\(self.expand($0, withMachine: machine))" }
-        let libSearchPaths = machine.libSearchPaths.map { "-L\(self.expand($0, withMachine: machine))" }
+    private func makeCompilerFlags(forMachine machine: Machine, atDirectory machineDir: URL) -> [String] {
+        let swiftIncludeSearchPaths = machine.swiftIncludeSearchPaths.map { "-I\(self.expand($0, withMachine: machine, atDirectory: machineDir))" }
+        let includeSearchPaths = machine.includeSearchPaths.map { "-I\(self.expand($0, withMachine: machine, atDirectory: machineDir))" }
+        let libSearchPaths = machine.libSearchPaths.map { "-L\(self.expand($0, withMachine: machine, atDirectory: machineDir))" }
         var args: [String] = []
         args.append(contentsOf: swiftIncludeSearchPaths.flatMap { ["-Xswiftc", $0] })
         args.append(contentsOf: includeSearchPaths.flatMap { ["-Xcc", $0] })
@@ -183,14 +183,14 @@ public final class MachineArrangementCompiler {
         return args
     }
     
-    private func expand(_ path: String, withMachine machine: Machine) -> String {
+    private func expand(_ path: String, withMachine machine: Machine, atDirectory machineDir: URL) -> String {
         guard let first = path.first else {
             return path
         }
         if (first == "/") {
             return path
         }
-        return URL(fileURLWithPath: path, relativeTo: machine.filePath).path
+        return URL(fileURLWithPath: path, relativeTo: machineDir).path
     }
     
     fileprivate func copyOutPath(_ outPath: URL, toFolder dir: URL, executableName name: String) throws -> Bool {
