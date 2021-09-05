@@ -68,4 +68,31 @@ extension FileWrapper {
         self.preferredFilename = name
     }
     
+    func wrapper(named name: String) -> FileWrapper? {
+        guard let file = self.fileWrappers?[name] else {
+            return nil
+        }
+        return file
+    }
+    
+    func data(ofFile file: String) -> Data? {
+        self.wrapper(named: file).flatMap {
+            $0.regularFileContents
+        }
+    }
+    
+    func read(file name: String) -> String? {
+        self.wrapper(named: name).flatMap { $0.read() }
+    }
+    
+    func read() -> String? {
+        guard
+            let data = self.regularFileContents,
+            let str = String(data: data, encoding: .utf8)
+        else {
+            return nil
+        }
+        return str.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+    }
+    
 }

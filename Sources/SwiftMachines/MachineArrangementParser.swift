@@ -64,20 +64,34 @@ public final class MachineArrangementParser {
     
     public init() {}
     
-    public func parseArrangement(atDirectory url: URL) -> Arrangement? {
+    public func parseArrangement(_ wrapper: FileWrapper) -> Arrangement? {
         self.errors = []
-        let machinesFile = url.appendingPathComponent("Machines", isDirectory: false)
         guard
-            let name = self.parseArrangementName(fromURL: url),
-            let dependencies = self.parseMachines(inArrangement: url, fromFile: machinesFile)
+            let name = self.parseArrangementName(fromFileName: wrapper.filename),
+            let dependencies = self.parseMachines(inArrangement: wrapper)
         else {
             return nil
         }
         return Arrangement(name: name, dependencies: dependencies)
     }
     
-    private func parseArrangementName(fromURL url: URL) -> String? {
-        guard let name = url.lastPathComponent.components(separatedBy: ".").first else {
+    public func parseArrangement(atDirectory url: URL) -> Arrangement? {
+        self.errors = []
+        let wrapper: FileWrapper
+        do {
+            wrapper = try FileWrapper(url: url, options: .immediate)
+        } catch let e {
+            self.errors.append("\(e)")
+            return nil
+        }
+        return parseArrangement(wrapper)
+    }
+    
+    private func parseArrangementName(fromFileName fileName: String?) -> String? {
+        guard let fileName = fileName else {
+            return nil
+        }
+        guard let name = fileName.components(separatedBy: ".").first else {
             return nil
         }
         let trimmed = name.trimmingCharacters(in: .whitespaces)
@@ -87,9 +101,9 @@ public final class MachineArrangementParser {
         return trimmed
     }
     
-    private func parseMachines(inArrangement arrangementDir: URL, fromFile url: URL) -> [Machine.Dependency]? {
-        guard let str = try? String(contentsOf: url) else {
-            self.errors.append("Unable to read file \(url.path)")
+    private func parseMachines(inArrangement wrapper: FileWrapper) -> [Machine.Dependency]? {
+        guard let str = wrapper.read(file: "Machines") else {
+            self.errors.append("Unable to read Machines file.")
             return nil
         }
         let lines = str.components(separatedBy: .newlines).lazy.map { $0.trimmingCharacters(in: .whitespaces)}.filter { $0 != "" }
