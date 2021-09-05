@@ -122,15 +122,16 @@ public final class MachineArrangmentAssembler: ErrorContainer {
         guard let wrapper = self.assemble(arrangement, atDirectory: arrangementDir, machineBuildDir: machineBuildDir) else {
             return nil
         }
+        let arrangementBuildDir = buildDir.appendingPathComponent("Arrangement", isDirectory: true)
         do {
-            try wrapper.write(to: buildDir, options: .atomic, originalContentsURL: nil)
+            try wrapper.write(to: arrangementBuildDir, options: .atomic, originalContentsURL: nil)
         } catch {
             return nil
         }
         if let data = try? JSONEncoder().encode(arrangementToken) {
             try? data.write(to: buildDir.appendingPathComponent("arrangement.json", isDirectory: false))
         }
-        return (buildDir, wrapper)
+        return (arrangementBuildDir, wrapper)
     }
     
     public func assemble(_ arrangement: Arrangement, atDirectory arrangementDir: URL, machineBuildDir: String) -> FileWrapper? {
