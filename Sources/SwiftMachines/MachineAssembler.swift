@@ -96,11 +96,13 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         self.varHelpers = varHelpers
         self.varParser = varParser
     }
+    
+    public func packageDir(forMachine machine: Machine, builtInDirectory buildDir: URL) -> URL {
+        buildDir.appendingPathComponent(machine.name + "Machine", isDirectory: true)
+    }
 
     public func packagePath(forMachine machine: Machine, builtInDirectory buildDir: URL) -> String {
-        return buildDir
-            .appendingPathComponent(machine.name + "Machine", isDirectory: true)
-            .path
+        packageDir(forMachine: machine, builtInDirectory: buildDir).path
     }
 
     public func assemble(_ machine: Machine, atDirectory machineDir: URL, inDirectory directory: URL) -> (URL, FileWrapper)? {
@@ -110,12 +112,12 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             previousMachine == MachineToken(data: machine),
             let buildDir = try? FileWrapper(url: directory, options: .immediate)
         {
-            return (directory, buildDir)
+            return (packageDir(forMachine: machine, builtInDirectory: directory), buildDir)
         }
         guard let wrapper = self.assemble(machine, atDirectory: machineDir) else {
             return nil
         }
-        return writeAssembledWrapper(wrapper, forMachine: machine, to: directory) ? (directory, wrapper) : nil
+        return writeAssembledWrapper(wrapper, forMachine: machine, to: directory) ? (packageDir(forMachine: machine, builtInDirectory: directory), wrapper) : nil
     }
     
     public func assemble(_ machine: Machine, atDirectory machineDir: URL) -> FileWrapper? {
