@@ -122,6 +122,11 @@ public final class MachineArrangmentAssembler: ErrorContainer {
         guard let wrapper = self.assemble(arrangement, atDirectory: arrangementDir, machineBuildDir: machineBuildDir) else {
             return nil
         }
+        do {
+            try wrapper.write(to: buildDir, options: .atomic, originalContentsURL: nil)
+        } catch {
+            return nil
+        }
         if let data = try? JSONEncoder().encode(arrangementToken) {
             try? data.write(to: buildDir.appendingPathComponent("arrangement.json", isDirectory: false))
         }
