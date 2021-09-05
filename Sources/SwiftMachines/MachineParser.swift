@@ -187,7 +187,7 @@ public final class MachineParser: ErrorContainer {
     }
 
     private func parseExternalVariablesFromMachine(_ wrapper: FileWrapper, withName name: String) -> [Variable]? {
-        guard let str = read(file: name + "_ExternalVariables.swift", in: wrapper) else {
+        guard let str = read(file: "ExternalVariables.swift", in: wrapper) else {
             return nil
         }
         guard let vars = self.varParser.parse(fromString: str) else {
@@ -235,16 +235,16 @@ public final class MachineParser: ErrorContainer {
     }
 
     private func parseMachineImportsFromMachine(_ wrapper: FileWrapper, withName name: String) -> String? {
-        read(file: name + "_Imports.swift", in: wrapper)
+        read(file: "Imports.swift", in: wrapper)
     }
 
     private func parseMachineBridgingHeaderFromMachine(_ wrapper: FileWrapper, withName name: String) -> String?? {
-        .some(read(file: name + "-Bridging-Header.h", in: wrapper))
+        .some(read(file: "Bridging-Header.h", in: wrapper))
     }
 
     private func parseMachineVarsFromMachine(_ wrapper: FileWrapper, withName name: String) -> [Variable]? {
-        let fileName = name + "_Vars.swift"
-        guard let str = read(file: name + "_Vars.swift", in: wrapper) else {
+        let fileName = "Vars.swift"
+        guard let str = read(file: "Vars.swift", in: wrapper) else {
             return nil
         }
         guard let vars = self.varParser.parse(fromString: str) else {
@@ -255,7 +255,7 @@ public final class MachineParser: ErrorContainer {
     }
 
     private func parseMachineParametersFromMachine(_ wrapper: FileWrapper, withName name: String) -> [Variable]?? {
-        let fileName = name + "_Parameters.swift"
+        let fileName = "Parameters.swift"
         guard let str = self.read(file: fileName, in: wrapper) else {
             return .some(.none)
         }
@@ -267,7 +267,7 @@ public final class MachineParser: ErrorContainer {
     }
 
     private func parseMachineReturnTypeFromMachine(_ wrapper: FileWrapper, withName name: String) -> String?? {
-        guard let str = self.read(file: name + "_ReturnType.swift", in: wrapper) else {
+        guard let str = self.read(file: "ReturnType.swift", in: wrapper) else {
             return .some(.none)
         }
         return .some(.some(str))
@@ -488,7 +488,7 @@ public final class MachineParser: ErrorContainer {
             let data = wrapper.regularFileContents,
             let str = String(data: data, encoding: .utf8)
         else {
-            self.errors.append("Unable to read contents of file \(wrapper.filename)")
+            self.errors.append("Unable to read contents of file \(wrapper.filename ?? "")")
             return nil
         }
         return str.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)

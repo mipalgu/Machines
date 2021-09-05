@@ -98,9 +98,9 @@ public final class MachineGenerator {
             let swiftIncludePath = create("SwiftIncludePath", contents: reduceList(machine.swiftIncludeSearchPaths)),
             let includePath = create("IncludePath", contents: reduceList(machine.includeSearchPaths)),
             let libPath = create("LibPath", contents: reduceList(machine.libSearchPaths)),
-            let imports = create(machine.name + "_Imports.swift", contents: machine.imports),
+            let imports = create("Imports.swift", contents: machine.imports),
             let vars = create(
-                machine.name + "_Vars.swift",
+                "Vars.swift",
                 contents: machine.vars.map({
                     self.varHelpers.makeDeclarationWithAvailableAssignment(forVariable: $0)
                 }).joined(separator: "\n")
@@ -129,7 +129,7 @@ public final class MachineGenerator {
         wrapper.addFileWrapper(invocables)
         wrapper.addFileWrapper(subs)
         if let includes = machine.includes {
-            guard let bridgingHeader = create(machine.name + "-Bridging-Header.h", contents: includes) else {
+            guard let bridgingHeader = create("Bridging-Header.h", contents: includes) else {
                 return nil
             }
             wrapper.addFileWrapper(bridgingHeader)
@@ -276,7 +276,7 @@ public final class MachineGenerator {
 
     func makeExternalVariables(forMachine machine: Machine) -> FileWrapper? {
         create(
-            machine.name + "_ExternalVariables.swift",
+            "ExternalVariables.swift",
             contents: machine.externalVariables.lazy.map {
                 self.varHelpers.makeDeclarationWithAvailableAssignment(forVariable: $0)
             }.joined(separator: "\n")
@@ -307,7 +307,7 @@ public final class MachineGenerator {
         guard
             let parameters = machine.parameters,
             let parametersPath = create(
-                machine.name + "_Parameters.swift",
+                "Parameters.swift",
                 contents: parameters.lazy.map {
                     self.varHelpers.makeDeclarationWithAvailableAssignment(forVariable: $0)
                 }.joined(separator: "\n")
