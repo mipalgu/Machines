@@ -73,7 +73,7 @@ public final class MachineAssemblerTests: XCTestCase {
         let pingState = State(
             name: "Ping",
             imports: "",
-            externalVariables: nil,
+            externalVariables: [],
             vars: [],
             actions: [
                 Action(name: "onEntry", implementation: "print(\"Ping\")"),
@@ -104,7 +104,7 @@ public final class MachineAssemblerTests: XCTestCase {
                 State(
                     name: "Pong",
                     imports: "",
-                    externalVariables: nil,
+                    externalVariables: [],
                     vars: [],
                     actions: [
                         Action(name: "onEntry", implementation: "print(\"Pong\")"),

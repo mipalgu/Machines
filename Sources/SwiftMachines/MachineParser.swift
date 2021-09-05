@@ -403,7 +403,7 @@ public final class MachineParser: ErrorContainer {
             return nil
         }
         
-        let extVars: [Variable]?
+        let extVars: [Variable]
         if let externalVariablesRaw = self.read(file: base + "_ExternalVariables.swift", in: wrapper) {
             guard let externalVariables = externalVariablesRaw.components(separatedBy: .newlines).map({$0.trimmingCharacters(in: .whitespaces)}).filter({ $0 != "" }).failMap({ external in
                 return self.attempt("Unable to location external variable \(external)", { externalVariables[external] })
@@ -413,7 +413,7 @@ public final class MachineParser: ErrorContainer {
             }
             extVars = externalVariables
         } else {
-            extVars = nil
+            extVars = []
         }
         guard let actions = actionNames.failMap({
             self.parseActionFromMachine(wrapper, forState: name, withName: $0)

@@ -961,21 +961,14 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         for m in machine.invocables {
             str += "        self._\(m.callName)Machine = \(m.callName)Machine\n"
         }
-        let sensorsStr: String
-        let actuatorsStr: String
-        if let stateExternals = state.externalVariables {
-            let sensors = stateExternals.lazy.filter { $0.accessType == .readOnly || $0.accessType == .readAndWrite }
-            let sensorlabels = sensors.map { "\"" + $0.label + "\"" }
-            let sensorlist = sensorlabels.combine("") { $0 + ", " + $1 }
-            sensorsStr = "[" + sensorlist + "]"
-            let actuators = stateExternals.lazy.filter { $0.accessType == .writeOnly || $0.accessType == .readAndWrite }
-            let actuatorLabels = actuators.map { "\"" + $0.label + "\"" }
-            let actuatorList = actuatorLabels.combine("") { $0 + ", " + $1 }
-            actuatorsStr = "[" + actuatorList + "]"
-        } else {
-            sensorsStr = "nil"
-            actuatorsStr = "nil"
-        }
+        let sensors = state.externalVariables.lazy.filter { $0.accessType == .readOnly || $0.accessType == .readAndWrite }
+        let sensorlabels = sensors.map { "\"" + $0.label + "\"" }
+        let sensorlist = sensorlabels.combine("") { $0 + ", " + $1 }
+        let sensorsStr = "[" + sensorlist + "]"
+        let actuators = state.externalVariables.lazy.filter { $0.accessType == .writeOnly || $0.accessType == .readAndWrite }
+        let actuatorLabels = actuators.map { "\"" + $0.label + "\"" }
+        let actuatorList = actuatorLabels.combine("") { $0 + ", " + $1 }
+        let actuatorsStr = "[" + actuatorList + "]"
         let transitionType = machine.name + "StateTransition"
         str += "        super.init(name, transitions: transitions.map { \(transitionType)($0) }, snapshotSensors: \(sensorsStr), snapshotActuators: \(actuatorsStr))\n"
         str += "    }\n\n"

@@ -229,17 +229,15 @@ public final class MachineGenerator {
             return nil
         }
         var result: [FileWrapper] = [transitionList, stateImports, stateVars]
-        if let stateExternals = state.externalVariables {
-            guard
-                let stateExternalVariables = create(
-                    "State_" + state.name + "_ExternalVariables.swift",
-                    contents: stateExternals.sorted { $0.label < $1.label }.lazy.map { $0.label }.joined(separator: "\n")
-                )
-            else {
-                return nil
-            }
-            result.append(stateExternalVariables)
+        guard
+            let stateExternalVariables = create(
+                "State_" + state.name + "_ExternalVariables.swift",
+                contents: state.externalVariables.sorted { $0.label < $1.label }.lazy.map { $0.label }.joined(separator: "\n")
+            )
+        else {
+            return nil
         }
+        result.append(stateExternalVariables)
         result.reserveCapacity(result.count + actions.count + transitions.count)
         result.append(contentsOf: actions)
         result.append(contentsOf: transitions)
