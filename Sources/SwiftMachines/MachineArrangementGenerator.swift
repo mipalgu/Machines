@@ -112,7 +112,7 @@ public final class MachineArrangementGenerator {
     
     private func createDependencies(_ dependencies: [Machine.Dependency], parent: URL) -> FileWrapper? {
         let str = dependencies.map {
-            let relativePath = $0.filePath(relativeTo: parent).relativePathString(relativeto: parent.appendingPathComponent("Machines", isDirectory: false))
+            let relativePath = $0.filePath(relativeTo: parent.appendingPathComponent("Machines", isDirectory: false)).relativePath
             if let name = $0.name {
                 return name + " -> " + relativePath
             }
