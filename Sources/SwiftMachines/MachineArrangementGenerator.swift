@@ -101,15 +101,18 @@ public final class MachineArrangementGenerator {
     
     public func generateArrangement(_ arrangement: Arrangement, atDirectory arrangementDir: URL) -> FileWrapper? {
         self.errors = []
-        guard let deps = self.createDependencies(arrangement.dependencies, parent: arrangementDir, atPath: arrangementDir.appendingPathComponent("Machines", isDirectory: false)) else {
+        guard let deps = self.createDependencies(arrangement.dependencies, parent: arrangementDir) else {
             return nil
         }
-        return deps
+        let wrapper = FileWrapper(directoryWithFileWrappers: [:])
+        wrapper.preferredFilename = arrangement.name + ".arrangement"
+        wrapper.addFileWrapper(deps)
+        return wrapper
     }
     
-    private func createDependencies(_ dependencies: [Machine.Dependency], parent: URL, atPath url: URL) -> FileWrapper? {
+    private func createDependencies(_ dependencies: [Machine.Dependency], parent: URL) -> FileWrapper? {
         let str = dependencies.map {
-            let relativePath = $0.filePath(relativeTo: parent).relativePathString(relativeto: url)
+            let relativePath = $0.filePath(relativeTo: parent).relativePathString(relativeto: parent)
             if let name = $0.name {
                 return name + " -> " + relativePath
             }
