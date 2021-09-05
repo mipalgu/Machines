@@ -84,10 +84,8 @@ public final class MachineArrangmentAssembler: ErrorContainer {
         self.packageInitializer = packageInitializer
     }
 
-    public func assemble(_ arrangement: Arrangement, atDirectory arrangementDir: URL, machineBuildDir: String) -> (URL, [URL])? {
+    public func assembleAndWrite(_ arrangement: Arrangement, atDirectory arrangementDir: URL, machineBuildDir: String) -> (URL, FileWrapper)? {
         self.errors = []
-        let errorMsg = "Unable to assemble arrangement"
-        var files: [URL] = []
         let flattenedMachines = arrangement.flattenedMachines(relativeTo: arrangementDir)
         guard nil != flattenedMachines.failMap({
             return self.assembler.assemble($1, atDirectory: $0, inDirectory: $0.appendingPathComponent(machineBuildDir, isDirectory: true))
@@ -112,32 +110,53 @@ public final class MachineArrangmentAssembler: ErrorContainer {
             let buildDir = arrangementDir
                 .appendingPathComponent(".build", isDirectory: true)
                 .appendingPathComponent("Arrangement", isDirectory: true)
-            return (buildDir, [])
+            let wrapper: FileWrapper
+            do {
+                wrapper = try FileWrapper(url: buildDir, options: .immediate)
+            } catch let e {
+                self.errors.append("\(e)")
+                return nil
+            }
+            return (buildDir, wrapper)
         }
-        guard
-            let packageDir = self.packageInitializer.initialize(withName: "Arrangement", andType: .Library, inDirectory: buildDir),
-            let packageSwift = self.makePackage(forExecutable: arrangement.name, forMachines: arrangement.machines(relativeTo: arrangementDir), inDirectory: packageDir, machineBuildDir: machineBuildDir)
-        else {
-            self.errors.append(errorMsg)
-            return nil
-        }
-        files.append(packageSwift)
-        let sourceDir = packageDir.appendingPathComponent("Sources/Arrangement", isDirectory: true)
-        guard
-            let factory = self.makeFactory(arrangementName: arrangement.name, forDependencies: arrangement.dependencies, machineDir: arrangementDir, inDirectory: sourceDir)
-        else {
-            self.errors.append(errorMsg)
+        guard let wrapper = self.assemble(arrangement, atDirectory: arrangementDir, machineBuildDir: machineBuildDir) else {
             return nil
         }
         if let data = try? JSONEncoder().encode(arrangementToken) {
             try? data.write(to: buildDir.appendingPathComponent("arrangement.json", isDirectory: false))
         }
-        files.append(contentsOf: [factory])
-        return (packageDir, files)
+        return (buildDir, wrapper)
     }
     
-    private func makePackage(forExecutable executable: String, forMachines machines: [(URL, Machine)], inDirectory path: URL, machineBuildDir: String, withAddedDependencies addedDependencies: [(URL)] = []) -> URL? {
-        let packagePath = path.appendingPathComponent("Package.swift", isDirectory: false)
+    public func assemble(_ arrangement: Arrangement, atDirectory arrangementDir: URL, machineBuildDir: String) -> FileWrapper? {
+        self.errors = []
+        let errorMsg = "Unable to assemble arrangement"
+        guard
+            //let packageDir = self.packageInitializer.initialize(withName: "Arrangement", andType: .Library, inDirectory: buildDir),
+            let packageSwift = self.makePackage(forExecutable: arrangement.name, forMachines: arrangement.machines(relativeTo: arrangementDir), machineBuildDir: machineBuildDir)
+        else {
+            self.errors.append(errorMsg)
+            return nil
+        }
+        guard
+            let factory = self.makeFactory(arrangementName: arrangement.name, forDependencies: arrangement.dependencies, machineDir: arrangementDir)
+        else {
+            self.errors.append(errorMsg)
+            return nil
+        }
+        let srcDir = FileWrapper(directoryWithFileWrappers: [:])
+        srcDir.preferredFilename = "Arrangement"
+        srcDir.addFileWrapper(factory)
+        let sourcesDir = FileWrapper(directoryWithFileWrappers: [:])
+        sourcesDir.preferredFilename = "Sources"
+        sourcesDir.addFileWrapper(srcDir)
+        let wrapper = FileWrapper(directoryWithFileWrappers: [:])
+        wrapper.addFileWrapper(sourcesDir)
+        wrapper.addFileWrapper(packageSwift)
+        return wrapper
+    }
+    
+    private func makePackage(forExecutable executable: String, forMachines machines: [(URL, Machine)], machineBuildDir: String, withAddedDependencies addedDependencies: [(URL)] = []) -> FileWrapper? {
         let mandatoryDependencies: [String] = []
         let machinePackages: [String] = self.machinePackageURLs(machines).map { (machine, url) in
             let url = String(url.appendingPathComponent(machineBuildDir + "/" + machine.name + "Machine").absoluteString.reversed().drop(while: { $0 == "/" }).reversed())
@@ -172,15 +191,10 @@ public final class MachineArrangmentAssembler: ErrorContainer {
             )
 
             """
-        guard true == self.helpers.createFile(atPath: packagePath, withContents: str) else {
-            self.errors.append("Unable to create Package.swift at \(packagePath.path)")
-            return nil
-        }
-        return packagePath
+        return FileWrapper("Package.swift", contents: str)
     }
     
-    private func makeFactory(arrangementName: String, forDependencies dependencies: [Machine.Dependency], machineDir: URL, inDirectory dir: URL) -> URL? {
-        let filePath = dir.appendingPathComponent("Arrangement.swift", isDirectory: false)
+    private func makeFactory(arrangementName: String, forDependencies dependencies: [Machine.Dependency], machineDir: URL) -> FileWrapper? {
         let imports = (["import swiftfsm"] + Set(dependencies.flatMap { self.importStrings(forDependencies: $0, machineDir: machineDir) }).sorted()).joined(separator: "\n")
         var processedMachines: Set<String> = []
         func makeDependency(type: String, prefix: String, ancestors: [URL: String], filePath: URL, dependency: Machine.Dependency) -> String {
@@ -241,11 +255,7 @@ public final class MachineArrangmentAssembler: ErrorContainer {
             """
         let str = imports + "\n\n" + cFactory + "\n\n" + factory
         // Create the file.
-        if (false == self.helpers.createFile(atPath: filePath, withContents: str)) {
-            self.errors.append("Unable to create Arrangement.swift at \(filePath.path)")
-            return nil
-        }
-        return filePath
+        return FileWrapper("Arrangement.swift", contents: str)
     }
     
     private func importStrings(forDependencies dependency: Machine.Dependency, machineDir: URL) -> [String] {
