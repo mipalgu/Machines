@@ -134,10 +134,6 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             self.errors.append(errorMsg)
             return false
         }
-        guard true == self.createAndTagGitRepo(inDirectory: directory.appendingPathComponent(machine.name + "MachineBridging", isDirectory: true)) else {
-            self.errors.append(errorMsg)
-            return false
-        }
         if let data = try? JSONEncoder().encode(MachineToken(data: machine)) {
             _ = try? data.write(to: directory.appendingPathComponent("machine.json", isDirectory: true))
         }

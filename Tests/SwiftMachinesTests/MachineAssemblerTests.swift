@@ -120,11 +120,17 @@ public final class MachineAssemblerTests: XCTestCase {
             callableMachines: [],
             invocableMachines: []
         )
-        let wrapper = assembler.assemble(
+        guard let wrapper = assembler.assemble(
             pingPong,
             atDirectory: URL(fileURLWithPath: "/tmp/PingPong.machine", isDirectory: true),
             inDirectory: URL(fileURLWithPath: "/tmp/PingPong.machine/.build", isDirectory: true)
-        )
+        ) else {
+            for error in assembler.errors {
+                XCTFail(error)
+            }
+            XCTFail("Unable to assemble ping pong.")
+            return
+        }
         XCTAssertNotNil(wrapper)
     }
     
