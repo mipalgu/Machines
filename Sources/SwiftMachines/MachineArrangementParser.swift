@@ -73,7 +73,7 @@ public final class MachineArrangementParser {
         else {
             return nil
         }
-        return Arrangement(name: name, filePath: url, dependencies: dependencies)
+        return Arrangement(name: name, dependencies: dependencies)
     }
     
     private func parseArrangementName(fromURL url: URL) -> String? {

@@ -62,17 +62,21 @@ public struct Arrangement {
     
     public var name: String
     
-    public var filePath: URL
-    
     public var dependencies: [Machine.Dependency]
     
     public var dispatchTable: DispatchTable?
     
-    public var machines: [(URL, Machine)] {
-        return self.dependencies.map { ($0.filePath(relativeTo: self.filePath), $0.machine(relativeTo: self.filePath)) }
+    public init(name: String, dependencies: [Machine.Dependency], dispatchTable: DispatchTable? = nil) {
+        self.name = name
+        self.dependencies = dependencies
+        self.dispatchTable = dispatchTable
     }
     
-    public var flattenedMachines: [(URL, Machine)] {
+    public func machines(relativeTo arrangementDir: URL) -> [(URL, Machine)] {
+        return self.dependencies.map { ($0.filePath(relativeTo: arrangementDir), $0.machine(relativeTo: arrangementDir)) }
+    }
+    
+    public func flattenedMachines(relativeTo arrangementDir: URL) -> [(URL, Machine)] {
         var urls = Set<URL>()
         func _process(_ machines: [(URL, Machine)]) -> [(URL, Machine)] {
             return machines.flatMap { (url, machine) -> [(URL, Machine)] in
@@ -84,10 +88,10 @@ public struct Arrangement {
                 return [(url, machine)] + _process(machine.dependencies.map { ($0.filePath(relativeTo: url), $0.machine(relativeTo: url)) } )
             }
         }
-        return _process(self.machines)
+        return _process(self.machines(relativeTo: arrangementDir))
     }
     
-    public var namespacedDependencies: (Set<String>, [NamespacedDependency]) {
+    public func namespacedDependencies(relativeTo arrangementDir: URL) -> (Set<String>, [NamespacedDependency]) {
         var names: Set<String> = []
         var machines: [URL: Machine] = [:]
         let parser = MachineParser()
@@ -115,16 +119,9 @@ public struct Arrangement {
             )
         }
         let deps = self.dependencies.compactMap {
-            process($0.filePath(relativeTo: self.filePath), prefix: "", previous: [:])
+            process($0.filePath(relativeTo: arrangementDir), prefix: "", previous: [:])
         }
         return (names, deps)
-    }
-    
-    public init(name: String, filePath: URL, dependencies: [Machine.Dependency], dispatchTable: DispatchTable? = nil) {
-        self.name = name
-        self.filePath = filePath
-        self.dependencies = dependencies
-        self.dispatchTable = dispatchTable
     }
     
 }

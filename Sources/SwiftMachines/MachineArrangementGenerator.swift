@@ -81,31 +81,47 @@ public final class MachineArrangementGenerator {
         self.helpers = helpers
     }
     
-    public func generateArrangement(_ arrangement: Arrangement) -> URL? {
+    public func generateArrangement(_ arrangement: Arrangement, atDirectory arrangementDir: URL, inDirectory buildDir: URL) -> (URL, FileWrapper)? {
         self.errors = []
-        guard nil != self.helpers.overwriteDirectory(arrangement.filePath) else {
+        guard nil != self.helpers.overwriteDirectory(arrangementDir) else {
             self.errors.append("Unable to create arrangement directory")
             return nil
         }
-        guard let deps = self.createDependencies(arrangement.dependencies, machineDir: arrangement.filePath, atPath: arrangement.filePath.appendingPathComponent("Machines", isDirectory: false)) else {
+        guard let wrapper = generateArrangement(arrangement, atDirectory: arrangementDir) else {
+            return nil
+        }
+        do {
+            try wrapper.write(to: buildDir, options: .atomic, originalContentsURL: nil)
+        } catch let e {
+            self.errors.append("\(e)")
+            return nil
+        }
+        return (buildDir, wrapper)
+    }
+    
+    public func generateArrangement(_ arrangement: Arrangement, atDirectory arrangementDir: URL) -> FileWrapper? {
+        self.errors = []
+        guard let deps = self.createDependencies(arrangement.dependencies, parent: arrangementDir, atPath: arrangementDir.appendingPathComponent("Machines", isDirectory: false)) else {
             return nil
         }
         return deps
     }
     
-    private func createDependencies(_ dependencies: [Machine.Dependency], machineDir: URL, atPath url: URL) -> URL? {
+    private func createDependencies(_ dependencies: [Machine.Dependency], parent: URL, atPath url: URL) -> FileWrapper? {
         let str = dependencies.map {
-            let relativePath = $0.filePath(relativeTo: machineDir).relativePathString(relativeto: url)
+            let relativePath = $0.filePath(relativeTo: parent).relativePathString(relativeto: url)
             if let name = $0.name {
                 return name + " -> " + relativePath
             }
             return relativePath
         }.joined(separator: "\n")
-        guard true == self.helpers.createFile(atPath: url, withContents: str) else {
-            self.errors.append("Unable to create file \(url.path)")
+        guard let data = str.data(using: .utf8) else {
+            self.errors.append("Unable to encode string \(str)")
             return nil
         }
-        return url
+        let wrapper = FileWrapper(regularFileWithContents: data)
+        wrapper.preferredFilename = "Machines"
+        return wrapper
     }
     
 }

@@ -84,11 +84,11 @@ public final class MachineArrangmentAssembler: ErrorContainer {
         self.packageInitializer = packageInitializer
     }
 
-    public func assemble(_ arrangement: Arrangement, machineBuildDir: String) -> (URL, [URL])? {
+    public func assemble(_ arrangement: Arrangement, atDirectory arrangementDir: URL, machineBuildDir: String) -> (URL, [URL])? {
         self.errors = []
         let errorMsg = "Unable to assemble arrangement"
         var files: [URL] = []
-        let flattenedMachines = arrangement.flattenedMachines
+        let flattenedMachines = arrangement.flattenedMachines(relativeTo: arrangementDir)
         guard nil != flattenedMachines.failMap({
             return self.assembler.assemble($1, atDirectory: $0, inDirectory: $0.appendingPathComponent(machineBuildDir, isDirectory: true))
         }) else {
@@ -96,7 +96,7 @@ public final class MachineArrangmentAssembler: ErrorContainer {
             return nil
         }
         let fm = FileManager.default
-        let buildDir = arrangement.filePath.appendingPathComponent(".build", isDirectory: true)
+        let buildDir = arrangementDir.appendingPathComponent(".build", isDirectory: true)
         if !fm.fileExists(atPath: buildDir.path) {
             guard nil != self.helpers.overwriteDirectory(buildDir) else {
                 self.errors.append("Unable to create .build directory")
@@ -109,14 +109,14 @@ public final class MachineArrangmentAssembler: ErrorContainer {
             let token = try? JSONDecoder().decode(MachineToken<[String]>.self, from: data),
             token == arrangementToken
         {
-            let buildDir = arrangement.filePath
+            let buildDir = arrangementDir
                 .appendingPathComponent(".build", isDirectory: true)
                 .appendingPathComponent("Arrangement", isDirectory: true)
             return (buildDir, [])
         }
         guard
             let packageDir = self.packageInitializer.initialize(withName: "Arrangement", andType: .Library, inDirectory: buildDir),
-            let packageSwift = self.makePackage(forExecutable: arrangement.name, forMachines: arrangement.machines, inDirectory: packageDir, machineBuildDir: machineBuildDir)
+            let packageSwift = self.makePackage(forExecutable: arrangement.name, forMachines: arrangement.machines(relativeTo: arrangementDir), inDirectory: packageDir, machineBuildDir: machineBuildDir)
         else {
             self.errors.append(errorMsg)
             return nil
@@ -124,7 +124,7 @@ public final class MachineArrangmentAssembler: ErrorContainer {
         files.append(packageSwift)
         let sourceDir = packageDir.appendingPathComponent("Sources/Arrangement", isDirectory: true)
         guard
-            let factory = self.makeFactory(arrangementName: arrangement.name, forDependencies: arrangement.dependencies, machineDir: arrangement.filePath, inDirectory: sourceDir)
+            let factory = self.makeFactory(arrangementName: arrangement.name, forDependencies: arrangement.dependencies, machineDir: arrangementDir, inDirectory: sourceDir)
         else {
             self.errors.append(errorMsg)
             return nil
