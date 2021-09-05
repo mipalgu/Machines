@@ -1,9 +1,9 @@
 /*
- * MachineArrangementParser.swift
- * SwiftMachines
+ * FileWrapper.swift
+ * 
  *
- * Created by Callum McColl on 23/10/20.
- * Copyright © 2020 Callum McColl. All rights reserved.
+ * Created by Callum McColl on 5/9/21.
+ * Copyright © 2021 Callum McColl. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -58,74 +58,41 @@
 
 import Foundation
 
-public final class MachineArrangementParser {
+extension FileWrapper {
     
-    public private(set) var errors: [String] = []
+    convenience init?(_ name: String, contents: String) {
+        guard let data = contents.data(using: .utf8) else {
+            return nil
+        }
+        self.init(regularFileWithContents: data)
+        self.preferredFilename = name
+    }
     
-    public init() {}
+    func wrapper(named name: String) -> FileWrapper? {
+        guard let file = self.fileWrappers?[name] else {
+            return nil
+        }
+        return file
+    }
     
-    public func parseArrangement(_ wrapper: FileWrapper) -> Arrangement? {
-        self.errors = []
+    func data(ofFile file: String) -> Data? {
+        self.wrapper(named: file).flatMap {
+            $0.regularFileContents
+        }
+    }
+    
+    func read(file name: String) -> String? {
+        self.wrapper(named: name).flatMap { $0.read() }
+    }
+    
+    func read() -> String? {
         guard
-            let name = self.parseArrangementName(fromFileName: wrapper.filename),
-            let dependencies = self.parseMachines(inArrangement: wrapper)
+            let data = self.regularFileContents,
+            let str = String(data: data, encoding: .utf8)
         else {
             return nil
         }
-        return Arrangement(name: name, dependencies: dependencies)
-    }
-    
-    public func parseArrangement(atDirectory url: URL) -> Arrangement? {
-        self.errors = []
-        let wrapper: FileWrapper
-        do {
-            wrapper = try FileWrapper(url: url, options: .immediate)
-        } catch let e {
-            self.errors.append("\(e)")
-            return nil
-        }
-        return parseArrangement(wrapper)
-    }
-    
-    private func parseArrangementName(fromFileName fileName: String?) -> String? {
-        guard let fileName = fileName else {
-            return nil
-        }
-        guard let name = fileName.components(separatedBy: ".").first else {
-            return nil
-        }
-        let trimmed = name.trimmingCharacters(in: .whitespaces)
-        if trimmed.isEmpty {
-            return nil
-        }
-        return trimmed
-    }
-    
-    private func parseMachines(inArrangement wrapper: FileWrapper) -> [Machine.Dependency]? {
-        guard let str = wrapper.read(file: "Machines") else {
-            self.errors.append("Unable to read Machines file.")
-            return nil
-        }
-        let lines = str.components(separatedBy: .newlines).lazy.map { $0.trimmingCharacters(in: .whitespaces)}.filter { $0 != "" }
-        guard let dependencies: [Machine.Dependency] = lines.failMap({
-            let components = $0.components(separatedBy: "->")
-            guard let first = components.first else {
-                return nil
-            }
-            let name: String?
-            let filePath: String
-            if components.count == 1 {
-                name = nil
-                filePath = $0
-            } else {
-                name = first
-                filePath = components.dropFirst().joined(separator: "->")
-            }
-            return Machine.Dependency(name: name?.trimmingCharacters(in: .whitespaces), pathComponent: filePath)
-        }) else {
-            return nil
-        }
-        return dependencies
+        return str.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
     }
     
 }

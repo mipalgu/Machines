@@ -66,15 +66,42 @@ public struct Machine {
         
         public var machineName: String
         
-        public var filePath: URL
+        public var pathComponent: String
         
         public var callName: String {
             return self.name ?? self.machineName
         }
         
-        public var machine: Machine {
+        public init(name: String?, machineName: String, pathComponent: String) {
+            self.name = name
+            self.machineName = machineName
+            self.pathComponent = pathComponent
+        }
+        
+        public init?(name: String?, pathComponent: String) {
+            guard let machineName = pathComponent.components(separatedBy: "/").last?.components(separatedBy: ".").first?.trimmingCharacters(in: .whitespaces) else {
+                return nil
+            }
+            if machineName.isEmpty {
+                return nil
+            }
+            self.init(name: name, machineName: machineName, pathComponent: pathComponent)
+        }
+        
+        public func filePath(relativeTo parent: URL) -> URL {
+            let fileURL: URL
+            if #available(OSX 10.11, *) {
+                fileURL = URL(fileURLWithPath: pathComponent.trimmingCharacters(in: .whitespaces), isDirectory: false, relativeTo: parent)
+            } else {
+                fileURL = URL(fileURLWithPath: pathComponent.trimmingCharacters(in: .whitespaces), isDirectory: false)
+            }
+            return fileURL
+        }
+        
+        public func machine(relativeTo parent: URL) -> Machine {
             let parser = MachineParser()
-            let path: String = self.filePath.path.hasPrefix("file://") ? String(filePath.path.dropFirst(7)) : self.filePath.path
+            let filePath = self.filePath(relativeTo: parent)
+            let path: String = filePath.path.hasPrefix("file://") ? String(filePath.path.dropFirst(7)) : filePath.path
             guard let machine = parser.parseMachine(atPath: path) else {
                 parser.errors.forEach {
                     print($0, stderr)
@@ -84,27 +111,9 @@ public struct Machine {
             return machine
         }
         
-        public init(name: String?, machineName: String, filePath: URL) {
-            self.name = name
-            self.machineName = machineName
-            self.filePath = filePath
-        }
-        
-        public init?(name: String?, filePath: URL) {
-            guard let machineName = filePath.lastPathComponent.components(separatedBy: ".").first?.trimmingCharacters(in: .whitespaces) else {
-                return nil
-            }
-            if machineName.isEmpty {
-                return nil
-            }
-            self.init(name: name, machineName: machineName, filePath: filePath)
-        }
-        
     }
 
     public var name: String
-
-    public var filePath: URL
 
     public var externalVariables: [Variable]
     
@@ -159,6 +168,24 @@ public struct Machine {
     public var parameterisedDependencies: [Dependency] {
         return self.callables + self.invocables
     }
+    
+    public func syncMachines(relativeTo machineDir: URL) -> [(URL, Dependency)] {
+        callables.map {
+            ($0.filePath(relativeTo: machineDir), $0)
+        }
+    }
+    
+    public func asyncMachines(relativeTo machineDir: URL) -> [(URL, Dependency)] {
+        invocables.map {
+            ($0.filePath(relativeTo: machineDir), $0)
+        }
+    }
+    
+    public func subMachines(relativeTo machineDir: URL) -> [(URL, Dependency)] {
+        subs.map {
+            ($0.filePath(relativeTo: machineDir), $0)
+        }
+    }
 
     /*public var submachines: [(String, Machine)] {
         self.subs.map { $0.machine }
@@ -182,7 +209,6 @@ public struct Machine {
 
     public init(
         name: String,
-        filePath: URL,
         externalVariables: [Variable],
         packageDependencies: [PackageDependency],
         swiftIncludeSearchPaths: [String],
@@ -202,7 +228,6 @@ public struct Machine {
         invocableMachines: [Dependency]
     ) {
         self.name = name
-        self.filePath = filePath
         self.externalVariables = externalVariables
         self.packageDependencies = packageDependencies
         self.swiftIncludeSearchPaths = swiftIncludeSearchPaths

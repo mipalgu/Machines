@@ -56,9 +56,86 @@
 // *
 // */
 //
-//import Foundation
-//@testable import SwiftMachines
-//import XCTest
+import Foundation
+@testable import SwiftMachines
+import XCTest
+
+public final class MachineAssemblerTests: XCTestCase {
+    
+    private var assembler: MachineAssembler!
+    
+    public override func setUp() {
+        super.setUp()
+        self.assembler = MachineAssembler()
+    }
+    
+    public func test_canAssemblePingPong() {
+        let pingState = State(
+            name: "Ping",
+            imports: "",
+            externalVariables: nil,
+            vars: [],
+            actions: [
+                Action(name: "onEntry", implementation: "print(\"Ping\")"),
+                Action(name: "onExit", implementation: ""),
+                Action(name: "main", implementation: "")
+            ],
+            transitions: [
+                Transition(target: "Pong", condition: nil)
+            ]
+        )
+        let pingPong = Machine(
+            name: "PingPong",
+            externalVariables: [],
+            packageDependencies: [],
+            swiftIncludeSearchPaths: [],
+            includeSearchPaths: [],
+            libSearchPaths: [],
+            imports: "",
+            includes: nil,
+            vars: [],
+            model: nil,
+            parameters: nil,
+            returnType: nil,
+            initialState: pingState,
+            suspendState: nil,
+            states: [
+                pingState,
+                State(
+                    name: "Pong",
+                    imports: "",
+                    externalVariables: nil,
+                    vars: [],
+                    actions: [
+                        Action(name: "onEntry", implementation: "print(\"Pong\")"),
+                        Action(name: "onExit", implementation: ""),
+                        Action(name: "main", implementation: "")
+                    ],
+                    transitions: [
+                        Transition(target: "Ping", condition: nil)
+                    ]
+                )
+            ],
+            submachines: [],
+            callableMachines: [],
+            invocableMachines: []
+        )
+        guard let wrapper = assembler.assemble(
+            pingPong,
+            atDirectory: URL(fileURLWithPath: "/tmp/PingPong.machine", isDirectory: true),
+            inDirectory: URL(fileURLWithPath: "/tmp/PingPong.machine/.build", isDirectory: true)
+        ) else {
+            for error in assembler.errors {
+                XCTFail(error)
+            }
+            XCTFail("Unable to assemble ping pong.")
+            return
+        }
+        XCTAssertNotNil(wrapper)
+    }
+    
+}
+
 //
 //public class MachineAssemblerTests: MachinesTestCase {
 //

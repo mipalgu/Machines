@@ -73,37 +73,37 @@ public final class MachineGenerator {
         self.helpers = helpers
         self.varHelpers = varHelpers
     }
-
-    public func generate(_ machine: Machine) -> (URL, [URL])? {
+    
+    public func generate(_ machine: Machine, at directory: URL) -> (URL, FileWrapper)? {
         guard
-            let machineDir = self.helpers.overwriteDirectory(machine.filePath, ignoringSubFiles: [machine.filePath.appendingPathComponent("dependencies", isDirectory: true)]),
+            let machineDir = self.helpers.overwriteDirectory(directory, ignoringSubFiles: [directory.appendingPathComponent("dependencies", isDirectory: true)])
+        else {
+            return nil
+        }
+        guard let wrapper = self.generate(machine) else {
+            return nil
+        }
+        do {
+            try wrapper.write(to: machineDir, options: .atomic, originalContentsURL: nil)
+        } catch {
+            return nil
+        }
+        return (machineDir, wrapper)
+    }
+
+    public func generate(_ machine: Machine) -> FileWrapper? {
+        let wrapper = FileWrapper(directoryWithFileWrappers: [:])
+        guard
             let packageDependenciesPath = self.makePackageDependencies(forMachine: machine),
-            let swiftIncludePath = self.helpers.createFile(
-                "SwiftIncludePath",
-                inDirectory: machine.filePath,
-                withContents: self.reduceList(machine.swiftIncludeSearchPaths)
-            ),
-            let includePath = self.helpers.createFile(
-                "IncludePath",
-                inDirectory: machine.filePath,
-                withContents: self.reduceList(machine.includeSearchPaths)
-            ),
-            let libPath = self.helpers.createFile(
-                "LibPath",
-                inDirectory: machine.filePath,
-                withContents: self.reduceList(machine.libSearchPaths)
-            ),
-            let imports = self.helpers.createFile(
-                "\(machine.name)_Imports.swift",
-                inDirectory: machine.filePath,
-                withContents: machine.imports
-            ),
-            let vars = self.helpers.createFile(
-                "\(machine.name)_Vars.swift",
-                inDirectory: machine.filePath,
-                withContents: machine.vars.reduce("") {
-                    $0 + "\n" + self.varHelpers.makeDeclarationWithAvailableAssignment(forVariable: $1)
-                }
+            let swiftIncludePath = create("SwiftIncludePath", contents: reduceList(machine.swiftIncludeSearchPaths)),
+            let includePath = create("IncludePath", contents: reduceList(machine.includeSearchPaths)),
+            let libPath = create("LibPath", contents: reduceList(machine.libSearchPaths)),
+            let imports = create("Imports.swift", contents: machine.imports),
+            let vars = create(
+                "Vars.swift",
+                contents: machine.vars.map({
+                    self.varHelpers.makeDeclarationWithAvailableAssignment(forVariable: $0)
+                }).joined(separator: "\n")
             ),
             let stateFiles = self.makeStates(forMachine: machine),
             let stateList = self.makeStateList(forMachine: machine),
@@ -114,50 +114,61 @@ public final class MachineGenerator {
         else {
             return nil
         }
-        var files = [packageDependenciesPath, swiftIncludePath, includePath, libPath, imports, vars, stateList, externalVariables, callables, invocables, subs]
-        files.append(contentsOf: stateFiles)
+        wrapper.addFileWrapper(packageDependenciesPath)
+        wrapper.addFileWrapper(swiftIncludePath)
+        wrapper.addFileWrapper(includePath)
+        wrapper.addFileWrapper(libPath)
+        wrapper.addFileWrapper(imports)
+        wrapper.addFileWrapper(vars)
+        stateFiles.forEach {
+            wrapper.addFileWrapper($0)
+        }
+        wrapper.addFileWrapper(stateList)
+        wrapper.addFileWrapper(externalVariables)
+        wrapper.addFileWrapper(callables)
+        wrapper.addFileWrapper(invocables)
+        wrapper.addFileWrapper(subs)
         if let includes = machine.includes {
-            guard let bridgingHeader = self.helpers.createFile(
-                "\(machine.name)-Bridging-Header.h",
-                inDirectory: machine.filePath,
-                withContents: includes
-            ) else {
+            guard let bridgingHeader = create("Bridging-Header.h", contents: includes) else {
                 return nil
             }
-            files.append(bridgingHeader)
+            wrapper.addFileWrapper(bridgingHeader)
         }
         if let model = machine.model {
             guard
-                let ringletImports = self.helpers.createFile(
-                    "Ringlet_Imports.swift",
-                    inDirectory: machine.filePath,
-                    withContents: model.ringlet.imports
-                ),
-                let ringletVars = self.helpers.createFile(
+                let ringletImports = create("Ringlet_Imports.swift", contents: model.ringlet.imports),
+                let ringletVars = create(
                     "Ringlet_Vars.swift",
-                    inDirectory: machine.filePath,
-                    withContents: model.ringlet.vars.reduce("") {
-                        $0 + "\n" + self.varHelpers.makeDeclarationWithAvailableAssignment(forVariable: $1)
-                    }
+                    contents: model.ringlet.vars.map {
+                        self.varHelpers.makeDeclarationWithAvailableAssignment(forVariable: $0)
+                    }.joined(separator: "\n")
                 ),
-                let ringletExecute = self.helpers.createFile(
-                    "Ringlet_Execute.swift",
-                    inDirectory: machine.filePath,
-                    withContents: model.ringlet.execute
-                ),
+                let ringletExecute = create("Ringlet_Execute.swift", contents: model.ringlet.execute),
                 let modelFile = self.makeModelFile(forMachine: machine, withModel: model)
             else {
                 return nil
             }
-            files.append(contentsOf: [ringletImports, ringletVars, ringletExecute, modelFile])
+            wrapper.addFileWrapper(modelFile)
+            wrapper.addFileWrapper(ringletImports)
+            wrapper.addFileWrapper(ringletVars)
+            wrapper.addFileWrapper(ringletExecute)
         }
         if nil != machine.parameters {
             guard let parametersFile = self.makeParametersFile(forMachine: machine) else {
                 return nil
             }
-            files.append(parametersFile)
+            wrapper.addFileWrapper(parametersFile)
         }
-        return (machineDir, files)
+        return wrapper
+    }
+    
+    private func create(_ name: String, contents: String) -> FileWrapper? {
+        guard let data = contents.data(using: .utf8) else {
+            return nil
+        }
+        let wrapper = FileWrapper(regularFileWithContents: data)
+        wrapper.preferredFilename = name
+        return wrapper
     }
 
     func reduceList(_ list: [String], withSeparater separator: String = "\n") -> String {
@@ -167,8 +178,7 @@ public final class MachineGenerator {
         return list.dropFirst().reduce(first) { "\($0)" + separator + $1 }
     }
     
-    func makePackageDependencies(forMachine machine: Machine) -> URL? {
-        let filePath = machine.filePath.appendingPathComponent("packageDependencies.json", isDirectory: false)
+    func makePackageDependencies(forMachine machine: Machine) -> FileWrapper? {
         let encoder = JSONEncoder()
         #if os(macOS)
         if #available(macOS 10.15, *) {
@@ -181,23 +191,25 @@ public final class MachineGenerator {
         #else
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         #endif
+        let data: Data
         do {
-            let data = try encoder.encode(machine.packageDependencies)
-            try data.write(to: filePath)
+            data = try encoder.encode(machine.packageDependencies)
         } catch {
             return nil
         }
-        return filePath
+        let wrapper = FileWrapper(regularFileWithContents: data)
+        wrapper.preferredFilename = "packageDependencies.json"
+        return wrapper
     }
 
-    func makeStates(forMachine machine: Machine) -> [URL]? {
+    func makeStates(forMachine machine: Machine) -> [FileWrapper]? {
         guard let files = machine.states.failMap({ self.makeState($0, forMachine: machine) }) else {
             return nil
         }
         return files.flatMap { $0 }
     }
 
-    func makeState(_ state: State, forMachine machine: Machine) -> [URL]? {
+    func makeState(_ state: State, forMachine machine: Machine) -> [FileWrapper]? {
         guard
             let actions = state.actions.failMap({
                 self.makeAction($0, forState: state, inMachine: machine)
@@ -206,20 +218,24 @@ public final class MachineGenerator {
                 self.makeTransition($1, withId: $0, inState: state, inMachine: machine)
             }),
             let transitionList = self.makeTransitionList(forState: state, inMachine: machine),
-            let stateImports = self.helpers.createFile("State_\(state.name)_Imports.swift", inDirectory: machine.filePath, withContents: state.imports),
-            let stateVars = self.helpers.createFile(
-                "State_\(state.name)_Vars.swift",
-                inDirectory: machine.filePath,
-                withContents: state.vars.lazy.map {
+            let stateImports = create("State_" + state.name + "_Imports.swift", contents: state.imports),
+            let stateVars = create(
+                "State_" + state.name + "_Vars.swift",
+                contents: state.vars.lazy.map {
                     self.varHelpers.makeDeclarationWithAvailableAssignment(forVariable: $0)
-                }.combine("") { $0 + "\n" + $1 }
+                }.joined(separator: "\n")
             )
         else {
             return nil
         }
-        var result: [URL] = [transitionList, stateImports, stateVars]
+        var result: [FileWrapper] = [transitionList, stateImports, stateVars]
         if let stateExternals = state.externalVariables {
-            guard let stateExternalVariables = self.helpers.createFile("State_\(state.name)_ExternalVariables.swift", inDirectory: machine.filePath, withContents: stateExternals.sorted { $0.label < $1.label }.lazy.map { $0.label }.combine("") { $0 + "\n" + $1 }) else {
+            guard
+                let stateExternalVariables = create(
+                    "State_" + state.name + "_ExternalVariables.swift",
+                    contents: stateExternals.sorted { $0.label < $1.label }.lazy.map { $0.label }.joined(separator: "\n")
+                )
+            else {
                 return nil
             }
             result.append(stateExternalVariables)
@@ -230,96 +246,71 @@ public final class MachineGenerator {
         return result
     }
 
-    func makeAction(_ action: Action, forState state: State, inMachine machine: Machine) -> URL? {
-        let path = machine.filePath.appendingPathComponent("State_\(state.name)_\(action.name).swift", isDirectory: false)
-        guard true == self.helpers.createFile(atPath: path, withContents: action.implementation) else {
-            return nil
-        }
-        return path
+    func makeAction(_ action: Action, forState state: State, inMachine machine: Machine) -> FileWrapper? {
+        create("State_" + state.name + "_" + action.name + ".swift", contents: action.implementation)
     }
 
-    func makeTransition(_ transition: Transition, withId id: Int, inState state: State, inMachine machine: Machine) -> URL? {
-        let path = machine.filePath.appendingPathComponent("State_\(state.name)_Transition_\(id).expr", isDirectory: false)
-        guard true == self.helpers.createFile(atPath: path, withContents: transition.condition ?? "") else {
-            return nil
-        }
-        return path
+    func makeTransition(_ transition: Transition, withId id: Int, inState state: State, inMachine machine: Machine) -> FileWrapper? {
+        create("State_" + state.name + "_Transition_" + String(id) + ".expr", contents: transition.condition ?? "")
     }
 
-    func makeTransitionList(forState state: State, inMachine machine: Machine) -> URL? {
-        let path = machine.filePath.appendingPathComponent("State_\(state.name)_Transitions", isDirectory: false)
+    func makeTransitionList(forState state: State, inMachine machine: Machine) -> FileWrapper? {
         let str: String
         if let first = state.transitions.first {
             str = state.transitions.dropFirst().reduce(first.target) { "\($0)\n" + $1.target }
         } else {
             str = ""
         }
-        guard true == self.helpers.createFile(atPath: path, withContents: str) else {
-            return nil
-        }
-        return path
+        return create("State_" + state.name + "_Transitions", contents: str)
     }
 
-    func makeStateList(forMachine machine: Machine) -> URL? {
-        let path = machine.filePath.appendingPathComponent("States", isDirectory: false)
+    func makeStateList(forMachine machine: Machine) -> FileWrapper? {
         let str: String
         if let first = machine.states.first {
             str = machine.states.dropFirst().reduce(first.name) { "\($0)\n" + $1.name }
         } else {
             str = ""
         }
-        guard true == self.helpers.createFile(atPath: path, withContents: str) else {
-            return nil
-        }
-        return path
+        return create("States", contents: str)
     }
 
-    func makeExternalVariables(forMachine machine: Machine) -> URL? {
-        return self.helpers.createFile(
-            "\(machine.name)_ExternalVariables.swift",
-            inDirectory: machine.filePath,
-            withContents: machine.externalVariables.lazy.map {
+    func makeExternalVariables(forMachine machine: Machine) -> FileWrapper? {
+        create(
+            "ExternalVariables.swift",
+            contents: machine.externalVariables.lazy.map {
                 self.varHelpers.makeDeclarationWithAvailableAssignment(forVariable: $0)
-            }.combine("") { $0 + "\n" + $1 }
+            }.joined(separator: "\n")
         )
     }
 
-    func makeModelFile(forMachine machine: Machine, withModel model: Model) -> URL? {
-        let path = machine.filePath.appendingPathComponent("model.json", isDirectory: false)
+    func makeModelFile(forMachine machine: Machine, withModel model: Model) -> FileWrapper? {
         let dict: [String: Any] = [
             "actions": model.actions
         ]
         guard
             let json = self.encode(json: dict),
-            let str = String(data: json, encoding: .utf8),
-            true == self.helpers.createFile(atPath: path, withContents: str)
+            let str = String(data: json, encoding: .utf8)
         else {
             return nil
         }
-        return path
+        return create("model.json", contents: str)
     }
 
-    func makeDependenciesFile(named name: String, forMachine machine: Machine, dependencies: [Machine.Dependency]) -> URL? {
-        let path = machine.filePath.appendingPathComponent(name, isDirectory: false)
+    func makeDependenciesFile(named name: String, forMachine machine: Machine, dependencies: [Machine.Dependency]) -> FileWrapper? {
         let str: String = dependencies.map {
-            let relative = $0.filePath.relativePath
-            return ($0.name.map { $0 + " -> " } ?? "") + (relative.isEmpty ? $0.filePath.path : relative)
+            ($0.name.map { $0 + " -> " } ?? "") + $0.pathComponent
         }.joined(separator: "\n")
-        guard self.helpers.createFile(atPath: path, withContents: str) else {
-            return nil
-        }
-        return path
+        return create(name, contents: str)
     }
 
-    func makeParametersFile(forMachine machine: Machine) -> URL? {
+    func makeParametersFile(forMachine machine: Machine) -> FileWrapper? {
         guard
             let parameters = machine.parameters,
-            let parametersPath = self.helpers.createFile(
-                machine.name + "_Parameters.swift",
-                inDirectory: machine.filePath,
-                withContents: parameters.reduce("", {
-                    $0 + "\n" + self.varHelpers.makeDeclarationWithAvailableAssignment(forVariable: $1)
-                })
+            let parametersPath = create(
+                "Parameters.swift",
+                contents: parameters.lazy.map {
+                    self.varHelpers.makeDeclarationWithAvailableAssignment(forVariable: $0)
+                }.joined(separator: "\n")
             )
         else {
             return nil

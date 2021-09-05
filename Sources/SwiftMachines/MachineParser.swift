@@ -85,43 +85,32 @@ public final class MachineParser: ErrorContainer {
         }
         return result
     }
-
-    public func parseMachine(atPath path: String) -> Machine? {
-        let realPath = NSString(string: path).standardizingPath
-        let machineDir = URL(fileURLWithPath: realPath, isDirectory: true).resolvingSymlinksInPath()
-        if let machine = self.cache[machineDir] {
-            return machine
-        }
-        if (self.processing.contains(machineDir)) {
-            self.errors.append("Recursive Machine detected when attempting to load: \(path).  Make sure you do not have cycles in your submachines!")
-            return nil
-        }
-        self.processing.insert(machineDir)
+    
+    public func parseMachine(_ wrapper: FileWrapper) -> Machine? {
         guard
-            let model = self.parseModelFromMachine(atPath: machineDir),
+            let model = self.parseModelFromMachine(wrapper),
             let actions = model?.actions ?? .some(["onEntry", "onExit", "main"]),
-            let name = self.fetchMachineName(fromPath: machineDir),
-            let externalVariables = self.parseExternalVariablesFromMachine(atPath: machineDir, withName: name),
-            let packageDependencies = self.parsePackageDependenciesFromMachine(atPath: machineDir),
-            let swiftIncludeSearchPaths = self.parseSwiftIncludeSearchPathsFromMachine(atPath: machineDir),
-            let includeSearchPaths = self.parseIncludeSearchPathsFromMachine(atPath: machineDir),
-            let libSearchPaths = self.parseLibSearchPathsFromMachine(atPath: machineDir),
-            let imports = self.parseMachineImportsFromMachine(atPath: machineDir, withName: name),
-            let vars = self.parseMachineVarsFromMachine(atPath: machineDir, withName: name),
-            let parameters = self.parseMachineParametersFromMachine(atPath: machineDir, withName: name),
-            let returnType = self.parseMachineReturnTypeFromMachine(atPath: machineDir, withName: name),
-            let (callableMachines, invocableMachines, submachines) = self.parseAllDependencies(forMachineAtPath: machineDir, atPath: machineDir),
-            let states = self.parseStatesFromMachine(atPath: machineDir, withActions: actions, externalVariables: externalVariables),
-            let initialState = states.first,
-            let includes = self.parseMachineBridgingHeaderFromMachine(atPath: machineDir, withName: name)
+            let name = self.fetchMachineName(from: wrapper.filename),
+            let externalVariables = self.parseExternalVariablesFromMachine(wrapper, withName: name),
+            let packageDependencies = self.parsePackageDependenciesFromMachine(wrapper),
+            let swiftIncludeSearchPaths = self.parseSwiftIncludeSearchPathsFromMachine(wrapper),
+            let includeSearchPaths = self.parseIncludeSearchPathsFromMachine(wrapper),
+            let libSearchPaths = self.parseLibSearchPathsFromMachine(wrapper),
+            let imports = self.parseMachineImportsFromMachine(wrapper, withName: name),
+            let vars = self.parseMachineVarsFromMachine(wrapper, withName: name),
+            let parameters = self.parseMachineParametersFromMachine(wrapper, withName: name),
+            let returnType = self.parseMachineReturnTypeFromMachine(wrapper, withName: name),
+            let (callableMachines, invocableMachines, submachines) = self.parseAllDependenciesFromMachine(wrapper),
+            let states = self.parseStatesFromMachine(wrapper, withActions: actions, externalVariables: externalVariables),
+            !states.isEmpty,
+            let includes = self.parseMachineBridgingHeaderFromMachine(wrapper, withName: name)
         else {
-            self.processing.remove(machineDir)
             return nil
         }
+        let initialState = states[0]
         let suspendState = states.lazy.filter { "Suspend" == $0.name }.first
         let machine = Machine(
             name: name,
-            filePath: machineDir,
             externalVariables: externalVariables,
             packageDependencies: packageDependencies,
             swiftIncludeSearchPaths: swiftIncludeSearchPaths,
@@ -140,42 +129,76 @@ public final class MachineParser: ErrorContainer {
             callableMachines: callableMachines,
             invocableMachines: invocableMachines
         )
-        self.cache[machineDir] = machine
-        self.processing.remove(machineDir)
         return machine
     }
+    
+    public func parseMachine(at directory: URL) -> Machine? {
+        parseMachine(atPath: directory.path)
+    }
 
-    private func fetchMachineName(fromPath path: URL) -> String? {
-        let lastComponent = path.lastPathComponent
-        if (true == lastComponent.isEmpty) {
+    public func parseMachine(atPath path: String) -> Machine? {
+        let realPath = NSString(string: path).standardizingPath
+        let machineDir = URL(fileURLWithPath: realPath, isDirectory: true).resolvingSymlinksInPath()
+        if let machine = self.cache[machineDir] {
+            return machine
+        }
+        let wrapper: FileWrapper
+        do {
+            wrapper = try FileWrapper(url: machineDir, options: .immediate)
+        } catch let e {
+            self.errors.append(e.localizedDescription)
             return nil
         }
-        return lastComponent.components(separatedBy: ".machine").first
-    }
-
-    private func parseExternalVariablesFromMachine(atPath path: URL, withName name: String) -> [Variable]? {
-        let externalVariablesPath = path.appendingPathComponent("\(name)_ExternalVariables.swift", isDirectory: false)
-        return self.parseExternalVariables(fromPath: externalVariablesPath)
+        guard let machine = parseMachine(wrapper) else {
+            return nil
+        }
+        self.cache[machineDir] = machine
+        return machine
     }
     
-    private func parseExternalVariables(fromPath path: URL) -> [Variable]? {
-        guard
-            let str = self.read(path),
-            let vars = self.varParser.parse(fromString: str)
-        else {
-            self.errors.append("Unable to read \(path)")
+    private func wrapper(named name: String, in wrapper: FileWrapper) -> FileWrapper? {
+        guard let file = wrapper.fileWrappers?[name] else {
+            self.errors.append("Unable to read contents of \(name)")
+            return nil
+        }
+        return file
+    }
+    
+    private func data(ofFile file: String, in wrapper: FileWrapper) -> Data? {
+        self.wrapper(named: file, in: wrapper).flatMap {
+            $0.regularFileContents
+        }
+    }
+    
+    private func read(file name: String, in wrapper: FileWrapper) -> String? {
+        return self.wrapper(named: name, in: wrapper).flatMap {
+            self.read($0)
+        }
+    }
+
+    private func fetchMachineName(from fileName: String?) -> String? {
+        guard let fileName = fileName else {
+            return nil
+        }
+        if (true == fileName.isEmpty) {
+            return nil
+        }
+        return fileName.components(separatedBy: ".machine").first
+    }
+
+    private func parseExternalVariablesFromMachine(_ wrapper: FileWrapper, withName name: String) -> [Variable]? {
+        guard let str = read(file: "ExternalVariables.swift", in: wrapper) else {
+            return nil
+        }
+        guard let vars = self.varParser.parse(fromString: str) else {
             return nil
         }
         return vars
     }
     
-    private func parsePackageDependenciesFromMachine(atPath path: URL) -> [PackageDependency]? {
-        let filePath = path.appendingPathComponent("packageDependencies.json", isDirectory: false)
-        let data: Data
-        do {
-            data = try Data(contentsOf: filePath)
-        } catch {
-            return []
+    private func parsePackageDependenciesFromMachine(_ wrapper: FileWrapper) -> [PackageDependency]? {
+        guard let data = data(ofFile: "packageDependencies.json", in: wrapper) else {
+            return nil
         }
         let packageDependencies: [PackageDependency]
         do {
@@ -187,104 +210,87 @@ public final class MachineParser: ErrorContainer {
         return packageDependencies
     }
 
-    private func parseSwiftIncludeSearchPathsFromMachine(atPath path: URL) -> [String]? {
-        let includesPath = path.appendingPathComponent("SwiftIncludePath", isDirectory: false)
-        guard let paths = self.read(includesPath) else {
-            self.errors.append("Unable to read \(includesPath.path)")
+    private func parseSwiftIncludeSearchPathsFromMachine(_ wrapper: FileWrapper) -> [String]? {
+        guard let paths = read(file: "SwiftIncludePath", in: wrapper) else {
             return nil
         }
         let lines = paths.components(separatedBy: CharacterSet.newlines)
         return Array(lines.lazy.filter( { false == $0.isEmpty }))
     }
 
-    private func parseIncludeSearchPathsFromMachine(atPath path: URL) -> [String]? {
-        let includesPath = path.appendingPathComponent("IncludePath", isDirectory: false)
-        guard let paths = self.read(includesPath) else {
-            self.errors.append("Unable to read \(includesPath.path)")
+    private func parseIncludeSearchPathsFromMachine(_ wrapper: FileWrapper) -> [String]? {
+        guard let paths = read(file: "IncludePath", in: wrapper) else {
             return nil
         }
         let lines = paths.components(separatedBy: CharacterSet.newlines)
         return Array(lines.lazy.filter( { false == $0.isEmpty }))
     }
 
-    private func parseLibSearchPathsFromMachine(atPath path: URL) -> [String]? {
-        let libPath = path.appendingPathComponent("LibPath", isDirectory: false)
-        guard let paths = self.read(libPath) else {
-            self.errors.append("Unable to read \(libPath.path)")
+    private func parseLibSearchPathsFromMachine(_ wrapper: FileWrapper) -> [String]? {
+        guard let paths = read(file: "LibPath", in: wrapper) else {
             return nil
         }
         let lines = paths.components(separatedBy: CharacterSet.newlines)
         return Array(lines.lazy.filter( { false == $0.isEmpty }))
     }
 
-    private func parseMachineImportsFromMachine(atPath path: URL, withName name: String) -> String? {
-        let importsPath = path.appendingPathComponent("\(name)_Imports.swift", isDirectory: false)
-        guard
-            let imports = self.read(importsPath)
-        else {
-            self.errors.append("Unable to read \(importsPath.path)")
+    private func parseMachineImportsFromMachine(_ wrapper: FileWrapper, withName name: String) -> String? {
+        read(file: "Imports.swift", in: wrapper)
+    }
+
+    private func parseMachineBridgingHeaderFromMachine(_ wrapper: FileWrapper, withName name: String) -> String?? {
+        .some(read(file: "Bridging-Header.h", in: wrapper))
+    }
+
+    private func parseMachineVarsFromMachine(_ wrapper: FileWrapper, withName name: String) -> [Variable]? {
+        let fileName = "Vars.swift"
+        guard let str = read(file: "Vars.swift", in: wrapper) else {
             return nil
         }
-        return imports
-    }
-
-    private func parseMachineBridgingHeaderFromMachine(atPath path: URL, withName name: String) -> String?? {
-        let headerPath = path.appendingPathComponent("\(name)-Bridging-Header.h", isDirectory: false)
-        return .some(self.read(headerPath))
-    }
-
-    private func parseMachineVarsFromMachine(atPath path: URL, withName name: String) -> [Variable]? {
-        let varsPath = path.appendingPathComponent("\(name)_Vars.swift")
-        guard
-            let str = self.read(varsPath),
-            let vars = self.varParser.parse(fromString: str)
-        else {
-            self.errors.append("Unable to read \(varsPath.path)")
+        guard let vars = self.varParser.parse(fromString: str) else {
+            self.errors.append("Unable to parse \(fileName).")
             return nil
         }
         return vars 
     }
 
-    private func parseMachineParametersFromMachine(atPath path: URL, withName name: String) -> [Variable]?? {
-        let parametersPath = path.appendingPathComponent("\(name)_Parameters.swift")
-        guard let str = self.read(parametersPath) else {
+    private func parseMachineParametersFromMachine(_ wrapper: FileWrapper, withName name: String) -> [Variable]?? {
+        let fileName = "Parameters.swift"
+        guard let str = self.read(file: fileName, in: wrapper) else {
             return .some(.none)
         }
         guard let vars = self.varParser.parse(fromString: str) else {
-            self.errors.append("Unable to parse \(parametersPath.path)")
+            self.errors.append("Unable to parse \(fileName)")
             return .none
         }
         return .some(.some(vars))
     }
 
-    private func parseMachineReturnTypeFromMachine(atPath path: URL, withName name: String) -> String?? {
-        let returnTypePath = path.appendingPathComponent("\(name)_ReturnType.swift")
-        guard let str = self.read(returnTypePath) else {
+    private func parseMachineReturnTypeFromMachine(_ wrapper: FileWrapper, withName name: String) -> String?? {
+        guard let str = self.read(file: "ReturnType.swift", in: wrapper) else {
             return .some(.none)
         }
         return .some(.some(str))
     }
 
-    private func parseModelFromMachine(atPath path: URL) -> Model?? {
-        let modelPath = path.appendingPathComponent("model.json", isDirectory: false)
-        let importsPath = path.appendingPathComponent("Ringlet_Imports.swift", isDirectory: false)
-        let varsPath = path.appendingPathComponent("Ringlet_Vars.swift", isDirectory: false)
-        let executePath = path.appendingPathComponent("Ringlet_Execute.swift", isDirectory: false)
+    private func parseModelFromMachine(_ wrapper: FileWrapper) -> Model?? {
+        let modelFile = "model.json"
         guard 
-            let modelData = try? Data(contentsOf: modelPath)
+            let modelData = data(ofFile: modelFile, in: wrapper)
         else {
             return .some(.none)
         }
+        let executeFile = "Ringlet_Execute.swift"
         guard
-            let imports = self.attempt("Unable to read Ringlet_Imports.swift", { self.read(importsPath) }),
-            let varsRaw = self.attempt("Unable to read Ringlet_Vars.swift", { self.read(varsPath) }),
+            let imports = self.attempt("Unable to read Ringlet_Imports.swift", { self.read(file: "Ringlet_Imports.swift", in: wrapper) }),
+            let varsRaw = self.attempt("Unable to read Ringlet_Vars.swift", { self.read(file: "Ringlet_Vars.swift", in: wrapper) }),
             let vars = self.attempt("Unable to parse vars from Ringlet_Vars.swift", { self.varParser.parse(fromString: varsRaw) }),
-            let execute = self.attempt("Unable to read Ringlet_Execute.swift", { self.read(executePath) })
+            let execute = self.attempt("Unable to read Ringlet_Execute.swift", { self.read(file: "Ringlet_Execute.swift", in: wrapper) })
         else {
             return .none
         }
         if true == execute.isEmpty {
-            self.errors.append("\(executePath.path) must not be empty")
+            self.errors.append("\(executeFile) must not be empty")
             return .none
         }
         guard
@@ -292,11 +298,11 @@ public final class MachineParser: ErrorContainer {
             let model = modelJson as? [String: Any],
             let actions = model["actions"] as? [String]
         else {
-            self.errors.append("Unable to parse \(modelPath.path)")
+            self.errors.append("Unable to parse \(modelFile)")
             return .none
         }
         if (true == actions.isEmpty) {
-            self.errors.append("There must be at least one action in \(modelPath.path)")
+            self.errors.append("There must be at least one action in \(modelFile)")
             return .none
         }
         return .some(Model(
@@ -309,14 +315,18 @@ public final class MachineParser: ErrorContainer {
         ))
     }
 
-    private func parseAllDependencies(forMachineAtPath machineDir: URL, atPath path: URL) -> ([Machine.Dependency], [Machine.Dependency], [Machine.Dependency])? {
-        let callablesPath = path.appendingPathComponent("SyncMachines", isDirectory: false)
-        let invocablesPath = path.appendingPathComponent("AsyncMachines", isDirectory: false)
-        let submachinesPath = path.appendingPathComponent("SubMachines", isDirectory: false)
+    private func parseAllDependenciesFromMachine(_ wrapper: FileWrapper) -> ([Machine.Dependency], [Machine.Dependency], [Machine.Dependency])? {
         guard
-            let callables = self.parseDependencies(forMachineAtPath: machineDir, atPath: callablesPath),
-            let invocables = self.parseDependencies(forMachineAtPath: machineDir, atPath: invocablesPath),
-            let submachines = self.parseDependencies(forMachineAtPath: machineDir, atPath: submachinesPath)
+            let syncMachines = read(file: "SyncMachines", in: wrapper),
+            let asyncMachines = read(file: "ASyncMachines", in: wrapper),
+            let subMachines = read(file: "SubMachines", in: wrapper)
+        else {
+            return nil
+        }
+        guard
+            let callables = self.parseDependencies(syncMachines),
+            let invocables = self.parseDependencies(asyncMachines),
+            let submachines = self.parseDependencies(subMachines)
         else {
             self.errors.append("Unable to parse dependencies.")
             return nil
@@ -324,11 +334,7 @@ public final class MachineParser: ErrorContainer {
         return (callables, invocables, submachines)
     }
     
-    private func parseDependencies(forMachineAtPath machineDir: URL, atPath path: URL) -> [Machine.Dependency]? {
-        guard let str = try? String(contentsOf: path) else {
-            self.errors.append("Unable to read file at path \(path)")
-            return nil
-        }
+    private func parseDependencies(_ str: String) -> [Machine.Dependency]? {
         let lines = str.components(separatedBy: .newlines).lazy.map { $0.trimmingCharacters(in: .whitespaces)}.filter { $0 != "" }
         guard let dependencies: [Machine.Dependency] = lines.failMap({
             let components = $0.components(separatedBy: "->")
@@ -344,28 +350,25 @@ public final class MachineParser: ErrorContainer {
                 name = first
                 filePath = components.dropFirst().joined(separator: "->")
             }
-            let fileURL: URL
-            if #available(OSX 10.11, *) {
-                fileURL = URL(fileURLWithPath: filePath.trimmingCharacters(in: .whitespaces), isDirectory: false, relativeTo: machineDir)
-            } else {
-                fileURL = URL(fileURLWithPath: filePath.trimmingCharacters(in: .whitespaces), isDirectory: false)
-            }
-            guard let machineName = fileURL.lastPathComponent.components(separatedBy: ".").first else {
-                self.errors.append("Unable to parse machine name from file path \(fileURL.path)")
+            guard let dependency = Machine.Dependency(
+                    name: name?.trimmingCharacters(in: .whitespaces),
+                    pathComponent: filePath.trimmingCharacters(in: .whitespaces)
+                )
+            else {
+                self.errors.append("Unable to parse dependency \($0)")
                 return nil
             }
-            return Machine.Dependency(name: name?.trimmingCharacters(in: .whitespaces), machineName: machineName.trimmingCharacters(in: .whitespaces), filePath: fileURL)
+            return dependency
         }) else {
             return nil
         }
         return dependencies
     }
 
-    private func parseStatesFromMachine(atPath path: URL, withActions actions: [String], externalVariables: [Variable]) -> [State]? {
+    private func parseStatesFromMachine(_ wrapper: FileWrapper, withActions actions: [String], externalVariables: [Variable]) -> [State]? {
         let externalVariables: [String: Variable] = Dictionary(uniqueKeysWithValues: externalVariables.lazy.map { ($0.label, $0) })
-        let statesPath = path.appendingPathComponent("States", isDirectory: false)
         guard
-            let statesContents = self.read(statesPath)
+            let statesContents = self.read(file: "States", in: wrapper)
         else {
             self.errors.append("Unable to read States")
             return nil
@@ -380,7 +383,7 @@ public final class MachineParser: ErrorContainer {
             return nil
         }
         guard let states = statesLines.failMap({
-            self.parseStateFromMachine(atPath: path, withName: $0, andActions: actions, externalVariables: externalVariables)
+            self.parseStateFromMachine(wrapper, withName: $0, andActions: actions, externalVariables: externalVariables)
         })
         else {
             return nil
@@ -388,21 +391,20 @@ public final class MachineParser: ErrorContainer {
         return Array(states)
     }
 
-    private func parseStateFromMachine(atPath path: URL, withName name: String, andActions actionNames: [String], externalVariables: [String: Variable]) -> State? {
+    private func parseStateFromMachine(_ wrapper: FileWrapper, withName name: String, andActions actionNames: [String], externalVariables: [String: Variable]) -> State? {
         let base = "State_\(name)"
-        let importsPath = path.appendingPathComponent("\(base)_Imports.swift", isDirectory: false)
-        let externalVariablesPath = path.appendingPathComponent("\(base)_ExternalVariables.swift", isDirectory: false)
-        let varsPath = path.appendingPathComponent("\(base)_Vars.swift", isDirectory: false)
+        let importsName = base + "_Imports.swift"
+        let varsName = base + "_Vars.swift"
         guard
-            let imports = self.attempt("Unable to read \(importsPath)", { self.read(importsPath) }),
-            let varsRaw = self.attempt("Unable to read \(varsPath)", { self.read(varsPath) }),
-            let vars = self.attempt("Unable to parse vars in \(varsPath)", { self.varParser.parse(fromString: varsRaw) })
+            let imports = self.attempt("Unable to read \(importsName)", { self.read(file: importsName, in: wrapper) }),
+            let varsRaw = self.attempt("Unable to read \(varsName)", { self.read(file: varsName, in: wrapper) }),
+            let vars = self.attempt("Unable to parse vars in \(varsName)", { self.varParser.parse(fromString: varsRaw) })
         else {
             return nil
         }
         
         let extVars: [Variable]?
-        if let externalVariablesRaw = self.read(externalVariablesPath) {
+        if let externalVariablesRaw = self.read(file: base + "_ExternalVariables.swift", in: wrapper) {
             guard let externalVariables = externalVariablesRaw.components(separatedBy: .newlines).map({$0.trimmingCharacters(in: .whitespaces)}).filter({ $0 != "" }).failMap({ external in
                 return self.attempt("Unable to location external variable \(external)", { externalVariables[external] })
             })
@@ -414,13 +416,13 @@ public final class MachineParser: ErrorContainer {
             extVars = nil
         }
         guard let actions = actionNames.failMap({
-            self.parseActionFromMachine(atPath: path, forState: name, withName: $0)
+            self.parseActionFromMachine(wrapper, forState: name, withName: $0)
         })
         else {
             return nil
         }
         guard
-            let transitions = self.parseTransitionsFromMachine(atPath: path, forState: name)
+            let transitions = self.parseTransitionsFromMachine(wrapper, forState: name)
         else {
             return nil
         }
@@ -434,23 +436,19 @@ public final class MachineParser: ErrorContainer {
         )
     }
 
-    private func parseActionFromMachine(atPath path: URL, forState state: String, withName name: String) -> Action? {
-        let actionPath = path.appendingPathComponent("State_\(state)_\(name).swift", isDirectory: false)
-        guard
-            let implementation = self.read(actionPath)
-        else {
-            self.errors.append("Unable to read \(actionPath.path)")
+    private func parseActionFromMachine(_ wrapper: FileWrapper, forState state: String, withName name: String) -> Action? {
+        let actionName = "State_" + state + "_" + name + ".swift"
+        guard let implementation = self.read(file: actionName, in: wrapper) else {
+            self.errors.append("Unable to read \(actionName)")
             return nil
         }
         return Action(name: name, implementation: implementation)
     }
 
-    private func parseTransitionsFromMachine(atPath path: URL, forState state: String) -> [Transition]? {
-        let transitionsPath = path.appendingPathComponent("State_\(state)_Transitions", isDirectory: false)
-        guard
-            let transitionsContents = self.read(transitionsPath)
-        else {
-            self.errors.append("Unable to read \(transitionsPath.path)")
+    private func parseTransitionsFromMachine(_ wrapper: FileWrapper, forState state: String) -> [Transition]? {
+        let transitionName = "State_\(state)_Transitions"
+        guard let transitionsContents = self.read(file: transitionName, in: wrapper) else {
+            self.errors.append("Unable to read \(transitionName)")
             return nil
         }
         let transitionsLines = Array(transitionsContents.trimmingCharacters(
@@ -463,7 +461,7 @@ public final class MachineParser: ErrorContainer {
         for i in 0..<transitionsLines.count {
             guard 
                 let transition = self.parseTransitionFromMachine(
-                    atPath: path,
+                    wrapper,
                     forState: state,
                     andTransition: i,
                     targeting: transitionsLines[i]
@@ -476,22 +474,24 @@ public final class MachineParser: ErrorContainer {
         return transitions
     }
 
-    private func parseTransitionFromMachine(atPath path: URL, forState state: String, andTransition id: Int, targeting target: String) -> Transition? {
-        let transitionPath = path.appendingPathComponent("State_\(state)_Transition_\(id).expr", isDirectory: false)
-        guard
-            let condition = self.read(transitionPath)
-        else {
-            self.errors.append("Unable to read \(transitionPath.path)")
+    private func parseTransitionFromMachine(_ wrapper: FileWrapper, forState state: String, andTransition id: Int, targeting target: String) -> Transition? {
+        let file = "State_\(state)_Transition_\(id).expr"
+        guard let condition = self.read(file: file, in: wrapper) else {
+            self.errors.append("Unable to read \(file)")
             return nil
         }
         return Transition(target: target, condition: true == condition.isEmpty ? nil : condition)
     }
 
-    private func read(_ path: URL) -> String? {
-        return try? String(
-            contentsOf: path,
-            encoding: String.Encoding.utf8
-        ).trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+    private func read(_ wrapper: FileWrapper) -> String? {
+        guard
+            let data = wrapper.regularFileContents,
+            let str = String(data: data, encoding: .utf8)
+        else {
+            self.errors.append("Unable to read contents of file \(wrapper.filename ?? "")")
+            return nil
+        }
+        return str.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
     }
 
 }
