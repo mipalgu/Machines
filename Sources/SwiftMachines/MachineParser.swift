@@ -86,32 +86,11 @@ public final class MachineParser: ErrorContainer {
         return result
     }
     
-    public func parseMachine(at directory: URL) -> Machine? {
-        parseMachine(atPath: directory.path)
-    }
-
-    public func parseMachine(atPath path: String) -> Machine? {
-        let realPath = NSString(string: path).standardizingPath
-        let machineDir = URL(fileURLWithPath: realPath, isDirectory: true).resolvingSymlinksInPath()
-        if let machine = self.cache[machineDir] {
-            return machine
-        }
-        if (self.processing.contains(machineDir)) {
-            self.errors.append("Recursive Machine detected when attempting to load: \(path).  Make sure you do not have cycles in your submachines!")
-            return nil
-        }
-        self.processing.insert(machineDir)
-        let wrapper: FileWrapper
-        do {
-            wrapper = try FileWrapper(url: machineDir, options: .immediate)
-        } catch let e {
-            self.errors.append(e.localizedDescription)
-            return nil
-        }
+    public func parseMachine(_ wrapper: FileWrapper) -> Machine? {
         guard
             let model = self.parseModelFromMachine(wrapper),
             let actions = model?.actions ?? .some(["onEntry", "onExit", "main"]),
-            let name = self.fetchMachineName(from: machineDir),
+            let name = self.fetchMachineName(from: wrapper.filename),
             let externalVariables = self.parseExternalVariablesFromMachine(wrapper, withName: name),
             let packageDependencies = self.parsePackageDependenciesFromMachine(wrapper),
             let swiftIncludeSearchPaths = self.parseSwiftIncludeSearchPathsFromMachine(wrapper),
@@ -121,12 +100,11 @@ public final class MachineParser: ErrorContainer {
             let vars = self.parseMachineVarsFromMachine(wrapper, withName: name),
             let parameters = self.parseMachineParametersFromMachine(wrapper, withName: name),
             let returnType = self.parseMachineReturnTypeFromMachine(wrapper, withName: name),
-            let (callableMachines, invocableMachines, submachines) = self.parseAllDependenciesFromMachine(wrapper, in: machineDir),
+            let (callableMachines, invocableMachines, submachines) = self.parseAllDependenciesFromMachine(wrapper),
             let states = self.parseStatesFromMachine(wrapper, withActions: actions, externalVariables: externalVariables),
             !states.isEmpty,
             let includes = self.parseMachineBridgingHeaderFromMachine(wrapper, withName: name)
         else {
-            self.processing.remove(machineDir)
             return nil
         }
         let initialState = states[0]
@@ -151,8 +129,30 @@ public final class MachineParser: ErrorContainer {
             callableMachines: callableMachines,
             invocableMachines: invocableMachines
         )
+        return machine
+    }
+    
+    public func parseMachine(at directory: URL) -> Machine? {
+        parseMachine(atPath: directory.path)
+    }
+
+    public func parseMachine(atPath path: String) -> Machine? {
+        let realPath = NSString(string: path).standardizingPath
+        let machineDir = URL(fileURLWithPath: realPath, isDirectory: true).resolvingSymlinksInPath()
+        if let machine = self.cache[machineDir] {
+            return machine
+        }
+        let wrapper: FileWrapper
+        do {
+            wrapper = try FileWrapper(url: machineDir, options: .immediate)
+        } catch let e {
+            self.errors.append(e.localizedDescription)
+            return nil
+        }
+        guard let machine = parseMachine(wrapper) else {
+            return nil
+        }
         self.cache[machineDir] = machine
-        self.processing.remove(machineDir)
         return machine
     }
     
@@ -176,12 +176,14 @@ public final class MachineParser: ErrorContainer {
         }
     }
 
-    private func fetchMachineName(from url: URL) -> String? {
-        let lastComponent = url.lastPathComponent
-        if (true == lastComponent.isEmpty) {
+    private func fetchMachineName(from fileName: String?) -> String? {
+        guard let fileName = fileName else {
             return nil
         }
-        return lastComponent.components(separatedBy: ".machine").first
+        if (true == fileName.isEmpty) {
+            return nil
+        }
+        return fileName.components(separatedBy: ".machine").first
     }
 
     private func parseExternalVariablesFromMachine(_ wrapper: FileWrapper, withName name: String) -> [Variable]? {
@@ -313,7 +315,7 @@ public final class MachineParser: ErrorContainer {
         ))
     }
 
-    private func parseAllDependenciesFromMachine(_ wrapper: FileWrapper, in machineDir: URL) -> ([Machine.Dependency], [Machine.Dependency], [Machine.Dependency])? {
+    private func parseAllDependenciesFromMachine(_ wrapper: FileWrapper) -> ([Machine.Dependency], [Machine.Dependency], [Machine.Dependency])? {
         guard
             let syncMachines = read(file: "SyncMachines", in: wrapper),
             let asyncMachines = read(file: "ASyncMachines", in: wrapper),
@@ -322,9 +324,9 @@ public final class MachineParser: ErrorContainer {
             return nil
         }
         guard
-            let callables = self.parseDependencies(syncMachines, in: machineDir),
-            let invocables = self.parseDependencies(asyncMachines, in: machineDir),
-            let submachines = self.parseDependencies(subMachines, in: machineDir)
+            let callables = self.parseDependencies(syncMachines),
+            let invocables = self.parseDependencies(asyncMachines),
+            let submachines = self.parseDependencies(subMachines)
         else {
             self.errors.append("Unable to parse dependencies.")
             return nil
@@ -332,7 +334,7 @@ public final class MachineParser: ErrorContainer {
         return (callables, invocables, submachines)
     }
     
-    private func parseDependencies(_ str: String, in machineDir: URL) -> [Machine.Dependency]? {
+    private func parseDependencies(_ str: String) -> [Machine.Dependency]? {
         let lines = str.components(separatedBy: .newlines).lazy.map { $0.trimmingCharacters(in: .whitespaces)}.filter { $0 != "" }
         guard let dependencies: [Machine.Dependency] = lines.failMap({
             let components = $0.components(separatedBy: "->")
