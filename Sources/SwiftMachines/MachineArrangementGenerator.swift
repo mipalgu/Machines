@@ -87,15 +87,15 @@ public final class MachineArrangementGenerator {
             self.errors.append("Unable to create arrangement directory")
             return nil
         }
-        guard let deps = self.createDependencies(arrangement.dependencies, atPath: arrangement.filePath.appendingPathComponent("Machines", isDirectory: false)) else {
+        guard let deps = self.createDependencies(arrangement.dependencies, machineDir: arrangement.filePath, atPath: arrangement.filePath.appendingPathComponent("Machines", isDirectory: false)) else {
             return nil
         }
         return deps
     }
     
-    private func createDependencies(_ dependencies: [Machine.Dependency], atPath url: URL) -> URL? {
+    private func createDependencies(_ dependencies: [Machine.Dependency], machineDir: URL, atPath url: URL) -> URL? {
         let str = dependencies.map {
-            let relativePath = $0.filePath.relativePathString(relativeto: url)
+            let relativePath = $0.filePath(relativeTo: machineDir).relativePathString(relativeto: url)
             if let name = $0.name {
                 return name + " -> " + relativePath
             }

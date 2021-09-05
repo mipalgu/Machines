@@ -86,7 +86,6 @@ public final class MachineAssemblerTests: XCTestCase {
         )
         let pingPong = Machine(
             name: "PingPong",
-            filePath: URL(fileURLWithPath: "/tmp/PingPong.machine", isDirectory: true),
             externalVariables: [],
             packageDependencies: [],
             swiftIncludeSearchPaths: [],
@@ -121,7 +120,12 @@ public final class MachineAssemblerTests: XCTestCase {
             callableMachines: [],
             invocableMachines: []
         )
-        XCTAssertNotNil(assembler.assemble(pingPong, inDirectory: pingPong.filePath))
+        let wrapper = assembler.assemble(
+            pingPong,
+            atDirectory: URL(fileURLWithPath: "/tmp/PingPong.machine", isDirectory: true),
+            inDirectory: URL(fileURLWithPath: "/tmp/PingPong.machine/.build", isDirectory: true)
+        )
+        XCTAssertNotNil(wrapper)
     }
     
 }

@@ -103,7 +103,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             .path
     }
 
-    public func assemble(_ machine: Machine, inDirectory directory: URL) -> (URL, FileWrapper)? {
+    public func assemble(_ machine: Machine, atDirectory machineDir: URL, inDirectory directory: URL) -> (URL, FileWrapper)? {
         if
             let data = try? Data(contentsOf: directory.appendingPathComponent("machine.json", isDirectory: false)),
             let previousMachine = try? JSONDecoder().decode(MachineToken<Machine>.self, from: data),
@@ -112,14 +112,14 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         {
             return (directory, buildDir)
         }
-        guard let wrapper = self.assemble(machine, isSubMachine: false) else {
+        guard let wrapper = self.assemble(machine, atDirectory: machineDir) else {
             return nil
         }
         return writeAssembledWrapper(wrapper, forMachine: machine, to: directory) ? (directory, wrapper) : nil
     }
     
-    public func assemble(_ machine: Machine) -> FileWrapper? {
-        self.assemble(machine, isSubMachine: false)
+    public func assemble(_ machine: Machine, atDirectory machineDir: URL) -> FileWrapper? {
+        self.assemble(machine, atDirectory: machineDir, isSubMachine: false)
     }
     
     public func writeAssembledWrapper(_ wrapper: FileWrapper, forMachine machine: Machine, to directory: URL) -> Bool {
@@ -144,7 +144,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         return true
     }
 
-    private func assemble(_ machine: Machine, isSubMachine: Bool) -> FileWrapper? {
+    private func assemble(_ machine: Machine, atDirectory machineDir: URL, isSubMachine: Bool) -> FileWrapper? {
         let errorMsg = "Unable to assemble machine \(machine.name)"
         let buildDir = FileWrapper(directoryWithFileWrappers: [:])
         guard
@@ -159,7 +159,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         bridgingPackageDir.addFileWrapper(bridgingPath)
         bridgingPackageDir.addFileWrapper(modulePath)
         guard
-            let factoryPath = self.makeFactory(forMachine: machine),
+            let factoryPath = self.makeFactory(forMachine: machine, atDirectory: machineDir),
             let fsmPath = self.makeFiniteStateMachine(fromMachine: machine)
         else {
             self.errors.append(errorMsg)
@@ -182,7 +182,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         guard
             let fsmVarsPath = self.makeFsmVars(forMachine: machine),
-            let statePaths = self.makeStates(forMachine: machine),
+            let statePaths = self.makeStates(forMachine: machine, atDirectory: machineDir),
             let transitionTypePath = self.makeTransition(forMachine: machine)
         else {
             self.errors.append(errorMsg)
@@ -228,7 +228,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         sourcesDir.addFileWrapper(srcDir)
         sourcesDir.preferredFilename = "Sources"
         guard
-            let package = self.makePackage(forMachine: machine, withAddedDependencies: []),
+            let package = self.makePackage(forMachine: machine, atDirectory: machineDir, withAddedDependencies: []),
             let gitignore = self.makePackageGitIgnore(),
             let tests = self.makeTests(forMachine: machine)
         else {
@@ -302,12 +302,12 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         return encode(inFile: "module.modulemap", contents: str)
     }
 
-    private func makePackage(forMachine machine: Machine, withAddedDependencies addedDependencies: [(URL)]) -> FileWrapper? {
+    private func makePackage(forMachine machine: Machine, atDirectory machineDir: URL, withAddedDependencies addedDependencies: [(URL)]) -> FileWrapper? {
         let mandatoryPackages: [String] = []
         let mandatoryProducts: [String] = []
         guard
             let constructedDependencies: [String] = machine.packageDependencies.failMap({
-                guard let url = URL(string: $0.url.replacingMachineVariables(forMachine: machine)) else {
+                guard let url = URL(string: $0.url.replacingMachineVariables(forMachine: machine, atDirectory: machineDir)) else {
                     self.errors.append("Malformed url in package dependency in machine \(machine.name): \($0.url)")
                     return nil
                 }
@@ -397,7 +397,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         return encode(inFile: "Invoker.swift", contents: str)
     }
 
-    private func makeFactory(forMachine machine: Machine) -> FileWrapper? {
+    private func makeFactory(forMachine machine: Machine, atDirectory machineDir: URL) -> FileWrapper? {
         var str = """
             import swiftfsm
             """
@@ -412,8 +412,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += self.makeFactoryFunction(forMachine: machine)
         str += "\n\n"
         guard let subFactory = (nil == machine.parameters ?
-            self.makeSubmachineFactoryFunction(forMachine: machine) :
-            self.makeParameterisedFactoryFunction(forMachine: machine))
+            self.makeSubmachineFactoryFunction(forMachine: machine, atDirectory: machineDir) :
+            self.makeParameterisedFactoryFunction(forMachine: machine, atDirectory: machineDir))
         else {
             return nil
         }
@@ -443,25 +443,25 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             """
     }
 
-    private func makeSubmachineFactoryFunction(forMachine machine: Machine) -> String? {
+    private func makeSubmachineFactoryFunction(forMachine machine: Machine, atDirectory machineDir: URL) -> String? {
         //let nameParam = "name" + (machine.submachines.isEmpty && machine.parameterisedMachines.isEmpty ? " _" : "")
         let fun = "public func make_submachine_\(machine.name)(name machineName: String, gateway: FSMGateway, clock: Timer, caller: FSM_ID) -> (AnyControllableFiniteStateMachine, [ShallowDependency]) {\n"
-        guard let content = self.makeFactoryContent(forMachine: machine, createParameterisedMachine: false) else {
+        guard let content = self.makeFactoryContent(forMachine: machine, atDirectory: machineDir, createParameterisedMachine: false) else {
             return nil
         }
         return fun + content + "}\n\n"
     }
     
-    private func makeParameterisedFactoryFunction(forMachine machine: Machine) -> String? {
+    private func makeParameterisedFactoryFunction(forMachine machine: Machine, atDirectory machineDir: URL) -> String? {
         //let nameParam = "name" + (machine.submachines.isEmpty && machine.parameterisedMachines.isEmpty ? " _" : "")
         let fun = "public func make_parameterised_\(machine.name)(name machineName: String, gateway: FSMGateway, clock: Timer, caller: FSM_ID) -> (AnyParameterisedFiniteStateMachine, [ShallowDependency]) {\n"
-        guard let content = self.makeFactoryContent(forMachine: machine, createParameterisedMachine: true) else {
+        guard let content = self.makeFactoryContent(forMachine: machine, atDirectory: machineDir, createParameterisedMachine: true) else {
             return nil
         }
         return fun + content + "}\n\n"
     }
     
-    private func makeFactoryContent(forMachine machine: Machine, createParameterisedMachine: Bool) -> String? {
+    private func makeFactoryContent(forMachine machine: Machine, atDirectory machineDir: URL, createParameterisedMachine: Bool) -> String? {
         var str = ""
         /*for v in machine.externalVariables {
          str += "    let wbds\n"
@@ -487,17 +487,18 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         if false == machine.parameterisedDependencies.isEmpty {
             str += "    // Parameterised Machines.\n"
             for m in machine.parameterisedDependencies {
-                let (parameterList, _) = self.makeParametersList(forMachine: m.machine)
-                let params = m.machine.parameters?.map { "\"" + $0.label + "\": " + $0.label } ?? []
+                let parameterisedMachine = m.machine(relativeTo: machineDir)
+                let (parameterList, _) = self.makeParametersList(forMachine: parameterisedMachine)
+                let params = parameterisedMachine.parameters?.map { "\"" + $0.label + "\": " + $0.label } ?? []
                 let dictionary = params.isEmpty ? "[:]" : "[" + params.combine("") { $0 + ", " + $1 } + "]"
                 str += "    let \(m.callName)MachineID = gateway.id(of: \"\(m.callName)\")\n"
                 if nil != machine.callables.first(where: { $0.callName == m.callName }) {
-                    str += "    func \(m.callName)(\(parameterList)) -> Promise<\(m.machine.returnType ?? "Void")> {\n"
+                    str += "    func \(m.callName)(\(parameterList)) -> Promise<\(parameterisedMachine.returnType ?? "Void")> {\n"
                     str += "        return gateway.call(\(m.callName)MachineID, withParameters: \(dictionary), caller: caller)\n"
                     str += "    }\n"
                 }
                 if nil != machine.invocables.first(where: { $0.callName == m.callName }) {
-                    str += "    func \(m.callName)Machine(\(parameterList)) -> Promise<\(m.machine.returnType ?? "Void")> {\n"
+                    str += "    func \(m.callName)Machine(\(parameterList)) -> Promise<\(parameterisedMachine.returnType ?? "Void")> {\n"
                     str += "        return gateway.invoke(\(m.callName)MachineID, withParameters: \(dictionary), caller: caller)\n"
                     str += "    }\n"
                 }
@@ -853,12 +854,12 @@ public final class MachineAssembler: Assembler, ErrorContainer {
     
     
 
-    private func makeStates(forMachine machine: Machine) -> [FileWrapper]? {
+    private func makeStates(forMachine machine: Machine, atDirectory machineDir: URL) -> [FileWrapper]? {
         var paths: [FileWrapper] = []
         paths.reserveCapacity(machine.states.count)
         for state in machine.states {
             guard
-                let statePath = self.makeState(state, forMachine: machine)
+                let statePath = self.makeState(state, forMachine: machine, atDirectory: machineDir)
             else {
                 return nil
             }
@@ -867,7 +868,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         return paths
     }
 
-    private func makeState(_ state: State, forMachine machine: Machine) -> FileWrapper? {
+    private func makeState(_ state: State, forMachine machine: Machine, atDirectory machineDir: URL) -> FileWrapper? {
         var str = "import swiftfsm\n"
         if let _ = machine.includes {
             str += "import \(machine.name)MachineBridging\n"
@@ -906,12 +907,14 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "    fileprivate var _\(machine.name): (\(parameterList)) -> Promise<\(machine.returnType ?? "Void")>\n"
         }
         for m in machine.callables {
-            let parameterList = m.machine.parameters?.lazy.map { $0.type }.combine("") { $0 + ", " + $1 } ?? ""
-            str += "    fileprivate var _\(m.callName): (\(parameterList)) -> Promise<\(m.machine.returnType ?? "Void")>\n"
+            let parameterisedMachine = m.machine(relativeTo: machineDir)
+            let parameterList = parameterisedMachine.parameters?.lazy.map { $0.type }.combine("") { $0 + ", " + $1 } ?? ""
+            str += "    fileprivate var _\(m.callName): (\(parameterList)) -> Promise<\(parameterisedMachine.returnType ?? "Void")>\n"
         }
         for m in machine.invocables {
-            let parameterList = m.machine.parameters?.lazy.map { $0.type }.combine("") { $0 + ", " + $1 } ?? ""
-            str += "    fileprivate var _\(m.callName)Machine: (\(parameterList)) -> Promise<\(m.machine.returnType ?? "Void")>\n"
+            let parameterisedMachine = m.machine(relativeTo: machineDir)
+            let parameterList = parameterisedMachine.parameters?.lazy.map { $0.type }.combine("") { $0 + ", " + $1 } ?? ""
+            str += "    fileprivate var _\(m.callName)Machine: (\(parameterList)) -> Promise<\(parameterisedMachine.returnType ?? "Void")>\n"
         }
         if (false == machine.parameterisedDependencies.isEmpty) {
             str += "\n"
@@ -935,12 +938,14 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             str += "        \(submachine.callName)Machine: @escaping () -> AnyControllableFiniteStateMachine,\n"
         }
         for m in machine.callables {
-            let parameterList = m.machine.parameters?.lazy.map { $0.type }.combine("") { $0 + ", " + $1 } ?? ""
-            str += "        \(m.callName): @escaping (\(parameterList)) -> Promise<\(m.machine.returnType ?? "Void")>,\n"
+            let parameterisedMachine = m.machine(relativeTo: machineDir)
+            let parameterList = parameterisedMachine.parameters?.lazy.map { $0.type }.combine("") { $0 + ", " + $1 } ?? ""
+            str += "        \(m.callName): @escaping (\(parameterList)) -> Promise<\(parameterisedMachine.returnType ?? "Void")>,\n"
         }
         for m in machine.invocables {
-            let parameterList = m.machine.parameters?.lazy.map { $0.type }.combine("") { $0 + ", " + $1 } ?? ""
-            str += "        \(m.callName)Machine: @escaping (\(parameterList)) -> Promise<\(m.machine.returnType ?? "Void")>,\n"
+            let parameterisedMachine = m.machine(relativeTo: machineDir)
+            let parameterList = parameterisedMachine.parameters?.lazy.map { $0.type }.combine("") { $0 + ", " + $1 } ?? ""
+            str += "        \(m.callName)Machine: @escaping (\(parameterList)) -> Promise<\(parameterisedMachine.returnType ?? "Void")>,\n"
         }
         str = str.trimmingCharacters(in: CharacterSet(charactersIn: ",\n"))
         str += "\n    ) {\n"
@@ -985,14 +990,16 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         // Parameterised Machine Functions
         for m in machine.invocables {
-            let (parameterList, callStr) = self.makeParametersList(forMachine: m.machine)
-            str += "    public func \(m.callName)Machine(\(parameterList)) -> Promise<\(m.machine.returnType ?? "Void")> {\n"
+            let parameterisedMachine = m.machine(relativeTo: machineDir)
+            let (parameterList, callStr) = self.makeParametersList(forMachine: parameterisedMachine)
+            str += "    public func \(m.callName)Machine(\(parameterList)) -> Promise<\(parameterisedMachine.returnType ?? "Void")> {\n"
             str += "        return self._\(m.callName)Machine(\(callStr))\n"
             str += "    }\n\n"
         }
         for m in machine.callables {
-            let (parameterList, callStr) = self.makeParametersList(forMachine: m.machine)
-            str += "    public func \(m.callName)(\(parameterList)) -> Promise<\(m.machine.returnType ?? "Void")> {\n"
+            let parameterisedMachine = m.machine(relativeTo: machineDir)
+            let (parameterList, callStr) = self.makeParametersList(forMachine: parameterisedMachine)
+            str += "    public func \(m.callName)(\(parameterList)) -> Promise<\(parameterisedMachine.returnType ?? "Void")> {\n"
             str += "        return self._\(m.callName)(\(callStr))\n"
             str += "    }\n\n"
         }
@@ -1376,7 +1383,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "        }\n"
         str += "    }\n\n"
         let snapshotControllerList = machine.sensors.lazy.map { "AnySnapshotController(self.external_\($0.label))" }.combine("") { $0 + ", " + $1 }
-        let sensorList = machine.sensors.lazy.map {"                case self.external_\($0.label).name:\n                    return AnySnapshotController(self.external_\($0.label))"}.combine("") { $0 + "\n" + $1 }
+        //let sensorList = machine.sensors.lazy.map {"                case self.external_\($0.label).name:\n                    return AnySnapshotController(self.external_\($0.label))"}.combine("") { $0 + "\n" + $1 }
         str += "    public var sensors: [AnySnapshotController] {\n"
         str += "        get {\n"
         str += "            return [\(snapshotControllerList)]\n"

@@ -298,8 +298,7 @@ public final class MachineGenerator {
 
     func makeDependenciesFile(named name: String, forMachine machine: Machine, dependencies: [Machine.Dependency]) -> FileWrapper? {
         let str: String = dependencies.map {
-            let relative = $0.filePath.relativePath
-            return ($0.name.map { $0 + " -> " } ?? "") + (relative.isEmpty ? $0.filePath.path : relative)
+            ($0.name.map { $0 + " -> " } ?? "") + $0.pathComponent
         }.joined(separator: "\n")
         return create(name, contents: str)
     }

@@ -126,7 +126,7 @@ public class MachineCompiler<A: Assembler>: ErrorContainer where A: ErrorContain
     ) -> Bool {
         print("Compile: \(machine.name)")
         let buildDirPath = machineDir.appendingPathComponent(buildDir, isDirectory: true)
-        guard let (buildPath, _) = self.assembler.assemble(machine, inDirectory: buildDirPath) else {
+        guard let (buildPath, _) = self.assembler.assemble(machine, atDirectory: machineDir, inDirectory: buildDirPath) else {
             self.errors = self.assembler.errors
             return false
         }

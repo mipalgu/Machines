@@ -168,6 +168,24 @@ public struct Machine {
     public var parameterisedDependencies: [Dependency] {
         return self.callables + self.invocables
     }
+    
+    public func syncMachines(relativeTo machineDir: URL) -> [(URL, Dependency)] {
+        callables.map {
+            ($0.filePath(relativeTo: machineDir), $0)
+        }
+    }
+    
+    public func asyncMachines(relativeTo machineDir: URL) -> [(URL, Dependency)] {
+        invocables.map {
+            ($0.filePath(relativeTo: machineDir), $0)
+        }
+    }
+    
+    public func subMachines(relativeTo machineDir: URL) -> [(URL, Dependency)] {
+        subs.map {
+            ($0.filePath(relativeTo: machineDir), $0)
+        }
+    }
 
     /*public var submachines: [(String, Machine)] {
         self.subs.map { $0.machine }

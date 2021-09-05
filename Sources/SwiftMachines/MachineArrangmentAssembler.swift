@@ -90,7 +90,7 @@ public final class MachineArrangmentAssembler: ErrorContainer {
         var files: [URL] = []
         let flattenedMachines = arrangement.flattenedMachines
         guard nil != flattenedMachines.failMap({
-            return self.assembler.assemble($1, inDirectory: $0.appendingPathComponent(machineBuildDir, isDirectory: true))
+            return self.assembler.assemble($1, atDirectory: $0, inDirectory: $0.appendingPathComponent(machineBuildDir, isDirectory: true))
         }) else {
             self.errors.append(contentsOf: self.assembler.errors)
             return nil
@@ -103,7 +103,7 @@ public final class MachineArrangmentAssembler: ErrorContainer {
                 return nil
             }
         }
-        let arrangementToken = MachineToken(data: Set(flattenedMachines.map { $0.filePath.resolvingSymlinksInPath().absoluteString }).sorted())
+        let arrangementToken = MachineToken(data: Set(flattenedMachines.map { $0.0.resolvingSymlinksInPath().absoluteString }).sorted())
         if
             let data = try? Data(contentsOf: buildDir.appendingPathComponent("arrangement.json", isDirectory: false)),
             let token = try? JSONDecoder().decode(MachineToken<[String]>.self, from: data),
@@ -124,7 +124,7 @@ public final class MachineArrangmentAssembler: ErrorContainer {
         files.append(packageSwift)
         let sourceDir = packageDir.appendingPathComponent("Sources/Arrangement", isDirectory: true)
         guard
-            let factory = self.makeFactory(arrangementName: arrangement.name, forDependencies: arrangement.dependencies, inDirectory: sourceDir)
+            let factory = self.makeFactory(arrangementName: arrangement.name, forDependencies: arrangement.dependencies, machineDir: arrangement.filePath, inDirectory: sourceDir)
         else {
             self.errors.append(errorMsg)
             return nil
@@ -136,7 +136,7 @@ public final class MachineArrangmentAssembler: ErrorContainer {
         return (packageDir, files)
     }
     
-    private func makePackage(forExecutable executable: String, forMachines machines: [Machine], inDirectory path: URL, machineBuildDir: String, withAddedDependencies addedDependencies: [(URL)] = []) -> URL? {
+    private func makePackage(forExecutable executable: String, forMachines machines: [(URL, Machine)], inDirectory path: URL, machineBuildDir: String, withAddedDependencies addedDependencies: [(URL)] = []) -> URL? {
         let packagePath = path.appendingPathComponent("Package.swift", isDirectory: false)
         let mandatoryDependencies: [String] = []
         let machinePackages: [String] = self.machinePackageURLs(machines).map { (machine, url) in
@@ -179,37 +179,43 @@ public final class MachineArrangmentAssembler: ErrorContainer {
         return packagePath
     }
     
-    private func makeFactory(arrangementName: String, forDependencies dependencies: [Machine.Dependency], inDirectory dir: URL) -> URL? {
+    private func makeFactory(arrangementName: String, forDependencies dependencies: [Machine.Dependency], machineDir: URL, inDirectory dir: URL) -> URL? {
         let filePath = dir.appendingPathComponent("Arrangement.swift", isDirectory: false)
-        let imports = (["import swiftfsm"] + Set(dependencies.flatMap(self.importStrings)).sorted()).joined(separator: "\n")
+        let imports = (["import swiftfsm"] + Set(dependencies.flatMap { self.importStrings(forDependencies: $0, machineDir: machineDir) }).sorted()).joined(separator: "\n")
         var processedMachines: Set<String> = []
-        func makeDependency(type: String, prefix: String, ancestors: [URL: String]) -> (Machine.Dependency) -> String {
-            return {
-                if let prefixedName = ancestors[$0.machine.filePath] {
-                    return "." + type + "(prefixedName: \"" + prefixedName + "\", name: \"" + $0.callName + "\")"
-                }
-                return "." + type + "(prefixedName: \"" + prefix + $0.callName + "\", name: \"" + $0.callName + "\")"
+        func makeDependency(type: String, prefix: String, ancestors: [URL: String], filePath: URL, dependency: Machine.Dependency) -> String {
+            if let prefixedName = ancestors[filePath] {
+                return "." + type + "(prefixedName: \"" + prefixedName + "\", name: \"" + dependency.callName + "\")"
             }
+            return "." + type + "(prefixedName: \"" + prefix + dependency.callName + "\", name: \"" + dependency.callName + "\")"
         }
-        func process(_ dependency: Machine.Dependency, prefixedName: String, ancestors: [URL: String]) -> [String] {
+        func process(_ dependency: Machine.Dependency, machineDir: URL, prefixedName: String, ancestors: [URL: String]) -> [String] {
             if processedMachines.contains(prefixedName) {
                 return []
             }
             processedMachines.insert(prefixedName)
             var ancestors = ancestors
-            ancestors[dependency.filePath] = prefixedName
+            ancestors[dependency.filePath(relativeTo: machineDir)] = prefixedName
             let depPrefix = prefixedName + "."
-            let callables = dependency.machine.callables.map(makeDependency(type: "callable", prefix: depPrefix, ancestors: ancestors))
-            let invocables = dependency.machine.invocables.map(makeDependency(type: "invocable", prefix: depPrefix, ancestors: ancestors))
-            let subs = dependency.machine.subs.map(makeDependency(type: "controllable", prefix: depPrefix, ancestors: ancestors))
+            let depMachine = dependency.machine(relativeTo: machineDir)
+            let callables = depMachine.syncMachines(relativeTo: machineDir).map {
+                makeDependency(type: "callable", prefix: depPrefix, ancestors: ancestors, filePath: $0, dependency: $1)
+            }
+            let invocables = depMachine.asyncMachines(relativeTo: machineDir).map {
+                makeDependency(type: "invocables", prefix: depPrefix, ancestors: ancestors, filePath: $0, dependency: $1)
+            }
+            let subs = depMachine.subMachines(relativeTo: machineDir).map {
+                makeDependency(type: "controllables", prefix: depPrefix, ancestors: ancestors, filePath: $0, dependency: $1)
+            }
+            let depURL = dependency.filePath(relativeTo: machineDir)
             let dependencies = "[" + (callables + invocables + subs).joined(separator: ", ") + "]"
             let entry = "\"" + prefixedName + "\": FlattenedMetaFSM(name: \"" + prefixedName + "\", factory: " + dependency.machineName + "Machine.make_" + dependency.machineName + ", dependencies: " + dependencies + ")"
-            return [entry] + dependency.machine.dependencies.flatMap {
-                process($0, prefixedName: ancestors[$0.filePath] ?? (depPrefix + $0.callName), ancestors: ancestors)
+            return [entry] + depMachine.dependencies.flatMap {
+                process($0, machineDir: depURL, prefixedName: ancestors[$0.filePath(relativeTo: depURL)] ?? (depPrefix + $0.callName), ancestors: ancestors)
             }
         }
         let entries = dependencies.flatMap { (dependency: Machine.Dependency) -> [String] in
-            process(dependency, prefixedName: dependency.callName, ancestors: [:])
+            process(dependency, machineDir: machineDir, prefixedName: dependency.callName, ancestors: [:])
         }
         let name = "\"" + arrangementName + "\""
         let fsms = "[" + entries.joined(separator: ",\n               ") + "]"
@@ -242,36 +248,40 @@ public final class MachineArrangmentAssembler: ErrorContainer {
         return filePath
     }
     
-    private func importStrings(forDependencies dependency: Machine.Dependency) -> [String] {
-        var set: Set<String> = []
-        func _process(_ dependency: Machine.Dependency) {
-            set.insert("import " + dependency.machineName + "Machine")
-            dependency.machine.dependencies.forEach(_process)
+    private func importStrings(forDependencies dependency: Machine.Dependency, machineDir: URL) -> [String] {
+        var imports: Set<String> = []
+        func _process(_ dependency: Machine.Dependency, parent: URL) {
+            imports.insert("import " + dependency.machineName + "Machine")
+            dependency.machine(relativeTo: parent).dependencies.forEach {
+                _process($0, parent: $0.filePath(relativeTo: parent))
+            }
         }
-        _process(dependency)
-        return Array(set)
+        _process(dependency, parent: machineDir)
+        return Array(imports)
     }
     
-    private func machinePackageURLs(_ machines: [Machine]) -> [(Machine, URL)] {
+    private func machinePackageURLs(_ machines: [(URL, Machine)]) -> [(Machine, URL)] {
         return self.process(machines) {
-            return $0.filePath.resolvingSymlinksInPath().absoluteURL
+            return $0.0.resolvingSymlinksInPath().absoluteURL
         }
     }
     
-    private func machinePackageProducts(_ machines: [Machine]) -> [(Machine, String)] {
-        return self.process(machines) { $0.name + "Machine" }
+    private func machinePackageProducts(_ machines: [(URL, Machine)]) -> [(Machine, String)] {
+        return self.process(machines) { $1.name + "Machine" }
     }
     
-    private func process<T>(_ machines: [Machine], _ transform: (Machine) -> T) -> [(Machine, T)] {
+    private func process<T>(_ machines: [(URL, Machine)], _ transform: ((URL, Machine)) -> T) -> [(Machine, T)] {
         var urls = Set<URL>()
-        func _process(_ machines: [Machine]) -> [(Machine, T)] {
-            return machines.flatMap { (machine) -> [(Machine, T)] in
-                let machineUrl = machine.filePath.resolvingSymlinksInPath().absoluteURL
+        func _process(_ machines: [(URL, Machine)]) -> [(Machine, T)] {
+            return machines.flatMap { (url, machine) -> [(Machine, T)] in
+                let machineUrl = url.resolvingSymlinksInPath().absoluteURL
                 if urls.contains(machineUrl) {
                     return []
                 }
                 urls.insert(machineUrl)
-                return [(machine, transform(machine))] + _process(machine.dependencies.map { $0.machine })
+                return [(machine, transform((url, machine)))] + _process(machine.dependencies.map {
+                    ($0.filePath(relativeTo: url), $0.machine(relativeTo: url))
+                })
             }
         }
         return _process(machines)

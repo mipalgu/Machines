@@ -107,17 +107,7 @@ public final class MachineArrangementParser {
                 name = first
                 filePath = components.dropFirst().joined(separator: "->")
             }
-            let fileURL: URL
-            if #available(OSX 10.11, *) {
-                fileURL = URL(fileURLWithPath: filePath.trimmingCharacters(in: .whitespaces), isDirectory: false, relativeTo: arrangementDir).absoluteURL
-            } else {
-                fileURL = URL(fileURLWithPath: filePath.trimmingCharacters(in: .whitespaces), isDirectory: false)
-            }
-            guard let machineName = fileURL.lastPathComponent.components(separatedBy: ".").first else {
-                self.errors.append("Unable to parse machine name from file path \(fileURL.path)")
-                return nil
-            }
-            return Machine.Dependency(name: name?.trimmingCharacters(in: .whitespaces), machineName: machineName.trimmingCharacters(in: .whitespaces), filePath: fileURL)
+            return Machine.Dependency(name: name?.trimmingCharacters(in: .whitespaces), pathComponent: filePath)
         }) else {
             return nil
         }
