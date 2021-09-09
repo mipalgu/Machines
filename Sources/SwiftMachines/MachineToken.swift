@@ -56,7 +56,7 @@
  *
  */
 
-public let SWIFT_MACHINES_VERSION = 1.0
+public let SWIFT_MACHINES_VERSION = 1.1
 
 struct MachineToken<T>: Hashable, Codable where T: Hashable, T: Codable {
     

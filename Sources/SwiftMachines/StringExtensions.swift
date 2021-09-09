@@ -60,14 +60,16 @@ import Foundation
 
 extension String {
     
-    func replacingMachineVariables(forMachine machine: Machine) -> String {
-        var str = self.replacingOccurrences(of: "$MACHINE_DIR", with: machine.filePath.absoluteURL.standardized.path)
+    func replacingMachineVariables(forMachine machine: Machine, atDirectory directory: URL) -> String {
+        var str = self.replacingOccurrences(of: "$MACHINE_DIR", with: directory.absoluteURL.standardized.path)
+        #if !os(WASI)
         if let gunaoDir = ProcessInfo.processInfo.environment["GUNAO_DIR"] {
             str = str.replacingOccurrences(of: "$GUNAO_DIR", with: gunaoDir)
         }
         if let homeDir = ProcessInfo.processInfo.environment["HOME"] {
             str = str.replacingOccurrences(of: "$HOME", with: homeDir)
         }
+        #endif
         let packagePath = ".build/\(machine.name)Machine"
         str = str.replacingOccurrences(of: "$PACKAGE_SUBDIR", with: packagePath)
         str = str.replacingOccurrences(of: "$BUILD_SUBDIR", with: packagePath + "/.build")

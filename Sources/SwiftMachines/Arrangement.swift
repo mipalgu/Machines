@@ -62,33 +62,66 @@ public struct Arrangement {
     
     public var name: String
     
-    public var filePath: URL
-    
     public var dependencies: [Machine.Dependency]
     
-    public var machines: [Machine] {
-        return self.dependencies.map { $0.machine }
+    public var dispatchTable: DispatchTable?
+    
+    public init(name: String, dependencies: [Machine.Dependency], dispatchTable: DispatchTable? = nil) {
+        self.name = name
+        self.dependencies = dependencies
+        self.dispatchTable = dispatchTable
     }
     
-    public var flattenedMachines: [Machine] {
+    public func machines(relativeTo arrangementDir: URL) -> [(URL, Machine)] {
+        return self.dependencies.map { ($0.filePath(relativeTo: arrangementDir), $0.machine(relativeTo: arrangementDir)) }
+    }
+    
+    public func flattenedMachines(relativeTo arrangementDir: URL) -> [(URL, Machine)] {
         var urls = Set<URL>()
-        func _process(_ machines: [Machine]) -> [Machine] {
-            return machines.flatMap { (machine) -> [Machine] in
-                let machineUrl = machine.filePath.resolvingSymlinksInPath().absoluteURL
+        func _process(_ machines: [(URL, Machine)]) -> [(URL, Machine)] {
+            return machines.flatMap { (url, machine) -> [(URL, Machine)] in
+                let machineUrl = url.resolvingSymlinksInPath().absoluteURL
                 if urls.contains(machineUrl) {
                     return []
                 }
                 urls.insert(machineUrl)
-                return [machine] + _process(machine.dependencies.map { $0.machine } )
+                return [(url, machine)] + _process(machine.dependencies.map { ($0.filePath(relativeTo: url), $0.machine(relativeTo: url)) } )
             }
         }
-        return _process(self.machines)
+        return _process(self.machines(relativeTo: arrangementDir))
     }
     
-    public init(name: String, filePath: URL, dependencies: [Machine.Dependency]) {
-        self.name = name
-        self.filePath = filePath
-        self.dependencies = dependencies
+    public func namespacedDependencies(relativeTo arrangementDir: URL) -> (Set<String>, [NamespacedDependency]) {
+        var names: Set<String> = []
+        var machines: [URL: Machine] = [:]
+        let parser = MachineParser()
+        func process(_ url: URL, prefix: String, previous previousNames: [URL: String]) -> NamespacedDependency? {
+            guard let machine = machines[url] ?? parser.parseMachine(atPath: url.path) else {
+                return nil
+            }
+            machines[url] = machine
+            if nil != previousNames[url] {
+                return nil
+            }
+            let name = prefix + machine.name
+            names.insert(name)
+            var newPreviousNames = previousNames
+            newPreviousNames[url] = name
+            return NamespacedDependency(
+                name: prefix,
+                dependencies: machine.dependencies.compactMap {
+                    process(
+                        $0.filePath(relativeTo: url),
+                        prefix: name + ".",
+                        previous: newPreviousNames
+                    )
+                }
+            )
+        }
+        let deps = self.dependencies.compactMap {
+            process($0.filePath(relativeTo: arrangementDir), prefix: "", previous: [:])
+        }
+        return (names, deps)
     }
     
 }

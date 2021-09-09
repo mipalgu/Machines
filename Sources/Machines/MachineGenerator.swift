@@ -68,12 +68,12 @@ public final class MachineGenerator {
     public var lastError: String? {
         return self.errors.last
     }
-    
+
     public init(swiftGenerator: SwiftMachines.MachineGenerator = SwiftMachines.MachineGenerator()) {
         self.swiftGenerator = swiftGenerator
     }
     
-    public func generate(_ machine: Machine) -> (URL, [URL])? {
+    public func generate(_ machine: Machine) -> FileWrapper? {
         self.errors = []
         switch machine {
         case .swiftMachine(let machine):

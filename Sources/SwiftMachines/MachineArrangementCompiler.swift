@@ -94,6 +94,7 @@ public final class MachineArrangementCompiler {
     
     public func compileArrangement(
         _ arrangement: Arrangement,
+        atDirectory arrangementDir: URL,
         machineBuildDir: String,
         libExtension: String,
         swiftBuildConfig: SwiftBuildConfig = .debug,
@@ -104,7 +105,7 @@ public final class MachineArrangementCompiler {
         andSwiftBuildFlags swiftBuildFlags: [String] = []
     ) -> URL? {
         self.errors = []
-        guard let (buildPath, _) = self.assembler.assemble(arrangement, machineBuildDir: machineBuildDir) else {
+        guard let (buildPath, _) = self.assembler.assembleAndWrite(arrangement, atDirectory: arrangementDir, machineBuildDir: machineBuildDir) else {
             self.errors = self.assembler.errors
             return nil
         }
@@ -124,8 +125,8 @@ public final class MachineArrangementCompiler {
             andSwiftCompilerFlags: swiftCompilerFlags,
             andSwiftBuildFlags: swiftBuildFlags
         )
-        let machineArgs = arrangement.flattenedMachines.flatMap {
-            self.makeCompilerFlags(forMachine: $0)
+        let machineArgs = arrangement.flattenedMachines(relativeTo: arrangementDir).flatMap {
+            self.makeCompilerFlags(forMachine: $1, atDirectory: $0)
         }
         let args = arrangementArgs + machineArgs
         print(args.reduce("swift build") { "\($0) \($1)" })
@@ -135,13 +136,13 @@ public final class MachineArrangementCompiler {
             return nil
         }
         let _ = fm.changeCurrentDirectoryPath(cwd)
-        let buildDir = arrangement.filePath.appendingPathComponent(".build", isDirectory: true)
+        let buildDir = arrangementDir.appendingPathComponent(".build", isDirectory: true)
         let compileDir = buildDir.appendingPathComponent(swiftBuildConfig.rawValue, isDirectory: true)
         if nil == self.helpers.overwriteDirectory(compileDir) {
             self.errors.append("Unable to create build directory: \(compileDir.path)")
             return nil
         }
-        let outputURL = self.outputURL(forArrangement: arrangement.filePath, executableName: arrangement.name, swiftBuildConfig: swiftBuildConfig, libExtension: libExtension)
+        let outputURL = self.outputURL(forArrangement: arrangementDir, executableName: arrangement.name, swiftBuildConfig: swiftBuildConfig, libExtension: libExtension)
         print(outputURL.path)
         do {
             _ = try self.copyOutPath(outputURL, toFolder: compileDir, executableName: arrangement.name)
@@ -153,10 +154,10 @@ public final class MachineArrangementCompiler {
         return outputURL
     }
     
-    private func makeCompilerFlags(forMachine machine: Machine) -> [String] {
-        let swiftIncludeSearchPaths = machine.swiftIncludeSearchPaths.map { "-I\(self.expand($0, withMachine: machine))" }
-        let includeSearchPaths = machine.includeSearchPaths.map { "-I\(self.expand($0, withMachine: machine))" }
-        let libSearchPaths = machine.libSearchPaths.map { "-L\(self.expand($0, withMachine: machine))" }
+    private func makeCompilerFlags(forMachine machine: Machine, atDirectory machineDir: URL) -> [String] {
+        let swiftIncludeSearchPaths = machine.swiftIncludeSearchPaths.map { "-I\(self.expand($0, withMachine: machine, atDirectory: machineDir))" }
+        let includeSearchPaths = machine.includeSearchPaths.map { "-I\(self.expand($0, withMachine: machine, atDirectory: machineDir))" }
+        let libSearchPaths = machine.libSearchPaths.map { "-L\(self.expand($0, withMachine: machine, atDirectory: machineDir))" }
         var args: [String] = []
         args.append(contentsOf: swiftIncludeSearchPaths.flatMap { ["-Xswiftc", $0] })
         args.append(contentsOf: includeSearchPaths.flatMap { ["-Xcc", $0] })
@@ -183,14 +184,14 @@ public final class MachineArrangementCompiler {
         return args
     }
     
-    private func expand(_ path: String, withMachine machine: Machine) -> String {
+    private func expand(_ path: String, withMachine machine: Machine, atDirectory machineDir: URL) -> String {
         guard let first = path.first else {
             return path
         }
         if (first == "/") {
             return path
         }
-        return URL(fileURLWithPath: path, relativeTo: machine.filePath).path
+        return URL(fileURLWithPath: path, relativeTo: machineDir).path
     }
     
     fileprivate func copyOutPath(_ outPath: URL, toFolder dir: URL, executableName name: String) throws -> Bool {
