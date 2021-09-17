@@ -16,18 +16,29 @@ public struct CXXGenerator {
         self.helpers = helpers
     }
     
-    public func generate(machine: Machine) -> Bool {
+    public func generate(machine: Machine) -> (URL, CXXFileWrapper)? {
+        var files: [String: FileWrapper] = [:]
         guard
             helpers.deleteItem(atPath: machine.path),
             helpers.createDirectory(atPath: machine.path),
-            createIncludePaths(root: machine.path, paths: machine.includePaths),
-            createStatesFiles(root: machine.path, machineName: machine.name, states: machine.states, allTransitions: machine.transitions, actions: machine.actionDisplayOrder),
-            createMachineFiles(root: machine.path, machine: machine),
-            createTransitionFiles(root: machine.path, transitions: machine.transitions)
+            let includePath = createIncludePaths(root: machine.path, paths: machine.includePaths),
+            let statesFiles = createStatesFiles(
+                root: machine.path,
+                machineName: machine.name,
+                states: machine.states,
+                allTransitions: machine.transitions,
+                actions: machine.actionDisplayOrder
+            ),
+            let machineFiles = createMachineFiles(root: machine.path, machine: machine),
+            let transitionFiles = createTransitionFiles(root: machine.path, transitions: machine.transitions)
         else {
-            return false
+            return nil
         }
-        return true
+        files["IncludePath"] = includePath
+        files.merge(statesFiles, uniquingKeysWith: { (f1, _) in return f1 })
+        files.merge(machineFiles, uniquingKeysWith: { (f1, _) in return f1 })
+        files.merge(transitionFiles, uniquingKeysWith: { (f1, _) in return f1 })
+        return (machine.path, CXXFileWrapper(directoryWithFileWrappers: files))
     }
     
     func comment(filename: String) -> String {
@@ -40,10 +51,12 @@ public struct CXXGenerator {
          """
     }
     
-    func createIncludePaths(root: URL, paths: [String]) -> Bool {
+    func createIncludePaths(root: URL, paths: [String]) -> FileWrapper? {
         let contents = paths.joined(separator: "\n")
-        let success = self.helpers.createFile("IncludePath", inDirectory: root, withContents: contents)
-        return success != nil
+        guard nil != self.helpers.createFile("IncludePath", inDirectory: root, withContents: contents) else {
+            return nil
+        }
+        return try? FileWrapper(url: root.appendingPathComponent("IncludePath", isDirectory: false), options: .immediate)
     }
     
     func actionDefinition(actionName: String) -> String {
@@ -120,8 +133,24 @@ public struct CXXGenerator {
          """
     }
     
-    func createStateHFile(root: URL, machineName: String, state: String, actions: [String], transitions: [Transition], states: [State]) -> URL? {
-        return self.helpers.createFile("State_\(state).h", inDirectory: root, withContents: stateHFile(machineName: machineName, state: state, actions: actions, transitions: transitions, states: states, numberOfTransitions: transitions.count))
+    func createStateHFile(root: URL, machineName: String, state: String, actions: [String], transitions: [Transition], states: [State]) -> FileWrapper? {
+        guard
+            let url = self.helpers.createFile(
+                "State_\(state).h",
+                inDirectory: root,
+                withContents: stateHFile(
+                    machineName: machineName,
+                    state: state,
+                    actions: actions,
+                    transitions: transitions,
+                    states: states,
+                    numberOfTransitions: transitions.count
+                )
+            )
+        else {
+            return nil
+        }
+        return try? FileWrapper(url: url, options: .immediate)
     }
     
     func actionPerform(machineName: String, state: String, action: String) -> String {
@@ -205,9 +234,12 @@ public struct CXXGenerator {
          """
     }
     
-    func createStateMMFile(root: URL, machineName: String, state: String, transitions: [Transition], actions: [String]) -> URL? {
+    func createStateMMFile(root: URL, machineName: String, state: String, transitions: [Transition], actions: [String]) -> FileWrapper? {
         let content = stateMMString(machineName: machineName, state: state, transitions: transitions, actions: actions)
-        return self.helpers.createFile("State_\(state).mm", inDirectory: root, withContents: content)
+        guard let url = self.helpers.createFile("State_\(state).mm", inDirectory: root, withContents: content) else {
+            return nil
+        }
+        return try? FileWrapper(url: url, options: .immediate)
     }
     
     func stateVarRef(state: String) -> String {
@@ -225,17 +257,19 @@ public struct CXXGenerator {
          """
     }
     
-    func createStateFiles(root: URL, machineName: String, state: State, transitions: [Transition], states: [State], actions: [String]) -> Bool {
+    func createStateFiles(root: URL, machineName: String, state: State, transitions: [Transition], states: [State], actions: [String]) -> [String: FileWrapper]? {
+        var files: [String: FileWrapper] = [:]
         guard
-            let _ = createStateHFile(root: root, machineName: machineName, state: state.name, actions: actions, transitions: transitions, states: states),
-            let _ = createStateMMFile(root: root, machineName: machineName, state: state.name, transitions: transitions, actions: actions),
-            let _ = self.helpers.createFile("State_\(state.name)_VarRefs.mm", inDirectory: root, withContents: stateVarRef(state: state.name)),
-            let _ = self.helpers.createFile("State_\(state.name)_FuncRefs.mm", inDirectory: root, withContents: ""),
-            let _ = self.helpers.createFile("State_\(state.name)_Includes.h", inDirectory: root, withContents: ""),
-            let _ = self.helpers.createFile("State_\(state.name)_Methods.h", inDirectory: root, withContents: ""),
-            let _ = self.helpers.createFile("State_\(state.name)_Variables.h", inDirectory: root, withContents: ""),
-            transitions.compactMap({ self.helpers.createFile("State_\(state.name)_Transition_\($0.priority).expr", inDirectory: root, withContents: "\($0.condition)\n") }).count == transitions.count,
-            state.actions.compactMap({ self.helpers.createFile("State_\(state.name)_\($0.0).mm", inDirectory: root, withContents: $0.1)  }).count == actions.count
+            let hFile = createStateHFile(root: root, machineName: machineName, state: state.name, actions: actions, transitions: transitions, states: states),
+            let mmFile = createStateMMFile(root: root, machineName: machineName, state: state.name, transitions: transitions, actions: actions),
+            let varRef = createVarRefs(root: root, state: state.name),
+            let funcRef = createStateFuncRefs(root: root, state: state.name),
+            let includes = createIncludes(root: root, state: state.name),
+            let methods = createStateMethods(root: root, state: state.name),
+            let variables = createStateVariables(root: root, state: state.name),
+            let transitionsDictionary = createTransitionsForState(root: root, state: state.name, transitions: transitions),
+            let actionsDictionary = createActionsForState(root: root, state: state.name, actions: state.actions),
+            actionsDictionary.keys.count == actions.count
 //            for transition in transitions {
 //                transition.condition.write(toFile: root.appendingPathComponent("State_\(state.name)_Transition_\(transition.priority).expr").absoluteString, atomically: true, encoding: .utf8)
 //            }
@@ -243,21 +277,96 @@ public struct CXXGenerator {
 //                code.write(toFile: root.appendingPathComponent("State_\(state.name)_\(action).mm").absoluteString, atomically: true, encoding: .utf8)
 //            }
         else {
-            return false
+            return nil
         }
-        return true
+        files["State_\(state.name).h"] = hFile
+        files["State_\(state.name).mm"] = mmFile
+        files["State_\(state.name)_VarRefs.mm"] = varRef
+        files["State_\(state.name)_FuncRefs.mm"] = funcRef
+        files["State_\(state.name)_Includes.h"] = includes
+        files["State_\(state.name)_Methods.h"] = methods
+        files["State_\(state.name)_Variables.h"] = variables
+        files.merge(transitionsDictionary, uniquingKeysWith: { (f1, _) in return f1 })
+        files.merge(actionsDictionary, uniquingKeysWith: { (f1, _) in return f1 })
+        return files
     }
     
-    func createStatesFiles(root: URL, machineName: String, states: [State], allTransitions: [Transition], actions: [String]) -> Bool {
+    private func createFileWrapper(in directory: URL, called fileName: String, with contents: String) -> FileWrapper? {
+        guard let url = self.helpers.createFile(fileName, inDirectory: directory, withContents: contents) else {
+            return nil
+        }
+        return try? FileWrapper(url: url, options: .immediate)
+    }
+    
+    private func createActionsForState(root: URL, state: String, actions: [String: String]) -> [String: FileWrapper]? {
+        var files: [String: FileWrapper] = [:]
+        var foundNil = false
+        actions.forEach {
+            let fileName = "State_\(state)_\($0.key).mm"
+            guard let actionWrapper = createFileWrapper(in: root, called: fileName, with: $0.value) else {
+                foundNil = true
+                return
+            }
+            files[fileName] = actionWrapper
+        }
+        if foundNil {
+            return nil
+        }
+        return files
+    }
+    
+    private func createTransitionsForState(root: URL, state: String, transitions: [Transition]) -> [String: FileWrapper]? {
+        var files: [String: FileWrapper] = [:]
+        var foundNil = false
+        transitions.forEach {
+            let fileName = "State_\(state)_Transition_\($0.priority).expr"
+            guard let transitionFile = createFileWrapper(in: root, called: fileName, with: "\($0.condition)\n") else {
+                foundNil = true
+                return
+            }
+            files[fileName] = transitionFile
+        }
+        if foundNil {
+            return nil
+        }
+        return files
+    }
+    
+    private func createStateVariables(root: URL, state: String) -> FileWrapper? {
+        createFileWrapper(in: root, called: "State_\(state)_Variables.h", with: "")
+    }
+    
+    private func createStateMethods(root: URL, state: String) -> FileWrapper? {
+        createFileWrapper(in: root, called: "State_\(state)_Methods.h", with: "")
+    }
+    
+    private func createIncludes(root: URL, state: String) -> FileWrapper? {
+        createFileWrapper(in: root, called: "State_\(state)_Includes.h", with: "")
+    }
+    
+    private func createStateFuncRefs(root: URL, state: String) -> FileWrapper? {
+        createFileWrapper(in: root, called: "State_\(state)_FuncRefs.mm", with: "")
+    }
+    
+    private func createVarRefs(root: URL, state: String) -> FileWrapper? {
+        createFileWrapper(in: root, called: "State_\(state)_VarRefs.mm", with: stateVarRef(state: state))
+    }
+    
+    func createStatesFiles(root: URL, machineName: String, states: [State], allTransitions: [Transition], actions: [String]) -> [String: FileWrapper]? {
+        var files: [String: FileWrapper] = [:]
         for state in states {
             let transitions = allTransitions.filter { $0.source == state.name }
-            if !createStateFiles(root: root, machineName: machineName, state: state, transitions: transitions, states: states, actions: actions) {
-                return false
+            guard let stateFiles = createStateFiles(root: root, machineName: machineName, state: state, transitions: transitions, states: states, actions: actions) else {
+                return nil
             }
+            files.merge(stateFiles, uniquingKeysWith: { (f1, _) in return f1 })
         }
-        let stateNames =  states.map { $0.name }.joined(separator: "\n")
-        let success = self.helpers.createFile("States", inDirectory: root, withContents: stateNames)
-        return success != nil
+        let stateNames = states.map { $0.name }.joined(separator: "\n")
+        guard let statesWrapper = createFileWrapper(in: root, called: "States", with: stateNames) else {
+            return nil
+        }
+        files["States"] = statesWrapper
+        return files
     }
     
     func machineHFile(machineName: String, numberOfStates: Int) -> String {
@@ -363,34 +472,44 @@ public struct CXXGenerator {
          """
     }
     
-    func createMachineFiles(root: URL, machine: Machine) -> Bool {
+    func createMachineFiles(root: URL, machine: Machine) -> [String: FileWrapper]? {
+        var files: [String: FileWrapper] = [:]
         guard
-            let _ = self.helpers.createFile("\(machine.name).h", inDirectory: root, withContents: machineHFile(machineName: machine.name, numberOfStates: machine.states.count)),
-            let _ = self.helpers.createFile("\(machine.name).mm", inDirectory: root, withContents: machineMMFile(
+            let machineHFile = createFileWrapper(in: root, called: "\(machine.name).h", with: machineHFile(machineName: machine.name, numberOfStates: machine.states.count)),
+            let machineMMFile = createFileWrapper(in: root, called: "\(machine.name).mm", with: machineMMFile(
                 machineName: machine.name,
                 states: machine.states,
                 initialState: machine.initialState,
                 suspendState: machine.suspendedState
             )),
-            let _ = self.helpers.createFile("\(machine.name)_FuncRefs.mm", inDirectory: root, withContents: machine.funcRefs),
-            let _ = self.helpers.createFile("\(machine.name)_Includes.h", inDirectory: root, withContents: machine.includes),
-            let _ = self.helpers.createFile("\(machine.name)_Methods.h", inDirectory: root, withContents: ""),
-            let _ = self.helpers.createFile("\(machine.name)_VarRefs.mm", inDirectory: root, withContents: machineVarRefs(machineName: machine.name, variables: machine.machineVariables)),
-            let _ = self.helpers.createFile("\(machine.name)_Variables.h", inDirectory: root, withContents: machineVariables(machineName: machine.name, variables: machine.machineVariables))
+            let machineFuncRefs = createFileWrapper(in: root, called: "\(machine.name)_FuncRefs.mm", with: machine.funcRefs),
+            let machineIncludes = createFileWrapper(in: root, called: "\(machine.name)_Includes.h", with: machine.includes),
+            let machineMethods = createFileWrapper(in: root, called: "\(machine.name)_Methods.h", with: ""),
+            let machineVarRefs = createFileWrapper(in: root, called: "\(machine.name)_VarRefs.mm", with: machineVarRefs(machineName: machine.name, variables: machine.machineVariables)),
+            let machineVariables = createFileWrapper(in: root, called: "\(machine.name)_Variables.h", with: machineVariables(machineName: machine.name, variables: machine.machineVariables))
         else {
-            return false
+            return nil
         }
-        return true
+        files["\(machine.name).h"] = machineHFile
+        files["\(machine.name).mm"] = machineMMFile
+        files["\(machine.name)_FuncRefs.mm"] = machineFuncRefs
+        files["\(machine.name)_Includes.h"] = machineIncludes
+        files["\(machine.name)_Methods.h"] = machineMethods
+        files["\(machine.name)_VarRefs.mm"] = machineVarRefs
+        files["\(machine.name)_Variables.h"] = machineVariables
+        return files
     }
     
-    func createTransitionFiles(root: URL, transitions: [Transition]) -> Bool {
-        let success: [Bool] = transitions.map {
-            guard let _ = self.helpers.createFile("State_\($0.source)_Transition_\($0.priority).expr", inDirectory: root, withContents: $0.condition) else {
-                return false
+    func createTransitionFiles(root: URL, transitions: [Transition]) -> [String: FileWrapper]? {
+        var files: [String: FileWrapper] = [:]
+        for transition in transitions {
+            let fileName = "State_\(transition.source)_Transition_\(transition.priority).expr"
+            guard let transitionWrapper = createFileWrapper(in: root, called: fileName, with: transition.condition) else {
+                return nil
             }
-            return true
+            files[fileName] = transitionWrapper
         }
-        return success.reduce(true) { $0 && $1 }
+        return files
     }
     
 }

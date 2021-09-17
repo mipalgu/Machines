@@ -34,7 +34,7 @@ public class UCFSMMachinesGeneratorTests: XCTestCase {
         var machine2 = machine!
         machine2.path = path2
         let result = machine2.write()
-        XCTAssert(result)
+        XCTAssertNotNil(result)
     }
     
 //    func test_write2() {

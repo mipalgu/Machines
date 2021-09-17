@@ -35,7 +35,7 @@ public struct Machine: Codable, Hashable {
         self.actionDisplayOrder = actionDisplayOrder
     }
     
-    public func write() -> Bool {
+    public func write() -> (URL, CXXFileWrapper)? {
         let generator = CXXGenerator()
         return generator.generate(machine: self)
     }
