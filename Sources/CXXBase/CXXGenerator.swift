@@ -16,7 +16,7 @@ public struct CXXGenerator {
         self.helpers = helpers
     }
     
-    public func generate(machine: Machine) -> Bool {
+    public func generate(machine: Machine) -> (URL, CXXFileWrapper)? {
         var files: [String: FileWrapper] = [:]
         guard
             helpers.deleteItem(atPath: machine.path),
@@ -29,12 +29,16 @@ public struct CXXGenerator {
                 allTransitions: machine.transitions,
                 actions: machine.actionDisplayOrder
             ),
-            createMachineFiles(root: machine.path, machine: machine),
-            createTransitionFiles(root: machine.path, transitions: machine.transitions)
+            let machineFiles = createMachineFiles(root: machine.path, machine: machine),
+            let transitionFiles = createTransitionFiles(root: machine.path, transitions: machine.transitions)
         else {
-            return false
+            return nil
         }
-        return true
+        files["IncludePath"] = includePath
+        files.merge(statesFiles, uniquingKeysWith: { (f1, _) in return f1 })
+        files.merge(machineFiles, uniquingKeysWith: { (f1, _) in return f1 })
+        files.merge(transitionFiles, uniquingKeysWith: { (f1, _) in return f1 })
+        return (machine.path, CXXFileWrapper(directoryWithFileWrappers: files))
     }
     
     func comment(filename: String) -> String {
@@ -496,14 +500,16 @@ public struct CXXGenerator {
         return files
     }
     
-    func createTransitionFiles(root: URL, transitions: [Transition]) -> Bool {
-        let success: [Bool] = transitions.map {
-            guard let _ = self.helpers.createFile("State_\($0.source)_Transition_\($0.priority).expr", inDirectory: root, withContents: $0.condition) else {
-                return false
+    func createTransitionFiles(root: URL, transitions: [Transition]) -> [String: FileWrapper]? {
+        var files: [String: FileWrapper] = [:]
+        for transition in transitions {
+            let fileName = "State_\(transition.source)_Transition_\(transition.priority).expr"
+            guard let transitionWrapper = createFileWrapper(in: root, called: fileName, with: transition.condition) else {
+                return nil
             }
-            return true
+            files[fileName] = transitionWrapper
         }
-        return success.reduce(true) { $0 && $1 }
+        return files
     }
     
 }

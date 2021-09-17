@@ -7,9 +7,9 @@
 
 import Foundation
 
-final class CXXFileWrapper: FileWrapper {
+public final class CXXFileWrapper: FileWrapper {
     
-    override func write(to url: URL, options: FileWrapper.WritingOptions = [], originalContentsURL: URL?) throws {
+    public override func write(to url: URL, options: FileWrapper.WritingOptions = [], originalContentsURL: URL?) throws {
         if #available(macOSApplicationExtension 10.11, *) {
             guard url.hasDirectoryPath else {
                 fatalError("Trying to save a CXX machine to a file path")
