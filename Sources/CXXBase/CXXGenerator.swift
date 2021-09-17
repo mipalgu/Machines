@@ -343,15 +343,20 @@ public struct CXXGenerator {
     }
     
     func createStatesFiles(root: URL, machineName: String, states: [State], allTransitions: [Transition], actions: [String]) -> [String: FileWrapper]? {
+        var files: [String: FileWrapper] = [:]
         for state in states {
             let transitions = allTransitions.filter { $0.source == state.name }
-            if !createStateFiles(root: root, machineName: machineName, state: state, transitions: transitions, states: states, actions: actions) {
-                return false
+            guard let stateFiles = createStateFiles(root: root, machineName: machineName, state: state, transitions: transitions, states: states, actions: actions) else {
+                return nil
             }
+            files.merge(stateFiles, uniquingKeysWith: { (f1, _) in return f1 })
         }
-        let stateNames =  states.map { $0.name }.joined(separator: "\n")
-        let success = self.helpers.createFile("States", inDirectory: root, withContents: stateNames)
-        return success != nil
+        let stateNames = states.map { $0.name }.joined(separator: "\n")
+        guard let statesWrapper = createFileWrapper(in: root, called: "States", with: stateNames) else {
+            return nil
+        }
+        files["States"] = statesWrapper
+        return files
     }
     
     func machineHFile(machineName: String, numberOfStates: Int) -> String {
