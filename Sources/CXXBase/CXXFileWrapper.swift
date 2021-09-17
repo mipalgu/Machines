@@ -10,11 +10,6 @@ import Foundation
 public final class CXXFileWrapper: FileWrapper {
     
     public override func write(to url: URL, options: FileWrapper.WritingOptions = [], originalContentsURL: URL?) throws {
-        if #available(macOSApplicationExtension 10.11, *) {
-            guard url.hasDirectoryPath else {
-                fatalError("Trying to save a CXX machine to a file path")
-            }
-        }
         guard let oldDir = self.filename else {
             fatalError("Can't get old name")
         }
