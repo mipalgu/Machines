@@ -38,7 +38,9 @@ public struct CXXGenerator {
         files.merge(statesFiles, uniquingKeysWith: { (f1, _) in return f1 })
         files.merge(machineFiles, uniquingKeysWith: { (f1, _) in return f1 })
         files.merge(transitionFiles, uniquingKeysWith: { (f1, _) in return f1 })
-        return (machine.path, CXXFileWrapper(directoryWithFileWrappers: files))
+        var fileWrapper = CXXFileWrapper(directoryWithFileWrappers: files)
+        fileWrapper.filename = "\(machine.name).machine"
+        return (machine.path, fileWrapper)
     }
     
     func comment(filename: String) -> String {

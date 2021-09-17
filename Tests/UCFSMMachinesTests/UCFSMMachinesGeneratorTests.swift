@@ -35,6 +35,8 @@ public class UCFSMMachinesGeneratorTests: XCTestCase {
         machine2.path = path2
         let result = machine2.write()
         XCTAssertNotNil(result)
+        let writeResult = try? result!.1.write(to: machine2.path, options: .atomic, originalContentsURL: machine2.path)
+        print(result!.1)
     }
     
 //    func test_write2() {

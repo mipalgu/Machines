@@ -29,9 +29,31 @@ public final class CXXFileWrapper: FileWrapper {
         self.filename = changeFileName(oldPrefix: oldName, newPrefix: machineName, name: oldDir)
         if let existingWrappers = self.fileWrappers {
             let wrappers = convertExistingWrappers(wrappers: existingWrappers, oldName: oldName, newName: machineName)
-            try FileWrapper(directoryWithFileWrappers: wrappers).write(to: url, options: options, originalContentsURL: originalContentsURL)
+            let newFileWrapper = FileWrapper(directoryWithFileWrappers: wrappers)
+            newFileWrapper.filename = self.filename
+            try newFileWrapper.write(to: url, options: options, originalContentsURL: originalContentsURL)
+            try wrappers.forEach {
+                try $0.value.write(to: url.appendingPathComponent($0.value.filename!, isDirectory: false), options: .atomic, originalContentsURL: nil)
+            }
+            return
         }
+        try super.write(to: url, options: options, originalContentsURL: originalContentsURL)
     }
+    
+//    private func writeFileWrapper(wrapper: FileWrapper, root: URL) throws {
+//        guard let name = wrapper.filename else {
+//            return
+//        }
+//        guard let subFiles = wrapper.fileWrappers else {
+//            let newRoot = root.appendingPathComponent(name, isDirectory: false)
+//            try wrapper.write(to: newRoot, options: .atomic, originalContentsURL: nil)
+//            return
+//        }
+//        let newRoot = root.appendingPathComponent(name, isDirectory: true)
+//        try subFiles.forEach {
+//            try writeFileWrapper(wrapper: $0.value, root: newRoot)
+//        }
+//    }
     
     private func changeFileName(oldPrefix: String, newPrefix: String, name: String) -> String {
         name.replacingOccurrences(of: oldPrefix, with: newPrefix, options: .anchored, range: String.Index(utf16Offset: 0, in: name)..<String.Index(utf16Offset: oldPrefix.count, in: name))
