@@ -469,23 +469,31 @@ public struct CXXGenerator {
     }
     
     func createMachineFiles(root: URL, machine: Machine) -> [String: FileWrapper]? {
+        var files: [String: FileWrapper] = [:]
         guard
-            let _ = self.helpers.createFile("\(machine.name).h", inDirectory: root, withContents: machineHFile(machineName: machine.name, numberOfStates: machine.states.count)),
-            let _ = self.helpers.createFile("\(machine.name).mm", inDirectory: root, withContents: machineMMFile(
+            let machineHFile = createFileWrapper(in: root, called: "\(machine.name).h", with: machineHFile(machineName: machine.name, numberOfStates: machine.states.count)),
+            let machineMMFile = createFileWrapper(in: root, called: "\(machine.name).mm", with: machineMMFile(
                 machineName: machine.name,
                 states: machine.states,
                 initialState: machine.initialState,
                 suspendState: machine.suspendedState
             )),
-            let _ = self.helpers.createFile("\(machine.name)_FuncRefs.mm", inDirectory: root, withContents: machine.funcRefs),
-            let _ = self.helpers.createFile("\(machine.name)_Includes.h", inDirectory: root, withContents: machine.includes),
-            let _ = self.helpers.createFile("\(machine.name)_Methods.h", inDirectory: root, withContents: ""),
-            let _ = self.helpers.createFile("\(machine.name)_VarRefs.mm", inDirectory: root, withContents: machineVarRefs(machineName: machine.name, variables: machine.machineVariables)),
-            let _ = self.helpers.createFile("\(machine.name)_Variables.h", inDirectory: root, withContents: machineVariables(machineName: machine.name, variables: machine.machineVariables))
+            let machineFuncRefs = createFileWrapper(in: root, called: "\(machine.name)_FuncRefs.mm", with: machine.funcRefs),
+            let machineIncludes = createFileWrapper(in: root, called: "\(machine.name)_Includes.h", with: machine.includes),
+            let machineMethods = createFileWrapper(in: root, called: "\(machine.name)_Methods.h", with: ""),
+            let machineVarRefs = createFileWrapper(in: root, called: "\(machine.name)_VarRefs.mm", with: machineVarRefs(machineName: machine.name, variables: machine.machineVariables)),
+            let machineVariables = createFileWrapper(in: root, called: "\(machine.name)_Variables.h", with: machineVariables(machineName: machine.name, variables: machine.machineVariables))
         else {
-            return false
+            return nil
         }
-        return true
+        files["\(machine.name).h"] = machineHFile
+        files["\(machine.name).mm"] = machineMMFile
+        files["\(machine.name)_FuncRefs.mm"] = machineFuncRefs
+        files["\(machine.name)_Includes.h"] = machineIncludes
+        files["\(machine.name)_Methods.h"] = machineMethods
+        files["\(machine.name)_VarRefs.mm"] = machineVarRefs
+        files["\(machine.name)_Variables.h"] = machineVariables
+        return files
     }
     
     func createTransitionFiles(root: URL, transitions: [Transition]) -> Bool {
