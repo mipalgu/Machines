@@ -22,7 +22,13 @@ public struct CXXGenerator {
             helpers.deleteItem(atPath: machine.path),
             helpers.createDirectory(atPath: machine.path),
             let includePath = createIncludePaths(root: machine.path, paths: machine.includePaths),
-            createStatesFiles(root: machine.path, machineName: machine.name, states: machine.states, allTransitions: machine.transitions, actions: machine.actionDisplayOrder),
+            let statesFiles = createStatesFiles(
+                root: machine.path,
+                machineName: machine.name,
+                states: machine.states,
+                allTransitions: machine.transitions,
+                actions: machine.actionDisplayOrder
+            ),
             createMachineFiles(root: machine.path, machine: machine),
             createTransitionFiles(root: machine.path, transitions: machine.transitions)
         else {
@@ -462,7 +468,7 @@ public struct CXXGenerator {
          """
     }
     
-    func createMachineFiles(root: URL, machine: Machine) -> Bool {
+    func createMachineFiles(root: URL, machine: Machine) -> [String: FileWrapper]? {
         guard
             let _ = self.helpers.createFile("\(machine.name).h", inDirectory: root, withContents: machineHFile(machineName: machine.name, numberOfStates: machine.states.count)),
             let _ = self.helpers.createFile("\(machine.name).mm", inDirectory: root, withContents: machineMMFile(
