@@ -22,6 +22,11 @@ jobs:
         repository: mipalgu/Machines
         path: Machines 
 
+    - name: Build Machines
+      run: |
+        cd Machines
+        swift build
+
     - name: Copy Readme.md and .jazzy.yaml
       run: |
         cp Machines/README.md .
