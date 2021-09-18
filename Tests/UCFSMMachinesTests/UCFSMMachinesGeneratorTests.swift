@@ -34,10 +34,9 @@ public class UCFSMMachinesGeneratorTests: XCTestCase {
         let machine = Machine(ucfsmMachine: wrapper1!)
         XCTAssertNotNil(machine)
         let path2 = URL(fileURLWithPath: "\(packageRootPath)/machines/UltrasonicDiscrete_Written.machine")
-        let machine2 = machine!
-        let wrapper2 = machine2.fileWrapper
-        XCTAssertNotNil(wrapper2)
 //        XCTAssertNotNil(FileHelpers().deleteItem(atPath: path2))
+        let wrapper2 = machine?.fileWrapper
+        XCTAssertNotNil(wrapper2)
         let _ = try? wrapper2!.write(to: path2, options: .atomic, originalContentsURL: nil)
         print(wrapper2)
     }
