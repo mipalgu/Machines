@@ -9,6 +9,7 @@
 import XCTest
 import CXXBase
 import CLFSMMachines
+import IO
 
 
 public class UCFSMMachinesGeneratorTests: XCTestCase {
@@ -31,12 +32,12 @@ public class UCFSMMachinesGeneratorTests: XCTestCase {
         let machine = Machine(ucfsmMachineAtPath: path)
         XCTAssertNotNil(machine)
         let path2 = URL(fileURLWithPath: "\(packageRootPath)/machines/UltrasonicDiscrete_Written.machine")
-        var machine2 = machine!
-        machine2.path = path2
-        let result = machine2.write()
-        XCTAssertNotNil(result)
-        let writeResult = try? result!.1.write(to: machine2.path, options: .atomic, originalContentsURL: machine2.path)
-        print(result!.1)
+        let machine2 = machine!
+        let wrapper = machine2.write()?.1
+        XCTAssertNotNil(wrapper)
+//        XCTAssertNotNil(FileHelpers().deleteItem(atPath: path2))
+        let _ = try? wrapper!.write(to: path2, options: .atomic, originalContentsURL: nil)
+        print(wrapper)
     }
     
 //    func test_write2() {
