@@ -159,11 +159,11 @@ public struct CXXGenerator {
         """
          void \(state)::\(action)::perform(CLMachine *_machine, CLState *_state) const
          {
-         #      include "\(machineName)_VarRefs.mm"
-         #      include "State_\(state)_VarRefs.mm"
-         #      include "\(machineName)_FuncRefs.mm"
-         #      include "State_\(state)_FuncRefs.mm"
-         #      include "State_\(state)_\(action).mm"
+         #\tinclude "\(machineName)_VarRefs.mm"
+         #\tinclude "State_\(state)_VarRefs.mm"
+         #\tinclude "\(machineName)_FuncRefs.mm"
+         #\tinclude "State_\(state)_FuncRefs.mm"
+         #\tinclude "State_\(state)_\(action).mm"
          }
          """
     }
@@ -172,15 +172,15 @@ public struct CXXGenerator {
         """
          bool \(state)::Transition_\(transition.priority)::check(CLMachine *_machine, CLState *_state) const
          {
-         #      include "\(machineName)_VarRefs.mm"
-         #      include "State_\(state)_VarRefs.mm"
-         #      include "\(machineName)_FuncRefs.mm"
-         #      include "State_\(state)_FuncRefs.mm"
-          
-                return
-                (
-         #              include "State_\(state)_Transition_\(transition.priority).expr"
-                );
+         #\tinclude "\(machineName)_VarRefs.mm"
+         #\tinclude "State_\(state)_VarRefs.mm"
+         #\tinclude "\(machineName)_FuncRefs.mm"
+         #\tinclude "State_\(state)_FuncRefs.mm"
+
+         \treturn
+         \t(
+         #\t\tinclude "State_\(state)_Transition_\(transition.priority).expr"
+         \t);
          }
          """
     }
@@ -197,12 +197,12 @@ public struct CXXGenerator {
     
     func actionDestructor(actions: [String]) -> String {
         if actions.count == 3 {
-            return "\(actions.map{ "   delete &\($0.prefix(1).lowercased() + $0.dropFirst())Action();" }.joined(separator: "\n    "))"
+            return "\(actions.map{ "\tdelete &\($0.prefix(1).lowercased() + $0.dropFirst())Action();" }.joined(separator: "\n"))"
         }
         if actions.count == 5 {
-            return "\(actions[0...2].map{ "   delete &\($0.prefix(1).lowercased() + $0.dropFirst())Action();" }.joined(separator: "\n    "))\n    \(actions[3...4].map{ "delete \($0.prefix(1).lowercased() + $0.dropFirst())Action();" }.joined(separator: "\n    "))"
+            return "\(actions[0...2].map{ "\tdelete &\($0.prefix(1).lowercased() + $0.dropFirst())Action();" }.joined(separator: "\n"))\n\(actions[3...4].map{ "\tdelete \($0.prefix(1).lowercased() + $0.dropFirst())Action();" }.joined(separator: "\n"))"
         }
-        return "   delete &onEntryAction();\n       delete &onExitAction();\n       delete &internalAction();"
+        return "\tdelete &onEntryAction();\n\tdelete &onExitAction();\n\tdelete &internalAction();"
     }
     
     func stateMMString(machineName: String, state: String, transitions: [Transition], actions: [String]) -> String {
@@ -211,6 +211,7 @@ public struct CXXGenerator {
          #include "\(machineName)_Includes.h"
          #include "\(machineName).h"
          #include "State_\(state).h"
+         
          #include "State_\(state)_Includes.h"
          
          using namespace FSM;
@@ -220,20 +221,20 @@ public struct CXXGenerator {
          
          \(state)::\(state)(const char *name): CLState(name, \(actionConstructor(actions: actions, state: state)))
          {
-             \(transitions.map { "   _transitions[\($0.priority)] = new Transition_\($0.priority)();" }.joined(separator: "\n    "))
+         \(transitions.map { "\t_transitions[\($0.priority)] = new Transition_\($0.priority)();" }.joined(separator: "\n"))
          }
          
          \(state)::~\(state)()
          {
-             \(actionDestructor(actions: actions))
+         \(actionDestructor(actions: actions))
 
-             \(transitions.map { "   delete _transitions[\($0.priority)];" }.joined(separator: "\n    "))
+         \(transitions.map { "\tdelete _transitions[\($0.priority)];" }.joined(separator: "\n"))
          }
          
          \(actions.map { actionPerform(machineName: machineName, state: state, action: $0) }.joined(separator: "\n\n"))
          
-         \(transitions.map { transitionCheck(machineName: machineName, state: state, transition: $0) }.joined(separator: "\n\n"))
-         
+         \(transitions.map { transitionCheck(machineName: machineName, state: state, transition: $0) }.joined(separator: "\n"))
+
          """
     }
     
