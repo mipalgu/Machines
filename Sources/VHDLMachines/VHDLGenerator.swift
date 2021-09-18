@@ -11,13 +11,12 @@ public struct VHDLGenerator {
     
     public init() {}
     
-    public func generate(machine: Machine) -> Bool {
+    public func generate(machine: Machine) -> FileWrapper? {
         let encoder = JSONEncoder()
         guard let data = try? encoder.encode(machine) else {
-            return false
+            return nil
         }
-        let isSuccess: ()? = try? data.write(to: machine.path)
-        return isSuccess != nil
+        return FileWrapper(regularFileWithContents: data)
     }
     
 }

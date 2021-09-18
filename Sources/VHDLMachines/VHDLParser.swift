@@ -9,10 +9,14 @@ import Foundation
 
 public struct VHDLParser {
     
-    public func parse(filePath: URL) throws -> Machine {
+    public func parse(wrapper: FileWrapper) -> Machine? {
         let decoder = JSONDecoder()
-        let data = try Data(contentsOf: filePath)
-        let machine = try decoder.decode(Machine.self, from: data)
+        guard
+            let data = wrapper.regularFileContents,
+            let machine = try? decoder.decode(Machine.self, from: data)
+        else {
+            return nil
+        }
         return machine
     }
     
