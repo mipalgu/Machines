@@ -12,7 +12,9 @@ public struct VHDLParser {
     public func parse(wrapper: FileWrapper) -> Machine? {
         let decoder = JSONDecoder()
         guard
-            let data = wrapper.regularFileContents,
+            let files = wrapper.fileWrappers,
+            let machineWrapper = files["machine.json"],
+            let data = machineWrapper.regularFileContents,
             let machine = try? decoder.decode(Machine.self, from: data)
         else {
             return nil

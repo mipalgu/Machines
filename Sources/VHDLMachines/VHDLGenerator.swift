@@ -16,7 +16,12 @@ public struct VHDLGenerator {
         guard let data = try? encoder.encode(machine) else {
             return nil
         }
-        return FileWrapper(regularFileWithContents: data)
+        let machineWrapper = FileWrapper(regularFileWithContents: data)
+        machineWrapper.preferredFilename = "machine.json"
+        let folderWrapper = FileWrapper(directoryWithFileWrappers: [:])
+        folderWrapper.preferredFilename = "\(machine.name).machine"
+        folderWrapper.addFileWrapper(machineWrapper)
+        return folderWrapper
     }
     
 }
