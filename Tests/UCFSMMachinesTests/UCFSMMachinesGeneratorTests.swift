@@ -28,16 +28,18 @@ public class UCFSMMachinesGeneratorTests: XCTestCase {
     }
     
     func test_write() {
-//        let path = URL(fileURLWithPath: "\(packageRootPath)/machines/UltrasonicDiscrete.machine")
-//        let machine = Machine(ucfsmMachineAtPath: path)
-//        XCTAssertNotNil(machine)
-//        let path2 = URL(fileURLWithPath: "\(packageRootPath)/machines/UltrasonicDiscrete_Written.machine")
-//        let machine2 = machine!
-//        let wrapper = machine2.write()?.1
-//        XCTAssertNotNil(wrapper)
-////        XCTAssertNotNil(FileHelpers().deleteItem(atPath: path2))
-//        let _ = try? wrapper!.write(to: path2, options: .atomic, originalContentsURL: nil)
-//        print(wrapper)
+        let path = URL(fileURLWithPath: "\(packageRootPath)/machines/UltrasonicDiscrete.machine")
+        let wrapper1 = try? FileWrapper(url: path, options: .immediate)
+        XCTAssertNotNil(wrapper1)
+        let machine = Machine(ucfsmMachine: wrapper1!)
+        XCTAssertNotNil(machine)
+        let path2 = URL(fileURLWithPath: "\(packageRootPath)/machines/UltrasonicDiscrete_Written.machine")
+        let machine2 = machine!
+        let wrapper2 = machine2.fileWrapper
+        XCTAssertNotNil(wrapper2)
+//        XCTAssertNotNil(FileHelpers().deleteItem(atPath: path2))
+        let _ = try? wrapper2!.write(to: path2, options: .atomic, originalContentsURL: nil)
+        print(wrapper2)
     }
     
 //    func test_write2() {

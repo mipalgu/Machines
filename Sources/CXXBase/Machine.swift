@@ -21,6 +21,10 @@ public struct Machine: Codable, Hashable {
     public var suspendedState: Int?
     public var actionDisplayOrder: [String]
     
+    public var fileWrapper: CXXFileWrapper? {
+        CXXGenerator().generate(machine: self)
+    }
+    
     public init(name: String, includes: String, includePaths: [String], funcRefs: String, states: [State], transitions: [Transition], machineVariables: [Variable], initialState: Int, suspendedState: Int?, actionDisplayOrder: [String]) {
         self.name = name
 //        self.path = path
@@ -33,11 +37,6 @@ public struct Machine: Codable, Hashable {
         self.initialState = initialState
         self.suspendedState = suspendedState
         self.actionDisplayOrder = actionDisplayOrder
-    }
-    
-    public func write() -> CXXFileWrapper? {
-        let generator = CXXGenerator()
-        return generator.generate(machine: self)
     }
     
 }
