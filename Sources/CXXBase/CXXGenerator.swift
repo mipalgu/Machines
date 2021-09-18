@@ -10,6 +10,8 @@ import IO
 
 public struct CXXGenerator {
     
+    public init() {}
+    
 //    var helpers: FileHelpers
 //
 //    public init(helpers: FileHelpers = FileHelpers()) {
