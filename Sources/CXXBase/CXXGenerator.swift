@@ -38,7 +38,7 @@ public struct CXXGenerator {
         files.merge(statesFiles, uniquingKeysWith: { (f1, _) in return f1 })
         files.merge(machineFiles, uniquingKeysWith: { (f1, _) in return f1 })
         files.merge(transitionFiles, uniquingKeysWith: { (f1, _) in return f1 })
-        var fileWrapper = CXXFileWrapper(directoryWithFileWrappers: files)
+        let fileWrapper = CXXFileWrapper(directoryWithFileWrappers: files, machine: machine)
         fileWrapper.filename = "\(machine.name).machine"
         return (machine.path, fileWrapper)
     }
@@ -506,7 +506,7 @@ public struct CXXGenerator {
         var files: [String: FileWrapper] = [:]
         for transition in transitions {
             let fileName = "State_\(transition.source)_Transition_\(transition.priority).expr"
-            guard let transitionWrapper = createFileWrapper(in: root, called: fileName, with: transition.condition) else {
+            guard let transitionWrapper = createFileWrapper(in: root, called: fileName, with: "\(transition.condition)\n") else {
                 return nil
             }
             files[fileName] = transitionWrapper
