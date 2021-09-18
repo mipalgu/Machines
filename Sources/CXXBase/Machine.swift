@@ -10,7 +10,7 @@ import Foundation
 public struct Machine: Codable, Hashable {
     
     public var name: String
-    public var path: URL
+//    public var path: URL
     public var includes: String
     public var includePaths: [String]
     public var funcRefs: String
@@ -21,9 +21,9 @@ public struct Machine: Codable, Hashable {
     public var suspendedState: Int?
     public var actionDisplayOrder: [String]
     
-    public init(name: String, path: URL, includes: String, includePaths: [String], funcRefs: String, states: [State], transitions: [Transition], machineVariables: [Variable], initialState: Int, suspendedState: Int?, actionDisplayOrder: [String]) {
+    public init(name: String, includes: String, includePaths: [String], funcRefs: String, states: [State], transitions: [Transition], machineVariables: [Variable], initialState: Int, suspendedState: Int?, actionDisplayOrder: [String]) {
         self.name = name
-        self.path = path
+//        self.path = path
         self.includes = includes
         self.includePaths = includePaths
         self.funcRefs = funcRefs
@@ -35,7 +35,7 @@ public struct Machine: Codable, Hashable {
         self.actionDisplayOrder = actionDisplayOrder
     }
     
-    public func write() -> (URL, CXXFileWrapper)? {
+    public func write() -> CXXFileWrapper? {
         let generator = CXXGenerator()
         return generator.generate(machine: self)
     }

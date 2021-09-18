@@ -33,7 +33,6 @@ public struct CXXParser {
         let transitions = createTransitions(files: files, states: states)
         return Machine(
             name: name,
-            path: location,
             includes: includes,
             includePaths: includePaths,
             funcRefs: funcRefs,

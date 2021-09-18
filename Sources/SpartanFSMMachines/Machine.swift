@@ -10,9 +10,9 @@ import CXXBase
 
 extension Machine {
     
-    public init?(spartanfsmMachineAtPath path: URL) {
+    public init?(spartanfsmMachine wrapper: FileWrapper) {
         let parser = SpartanFSMParser()
-        guard let temp = parser.parseMachine(location: path) else {
+        guard let temp = parser.parseMachine(wrapper: wrapper) else {
             return nil
         }
         self = temp

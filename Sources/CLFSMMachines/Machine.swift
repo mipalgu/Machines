@@ -10,9 +10,9 @@ import CXXBase
 
 extension Machine {
     
-    public init?(clfsmMachineAtPath path: URL) {
+    public init?(clfsmMachine wrapper: FileWrapper) {
         let parser = CLFSMParser()
-        guard let temp = parser.parseMachine(location: path) else {
+        guard let temp = parser.parseMachine(wrapper: wrapper) else {
             return nil
         }
         self = temp

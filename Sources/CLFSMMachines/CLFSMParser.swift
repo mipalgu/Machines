@@ -12,8 +12,8 @@ public struct CLFSMParser {
     
     var parser: CXXParser
     
-    public func parseMachine(location: URL) -> Machine? {
-        parser.parseMachine(location: location)
+    public func parseMachine(wrapper: FileWrapper) -> Machine? {
+        parser.parseMachine(wrapper)
     }
     
     public init() {
