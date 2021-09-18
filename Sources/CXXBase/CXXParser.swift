@@ -15,25 +15,39 @@ public struct CXXParser {
         self.actions = actions
     }
     
-    public func parseMachine(location: URL) -> Machine? {
-        guard let stateNames = getStateNames(location: location),
-              let states = createStates(root: location, states: stateNames),
-              let includePaths = getIncludePaths(root: location),
-              let name = getName(location: location),
-              let includes = getIncludes(root: location, machineName: name),
-              let funcRefs = getFuncRefs(root: location, machineName: name),
-              let variables = createVariables(root: location, fileName: name),
-              let initialState = getInitialState(root: location, machineName: name, states: states)
+    public func parseMachine(_ wrapper: FileWrapper) -> Machine? {
+        guard
+            let files = wrapper.fileWrappers,
+            let stateNames = getStateNames(files: files),
+            let states = createStates(files: files, states: stateNames),
+            let includePaths = getIncludePaths(files: files),
+            let name = getName(wrapper: wrapper),
+            let includes = getIncludes(files: files, machineName: name),
+            let funcRefs = getFuncRefs(files: files, machineName: name),
+            let variables = createVariables(files: files, fileName: name),
+            let initialState = getInitialState(files: files, machineName: name, states: states)
         else {
             return nil
         }
-        let suspendedState = getSuspendedState(location: location, machineName: name, states: states)
-        let transitions = createTransitions(root: location, states: states)
-        return Machine(name: name, path: location, includes: includes, includePaths: includePaths, funcRefs: funcRefs, states: states, transitions: transitions, machineVariables: variables, initialState: initialState, suspendedState: suspendedState, actionDisplayOrder: actions)
+        let suspendedState = getSuspendedState(files: files, machineName: name, states: states)
+        let transitions = createTransitions(files: files, states: states)
+        return Machine(
+            name: name,
+            path: location,
+            includes: includes,
+            includePaths: includePaths,
+            funcRefs: funcRefs,
+            states: states,
+            transitions: transitions,
+            machineVariables: variables,
+            initialState: initialState,
+            suspendedState: suspendedState,
+            actionDisplayOrder: actions
+        )
     }
     
-    func getSuspendedState(location: URL, machineName: String, states: [State]) -> Int? {
-        let data = try? String(contentsOf: location.appendingPathComponent("\(machineName).mm"))
+    func getSuspendedState(files: [String: FileWrapper], machineName: String, states: [State]) -> Int? {
+        let data = readFile(named: "\(machineName).mm", in: files)
         guard let components = data?.components(separatedBy: "setSuspendState(_states["),
               components.count > 1
         else {
@@ -47,24 +61,39 @@ public struct CXXParser {
         return Int(rhsComponents[0])
     }
     
-    func getName(location: URL) -> String? {
-        return location.lastPathComponent.components(separatedBy: ".machine").first
+    func getName(wrapper: FileWrapper) -> String? {
+        wrapper.filename?.components(separatedBy: ".machine").first
     }
     
-    func getStateNames(location: URL) -> [String]? {
-        let statesFile = location.appendingPathComponent("States")
-        let contents = try? String(contentsOf: statesFile)
-        return contents?.components(separatedBy: "\n")
+    func getStateNames(files: [String: FileWrapper]) -> [String]? {
+        guard
+            let statesFile = files["States"],
+            let statesData = statesFile.regularFileContents,
+            let contents = String(data: statesData, encoding: .utf8)
+        else {
+            return nil
+        }
+        return contents.components(separatedBy: "\n")
     }
     
-    func getAction(root: URL, state: String, action: String) -> String? {
-        try? String(contentsOf: root.appendingPathComponent("State_" + state + "_" + action + ".mm"))
+    private func readFile(named: String, in files: [String: FileWrapper]) -> String? {
+        guard
+            let file = files[named],
+            let data = file.regularFileContents
+        else {
+            return nil
+        }
+        return String(data: data, encoding: .utf8)
     }
     
-    func getActions(root: URL, state: String) -> [String: String]? {
+    func getAction(files: [String: FileWrapper], state: String, action: String) -> String? {
+        readFile(named: "State_" + state + "_" + action + ".mm", in: files)
+    }
+    
+    func getActions(files: [String: FileWrapper], state: String) -> [String: String]? {
         var actionCode: [String: String] = [:]
         for action in actions {
-            guard let code = getAction(root: root, state: state, action: action) else {
+            guard let code = getAction(files: files, state: state, action: action) else {
                 return nil
             }
             actionCode[action] = code
@@ -72,20 +101,20 @@ public struct CXXParser {
         return actionCode
     }
     
-    func createState(root: URL, name: String) -> State? {
+    func createState(files: [String: FileWrapper], name: String) -> State? {
         guard
-            let actions = getActions(root: root, state: name),
-            let variables = createVariables(root: root, fileName: "State_" + name)
+            let actions = getActions(files: files, state: name),
+            let variables = createVariables(files: files, fileName: "State_" + name)
         else {
             return nil;
         }
         return State(name: name, variables: variables, actions: actions)
     }
     
-    func createStates(root: URL, states: [String]) -> [State]? {
+    func createStates(files: [String: FileWrapper], states: [String]) -> [State]? {
         var stateObjs: [State] = []
         for state in states {
-            guard let stateObj = createState(root: root, name: state) else {
+            guard let stateObj = createState(files: files, name: state) else {
                 return nil
             }
             stateObjs.append(stateObj)
@@ -93,16 +122,16 @@ public struct CXXParser {
         return stateObjs
     }
     
-    func getIncludes(root: URL, machineName: String) -> String? {
-        try? String(contentsOf: root.appendingPathComponent(machineName + "_Includes.h"))
+    func getIncludes(files: [String: FileWrapper], machineName: String) -> String? {
+        readFile(named: machineName + "_Includes.h", in: files)
     }
     
-    func getFuncRefs(root: URL, machineName: String) -> String? {
-        try? String(contentsOf: root.appendingPathComponent(machineName + "_FuncRefs.mm"))
+    func getFuncRefs(files: [String: FileWrapper], machineName: String) -> String? {
+        readFile(named: machineName + "_FuncRefs.mm", in: files)
     }
     
-    func getVariables(root: URL, fileName: String) -> [String]? {
-        (try? String(contentsOf: root.appendingPathComponent(fileName + "_Variables.h")))?.components(separatedBy: "\n")
+    func getVariables(files: [String: FileWrapper], fileName: String) -> [String]? {
+        readFile(named: fileName + "_Variables.h", in: files)?.components(separatedBy: .newlines)
     }
     
     func createVariable(variable: String) -> Variable? {
@@ -124,14 +153,13 @@ public struct CXXParser {
         commentStr.components(separatedBy: "///<").last?.trimmingCharacters(in: .whitespaces)
     }
     
-    func createVariables(root: URL, fileName: String) -> [Variable]? {
-        guard let data = getVariables(root: root, fileName: fileName) else {
+    func createVariables(files: [String: FileWrapper], fileName: String) -> [Variable]? {
+        guard let data = getVariables(files: files, fileName: fileName) else {
             return nil
         }
         let variableStrings = data.filter {
             if $0.hasPrefix("//") {
                 return false
-                
             }
             return $0.trimmingCharacters(in: .whitespacesAndNewlines) != ""
         }
@@ -145,17 +173,19 @@ public struct CXXParser {
         return variables
     }
     
-    func readTransitionExpression(root: URL, state: String, number: UInt) -> String? {
-        (try? String(contentsOf: root.appendingPathComponent("State_" + state + "_Transition_" + String(number) + ".expr")))?.trimmingCharacters(in: .whitespacesAndNewlines)
+    func readTransitionExpression(files: [String: FileWrapper], state: String, number: UInt) -> String? {
+        readFile(named: "State_" + state + "_Transition_" + String(number) + ".expr", in: files)?.trimmingCharacters(in: .whitespacesAndNewlines)
     }
     
-    func readStateFile(root: URL, state: String) -> String? {
-        try? String(contentsOf: root.appendingPathComponent("State_" + state + ".h"))
+    func readStateFile(files: [String: FileWrapper], state: String) -> String? {
+        readFile(named: "State_" + state + ".h", in: files)
     }
     
-    fileprivate func getTransitionTarget(root: URL, state: Int, number: UInt, states: [State]) -> State? {
-        guard state < states.count,
-              let contents = readStateFile(root: root, state: states[Int(state)].name) else {
+    fileprivate func getTransitionTarget(files: [String: FileWrapper], state: Int, number: UInt, states: [State]) -> State? {
+        guard
+            state < states.count,
+            let contents = readStateFile(files: files, state: states[Int(state)].name)
+        else {
             return nil
         }
         let components = contents.components(separatedBy: "Transition_" + String(number) + "(int toState = ")
@@ -169,23 +199,25 @@ public struct CXXParser {
         return states[intTargetNumber]
     }
     
-    fileprivate func createTransitionForState(root: URL, state: Int, number: UInt, states: [State]) -> Transition? {
+    fileprivate func createTransitionForState(files: [String: FileWrapper], state: Int, number: UInt, states: [State]) -> Transition? {
         let source = states[state]
-        guard let target = getTransitionTarget(root: root, state: state, number: number, states: states),
-              let expression = readTransitionExpression(root: root, state: source.name, number: number) else {
+        guard
+            let target = getTransitionTarget(files: files, state: state, number: number, states: states),
+            let expression = readTransitionExpression(files: files, state: source.name, number: number)
+        else {
             return nil
         }
         return Transition(source: source.name, target: target.name, condition: expression, priority: number)
     }
     
-    func createTransitionsForState(root: URL, state: Int, states: [State]) -> [Transition] {
+    func createTransitionsForState(files: [String: FileWrapper], state: Int, states: [State]) -> [Transition] {
         if state >= states.count || state < 0 {
             fatalError("Invalid state index")
         }
         var number: UInt = 0
         var transitions: [Transition] = []
         while true {
-            guard let transition = createTransitionForState(root: root, state: state, number: number, states: states) else {
+            guard let transition = createTransitionForState(files: files, state: state, number: number, states: states) else {
                 return transitions
             }
             transitions.append(transition)
@@ -193,23 +225,20 @@ public struct CXXParser {
         }
     }
     
-    func createTransitions(root: URL, states: [State]) -> [Transition] {
+    func createTransitions(files: [String: FileWrapper], states: [State]) -> [Transition] {
         var allTransitions: [Transition] = []
         for i in 0..<states.count {
-            allTransitions += createTransitionsForState(root: root, state: i, states: states)
+            allTransitions += createTransitionsForState(files: files, state: i, states: states)
         }
         return allTransitions
     }
     
-    func getIncludePaths(root: URL) -> [String]? {
-        guard let contents = try? String(contentsOf: root.appendingPathComponent("IncludePath")) else {
-            return nil
-        }
-        return contents.components(separatedBy: "\n")
+    func getIncludePaths(files: [String: FileWrapper]) -> [String]? {
+        readFile(named: "IncludePath", in: files)?.components(separatedBy: .newlines)
     }
     
-    func getInitialState(root: URL, machineName: String, states: [State]) -> Int? {
-        let contents = try? String(contentsOf: root.appendingPathComponent("\(machineName).mm"))
+    func getInitialState(files: [String: FileWrapper], machineName: String, states: [State]) -> Int? {
+        let contents = readFile(named: "\(machineName).mm", in: files)
         guard
             let components = contents?.components(separatedBy: "setInitialState(_states["),
             components.count == 2,
