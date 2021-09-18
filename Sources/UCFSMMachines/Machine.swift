@@ -10,9 +10,9 @@ import CXXBase
 
 extension Machine {
     
-    public init?(ucfsmMachineAtPath path: URL) {
+    public init?(ucfsmMachine wrapper: FileWrapper) {
         let parser = UCFSMParser()
-        guard let temp = parser.parseMachine(location: path) else {
+        guard let temp = parser.parseMachine(wrapper: wrapper) else {
             return nil
         }
         self = temp

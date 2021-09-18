@@ -16,8 +16,8 @@ struct SpartanFSMParser {
         parser = CXXParser(actions: ["OnEntry", "OnExit", "Internal", "OnSuspend", "OnResume"])
     }
     
-    public func parseMachine(location: URL) -> Machine? {
-        parser.parseMachine(location: location)
+    public func parseMachine(wrapper: FileWrapper) -> Machine? {
+        parser.parseMachine(wrapper)
     }
     
 }

@@ -34,8 +34,7 @@ public final class CXXFileWrapper: FileWrapper {
             return try super.write(to: url, options: options, originalContentsURL: originalContentsURL)
         }
         machine.name = machineName
-        machine.path = url
-        guard let newWrapper = CXXGenerator().generate(machine: machine)?.1 else {
+        guard let newWrapper = CXXGenerator().generate(machine: machine) else {
             fatalError("Cannot generate new machine files")
         }
         return try newWrapper.write(to: url, options: options, originalContentsURL: originalContentsURL)

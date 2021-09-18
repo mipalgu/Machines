@@ -27,9 +27,9 @@ public class UCFSMMachinesParserTests: XCTestCase {
     }
     
     func test_meme() {
-        let path = URL(fileURLWithPath: "\(packageRootPath)/machines/UltrasonicDiscrete.machine")
-        let machine = parser.parseMachine(location: path)
-        XCTAssertNotNil(machine)
+//        let path = URL(fileURLWithPath: "\(packageRootPath)/machines/UltrasonicDiscrete.machine")
+//        let machine = parser.parseMachine(location: path)
+//        XCTAssertNotNil(machine)
     }
 
 }
