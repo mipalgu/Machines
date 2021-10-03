@@ -7,6 +7,9 @@
 
 import Foundation
 import CXXBase
+#if os(Linux)
+import IO
+#endif
 
 struct SpartanFSMParser {
     

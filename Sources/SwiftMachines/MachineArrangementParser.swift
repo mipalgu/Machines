@@ -57,6 +57,9 @@
  */
 
 import Foundation
+#if os(Linux)
+import IO
+#endif
 
 public final class MachineArrangementParser {
     

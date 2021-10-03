@@ -58,6 +58,9 @@
 
 import Foundation
 import SwiftMachines
+#if os(Linux)
+import IO
+#endif
 
 public final class MachineGenerator {
     
