@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Machine Structure Reference</title>
+    <link rel="stylesheet" type="text/css" href="../css/jazzy.css" />
+    <link rel="stylesheet" type="text/css" href="../css/highlight.css" />
+    <meta charset="utf-8">
+    <script src="../js/jquery.min.js" defer></script>
+    <script src="../js/jazzy.js" defer></script>
+    
+    <script src="../js/lunr.min.js" defer></script>
+    <script src="../js/typeahead.jquery.js" defer></script>
+    <script src="../js/jazzy.search.js" defer></script>
+  </head>
+  <body>
+
+    <a name="//apple_ref/swift/Struct/Machine" class="dashAnchor"></a>
+
+    <a title="Machine Structure Reference"></a>
+
+    <header class="header">
+      <p class="header-col header-col--primary">
+        <a class="header-link" href="../index.html">
+           Docs
+        </a>
+         (1% documented)
+      </p>
+    
+      <p class="header-col--secondary">
+        <form role="search" action="../search.json">
+          <input type="text" placeholder="Search documentation" data-typeahead>
+        </form>
+      </p>
+    
+        <p class="header-col header-col--secondary">
+          <a class="header-link" href="https://github.com/mipalgu/Machines">
+            <img class="header-icon" src="../img/gh.png"/>
+            View on GitHub
+          </a>
+        </p>
+    
+        <p class="header-col header-col--secondary">
+          <a class="header-link" href="dash-feed://https%3A%2F%2Fmipalgu.github.io%2FMachines%2Fdocsets%2F.xml">
+            <img class="header-icon" src="../img/dash.png"/>
+            Install in Dash
+          </a>
+        </p>
+    </header>
+
+    <p class="breadcrumbs">
+      <a class="breadcrumb" href="../index.html"> Reference</a>
+      <img class="carat" src="../img/carat.png" />
+      Machine Structure Reference
+    </p>
+
+    <div class="content-wrapper">
+      <nav class="navigation">
+        <ul class="nav-groups">
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Classes.html">Classes</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/CXXFileWrapper.html">CXXFileWrapper</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/Invoker.html">Invoker</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/MachineArrangementCompiler.html">MachineArrangementCompiler</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/MachineArrangementGenerator.html">MachineArrangementGenerator</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/MachineArrangementParser.html">MachineArrangementParser</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/MachineArrangmentAssembler.html">MachineArrangmentAssembler</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/MachineAssembler.html">MachineAssembler</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/MachineAssembler.html">MachineAssembler</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/MachineCompiler.html">MachineCompiler</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/MachineGenerator.html">MachineGenerator</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/MachineGenerator.html">MachineGenerator</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/MachineParser.html">MachineParser</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/MachineParser.html">MachineParser</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/PackageInitializer.html">PackageInitializer</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/VarParser.html">VarParser</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/VariableHelpers.html">VariableHelpers</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Global%20Variables.html">Global Variables</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Global%20Variables.html#/s:13SwiftMachines22SWIFT_MACHINES_VERSIONSdvp">SWIFT_MACHINES_VERSION</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Enums.html">Enumerations</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/Machine.html">Machine</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/Mode.html">Mode</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/PackageType.html">PackageType</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/SwiftBuildConfig.html">SwiftBuildConfig</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Extensions.html">Extensions</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Extensions/URL.html">URL</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Protocols.html">Protocols</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/Assembler.html">Assembler</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/ErrorContainer.html">ErrorContainer</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/ExternalType.html">ExternalType</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/Variable.html">Variable</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Structs.html">Structures</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Action.html">Action</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Arrangement.html">Arrangement</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Arrangement.html">Arrangement</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/CLFSMParser.html">CLFSMParser</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/CXXGenerator.html">CXXGenerator</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/CXXParser.html">CXXParser</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Clock.html">Clock</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Clock/FrequencyUnit.html">– FrequencyUnit</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/DispatchGroup.html">DispatchGroup</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/DispatchItem.html">DispatchItem</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/DispatchTable.html">DispatchTable</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/DispatchTable.html#/s:13SwiftMachines13DispatchTableV5ErrorV">– Error</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ExternalSignal.html">ExternalSignal</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ExternalVariable.html">ExternalVariable</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ExternalVariables.html">ExternalVariables</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Machine.html">Machine</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Machine.html">Machine</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Machine/Dependency.html">– Dependency</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Machine.html">Machine</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MachineSignal.html">MachineSignal</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Model.html">Model</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/NamespacedDependency.html">NamespacedDependency</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/PackageDependency.html">PackageDependency</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Parameter.html">Parameter</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ReturnableVariable.html">ReturnableVariable</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Ringlet.html">Ringlet</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/State.html">State</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/State.html">State</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/State.html">State</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Transition.html">Transition</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Transition.html">Transition</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Transition.html">Transition</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/UCFSMParser.html">UCFSMParser</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/VHDLCompiler.html">VHDLCompiler</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/VHDLGenerator.html">VHDLGenerator</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/VHDLParser.html">VHDLParser</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/VHDLVariable.html">VHDLVariable</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Variable.html">Variable</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Variable/AccessType.html">– AccessType</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Variable.html">Variable</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Typealiases.html">Type Aliases</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:12VHDLMachines10ActionNamea">ActionName</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:12VHDLMachines11MachineNamea">MachineName</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:12VHDLMachines13ParameterTypea">ParameterType</a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+      <article class="main-content">
+
+        <section class="section">
+          <div class="section-content top-matter">
+            <h1>Machine</h1>
+              <div class="declaration">
+                <div class="language">
+                  
+                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt"><a href="../Enums/Machine.html">Machine</a></span> <span class="p">:</span> <span class="kt">Codable</span></code></pre>
+
+                </div>
+              </div>
+            <p>Undocumented</p>
+
+              <div class="slightly-smaller">
+                <a href="https://github.com/mipalgu/Machines/tree/main/Machines/Sources/VHDLMachines/Machine.swift#L10-L96">Show on GitHub</a>
+              </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-content">
+            <div class="task-group">
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12VHDLMachines7MachineV4nameSSvp"></a>
+                    <a name="//apple_ref/swift/Property/name" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12VHDLMachines7MachineV4nameSSvp">name</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">name</span><span class="p">:</span> <span class="kt"><a href="../Typealiases.html#/s:12VHDLMachines11MachineNamea">MachineName</a></span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mipalgu/Machines/tree/main/Machines/Sources/VHDLMachines/Machine.swift#L">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12VHDLMachines7MachineV4path10Foundation3URLVvp"></a>
+                    <a name="//apple_ref/swift/Property/path" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12VHDLMachines7MachineV4path10Foundation3URLVvp">path</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">path</span><span class="p">:</span> <span class="kt">URL</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mipalgu/Machines/tree/main/Machines/Sources/VHDLMachines/Machine.swift#L">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12VHDLMachines7MachineV8includesSaySSGvp"></a>
+                    <a name="//apple_ref/swift/Property/includes" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12VHDLMachines7MachineV8includesSaySSGvp">includes</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">includes</span><span class="p">:</span> <span class="p">[</span><span class="kt">String</span><span class="p">]</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mipalgu/Machines/tree/main/Machines/Sources/VHDLMachines/Machine.swift#L">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12VHDLMachines7MachineV15externalSignalsSayAA14ExternalSignalVGvp"></a>
+                    <a name="//apple_ref/swift/Property/externalSignals" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12VHDLMachines7MachineV15externalSignalsSayAA14ExternalSignalVGvp">externalSignals</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">externalSignals</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Structs/ExternalSignal.html">ExternalSignal</a></span><span class="p">]</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mipalgu/Machines/tree/main/Machines/Sources/VHDLMachines/Machine.swift#L">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12VHDLMachines7MachineV8genericsSayAA12VHDLVariableVGvp"></a>
+                    <a name="//apple_ref/swift/Property/generics" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12VHDLMachines7MachineV8genericsSayAA12VHDLVariableVGvp">generics</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">generics</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Structs/VHDLVariable.html">VHDLVariable</a></span><span class="p">]</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mipalgu/Machines/tree/main/Machines/Sources/VHDLMachines/Machine.swift#L">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12VHDLMachines7MachineV6clocksSayAA5ClockVGvp"></a>
+                    <a name="//apple_ref/swift/Property/clocks" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12VHDLMachines7MachineV6clocksSayAA5ClockVGvp">clocks</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">clocks</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Structs/Clock.html">Clock</a></span><span class="p">]</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mipalgu/Machines/tree/main/Machines/Sources/VHDLMachines/Machine.swift#L">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12VHDLMachines7MachineV12drivingClockSivp"></a>
+                    <a name="//apple_ref/swift/Property/drivingClock" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12VHDLMachines7MachineV12drivingClockSivp">drivingClock</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">drivingClock</span><span class="p">:</span> <span class="kt">Int</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mipalgu/Machines/tree/main/Machines/Sources/VHDLMachines/Machine.swift#L">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12VHDLMachines7MachineV17dependentMachinesSDySS10Foundation3URLVGvp"></a>
+                    <a name="//apple_ref/swift/Property/dependentMachines" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12VHDLMachines7MachineV17dependentMachinesSDySS10Foundation3URLVGvp">dependentMachines</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">dependentMachines</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Typealiases.html#/s:12VHDLMachines11MachineNamea">MachineName</a></span> <span class="p">:</span> <span class="kt">URL</span><span class="p">]</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mipalgu/Machines/tree/main/Machines/Sources/VHDLMachines/Machine.swift#L">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12VHDLMachines7MachineV16machineVariablesSayAA12VHDLVariableVGvp"></a>
+                    <a name="//apple_ref/swift/Property/machineVariables" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12VHDLMachines7MachineV16machineVariablesSayAA12VHDLVariableVGvp">machineVariables</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">machineVariables</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Structs/VHDLVariable.html">VHDLVariable</a></span><span class="p">]</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mipalgu/Machines/tree/main/Machines/Sources/VHDLMachines/Machine.swift#L">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12VHDLMachines7MachineV14machineSignalsSayAA0B6SignalVGvp"></a>
+                    <a name="//apple_ref/swift/Property/machineSignals" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12VHDLMachines7MachineV14machineSignalsSayAA0B6SignalVGvp">machineSignals</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">machineSignals</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Structs/MachineSignal.html">MachineSignal</a></span><span class="p">]</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mipalgu/Machines/tree/main/Machines/Sources/VHDLMachines/Machine.swift#L">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12VHDLMachines7MachineV16parameterSignalsSayAA9ParameterVGvp"></a>
+                    <a name="//apple_ref/swift/Property/parameterSignals" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12VHDLMachines7MachineV16parameterSignalsSayAA9ParameterVGvp">parameterSignals</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">parameterSignals</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Structs/Parameter.html">Parameter</a></span><span class="p">]</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mipalgu/Machines/tree/main/Machines/Sources/VHDLMachines/Machine.swift#L">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12VHDLMachines7MachineV17returnableSignalsSayAA18ReturnableVariableVGvp"></a>
+                    <a name="//apple_ref/swift/Property/returnableSignals" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12VHDLMachines7MachineV17returnableSignalsSayAA18ReturnableVariableVGvp">returnableSignals</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">returnableSignals</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Structs/ReturnableVariable.html">ReturnableVariable</a></span><span class="p">]</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mipalgu/Machines/tree/main/Machines/Sources/VHDLMachines/Machine.swift#L">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12VHDLMachines7MachineV6statesSayAA5StateVGvp"></a>
+                    <a name="//apple_ref/swift/Property/states" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12VHDLMachines7MachineV6statesSayAA5StateVGvp">states</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">states</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Structs/State.html">State</a></span><span class="p">]</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mipalgu/Machines/tree/main/Machines/Sources/VHDLMachines/Machine.swift#L">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12VHDLMachines7MachineV11transitionsSayAA10TransitionVGvp"></a>
+                    <a name="//apple_ref/swift/Property/transitions" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12VHDLMachines7MachineV11transitionsSayAA10TransitionVGvp">transitions</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">transitions</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Structs/Transition.html">Transition</a></span><span class="p">]</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mipalgu/Machines/tree/main/Machines/Sources/VHDLMachines/Machine.swift#L">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12VHDLMachines7MachineV12initialStateSivp"></a>
+                    <a name="//apple_ref/swift/Property/initialState" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12VHDLMachines7MachineV12initialStateSivp">initialState</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">initialState</span><span class="p">:</span> <span class="kt">Int</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mipalgu/Machines/tree/main/Machines/Sources/VHDLMachines/Machine.swift#L">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12VHDLMachines7MachineV14suspendedStateSiSgvp"></a>
+                    <a name="//apple_ref/swift/Property/suspendedState" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12VHDLMachines7MachineV14suspendedStateSiSgvp">suspendedState</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">suspendedState</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mipalgu/Machines/tree/main/Machines/Sources/VHDLMachines/Machine.swift#L">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12VHDLMachines7MachineV16architectureHeadSSSgvp"></a>
+                    <a name="//apple_ref/swift/Property/architectureHead" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12VHDLMachines7MachineV16architectureHeadSSSgvp">architectureHead</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">architectureHead</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mipalgu/Machines/tree/main/Machines/Sources/VHDLMachines/Machine.swift#L">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12VHDLMachines7MachineV16architectureBodySSSgvp"></a>
+                    <a name="//apple_ref/swift/Property/architectureBody" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12VHDLMachines7MachineV16architectureBodySSSgvp">architectureBody</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">architectureBody</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mipalgu/Machines/tree/main/Machines/Sources/VHDLMachines/Machine.swift#L">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12VHDLMachines7MachineV15isParameterisedSbvp"></a>
+                    <a name="//apple_ref/swift/Property/isParameterised" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12VHDLMachines7MachineV15isParameterisedSbvp">isParameterised</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">isParameterised</span><span class="p">:</span> <span class="kt">Bool</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mipalgu/Machines/tree/main/Machines/Sources/VHDLMachines/Machine.swift#L50-L52">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12VHDLMachines7MachineV4name4path8includes15externalSignals8generics6clocks12drivingClock17dependentMachines16machineVariables0nG015isParameterised09parameterG0010returnableG06states11transitions12initialState09suspendedW016architectureHead0Y4BodyACSS_10Foundation3URLVSaySSGSayAA14ExternalSignalVGSayAA12VHDLVariableVGSayAA0K0VGSiSDySSAYGA4_SayAA0B6SignalVGSbSayAA9ParameterVGSayAA18ReturnableVariableVGSayAA0W0VGSayAA10TransitionVGS2iSgSSSgA25_tcfc"></a>
+                    <a name="//apple_ref/swift/Method/init(name:path:includes:externalSignals:generics:clocks:drivingClock:dependentMachines:machineVariables:machineSignals:isParameterised:parameterSignals:returnableSignals:states:transitions:initialState:suspendedState:architectureHead:architectureBody:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12VHDLMachines7MachineV4name4path8includes15externalSignals8generics6clocks12drivingClock17dependentMachines16machineVariables0nG015isParameterised09parameterG0010returnableG06states11transitions12initialState09suspendedW016architectureHead0Y4BodyACSS_10Foundation3URLVSaySSGSayAA14ExternalSignalVGSayAA12VHDLVariableVGSayAA0K0VGSiSDySSAYGA4_SayAA0B6SignalVGSbSayAA9ParameterVGSayAA18ReturnableVariableVGSayAA0W0VGSayAA10TransitionVGS2iSgSSSgA25_tcfc">init(name:<wbr>path:<wbr>includes:<wbr>externalSignals:<wbr>generics:<wbr>clocks:<wbr>drivingClock:<wbr>dependentMachines:<wbr>machineVariables:<wbr>machineSignals:<wbr>isParameterised:<wbr>parameterSignals:<wbr>returnableSignals:<wbr>states:<wbr>transitions:<wbr>initialState:<wbr>suspendedState:<wbr>architectureHead:<wbr>architectureBody:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span>
+    <span class="nv">name</span><span class="p">:</span> <span class="kt"><a href="../Typealiases.html#/s:12VHDLMachines11MachineNamea">MachineName</a></span><span class="p">,</span>
+    <span class="nv">path</span><span class="p">:</span> <span class="kt">URL</span><span class="p">,</span>
+    <span class="nv">includes</span><span class="p">:</span> <span class="p">[</span><span class="kt">String</span><span class="p">],</span>
+    <span class="nv">externalSignals</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Structs/ExternalSignal.html">ExternalSignal</a></span><span class="p">],</span>
+    <span class="nv">generics</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Structs/VHDLVariable.html">VHDLVariable</a></span><span class="p">],</span>
+    <span class="nv">clocks</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Structs/Clock.html">Clock</a></span><span class="p">],</span>
+    <span class="nv">drivingClock</span><span class="p">:</span> <span class="kt">Int</span><span class="p">,</span>
+    <span class="nv">dependentMachines</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Typealiases.html#/s:12VHDLMachines11MachineNamea">MachineName</a></span><span class="p">:</span> <span class="kt">URL</span><span class="p">],</span>
+    <span class="nv">machineVariables</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Structs/VHDLVariable.html">VHDLVariable</a></span><span class="p">],</span>
+    <span class="nv">machineSignals</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Structs/MachineSignal.html">MachineSignal</a></span><span class="p">],</span>
+    <span class="nv">isParameterised</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">,</span>
+    <span class="nv">parameterSignals</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Structs/Parameter.html">Parameter</a></span><span class="p">],</span>
+    <span class="nv">returnableSignals</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Structs/ReturnableVariable.html">ReturnableVariable</a></span><span class="p">],</span>
+    <span class="nv">states</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Structs/State.html">State</a></span><span class="p">],</span>
+    <span class="nv">transitions</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Structs/Transition.html">Transition</a></span><span class="p">],</span>
+    <span class="nv">initialState</span><span class="p">:</span> <span class="kt">Int</span><span class="p">,</span>
+    <span class="nv">suspendedState</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?,</span>
+    <span class="nv">architectureHead</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">architectureBody</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span>
+<span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mipalgu/Machines/tree/main/Machines/Sources/VHDLMachines/Machine.swift#L54-L94">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+      </article>
+    </div>
+    <section class="footer">
+      <p>&copy; 2021 <a class="link" href="" target="_blank" rel="noopener" rel="external">Callum McColl</a>. All rights reserved. (Last updated: 2021-10-03)</p>
+      <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="noopener" rel="external">jazzy ♪♫ v0.14.0</a>, a <a class="link" href="https://realm.io" target="_blank" rel="noopener" rel="external">Realm</a> project.</p>
+    </section>
+  </body>
+</div>
+</html>

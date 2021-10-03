@@ -1,0 +1,2714 @@
+{
+  "warnings": [
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/CLFSMMachines/CLFSMParser.swift",
+      "line": 14,
+      "symbol": "CLFSMParser",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/CLFSMMachines/CLFSMParser.swift",
+      "line": 18,
+      "symbol": "CLFSMParser.parseMachine(wrapper:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/CLFSMMachines/CLFSMParser.swift",
+      "line": 22,
+      "symbol": "CLFSMParser.init()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/CLFSMMachines/Machine.swift",
+      "line": 16,
+      "symbol": "Machine.init(clfsmMachine:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/CXXBase/CXXFileWrapper.swift",
+      "line": 13,
+      "symbol": "CXXFileWrapper",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/CXXBase/CXXFileWrapper.swift",
+      "line": 26,
+      "symbol": "CXXFileWrapper.write(to:options:originalContentsURL:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/CXXBase/CXXGenerator.swift",
+      "line": 11,
+      "symbol": "CXXGenerator",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/CXXBase/CXXGenerator.swift",
+      "line": 13,
+      "symbol": "CXXGenerator.init()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/CXXBase/CXXGenerator.swift",
+      "line": 21,
+      "symbol": "CXXGenerator.generate(machine:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/CXXBase/CXXParser.swift",
+      "line": 13,
+      "symbol": "CXXParser",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/CXXBase/CXXParser.swift",
+      "line": 17,
+      "symbol": "CXXParser.init(actions:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/CXXBase/CXXParser.swift",
+      "line": 21,
+      "symbol": "CXXParser.parseMachine(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/CXXBase/Machine.swift",
+      "line": 10,
+      "symbol": "Machine",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/CXXBase/Machine.swift",
+      "line": 12,
+      "symbol": "Machine.name",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/CXXBase/Machine.swift",
+      "line": 14,
+      "symbol": "Machine.includes",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/CXXBase/Machine.swift",
+      "line": 15,
+      "symbol": "Machine.includePaths",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/CXXBase/Machine.swift",
+      "line": 16,
+      "symbol": "Machine.funcRefs",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/CXXBase/Machine.swift",
+      "line": 17,
+      "symbol": "Machine.states",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/CXXBase/Machine.swift",
+      "line": 18,
+      "symbol": "Machine.transitions",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/CXXBase/Machine.swift",
+      "line": 19,
+      "symbol": "Machine.machineVariables",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/CXXBase/Machine.swift",
+      "line": 20,
+      "symbol": "Machine.initialState",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/CXXBase/Machine.swift",
+      "line": 21,
+      "symbol": "Machine.suspendedState",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/CXXBase/Machine.swift",
+      "line": 22,
+      "symbol": "Machine.actionDisplayOrder",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/CXXBase/Machine.swift",
+      "line": 24,
+      "symbol": "Machine.fileWrapper",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/CXXBase/Machine.swift",
+      "line": 28,
+      "symbol": "Machine.init(name:includes:includePaths:funcRefs:states:transitions:machineVariables:initialState:suspendedState:actionDisplayOrder:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/CXXBase/State.swift",
+      "line": 8,
+      "symbol": "State",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/CXXBase/State.swift",
+      "line": 9,
+      "symbol": "State.name",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/CXXBase/State.swift",
+      "line": 10,
+      "symbol": "State.variables",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/CXXBase/State.swift",
+      "line": 11,
+      "symbol": "State.actions",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/CXXBase/State.swift",
+      "line": 13,
+      "symbol": "State.init(name:variables:actions:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/CXXBase/Transition.swift",
+      "line": 8,
+      "symbol": "Transition",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/CXXBase/Transition.swift",
+      "line": 10,
+      "symbol": "Transition.source",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/CXXBase/Transition.swift",
+      "line": 11,
+      "symbol": "Transition.target",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/CXXBase/Transition.swift",
+      "line": 12,
+      "symbol": "Transition.condition",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/CXXBase/Transition.swift",
+      "line": 13,
+      "symbol": "Transition.priority",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/CXXBase/Transition.swift",
+      "line": 15,
+      "symbol": "Transition.init(source:target:condition:priority:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/CXXBase/Variable.swift",
+      "line": 10,
+      "symbol": "Variable",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/CXXBase/Variable.swift",
+      "line": 12,
+      "symbol": "Variable.type",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/CXXBase/Variable.swift",
+      "line": 13,
+      "symbol": "Variable.name",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/CXXBase/Variable.swift",
+      "line": 14,
+      "symbol": "Variable.value",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/CXXBase/Variable.swift",
+      "line": 15,
+      "symbol": "Variable.comment",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/CXXBase/Variable.swift",
+      "line": 17,
+      "symbol": "Variable.init(type:name:value:comment:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/Machines/Machine.swift",
+      "line": 61,
+      "symbol": "Machine",
+      "symbol_kind": "source.lang.swift.decl.enum",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/Machines/Machine.swift",
+      "line": 63,
+      "symbol": "Machine.cxxMachine",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/Machines/Machine.swift",
+      "line": 64,
+      "symbol": "Machine.swiftMachine(_:)",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/Machines/MachineAssembler.swift",
+      "line": 65,
+      "symbol": "MachineAssembler",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/Machines/MachineAssembler.swift",
+      "line": 67,
+      "symbol": "MachineAssembler.errors",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/Machines/MachineAssembler.swift",
+      "line": 69,
+      "symbol": "MachineAssembler.lastError",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/Machines/MachineAssembler.swift",
+      "line": 75,
+      "symbol": "MachineAssembler.init(swiftAssembler:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/Machines/MachineAssembler.swift",
+      "line": 79,
+      "symbol": "MachineAssembler.assemble(_:atDirectory:inDirectory:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/Machines/MachineGenerator.swift",
+      "line": 65,
+      "symbol": "MachineGenerator",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/Machines/MachineGenerator.swift",
+      "line": 67,
+      "symbol": "MachineGenerator.errors",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/Machines/MachineGenerator.swift",
+      "line": 71,
+      "symbol": "MachineGenerator.lastError",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/Machines/MachineGenerator.swift",
+      "line": 75,
+      "symbol": "MachineGenerator.init(swiftGenerator:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/Machines/MachineGenerator.swift",
+      "line": 79,
+      "symbol": "MachineGenerator.generate(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/Machines/MachineParser.swift",
+      "line": 62,
+      "symbol": "MachineParser",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/Machines/MachineParser.swift",
+      "line": 64,
+      "symbol": "MachineParser.errors",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/Machines/MachineParser.swift",
+      "line": 66,
+      "symbol": "MachineParser.lastError",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/Machines/MachineParser.swift",
+      "line": 72,
+      "symbol": "MachineParser.init(swiftParser:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/Machines/MachineParser.swift",
+      "line": 76,
+      "symbol": "MachineParser.parseMachine(atPath:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SpartanFSMMachines/Machine.swift",
+      "line": 16,
+      "symbol": "Machine.init(spartanfsmMachine:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Action.swift",
+      "line": 80,
+      "symbol": "Action.init(name:implementation:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Arrangement.swift",
+      "line": 61,
+      "symbol": "Arrangement",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Arrangement.swift",
+      "line": 63,
+      "symbol": "Arrangement.name",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Arrangement.swift",
+      "line": 65,
+      "symbol": "Arrangement.dependencies",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Arrangement.swift",
+      "line": 67,
+      "symbol": "Arrangement.dispatchTable",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Arrangement.swift",
+      "line": 69,
+      "symbol": "Arrangement.init(name:dependencies:dispatchTable:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Arrangement.swift",
+      "line": 75,
+      "symbol": "Arrangement.machines(relativeTo:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Arrangement.swift",
+      "line": 79,
+      "symbol": "Arrangement.flattenedMachines(relativeTo:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Arrangement.swift",
+      "line": 94,
+      "symbol": "Arrangement.namespacedDependencies(relativeTo:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Assembler.swift",
+      "line": 63,
+      "symbol": "Assembler",
+      "symbol_kind": "source.lang.swift.decl.protocol",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Assembler.swift",
+      "line": 65,
+      "symbol": "Assembler.assemble(_:atDirectory:inDirectory:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Assembler.swift",
+      "line": 67,
+      "symbol": "Assembler.packagePath(forMachine:builtInDirectory:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Dependency.swift",
+      "line": 61,
+      "symbol": "NamespacedDependency",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Dependency.swift",
+      "line": 63,
+      "symbol": "NamespacedDependency.name",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Dependency.swift",
+      "line": 65,
+      "symbol": "NamespacedDependency.dependencies",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/DispatchGroup.swift",
+      "line": 61,
+      "symbol": "DispatchGroup",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/DispatchGroup.swift",
+      "line": 76,
+      "symbol": "DispatchGroup.items",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/DispatchGroup.swift",
+      "line": 78,
+      "symbol": "DispatchGroup.asString",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/DispatchGroup.swift",
+      "line": 82,
+      "symbol": "DispatchGroup.init(items:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/DispatchItem.swift",
+      "line": 61,
+      "symbol": "DispatchItem",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/DispatchItem.swift",
+      "line": 73,
+      "symbol": "DispatchItem.startTime",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/DispatchItem.swift",
+      "line": 75,
+      "symbol": "DispatchItem.duration",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/DispatchItem.swift",
+      "line": 77,
+      "symbol": "DispatchItem.name",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/DispatchItem.swift",
+      "line": 79,
+      "symbol": "DispatchItem.asString",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/DispatchItem.swift",
+      "line": 83,
+      "symbol": "DispatchItem.init(startTime:duration:name:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/DispatchTable.swift",
+      "line": 62,
+      "symbol": "DispatchTable",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/DispatchTable.swift",
+      "line": 64,
+      "symbol": "DispatchTable.Error",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/DispatchTable.swift",
+      "line": 77,
+      "symbol": "DispatchTable.groups",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/DispatchTable.swift",
+      "line": 79,
+      "symbol": "DispatchTable.asString",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/DispatchTable.swift",
+      "line": 83,
+      "symbol": "DispatchTable.init(groups:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/DispatchTable.swift",
+      "line": 87,
+      "symbol": "DispatchTable.init(parsing:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/ErrorContainer.swift",
+      "line": 59,
+      "symbol": "ErrorContainer",
+      "symbol_kind": "source.lang.swift.decl.protocol",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/ErrorContainer.swift",
+      "line": 61,
+      "symbol": "ErrorContainer.errors",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/ErrorContainer.swift",
+      "line": 63,
+      "symbol": "ErrorContainer.lastError",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/ExternalVariables.swift",
+      "line": 59,
+      "symbol": "ExternalVariables",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/ExternalVariables.swift",
+      "line": 61,
+      "symbol": "ExternalVariables.label",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/ExternalVariables.swift",
+      "line": 63,
+      "symbol": "ExternalVariables.wbName",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/ExternalVariables.swift",
+      "line": 65,
+      "symbol": "ExternalVariables.messageType",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/ExternalVariables.swift",
+      "line": 67,
+      "symbol": "ExternalVariables.messageClass",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/ExternalVariables.swift",
+      "line": 69,
+      "symbol": "ExternalVariables.atomic",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/ExternalVariables.swift",
+      "line": 71,
+      "symbol": "ExternalVariables.shouldNotifySubscribers",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/ExternalVariables.swift",
+      "line": 73,
+      "symbol": "ExternalVariables.init(label:wbName:messageType:messageClass:atomic:shouldNotifySubscribers:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/ExternalVariables.swift",
+      "line": 91,
+      "symbol": "ExternalVariables",
+      "symbol_kind": "source.lang.swift.decl.extension",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Invoker.swift",
+      "line": 61,
+      "symbol": "Invoker",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Invoker.swift",
+      "line": 63,
+      "symbol": "Invoker.init()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Invoker.swift",
+      "line": 65,
+      "symbol": "Invoker.run(_:withArguments:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Machine.swift",
+      "line": 61,
+      "symbol": "Machine",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Machine.swift",
+      "line": 63,
+      "symbol": "Machine.Dependency",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Machine.swift",
+      "line": 65,
+      "symbol": "Machine.Dependency.name",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Machine.swift",
+      "line": 67,
+      "symbol": "Machine.Dependency.machineName",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Machine.swift",
+      "line": 69,
+      "symbol": "Machine.Dependency.pathComponent",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Machine.swift",
+      "line": 71,
+      "symbol": "Machine.Dependency.callName",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Machine.swift",
+      "line": 75,
+      "symbol": "Machine.Dependency.init(name:machineName:pathComponent:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Machine.swift",
+      "line": 81,
+      "symbol": "Machine.Dependency.init(name:pathComponent:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Machine.swift",
+      "line": 91,
+      "symbol": "Machine.Dependency.filePath(relativeTo:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Machine.swift",
+      "line": 101,
+      "symbol": "Machine.Dependency.machine(relativeTo:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Machine.swift",
+      "line": 116,
+      "symbol": "Machine.name",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Machine.swift",
+      "line": 118,
+      "symbol": "Machine.externalVariables",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Machine.swift",
+      "line": 120,
+      "symbol": "Machine.environmentVariables",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Machine.swift",
+      "line": 124,
+      "symbol": "Machine.actuators",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Machine.swift",
+      "line": 128,
+      "symbol": "Machine.sensors",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Machine.swift",
+      "line": 132,
+      "symbol": "Machine.packageDependencies",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Machine.swift",
+      "line": 134,
+      "symbol": "Machine.swiftIncludeSearchPaths",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Machine.swift",
+      "line": 136,
+      "symbol": "Machine.includeSearchPaths",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Machine.swift",
+      "line": 138,
+      "symbol": "Machine.libSearchPaths",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Machine.swift",
+      "line": 140,
+      "symbol": "Machine.imports",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Machine.swift",
+      "line": 142,
+      "symbol": "Machine.includes",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Machine.swift",
+      "line": 144,
+      "symbol": "Machine.vars",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Machine.swift",
+      "line": 146,
+      "symbol": "Machine.model",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Machine.swift",
+      "line": 148,
+      "symbol": "Machine.parameters",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Machine.swift",
+      "line": 150,
+      "symbol": "Machine.returnType",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Machine.swift",
+      "line": 152,
+      "symbol": "Machine.initialState",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Machine.swift",
+      "line": 154,
+      "symbol": "Machine.suspendState",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Machine.swift",
+      "line": 156,
+      "symbol": "Machine.states",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Machine.swift",
+      "line": 158,
+      "symbol": "Machine.callables",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Machine.swift",
+      "line": 160,
+      "symbol": "Machine.invocables",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Machine.swift",
+      "line": 162,
+      "symbol": "Machine.subs",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Machine.swift",
+      "line": 164,
+      "symbol": "Machine.dependencies",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Machine.swift",
+      "line": 168,
+      "symbol": "Machine.parameterisedDependencies",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Machine.swift",
+      "line": 172,
+      "symbol": "Machine.syncMachines(relativeTo:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Machine.swift",
+      "line": 178,
+      "symbol": "Machine.asyncMachines(relativeTo:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Machine.swift",
+      "line": 184,
+      "symbol": "Machine.subMachines(relativeTo:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Machine.swift",
+      "line": 210,
+      "symbol": "Machine.init(name:externalVariables:packageDependencies:swiftIncludeSearchPaths:includeSearchPaths:libSearchPaths:imports:includes:vars:model:parameters:returnType:initialState:suspendState:states:submachines:callableMachines:invocableMachines:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Machine.swift",
+      "line": 252,
+      "symbol": "Machine",
+      "symbol_kind": "source.lang.swift.decl.extension",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineArrangementCompiler.swift",
+      "line": 65,
+      "symbol": "MachineArrangementCompiler",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineArrangementCompiler.swift",
+      "line": 67,
+      "symbol": "MachineArrangementCompiler.errors",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineArrangementCompiler.swift",
+      "line": 75,
+      "symbol": "MachineArrangementCompiler.init(assembler:helpers:invoker:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineArrangementCompiler.swift",
+      "line": 81,
+      "symbol": "MachineArrangementCompiler.outputPath(forArrangement:executableName:swiftBuildConfig:libExtension:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineArrangementCompiler.swift",
+      "line": 85,
+      "symbol": "MachineArrangementCompiler.outputURL(forArrangement:executableName:swiftBuildConfig:libExtension:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineArrangementCompiler.swift",
+      "line": 95,
+      "symbol": "MachineArrangementCompiler.compileArrangement(_:atDirectory:machineBuildDir:libExtension:swiftBuildConfig:withCCompilerFlags:andCXXCompilerFlags:andLinkerFlags:andSwiftCompilerFlags:andSwiftBuildFlags:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineArrangementGenerator.swift",
+      "line": 64,
+      "symbol": "URL.relativePathString(relativeto:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineArrangementGenerator.swift",
+      "line": 74,
+      "symbol": "MachineArrangementGenerator",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineArrangementGenerator.swift",
+      "line": 76,
+      "symbol": "MachineArrangementGenerator.errors",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineArrangementGenerator.swift",
+      "line": 80,
+      "symbol": "MachineArrangementGenerator.init(helpers:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineArrangementGenerator.swift",
+      "line": 84,
+      "symbol": "MachineArrangementGenerator.generateArrangement(_:atDirectory:inDirectory:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineArrangementGenerator.swift",
+      "line": 102,
+      "symbol": "MachineArrangementGenerator.generateArrangement(_:atDirectory:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineArrangementParser.swift",
+      "line": 64,
+      "symbol": "MachineArrangementParser",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineArrangementParser.swift",
+      "line": 66,
+      "symbol": "MachineArrangementParser.errors",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineArrangementParser.swift",
+      "line": 68,
+      "symbol": "MachineArrangementParser.init()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineArrangementParser.swift",
+      "line": 70,
+      "symbol": "MachineArrangementParser.parseArrangement(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineArrangementParser.swift",
+      "line": 81,
+      "symbol": "MachineArrangementParser.parseArrangement(atDirectory:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineArrangmentAssembler.swift",
+      "line": 63,
+      "symbol": "MachineArrangmentAssembler",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineArrangmentAssembler.swift",
+      "line": 65,
+      "symbol": "MachineArrangmentAssembler.errors",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineArrangmentAssembler.swift",
+      "line": 73,
+      "symbol": "MachineArrangmentAssembler.lastError",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineArrangmentAssembler.swift",
+      "line": 77,
+      "symbol": "MachineArrangmentAssembler.init(assembler:helpers:packageInitializer:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineArrangmentAssembler.swift",
+      "line": 87,
+      "symbol": "MachineArrangmentAssembler.assembleAndWrite(_:atDirectory:machineBuildDir:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineArrangmentAssembler.swift",
+      "line": 137,
+      "symbol": "MachineArrangmentAssembler.assemble(_:atDirectory:machineBuildDir:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineAssembler.swift",
+      "line": 66,
+      "symbol": "MachineAssembler",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineAssembler.swift",
+      "line": 68,
+      "symbol": "MachineAssembler.errors",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineAssembler.swift",
+      "line": 76,
+      "symbol": "MachineAssembler.lastError",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineAssembler.swift",
+      "line": 86,
+      "symbol": "MachineAssembler.init(helpers:invoker:packageInitializer:varHelpers:varParser:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineAssembler.swift",
+      "line": 100,
+      "symbol": "MachineAssembler.packageDir(forMachine:builtInDirectory:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineAssembler.swift",
+      "line": 104,
+      "symbol": "MachineAssembler.packagePath(forMachine:builtInDirectory:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineAssembler.swift",
+      "line": 108,
+      "symbol": "MachineAssembler.assemble(_:atDirectory:inDirectory:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineAssembler.swift",
+      "line": 123,
+      "symbol": "MachineAssembler.assemble(_:atDirectory:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineAssembler.swift",
+      "line": 127,
+      "symbol": "MachineAssembler.writeAssembledWrapper(_:forMachine:to:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineAssembler.swift",
+      "line": 1263,
+      "symbol": "MachineAssembler.makeEmptyStateType(forMachine:withActions:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineAssembler.swift",
+      "line": 1282,
+      "symbol": "MachineAssembler.makeCallbackStateType(forMachine:withActions:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineAssembler.swift",
+      "line": 1319,
+      "symbol": "MachineAssembler.makeFiniteStateMachine(fromMachine:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineCompiler.swift",
+      "line": 65,
+      "symbol": "MachineCompiler",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineCompiler.swift",
+      "line": 67,
+      "symbol": "MachineCompiler.errors",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineCompiler.swift",
+      "line": 69,
+      "symbol": "MachineCompiler.lastError",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineCompiler.swift",
+      "line": 79,
+      "symbol": "MachineCompiler.init(assembler:invoker:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineCompiler.swift",
+      "line": 84,
+      "symbol": "MachineCompiler.shouldCompile(_:inDirectory:libExtension:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineCompiler.swift",
+      "line": 88,
+      "symbol": "MachineCompiler.compile(_:atDirectory:withBuildDir:libExtension:swiftBuildConfig:withCCompilerFlags:andCXXCompilerFlags:andLinkerFlags:andSwiftCompilerFlags:andSwiftBuildFlags:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineGenerator.swift",
+      "line": 66,
+      "symbol": "MachineGenerator",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineGenerator.swift",
+      "line": 72,
+      "symbol": "MachineGenerator.init(helpers:varHelpers:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineGenerator.swift",
+      "line": 77,
+      "symbol": "MachineGenerator.generate(_:at:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineGenerator.swift",
+      "line": 94,
+      "symbol": "MachineGenerator.generate(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineParser.swift",
+      "line": 66,
+      "symbol": "MachineParser",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineParser.swift",
+      "line": 68,
+      "symbol": "MachineParser.errors",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineParser.swift",
+      "line": 70,
+      "symbol": "MachineParser.lastError",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineParser.swift",
+      "line": 80,
+      "symbol": "MachineParser.init(varParser:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineParser.swift",
+      "line": 84,
+      "symbol": "MachineParser.attempt(_:_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineParser.swift",
+      "line": 92,
+      "symbol": "MachineParser.parseMachine(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineParser.swift",
+      "line": 138,
+      "symbol": "MachineParser.parseMachine(at:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineParser.swift",
+      "line": 142,
+      "symbol": "MachineParser.parseMachine(atPath:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/MachineToken.swift",
+      "line": 59,
+      "symbol": "SWIFT_MACHINES_VERSION",
+      "symbol_kind": "source.lang.swift.decl.var.global",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Model.swift",
+      "line": 59,
+      "symbol": "Model",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Model.swift",
+      "line": 61,
+      "symbol": "Model.actions",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Model.swift",
+      "line": 63,
+      "symbol": "Model.ringlet",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Model.swift",
+      "line": 65,
+      "symbol": "Model.init(actions:ringlet:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Model.swift",
+      "line": 72,
+      "symbol": "Model",
+      "symbol_kind": "source.lang.swift.decl.extension",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/PackageDependency.swift",
+      "line": 59,
+      "symbol": "PackageDependency",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/PackageDependency.swift",
+      "line": 61,
+      "symbol": "PackageDependency.products",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/PackageDependency.swift",
+      "line": 63,
+      "symbol": "PackageDependency.targets",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/PackageDependency.swift",
+      "line": 65,
+      "symbol": "PackageDependency.url",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/PackageDependency.swift",
+      "line": 67,
+      "symbol": "PackageDependency.qualifiers",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/PackageDependency.swift",
+      "line": 69,
+      "symbol": "PackageDependency.init(products:targets:url:qualifiers:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/PackageDependency.swift",
+      "line": 78,
+      "symbol": "PackageDependency",
+      "symbol_kind": "source.lang.swift.decl.extension",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/PackageInitializer.swift",
+      "line": 62,
+      "symbol": "PackageInitializer",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/PackageInitializer.swift",
+      "line": 68,
+      "symbol": "PackageInitializer.init(helpers:invoker:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/PackageInitializer.swift",
+      "line": 73,
+      "symbol": "PackageInitializer.initialize(withName:andType:inDirectory:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/PackageType.swift",
+      "line": 59,
+      "symbol": "PackageType",
+      "symbol_kind": "source.lang.swift.decl.enum",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/PackageType.swift",
+      "line": 61,
+      "symbol": "PackageType.Empty",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/PackageType.swift",
+      "line": 63,
+      "symbol": "PackageType.Executable",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/PackageType.swift",
+      "line": 65,
+      "symbol": "PackageType.Library",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/PackageType.swift",
+      "line": 67,
+      "symbol": "PackageType.SystemModule",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Ringlet.swift",
+      "line": 59,
+      "symbol": "Ringlet",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Ringlet.swift",
+      "line": 61,
+      "symbol": "Ringlet.imports",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Ringlet.swift",
+      "line": 63,
+      "symbol": "Ringlet.vars",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Ringlet.swift",
+      "line": 65,
+      "symbol": "Ringlet.execute",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Ringlet.swift",
+      "line": 67,
+      "symbol": "Ringlet.init(imports:vars:execute:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Ringlet.swift",
+      "line": 75,
+      "symbol": "Ringlet",
+      "symbol_kind": "source.lang.swift.decl.extension",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/State.swift",
+      "line": 59,
+      "symbol": "State",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/State.swift",
+      "line": 61,
+      "symbol": "State.name",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/State.swift",
+      "line": 63,
+      "symbol": "State.imports",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/State.swift",
+      "line": 65,
+      "symbol": "State.externalVariables",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/State.swift",
+      "line": 67,
+      "symbol": "State.vars",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/State.swift",
+      "line": 69,
+      "symbol": "State.actions",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/State.swift",
+      "line": 71,
+      "symbol": "State.transitions",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/State.swift",
+      "line": 73,
+      "symbol": "State.init(name:imports:externalVariables:vars:actions:transitions:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/State.swift",
+      "line": 91,
+      "symbol": "State",
+      "symbol_kind": "source.lang.swift.decl.extension",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/SwiftBuildConfig.swift",
+      "line": 59,
+      "symbol": "SwiftBuildConfig",
+      "symbol_kind": "source.lang.swift.decl.enum",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/SwiftBuildConfig.swift",
+      "line": 61,
+      "symbol": "SwiftBuildConfig.debug",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/SwiftBuildConfig.swift",
+      "line": 63,
+      "symbol": "SwiftBuildConfig.release",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Transition.swift",
+      "line": 59,
+      "symbol": "Transition",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Transition.swift",
+      "line": 61,
+      "symbol": "Transition.target",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Transition.swift",
+      "line": 63,
+      "symbol": "Transition.condition",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Transition.swift",
+      "line": 65,
+      "symbol": "Transition.init(target:condition:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Transition.swift",
+      "line": 72,
+      "symbol": "Transition",
+      "symbol_kind": "source.lang.swift.decl.extension",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/VarParser.swift",
+      "line": 61,
+      "symbol": "VarParser",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/VarParser.swift",
+      "line": 63,
+      "symbol": "VarParser.init()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Variable.swift",
+      "line": 59,
+      "symbol": "Variable",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Variable.swift",
+      "line": 61,
+      "symbol": "Variable.AccessType",
+      "symbol_kind": "source.lang.swift.decl.enum",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Variable.swift",
+      "line": 63,
+      "symbol": "Variable.AccessType.readAndWrite",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Variable.swift",
+      "line": 64,
+      "symbol": "Variable.AccessType.readOnly",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Variable.swift",
+      "line": 65,
+      "symbol": "Variable.AccessType.writeOnly",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Variable.swift",
+      "line": 69,
+      "symbol": "Variable.accessType",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Variable.swift",
+      "line": 71,
+      "symbol": "Variable.label",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Variable.swift",
+      "line": 73,
+      "symbol": "Variable.type",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Variable.swift",
+      "line": 75,
+      "symbol": "Variable.initialValue",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Variable.swift",
+      "line": 77,
+      "symbol": "Variable.init(accessType:label:type:initialValue:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/Variable.swift",
+      "line": 86,
+      "symbol": "Variable",
+      "symbol_kind": "source.lang.swift.decl.extension",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/VariableHelpers.swift",
+      "line": 59,
+      "symbol": "VariableHelpers",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/VariableHelpers.swift",
+      "line": 61,
+      "symbol": "VariableHelpers.init()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/VariableHelpers.swift",
+      "line": 63,
+      "symbol": "VariableHelpers.isComplex(variable:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/VariableHelpers.swift",
+      "line": 80,
+      "symbol": "VariableHelpers.makeAssignment(withLabel:andValue:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/VariableHelpers.swift",
+      "line": 84,
+      "symbol": "VariableHelpers.makeDeclaration(forVariable:allowModifications:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/VariableHelpers.swift",
+      "line": 102,
+      "symbol": "VariableHelpers.makeDeclarationAndAssignment(forVariable:_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/SwiftMachines/VariableHelpers.swift",
+      "line": 113,
+      "symbol": "VariableHelpers.makeDeclarationWithAvailableAssignment(forVariable:_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/UCFSMMachines/Machine.swift",
+      "line": 16,
+      "symbol": "Machine.init(ucfsmMachine:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/UCFSMMachines/UCFSMParser.swift",
+      "line": 14,
+      "symbol": "UCFSMParser",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/UCFSMMachines/UCFSMParser.swift",
+      "line": 18,
+      "symbol": "UCFSMParser.parseMachine(wrapper:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/UCFSMMachines/UCFSMParser.swift",
+      "line": 22,
+      "symbol": "UCFSMParser.init()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Aliases.swift",
+      "line": 10,
+      "symbol": "MachineName",
+      "symbol_kind": "source.lang.swift.decl.typealias",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Aliases.swift",
+      "line": 12,
+      "symbol": "ActionName",
+      "symbol_kind": "source.lang.swift.decl.typealias",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Aliases.swift",
+      "line": 18,
+      "symbol": "ParameterType",
+      "symbol_kind": "source.lang.swift.decl.typealias",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Arrangement.swift",
+      "line": 10,
+      "symbol": "Arrangement",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Arrangement.swift",
+      "line": 12,
+      "symbol": "Arrangement.machines",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Arrangement.swift",
+      "line": 14,
+      "symbol": "Arrangement.externalSignals",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Arrangement.swift",
+      "line": 16,
+      "symbol": "Arrangement.externalVariables",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Arrangement.swift",
+      "line": 18,
+      "symbol": "Arrangement.clocks",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Arrangement.swift",
+      "line": 20,
+      "symbol": "Arrangement.parents",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Arrangement.swift",
+      "line": 22,
+      "symbol": "Arrangement.path",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Arrangement.swift",
+      "line": 24,
+      "symbol": "Arrangement.init(machines:externalSignals:externalVariables:clocks:parents:path:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Clock.swift",
+      "line": 10,
+      "symbol": "Clock",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Clock.swift",
+      "line": 12,
+      "symbol": "Clock.FrequencyUnit",
+      "symbol_kind": "source.lang.swift.decl.enum",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Clock.swift",
+      "line": 14,
+      "symbol": "Clock.FrequencyUnit.Hz",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Clock.swift",
+      "line": 16,
+      "symbol": "Clock.FrequencyUnit.kHz",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Clock.swift",
+      "line": 18,
+      "symbol": "Clock.FrequencyUnit.MHz",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Clock.swift",
+      "line": 20,
+      "symbol": "Clock.FrequencyUnit.GHz",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Clock.swift",
+      "line": 22,
+      "symbol": "Clock.FrequencyUnit.THz",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Clock.swift",
+      "line": 25,
+      "symbol": "Clock.name",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Clock.swift",
+      "line": 27,
+      "symbol": "Clock.frequency",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Clock.swift",
+      "line": 29,
+      "symbol": "Clock.unit",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Clock.swift",
+      "line": 31,
+      "symbol": "Clock.period",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Clock.swift",
+      "line": 47,
+      "symbol": "Clock.init(name:frequency:unit:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/ExternalSignal.swift",
+      "line": 10,
+      "symbol": "ExternalSignal",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/ExternalSignal.swift",
+      "line": 12,
+      "symbol": "ExternalSignal.type",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/ExternalSignal.swift",
+      "line": 14,
+      "symbol": "ExternalSignal.name",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/ExternalSignal.swift",
+      "line": 16,
+      "symbol": "ExternalSignal.defaultValue",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/ExternalSignal.swift",
+      "line": 18,
+      "symbol": "ExternalSignal.comment",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/ExternalSignal.swift",
+      "line": 20,
+      "symbol": "ExternalSignal.mode",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/ExternalSignal.swift",
+      "line": 22,
+      "symbol": "ExternalSignal.init(type:name:mode:defaultValue:comment:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/ExternalType.swift",
+      "line": 10,
+      "symbol": "ExternalType",
+      "symbol_kind": "source.lang.swift.decl.protocol",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/ExternalType.swift",
+      "line": 12,
+      "symbol": "ExternalType.mode",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/ExternalVariable.swift",
+      "line": 10,
+      "symbol": "ExternalVariable",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/ExternalVariable.swift",
+      "line": 12,
+      "symbol": "ExternalVariable.type",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/ExternalVariable.swift",
+      "line": 14,
+      "symbol": "ExternalVariable.name",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/ExternalVariable.swift",
+      "line": 16,
+      "symbol": "ExternalVariable.range",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/ExternalVariable.swift",
+      "line": 18,
+      "symbol": "ExternalVariable.defaultValue",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/ExternalVariable.swift",
+      "line": 20,
+      "symbol": "ExternalVariable.comment",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/ExternalVariable.swift",
+      "line": 22,
+      "symbol": "ExternalVariable.mode",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/ExternalVariable.swift",
+      "line": 24,
+      "symbol": "ExternalVariable.init(type:name:mode:range:defaultValue:comment:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Machine.swift",
+      "line": 10,
+      "symbol": "Machine",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Machine.swift",
+      "line": 12,
+      "symbol": "Machine.name",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Machine.swift",
+      "line": 14,
+      "symbol": "Machine.path",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Machine.swift",
+      "line": 16,
+      "symbol": "Machine.includes",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Machine.swift",
+      "line": 18,
+      "symbol": "Machine.externalSignals",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Machine.swift",
+      "line": 20,
+      "symbol": "Machine.generics",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Machine.swift",
+      "line": 22,
+      "symbol": "Machine.clocks",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Machine.swift",
+      "line": 24,
+      "symbol": "Machine.drivingClock",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Machine.swift",
+      "line": 26,
+      "symbol": "Machine.dependentMachines",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Machine.swift",
+      "line": 28,
+      "symbol": "Machine.machineVariables",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Machine.swift",
+      "line": 30,
+      "symbol": "Machine.machineSignals",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Machine.swift",
+      "line": 32,
+      "symbol": "Machine.parameterSignals",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Machine.swift",
+      "line": 34,
+      "symbol": "Machine.returnableSignals",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Machine.swift",
+      "line": 36,
+      "symbol": "Machine.states",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Machine.swift",
+      "line": 38,
+      "symbol": "Machine.transitions",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Machine.swift",
+      "line": 40,
+      "symbol": "Machine.initialState",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Machine.swift",
+      "line": 42,
+      "symbol": "Machine.suspendedState",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Machine.swift",
+      "line": 44,
+      "symbol": "Machine.architectureHead",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Machine.swift",
+      "line": 46,
+      "symbol": "Machine.architectureBody",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Machine.swift",
+      "line": 50,
+      "symbol": "Machine.isParameterised",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Machine.swift",
+      "line": 54,
+      "symbol": "Machine.init(name:path:includes:externalSignals:generics:clocks:drivingClock:dependentMachines:machineVariables:machineSignals:isParameterised:parameterSignals:returnableSignals:states:transitions:initialState:suspendedState:architectureHead:architectureBody:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/MachineSignal.swift",
+      "line": 10,
+      "symbol": "MachineSignal",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/MachineSignal.swift",
+      "line": 12,
+      "symbol": "MachineSignal.type",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/MachineSignal.swift",
+      "line": 14,
+      "symbol": "MachineSignal.name",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/MachineSignal.swift",
+      "line": 16,
+      "symbol": "MachineSignal.defaultValue",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/MachineSignal.swift",
+      "line": 18,
+      "symbol": "MachineSignal.comment",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/MachineSignal.swift",
+      "line": 20,
+      "symbol": "MachineSignal.init(type:name:defaultValue:comment:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Mode.swift",
+      "line": 10,
+      "symbol": "Mode",
+      "symbol_kind": "source.lang.swift.decl.enum",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Mode.swift",
+      "line": 12,
+      "symbol": "Mode.input",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Mode.swift",
+      "line": 13,
+      "symbol": "Mode.output",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Mode.swift",
+      "line": 14,
+      "symbol": "Mode.inputoutput",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Mode.swift",
+      "line": 15,
+      "symbol": "Mode.buffer",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Parameter.swift",
+      "line": 10,
+      "symbol": "Parameter",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Parameter.swift",
+      "line": 12,
+      "symbol": "Parameter.mode",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Parameter.swift",
+      "line": 14,
+      "symbol": "Parameter.type",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Parameter.swift",
+      "line": 16,
+      "symbol": "Parameter.name",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Parameter.swift",
+      "line": 18,
+      "symbol": "Parameter.defaultValue",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Parameter.swift",
+      "line": 20,
+      "symbol": "Parameter.comment",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Parameter.swift",
+      "line": 22,
+      "symbol": "Parameter.init(type:name:defaultValue:comment:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/ReturnableVariable.swift",
+      "line": 10,
+      "symbol": "ReturnableVariable",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/ReturnableVariable.swift",
+      "line": 12,
+      "symbol": "ReturnableVariable.defaultValue",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/ReturnableVariable.swift",
+      "line": 14,
+      "symbol": "ReturnableVariable.mode",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/ReturnableVariable.swift",
+      "line": 16,
+      "symbol": "ReturnableVariable.type",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/ReturnableVariable.swift",
+      "line": 18,
+      "symbol": "ReturnableVariable.name",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/ReturnableVariable.swift",
+      "line": 20,
+      "symbol": "ReturnableVariable.comment",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/ReturnableVariable.swift",
+      "line": 22,
+      "symbol": "ReturnableVariable.init(type:name:comment:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/State.swift",
+      "line": 10,
+      "symbol": "State",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/State.swift",
+      "line": 12,
+      "symbol": "State.name",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/State.swift",
+      "line": 14,
+      "symbol": "State.actions",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/State.swift",
+      "line": 16,
+      "symbol": "State.actionOrder",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/State.swift",
+      "line": 18,
+      "symbol": "State.signals",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/State.swift",
+      "line": 20,
+      "symbol": "State.variables",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/State.swift",
+      "line": 22,
+      "symbol": "State.externalVariables",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/State.swift",
+      "line": 24,
+      "symbol": "State.init(name:actions:actionOrder:signals:variables:externalVariables:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Transition.swift",
+      "line": 10,
+      "symbol": "Transition",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Transition.swift",
+      "line": 12,
+      "symbol": "Transition.condition",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Transition.swift",
+      "line": 14,
+      "symbol": "Transition.source",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Transition.swift",
+      "line": 16,
+      "symbol": "Transition.target",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Transition.swift",
+      "line": 18,
+      "symbol": "Transition.init(condition:source:target:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/VHDLCompiler.swift",
+      "line": 11,
+      "symbol": "VHDLCompiler",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/VHDLCompiler.swift",
+      "line": 58,
+      "symbol": "VHDLCompiler.compile(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/VHDLGenerator.swift",
+      "line": 13,
+      "symbol": "VHDLGenerator",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/VHDLGenerator.swift",
+      "line": 15,
+      "symbol": "VHDLGenerator.init()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/VHDLGenerator.swift",
+      "line": 17,
+      "symbol": "VHDLGenerator.generate(machine:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/VHDLParser.swift",
+      "line": 13,
+      "symbol": "VHDLParser",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/VHDLParser.swift",
+      "line": 15,
+      "symbol": "VHDLParser.parse(wrapper:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/VHDLParser.swift",
+      "line": 28,
+      "symbol": "VHDLParser.init()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/VHDLVariable.swift",
+      "line": 10,
+      "symbol": "VHDLVariable",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/VHDLVariable.swift",
+      "line": 12,
+      "symbol": "VHDLVariable.type",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/VHDLVariable.swift",
+      "line": 14,
+      "symbol": "VHDLVariable.name",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/VHDLVariable.swift",
+      "line": 16,
+      "symbol": "VHDLVariable.defaultValue",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/VHDLVariable.swift",
+      "line": 18,
+      "symbol": "VHDLVariable.range",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/VHDLVariable.swift",
+      "line": 20,
+      "symbol": "VHDLVariable.comment",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/VHDLVariable.swift",
+      "line": 22,
+      "symbol": "VHDLVariable.init(type:name:defaultValue:range:comment:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/VHDLVariable.swift",
+      "line": 32,
+      "symbol": "VHDLVariable",
+      "symbol_kind": "source.lang.swift.decl.extension",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Variable.swift",
+      "line": 10,
+      "symbol": "Variable",
+      "symbol_kind": "source.lang.swift.decl.protocol",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Variable.swift",
+      "line": 12,
+      "symbol": "Variable.T",
+      "symbol_kind": "source.lang.swift.decl.associatedtype",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Variable.swift",
+      "line": 14,
+      "symbol": "Variable.type",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Variable.swift",
+      "line": 16,
+      "symbol": "Variable.name",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Variable.swift",
+      "line": 18,
+      "symbol": "Variable.defaultValue",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/Machines/Machines/Machines/Sources/VHDLMachines/Variable.swift",
+      "line": 20,
+      "symbol": "Variable.comment",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    }
+  ],
+  "source_directory": "/Users/runner/work/Machines/Machines"
+}
