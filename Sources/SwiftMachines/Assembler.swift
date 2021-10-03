@@ -57,7 +57,9 @@
  */
 
 import Foundation
-
+#if os(Linux)
+import IO
+#endif
 public protocol Assembler {
 
     func assemble(_: Machine, atDirectory: URL, inDirectory: URL) -> (URL, FileWrapper)?

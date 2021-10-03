@@ -57,7 +57,9 @@
  */
 
 import Foundation
-
+#if os(Linux)
+import IO
+#endif
 extension FileWrapper {
     
     convenience init?(_ name: String, contents: String) {

@@ -59,6 +59,9 @@
 /* This reads files that should be a LLFSM and return an object of class Machine
  */
 import Foundation
+#if os(Linux)
+import IO
+#endif
 
 public final class MachineParser: ErrorContainer {
 
