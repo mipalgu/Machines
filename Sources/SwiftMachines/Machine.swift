@@ -57,6 +57,7 @@
  */
 
 import Foundation
+import MetaLanguage
 
 public struct Machine {
     
@@ -161,6 +162,8 @@ public struct Machine {
     
     public var subs: [Dependency]
     
+    public var tests: TestSuite?
+    
     public var dependencies: [Dependency] {
         return self.parameterisedDependencies + self.subs
     }
@@ -225,7 +228,8 @@ public struct Machine {
         states: [State],
         submachines: [Dependency],
         callableMachines: [Dependency],
-        invocableMachines: [Dependency]
+        invocableMachines: [Dependency],
+        tests: TestSuite? = nil
     ) {
         self.name = name
         self.externalVariables = externalVariables
@@ -245,6 +249,7 @@ public struct Machine {
         self.subs = submachines
         self.callables = callableMachines
         self.invocables = invocableMachines
+        self.tests = tests
     }
 
 }

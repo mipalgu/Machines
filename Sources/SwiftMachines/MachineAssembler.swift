@@ -62,6 +62,8 @@
 import IO
 import Foundation
 import swift_helpers
+import MetaLanguage
+import SwiftTestMachines
 
 public final class MachineAssembler: Assembler, ErrorContainer {
 
@@ -254,6 +256,14 @@ public final class MachineAssembler: Assembler, ErrorContainer {
     }
     
     private func makeTests(forMachine machine: Machine) -> FileWrapper? {
+        let generator = SwiftTestMachineGenerator()
+        let stateNames = machine.states.map(\.name)
+        if
+            let testData = machine.tests,
+            let testWrapper = generator.generateWrapper(tests: testData, for: machine.name, with: stateNames)
+        {
+            return testWrapper
+        }
         let str = """
             import XCTest
             @testable import \(machine.name)Machine
