@@ -59,6 +59,7 @@
 import Foundation
 @testable import SwiftMachines
 import XCTest
+import MetaLanguage
 
 public final class MachineAssemblerTests: XCTestCase {
     
@@ -118,7 +119,14 @@ public final class MachineAssemblerTests: XCTestCase {
             ],
             submachines: [],
             callableMachines: [],
-            invocableMachines: []
+            invocableMachines: [],
+            tests: TestSuite(
+                name: "PingPongTests",
+                tests: [Test(rawValue: "@swift test testTrue {\n    XCTAssertTrue(true)\n}")!],
+                variables: nil,
+                setup: nil,
+                tearDown: nil
+            )
         )
         guard let wrapper = assembler.assemble(
             pingPong,

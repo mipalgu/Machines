@@ -111,8 +111,10 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             let data = try? Data(contentsOf: directory.appendingPathComponent("machine.json", isDirectory: false)),
             let previousMachine = try? JSONDecoder().decode(MachineToken<Machine>.self, from: data),
             previousMachine == MachineToken(data: machine),
+            let tests = self.makeTests(forMachine: machine),
             let buildDir = try? FileWrapper(url: directory, options: .immediate)
         {
+            buildDir.addFileWrapper(tests)
             return (packageDir(forMachine: machine, builtInDirectory: directory), buildDir)
         }
         guard let wrapper = self.assemble(machine, atDirectory: machineDir) else {
@@ -261,7 +263,10 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             let testData = machine.tests,
             let testWrapper = generator.generateWrapper(tests: testData, for: machine.name, with: stateNames)
         {
-            return testWrapper
+            let newWrapper = FileWrapper(directoryWithFileWrappers: [:])
+            newWrapper.addFileWrapper(testWrapper)
+            newWrapper.preferredFilename = "Tests"
+            return newWrapper
         }
         let str = """
             import XCTest
@@ -332,7 +337,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         let products = Set((machine.packageDependencies.flatMap { $0.products } + mandatoryProducts) .map { "\"" + $0 + "\"" })
         let productList = (products + ["\"" + machine.name + "MachineBridging\""]).sorted().combine("") { $0 + ", " + $1 }
         let str = """
-            // swift-tools-version:5.1
+            // swift-tools-version:5.2
             import PackageDescription
 
             let package = Package(
@@ -343,10 +348,11 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                         targets: ["\(machine.name)Machine"]
                     )
                 ],
-                dependencies: [\(dependencies)],
+                dependencies: [\(dependencies != "" ? dependencies + "," : "").package(name: "SwiftTestMachines", url: "ssh://git@github.com/Morgan2010/LLFSMTestingFramework.git", .branch("main"))],
                 targets: [
                     .systemLibrary(name: "\(machine.name)MachineBridging"),
-                    .target(name: "\(machine.name)Machine", dependencies: [\(productList)], linkerSettings: [.linkedLibrary("FSM")])
+                    .target(name: "\(machine.name)Machine", dependencies: [\(productList)], linkerSettings: [.linkedLibrary("FSM")]),
+                    .testTarget(name: "\(machine.name)Tests", dependencies: ["\(machine.name)Machine", "SwiftTestMachines"])
                 ]
             )
 
