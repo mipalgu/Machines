@@ -13,7 +13,6 @@ let package = Package(
         // Dependencies declare other packages that this package depends on.
         // .package(url: /* package url */, from: "1.0.0"),
         .package(name: "swift_helpers", url: "https://github.com/mipalgu/swift_helpers.git", .branch("main")),
-        .package(name: "LLFSMTestingFramework", url: "https://github.com/Morgan2010/LLFSMTestingFramework.git", .branch("main")),
         .package(name: "MetaLanguage", url: "https://github.com/Morgan2010/MetaLanguage.git", .branch("main"))
     ],
     targets: [
@@ -21,7 +20,7 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages which this package depends on.
         .target(
             name: "SwiftMachines",
-            dependencies: ["swift_helpers", .product(name: "IO", package: "swift_helpers"), .product(name: "SwiftTestMachines", package: "LLFSMTestingFramework"), "MetaLanguage"]
+            dependencies: ["swift_helpers", .product(name: "IO", package: "swift_helpers"), "MetaLanguage", .product(name: "SwiftTests", package: "MetaLanguage")]
         ),
         .target(
             name: "CXXMachines",

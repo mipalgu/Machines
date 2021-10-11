@@ -63,7 +63,6 @@ import IO
 import Foundation
 import swift_helpers
 import MetaLanguage
-import SwiftTestMachines
 
 public final class MachineAssembler: Assembler, ErrorContainer {
 
