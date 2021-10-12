@@ -14,14 +14,8 @@ import SwiftTests
 /// A generator for creating a TestMachine file and TestFile for a specific machine
 public struct SwiftTestMachineGenerator {
     
-    let testGenerator: SwiftGenerator
-    
     /// Creates a generator for a machine.
-    /// - Parameters:
-    ///   - testGenerator: A standard test generator which doesn't include machine generation.
-    public init(testGenerator: SwiftGenerator = SwiftGenerator()) {
-        self.testGenerator = testGenerator
-    }
+    public init() {}
     
     /// Creates a FileWrapper for the folder containing the TestMachine and the Tests files.
     /// - Parameters:
@@ -34,7 +28,7 @@ public struct SwiftTestMachineGenerator {
             let classDec = generateTestMachine(for: machineName, with: states),
             let newTestSuite = createNewTestSuit(from: tests, for: machineName),
             let classData = classDec.data(using: .utf8),
-            let testWrapper = testGenerator.generateWrapper(suite: newTestSuite),
+            let testWrapper = newTestSuite.wrapper,
             let testsName = testWrapper.preferredFilename
         else {
             return nil
