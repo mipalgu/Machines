@@ -14,16 +14,12 @@ import SwiftTests
 /// A generator for creating a TestMachine file and TestFile for a specific machine
 public struct SwiftTestMachineGenerator {
     
-    let mutator: StringMutator
-    
     let testGenerator: SwiftGenerator
     
     /// Creates a generator for a machine.
     /// - Parameters:
-    ///   - mutator: A string mutator used to mutate strings.
     ///   - testGenerator: A standard test generator which doesn't include machine generation.
-    public init(mutator: StringMutator = StringMutator(), testGenerator: SwiftGenerator = SwiftGenerator()) {
-        self.mutator = mutator
+    public init(testGenerator: SwiftGenerator = SwiftGenerator()) {
         self.testGenerator = testGenerator
     }
     
@@ -96,12 +92,10 @@ public struct SwiftTestMachineGenerator {
         }
         let fsmVar = fsmVar(machine: trimmedNamed)
         let stateVars = states.map(stateVariable).joined(separator: "\n\n")
-        let convenienceInit = "convenience init() " + mutator.createBlock(
-            for: "self.init(name: \"\(trimmedNamed)\", create: make_\(trimmedNamed))"
-        )
-        return "final class \(trimmedNamed)TestMachine: TestMachine " + mutator.createBlock(
-            for: ["\n\(fsmVar)", stateVars, "\(convenienceInit)\n"].joined(separator: "\n\n")
-        )
+        let convenienceInit = "convenience init() "
+            + "self.init(name: \"\(trimmedNamed)\", create: make_\(trimmedNamed))".createBlock
+        return "final class \(trimmedNamed)TestMachine: TestMachine "
+            + ["\n\(fsmVar)", stateVars, "\(convenienceInit)\n"].joined(separator: "\n\n").createBlock
     }
     
     private func createNewTestSuit(from tests: TestSuite, for machineName: String) -> TestSuite? {
@@ -135,21 +129,17 @@ public struct SwiftTestMachineGenerator {
     
     private func fsmVar(machine named: String) -> String {
         let type = "\(named)FiniteStateMachine"
-        return "private var fsm: \(type) " + mutator.createBlock(
-            for: "switch machine " + mutator.createBlock(
-                for: "case .parameterisedFSM(let fsm):\n"
-                   + mutator.indent(data: "return fsm.base as! \(type)\n")
-                   + "case .controllableFSM(let fsm):\n"
-                   + mutator.indent(data: "return fsm.base as! \(type)"),
-                indent: 0
-            )
-        )
+        let blockCode = "case .parameterisedFSM(let fsm):\n"
+            + "return fsm.base as! \(type)\n".indent
+            + "case .controllableFSM(let fsm):\n"
+            + "return fsm.base as! \(type)".indent
+        return "private var fsm: \(type) "
+            + ("switch machine " + blockCode.createBlock(indent: 0)).createBlock
     }
     
     private func stateVariable(for state: String) -> String {
-        "var \(state.startLowerCased)State: State_\(state) " + mutator.createBlock(
-            for: "fsm.allStates[\"\(state)\"]! as! State_\(state)"
-        )
+        "var \(state.startLowerCased)State: State_\(state) "
+            + "fsm.allStates[\"\(state)\"]! as! State_\(state)".createBlock
     }
     
 }
