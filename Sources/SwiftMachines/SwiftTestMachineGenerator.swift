@@ -90,12 +90,16 @@ public struct SwiftTestMachineGenerator {
     }
     
     private func createNewTestMachine(for machineName: String, with states: [String]) -> String? {
-        let fsmVar = fsmVar(machine: machineName)
+        let trimmedNamed = machineName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard states.count > 0, !trimmedNamed.isEmpty else {
+            return nil
+        }
+        let fsmVar = fsmVar(machine: trimmedNamed)
         let stateVars = states.map(stateVariable).joined(separator: "\n\n")
         let convenienceInit = "convenience init() " + mutator.createBlock(
-            for: "self.init(name: \"\(machineName)\", create: make_\(machineName))"
+            for: "self.init(name: \"\(trimmedNamed)\", create: make_\(trimmedNamed))"
         )
-        return "final class \(machineName)TestMachine: TestMachine " + mutator.createBlock(
+        return "final class \(trimmedNamed)TestMachine: TestMachine " + mutator.createBlock(
             for: ["\n\(fsmVar)", stateVars, "\(convenienceInit)\n"].joined(separator: "\n\n")
         )
     }
