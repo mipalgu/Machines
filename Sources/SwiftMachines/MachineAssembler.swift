@@ -348,11 +348,11 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                         targets: ["\(machine.name)Machine"]
                     )
                 ],
-                dependencies: [\(dependencies != "" ? dependencies + "," : "").package(name: "SwiftTestMachines", url: "ssh://git@github.com/Morgan2010/LLFSMTestingFramework.git", .branch("main"))],
+                dependencies: [\(dependencies != "" ? dependencies + ", " : "").package(name: "MachineTests", url: "ssh://git@github.com/Morgan2010/MachineTests.git", .branch("main"))],
                 targets: [
                     .systemLibrary(name: "\(machine.name)MachineBridging"),
                     .target(name: "\(machine.name)Machine", dependencies: [\(productList)], linkerSettings: [.linkedLibrary("FSM")]),
-                    .testTarget(name: "\(machine.name)Tests", dependencies: ["\(machine.name)Machine", "SwiftTestMachines"])
+                    .testTarget(name: "\(machine.name)Tests", dependencies: ["\(machine.name)Machine", "MachineTests"])
                 ]
             )
 
@@ -1341,7 +1341,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "internal final class " + name + ": " + conformance + " {\n\n"
         // Computed Properties
         str += "    public typealias _StateType = " + stateType + "\n\n"
-        str += "    fileprivate var allStates: [String: " + stateType + "] {\n"
+        str += "    var allStates: [String: " + stateType + "] {\n"
         str += "        var stateCache: [String: " + stateType + "] = [:]\n"
         str += "        func fetchAllStates(fromState state: " + stateType + ") {\n"
         str += "            if stateCache[state.name] != nil {\n"
