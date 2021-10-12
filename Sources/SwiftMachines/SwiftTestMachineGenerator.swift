@@ -96,7 +96,7 @@ public struct SwiftTestMachineGenerator {
             for: "self.init(name: \"\(machineName)\", create: make_\(machineName))"
         )
         return "final class \(machineName)TestMachine: TestMachine " + mutator.createBlock(
-            for: ["\n\(fsmVar)", stateVars, convenienceInit].joined(separator: "\n\n")
+            for: ["\n\(fsmVar)", stateVars, "\(convenienceInit)\n"].joined(separator: "\n\n")
         )
     }
     
