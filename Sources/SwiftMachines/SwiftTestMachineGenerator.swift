@@ -86,7 +86,7 @@ public struct SwiftTestMachineGenerator {
         guard let newTest = createNewTestSuit(from: tests, for: machineName) else {
             return nil
         }
-        return testGenerator.generate(suite: newTest)
+        return newTest.swiftRepresentation
     }
     
     private func createNewTestMachine(for machineName: String, with states: [String]) -> String? {
