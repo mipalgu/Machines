@@ -113,6 +113,7 @@ public final class MachineParser: ErrorContainer {
         }
         let initialState = states[0]
         let suspendState = states.lazy.filter { "Suspend" == $0.name }.first
+        let tests = self.parseTestsFromMachine(wrapper, withName: name)
         let machine = Machine(
             name: name,
             externalVariables: externalVariables,
@@ -131,7 +132,8 @@ public final class MachineParser: ErrorContainer {
             states: states,
             submachines: submachines,
             callableMachines: callableMachines,
-            invocableMachines: invocableMachines
+            invocableMachines: invocableMachines,
+            tests: tests
         )
         return machine
     }
