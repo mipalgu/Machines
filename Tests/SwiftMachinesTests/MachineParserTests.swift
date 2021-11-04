@@ -129,12 +129,11 @@ public class MachineParserTests: XCTestCase {
     }
 
   func testCanParseFromWrapper() {
-      let newMachine = parser.parseMachine(defaultWrapper)
-      XCTAssertNotNil(newMachine)
-      if newMachine == nil {
+      guard let newMachine = parser.parseMachine(defaultWrapper) else {
+          XCTAssertTrue(false)
           return
       }
-
+      XCTAssertEqual(newMachine, defaultMachine)
   }
 
   private func emptyState(named: String) -> State {
