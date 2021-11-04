@@ -159,6 +159,13 @@ public final class MachineGenerator {
             }
             wrapper.addFileWrapper(parametersFile)
         }
+        if let tests = machine.tests {
+            guard let testsCode = tests.wrapper else {
+                return nil
+            }
+            let newWrapper = FileWrapper(directoryWithFileWrappers: ["\(machine.name).mtl": testCode])
+            wrapper.addFileWrapper(newWrapper)
+        }
         return wrapper
     }
     
