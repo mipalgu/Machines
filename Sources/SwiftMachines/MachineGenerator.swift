@@ -163,7 +163,8 @@ public final class MachineGenerator {
             guard let testsCode = tests.wrapper else {
                 return nil
             }
-            let newWrapper = FileWrapper(directoryWithFileWrappers: ["\(machine.name).mtl": testCode])
+            let newWrapper = FileWrapper(directoryWithFileWrappers: ["\(machine.name)Tests": testsCode])
+            newWrapper.preferredFilename = "tests"
             wrapper.addFileWrapper(newWrapper)
         }
         return wrapper
