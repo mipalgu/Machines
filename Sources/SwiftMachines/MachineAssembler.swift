@@ -1025,7 +1025,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             }
             str += comments.map(\.indent).joined(separator: "\n")
             str += "    public override func \(action.name)() "
-            str += code.joined(separator: "\n").createBlock(indent: 2)
+            str += code.joined(separator: "\n").createBlock.indentLines
             str += "\n\n"
         }
         // Clone.
