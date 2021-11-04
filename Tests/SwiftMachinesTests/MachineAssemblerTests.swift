@@ -62,6 +62,12 @@ import XCTest
 import MetaLanguage
 
 public final class MachineAssemblerTests: XCTestCase {
+
+    public static var allTests: [(String, (MachineAssemblerTests) -> () throws -> Void)] {
+        return [
+            ("test_canAssemblePingPong", test_canAssemblePingPong)
+        ]
+    }
     
     private var assembler: MachineAssembler!
     
