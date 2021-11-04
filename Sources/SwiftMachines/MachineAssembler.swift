@@ -63,6 +63,7 @@ import IO
 import Foundation
 import swift_helpers
 import MetaLanguage
+import SwiftParsing
 
 public final class MachineAssembler: Assembler, ErrorContainer {
 
@@ -1011,9 +1012,21 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         // Actions.
         for action in state.actions {
-            str += "    public override func \(action.name)() {\n"
-            str += "\(action.implementation.components(separatedBy: "\n").reduce("") { $0 + "        \($1)\n" })"
-            str += "    }\n\n"
+            var comments: [String] = []
+            var code: [String] = []
+            let lines = action.implementation.components(separatedBy: .newlines)
+            for l in lines {
+                let sanitisedLine = l.trimmingCharacters(in: .whitespacesAndNewlines)
+                if sanitisedLine.starts(with: "///") {
+                    comments.append(sanitisedLine)
+                    continue
+                }
+                code.append(l)
+            }
+            str += comments.map(\.indent).joined(separator: "\n")
+            str += "    public override func \(action.name)() "
+            str += code.joined(separator: "\n").createBlock(indent: 2)
+            str += "\n\n"
         }
         // Clone.
         str += "    public override final func clone() -> State_\(state.name) {\n"
