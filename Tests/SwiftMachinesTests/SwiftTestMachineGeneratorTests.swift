@@ -32,7 +32,7 @@ final class SwiftTestMachineGeneratorTests: XCTestCase {
             XCTAssertTrue(false)
             return
         }
-        let testFiles = generator?.generateWrapper(tests: suite, for: "ExampleMachine", with: ["Initial", "Suspended", "State0", "State1"])
+        let testFiles = generator?.generateWrapper(tests: [suite], for: "ExampleMachine", with: ["Initial", "Suspended", "State0", "State1"])
         XCTAssertNotNil(testFiles)
         do {
             try testFiles?.write(

@@ -115,10 +115,10 @@ public class MachineParserTests: XCTestCase {
             submachines: [],
             callableMachines: [],
             invocableMachines: [],
-            tests: TestSuite(
+            tests: [TestSuite(
                 name: "TestMachineTests",
                 tests: [.languageTest(name: "test_trueTest", code: "XCTAssertTrue(true)", language: .swift)]
-            )
+            )]
         )
         let generator = MachineGenerator()
         defaultWrapper = generator.generate(defaultMachine)

@@ -202,11 +202,12 @@ public final class MachineParser: ErrorContainer {
         return vars
     }
 
-    private func parseTestsFromMachine(_ wrapper: FileWrapper, withName name: String) -> TestSuite? {
-        guard let file = wrapper.fileWrappers?["tests"]?.fileWrappers?["\(name)Tests"] else {
+    private func parseTestsFromMachine(_ wrapper: FileWrapper, withName name: String) -> [TestSuite]? {
+        guard let files = wrapper.fileWrappers?["tests"]?.fileWrappers else {
             return nil
         }
-        return TestSuite(wrapper: file)
+        let suites = files.compactMap{ TestSuite(wrapper: $1) }
+        return suites.count > 0 ? suites : nil
     }
     
     private func parsePackageDependenciesFromMachine(_ wrapper: FileWrapper) -> [PackageDependency]? {

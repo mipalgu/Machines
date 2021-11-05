@@ -62,6 +62,7 @@
 
 import Foundation
 import IO
+import MetaLanguage
 
 public final class MachineGenerator {
 
@@ -160,10 +161,16 @@ public final class MachineGenerator {
             wrapper.addFileWrapper(parametersFile)
         }
         if let tests = machine.tests {
-            guard let testsCode = tests.wrapper else {
-                return nil
+            let wrappers = Dictionary<String, FileWrapper>(uniqueKeysWithValues: tests.compactMap {
+                guard let wrapper = $0.wrapper else {
+                    return nil
+                }
+                return ($0.name, wrapper)
+            })
+            guard wrappers.count > 0 else {
+                return wrapper
             }
-            let newWrapper = FileWrapper(directoryWithFileWrappers: ["\(machine.name)Tests": testsCode])
+            let newWrapper = FileWrapper(directoryWithFileWrappers: wrappers)
             newWrapper.preferredFilename = "tests"
             wrapper.addFileWrapper(newWrapper)
         }

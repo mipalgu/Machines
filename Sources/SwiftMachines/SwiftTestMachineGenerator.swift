@@ -26,25 +26,25 @@ public struct SwiftTestMachineGenerator {
     ///   - machine: The machine which is being tested.
     ///   - states: The names of all states within the machine
     /// - Returns: A FileWrapper for the folder containing the TestMachine class and the tests file.
-    public func generateWrapper(tests: TestSuite, for machineName: String, with states: [String]) -> FileWrapper? {
+    public func generateWrapper(tests: [TestSuite], for machineName: String, with states: [String]) -> FileWrapper? {
         guard
             let classDec = generateTestMachine(for: machineName, with: states),
-            let newTestSuite = createNewTestSuit(from: tests, for: machineName),
-            let classData = classDec.data(using: .utf8),
-            let testWrapper = newTestSuite.wrapper,
-            let testsName = testWrapper.preferredFilename
+            let newTestSuites = createNewTestSuits(from: tests, for: machineName),
+            let classData = classDec.data(using: .utf8)
         else {
             return nil
         }
         let classFileName = "\(machineName)TestMachine.swift"
         let classWrapper = FileWrapper(regularFileWithContents: classData)
         classWrapper.preferredFilename = classFileName
-        let folderWrapper = FileWrapper(
-            directoryWithFileWrappers: [
-                testsName: testWrapper,
-                classFileName: classWrapper
-            ]
-        )
+        var testWrappers = Dictionary<String, FileWrapper>(uniqueKeysWithValues: newTestSuites.compactMap {
+            guard let wrapper = $0.wrapper else {
+                return nil
+            }
+            return ($0.name, wrapper)
+        })
+        testWrappers[classFileName] = classWrapper
+        let folderWrapper = FileWrapper(directoryWithFileWrappers: testWrappers)
         folderWrapper.preferredFilename = "\(machineName)Tests"
         return folderWrapper
     }
@@ -93,6 +93,14 @@ public struct SwiftTestMachineGenerator {
             + "self.init(name: \"\(trimmedNamed)\", create: make_\(trimmedNamed))".createBlock
         return "final class \(trimmedNamed)TestMachine: TestMachine "
             + ["\n\(fsmVar)", stateVars, "\(convenienceInit)\n"].joined(separator: "\n\n").createBlock
+    }
+
+    private func createNewTestSuits(from tests: [TestSuite], for machineName: String) -> [TestSuite]? {
+        let newTests = tests.compactMap { self.createNewTestSuit(from: $0, for: machineName) }
+        guard newTests.count > 0 else {
+            return nil
+        }
+        return newTests
     }
     
     private func createNewTestSuit(from tests: TestSuite, for machineName: String) -> TestSuite? {

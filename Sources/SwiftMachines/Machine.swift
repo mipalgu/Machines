@@ -162,7 +162,7 @@ public struct Machine {
     
     public var subs: [Dependency]
     
-    public var tests: TestSuite?
+    public var tests: [TestSuite]?
     
     public var dependencies: [Dependency] {
         return self.parameterisedDependencies + self.subs
@@ -229,7 +229,7 @@ public struct Machine {
         submachines: [Dependency],
         callableMachines: [Dependency],
         invocableMachines: [Dependency],
-        tests: TestSuite? = nil
+        tests: [TestSuite]? = nil
     ) {
         self.name = name
         self.externalVariables = externalVariables
