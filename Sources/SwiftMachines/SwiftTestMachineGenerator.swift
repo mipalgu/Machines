@@ -9,6 +9,9 @@ import Foundation
 import MetaLanguage
 import SwiftParsing
 import SwiftTests
+#if os(Linux) && canImport(Foundation) && !NO_FOUNDATION
+import IO
+#endif
 
 
 /// A generator for creating a TestMachine file and TestFile for a specific machine

@@ -56,10 +56,15 @@
 // *
 // */
 //
-//@testable import SwiftMachines
-//import XCTest
+@testable import SwiftMachines
+import XCTest
+import MetaLanguage
+import Foundation
+#if os(Linux)
+import IO
+#endif
 //
-//public class MachineParserTests: MachinesTestCase {
+public class MachineParserTests: XCTestCase {
 //
 //    public static var allTests: [(String, (MachineParserTests) -> () throws -> Void)] {
 //        return [
@@ -70,15 +75,89 @@
 //            ("testParsesMicrowaveTimerMachine", testParsesMicrowaveTimerMachine)
 //        ]
 //    }
-//    
-//    private let packageRootPath = URL(fileURLWithPath: #file).pathComponents.prefix(while: { $0 != "Tests" }).joined(separator: "/").dropFirst()
-//
-//    private var parser: MachineParser!
-//
-//    public override func setUp() {
-//        super.setUp()
-//        self.parser = MachineParser()
-//   }
+
+   public static var allTests: [(String, (MachineParserTests) -> () throws -> Void)] {
+       return [
+           ("testWrapperNotNil", testWrapperNotNil)
+//           ("testCanParseFromWrapper", testCanParseFromWrapper)
+       ]
+   }
+   
+   private let packageRootPath = URL(fileURLWithPath: #file).pathComponents.prefix(while: { $0 != "Tests" }).joined(separator: "/").dropFirst()
+
+   private var parser: MachineParser!
+
+   private var defaultWrapper: FileWrapper!
+
+   private var defaultMachine: Machine!
+
+   public override func setUp() {
+       super.setUp()
+       self.parser = MachineParser()
+       let initial = emptyState(named: "Initial")
+       let suspend = emptyState(named: "Suspend")
+       defaultMachine = Machine(
+            name: "TestMachine",
+            externalVariables: [],
+            packageDependencies: [],
+            swiftIncludeSearchPaths: [],
+            includeSearchPaths: [],
+            libSearchPaths: [],
+            imports: "",
+            includes: nil,
+            vars: [],
+            model: nil,
+            parameters: nil,
+            returnType: nil,
+            initialState: initial,
+            suspendState: suspend,
+            states: [initial, suspend],
+            submachines: [],
+            callableMachines: [],
+            invocableMachines: [],
+            tests: TestSuite(
+                name: "TestMachineTests",
+                tests: [.languageTest(name: "test_trueTest", code: "XCTAssertTrue(true)", language: .swift)]
+            )
+        )
+        let generator = MachineGenerator()
+        defaultWrapper = generator.generate(defaultMachine)
+        defaultWrapper.preferredFilename = "TestMachine.machine"
+  }
+
+  func testWrapperNotNil() {
+        XCTAssertNotNil(defaultWrapper)
+    }
+
+//  func testCanParseFromWrapper() {
+//      print(defaultWrapper.fileWrappers?["tests"]?.fileWrappers?.keys.sorted())
+//      let machineURL = URL(fileURLWithPath: packageRootPath + "/Tests/SwiftMachinesTests/Example/TestMachine.machine")
+//      guard
+//        let _ = try? defaultWrapper.write(
+//            to: machineURL,
+//            options: .atomic,
+//            originalContentsURL: nil
+//        ),
+//        let newWrapper = try? FileWrapper(url: machineURL, options: .immediate),
+//        let newMachine = parser.parseMachine(newWrapper)
+//      else {
+//          XCTAssertTrue(false)
+//          return
+//      }
+//      XCTAssertEqual(newMachine, defaultMachine)
+//  }
+
+  private func emptyState(named: String) -> State {
+      State(
+          name: named,
+          imports: "",
+          externalVariables: [],
+          vars: [],
+          actions: [],
+          transitions: []
+      )
+  }
+
 //
 //   public func testParsesPingPongMachine() {
 //       let path = "\(packageRootPath)/machines/PingPong.machine"
@@ -131,4 +210,5 @@
 //       XCTAssertFalse(self.parser.errors.isEmpty)
 //   }
 //
-//}
+
+}
