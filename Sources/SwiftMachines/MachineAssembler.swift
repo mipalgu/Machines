@@ -426,10 +426,10 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         return """
             @_cdecl(\"make_\(machine.name)\")
             public func _make_\(machine.name)(gateway _gateway: UnsafeMutableRawPointer, clock _clock: UnsafeMutableRawPointer, caller _caller: UnsafeMutableRawPointer, callback _callback: UnsafeMutableRawPointer) {
-                let gateway = _gateway.bindMemory(to: FSMGateway.self, capacity: 1).pointee
-                let clock = _clock.bindMemory(to: Timer.self, capacity: 1).pointee
-                let caller = _caller.bindMemory(to: FSM_ID.self, capacity: 1).pointee
-                let callback = _callback.bindMemory(to: ((FSMType, [ShallowDependency]) -> Void).self, capacity: 1).pointee
+                let gateway = _gateway.assumingMemoryBound(to: FSMGateway.self, capacity: 1).pointee
+                let clock = _clock.assumingMemoryBound(to: Timer.self, capacity: 1).pointee
+                let caller = _caller.assumingMemoryBound(to: FSM_ID.self, capacity: 1).pointee
+                let callback = _callback.assumingMemoryBound(to: ((FSMType, [ShallowDependency]) -> Void).self, capacity: 1).pointee
                 let (fsm, dependencies) = make_\(machine.name)(gateway: gateway, clock: clock, caller: caller)
                 callback(fsm, dependencies)
             }
