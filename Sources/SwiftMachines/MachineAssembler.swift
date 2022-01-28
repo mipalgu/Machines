@@ -316,7 +316,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             return nil
         }
         let addedDependencyList = addedDependencies.map {
-            ".package(url: \"\(String($0.absoluteString.reversed().drop(while: { $0 == "/" }).reversed()))\", .branch(\"master\"))"
+            ".package(url: \"\(String($0.absoluteString.reversed().drop(while: { $0 == "/" }).reversed()))\", .branch(\"main\"))"
         }
         let allConstructedDependencies = addedDependencyList + constructedDependencies + mandatoryPackages
         let dependencies = allConstructedDependencies.isEmpty ? "" : "\n        " + allConstructedDependencies.combine("") { $0 + ",\n        " + $1 } + "\n    "
