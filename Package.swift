@@ -12,7 +12,7 @@ let package = Package(
     dependencies: [
         // Dependencies declare other packages that this package depends on.
         // .package(url: /* package url */, from: "1.0.0"),
-        .package(name: "swift_helpers", url: "https://github.com/mipalgu/swift_helpers.git", .branch("main"))
+        .package(name: "swift_helpers", url: "https://github.com/mipalgu/swift_helpers.git", from: "1.0.0")
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
