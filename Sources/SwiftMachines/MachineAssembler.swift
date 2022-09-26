@@ -316,7 +316,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             return nil
         }
         let addedDependencyList = addedDependencies.map {
-            ".package(url: \"\(String($0.absoluteString.reversed().drop(while: { $0 == "/" }).reversed()))\", .branch(\"master\"))"
+            ".package(url: \"\(String($0.absoluteString.reversed().drop(while: { $0 == "/" }).reversed()))\", .branch(\"main\"))"
         }
         let allConstructedDependencies = addedDependencyList + constructedDependencies + mandatoryPackages
         let dependencies = allConstructedDependencies.isEmpty ? "" : "\n        " + allConstructedDependencies.combine("") { $0 + ",\n        " + $1 } + "\n    "
@@ -426,10 +426,10 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         return """
             @_cdecl(\"make_\(machine.name)\")
             public func _make_\(machine.name)(gateway _gateway: UnsafeMutableRawPointer, clock _clock: UnsafeMutableRawPointer, caller _caller: UnsafeMutableRawPointer, callback _callback: UnsafeMutableRawPointer) {
-                let gateway = _gateway.bindMemory(to: FSMGateway.self, capacity: 1).pointee
-                let clock = _clock.bindMemory(to: Timer.self, capacity: 1).pointee
-                let caller = _caller.bindMemory(to: FSM_ID.self, capacity: 1).pointee
-                let callback = _callback.bindMemory(to: ((FSMType, [ShallowDependency]) -> Void).self, capacity: 1).pointee
+                let gateway = _gateway.assumingMemoryBound(to: FSMGateway.self).pointee
+                let clock = _clock.assumingMemoryBound(to: Timer.self).pointee
+                let caller = _caller.assumingMemoryBound(to: FSM_ID.self).pointee
+                let callback = _callback.assumingMemoryBound(to: ((FSMType, [ShallowDependency]) -> Void).self).pointee
                 let (fsm, dependencies) = make_\(machine.name)(gateway: gateway, clock: clock, caller: caller)
                 callback(fsm, dependencies)
             }
@@ -631,7 +631,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         if nil == machine.parameters {
             str += "    return (AnyControllableFiniteStateMachine(fsm), [" + dependencies + "])\n"
         } else {
-            str += "    return (AnyParameterisedFiniteStateMachine(fsm), [" + dependencies + "])\n"
+            str += "    return (AnyParameterisedFiniteStateMachine(fsm, newMachine: { let tempFSM = make_parameterised_\(machine.name)(name: machineName, gateway: gateway, clock: clock, caller: caller).0; let result = tempFSM.parametersFromDictionary($0); if result == false { fatalError(\"Unable to call \(fsmName) with parameters: \\($0)\") }; return tempFSM }), [" + dependencies + "])\n"
         }
         return str
     }

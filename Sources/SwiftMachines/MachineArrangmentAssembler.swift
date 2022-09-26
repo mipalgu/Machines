@@ -166,12 +166,12 @@ public final class MachineArrangmentAssembler: ErrorContainer {
         let mandatoryDependencies: [String] = []
         let machinePackages: [String] = self.machinePackageURLs(machines).map { (machine, url) in
             let url = String(url.appendingPathComponent(machineBuildDir + "/" + machine.name + "Machine").absoluteString.reversed().drop(while: { $0 == "/" }).reversed())
-            return ".package(url: \"\(url)\", .branch(\"master\"))"
+            return ".package(url: \"\(url)\", .branch(\"main\"))"
         }
         let machineProducts = self.machinePackageProducts(machines).map { $1 }
         let addedDependencyList: [String] = addedDependencies.map {
             let url = String($0.resolvingSymlinksInPath().absoluteString.reversed().drop(while: { $0 == "/" }).reversed())
-            return ".package(url: \"\(url)\", .branch(\"master\"))"
+            return ".package(url: \"\(url)\", .branch(\"main\"))"
         }
         let allConstructedDependencies = Set(addedDependencyList + mandatoryDependencies + machinePackages).sorted()
         let dependencies = allConstructedDependencies.isEmpty ? "" : "\n        " + allConstructedDependencies.combine("") { $0 + ",\n        " + $1 } + "\n    "
@@ -243,7 +243,7 @@ public final class MachineArrangmentAssembler: ErrorContainer {
         let arrangement = """
             FlattenedMetaArrangement(
                     name: \(name),
-                    fsms: \(fsms),
+                    fsms: \(entries.isEmpty ? "[:]" : fsms),
                     rootFSMs: \(rootFsms)
                 )
             """
