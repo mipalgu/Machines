@@ -13,7 +13,8 @@ let package = Package(
         // Dependencies declare other packages that this package depends on.
         // .package(url: /* package url */, from: "1.0.0"),
         .package(name: "swift_helpers", url: "https://github.com/mipalgu/swift_helpers.git", .branch("main")),
-        .package(name: "MetaLanguage", url: "ssh://git@github.com/Morgan2010/MetaLanguage.git", .branch("main"))
+        .package(name: "MetaLanguage", url: "ssh://git@github.com/Morgan2010/MetaLanguage.git", .branch("main")),
+        .package(url: "git@github.com:mipalgu/GUUnits", from: "2.0.1")
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -28,7 +29,7 @@ let package = Package(
         ),
         .target(
             name: "VHDLMachines",
-            dependencies: [.product(name: "swift_helpers", package: "swift_helpers"), .product(name: "IO", package: "swift_helpers")]
+            dependencies: [.product(name: "swift_helpers", package: "swift_helpers"), .product(name: "IO", package: "swift_helpers"), .product(name: "GUUnits", package: "GUUnits")]
         ),
         .target(
             name: "CXXBase",
@@ -60,7 +61,7 @@ let package = Package(
         ),
         .testTarget(
             name: "VHDLMachinesTests",
-            dependencies: ["VHDLMachines", "Machines", .product(name: "swift_helpers", package: "swift_helpers"), .product(name: "IO", package: "swift_helpers"), .product(name: "Functional", package: "swift_helpers")]
+            dependencies: ["VHDLMachines", "Machines", .product(name: "swift_helpers", package: "swift_helpers"), .product(name: "IO", package: "swift_helpers"), .product(name: "Functional", package: "swift_helpers"), .product(name: "GUUnits", package: "GUUnits")]
         ),
         .testTarget(name: "MachinesTests",
             dependencies: ["Machines", .product(name: "swift_helpers", package: "swift_helpers"), .product(name: "IO", package: "swift_helpers"), .product(name: "Functional", package: "swift_helpers")]
