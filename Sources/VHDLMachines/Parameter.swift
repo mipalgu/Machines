@@ -7,8 +7,8 @@
 
 import Foundation
 
-/// A parameter is a type of external variable that is used to parameterise a machine. It is a variable that is
-/// defined within an entity block in the VHDl representation.
+/// A parameter is a type of external variable that is used to parameterise a machine. It
+/// is a variable that is defined within an entity block in the VHDl representation.
 public struct Parameter: ExternalType, Codable, Equatable, Hashable, Sendable {
 
     /// The mode of the parameter.

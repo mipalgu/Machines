@@ -64,8 +64,10 @@ final class MachineSignalTests: XCTestCase {
     var signal = MachineSignal(type: "std_logic", name: "x", defaultValue: "'1'", comment: "The signal x.")
 
     /// Initialises the signal to test.
-    func setup() {
-        self.signal = MachineSignal(type: "std_logic", name: "x", defaultValue: "'1'", comment: "The signal x.")
+    override func setUp() {
+        self.signal = MachineSignal(
+            type: "std_logic", name: "x", defaultValue: "'1'", comment: "The signal x."
+        )
     }
 
     /// Test the init sets the stored properties correctly.

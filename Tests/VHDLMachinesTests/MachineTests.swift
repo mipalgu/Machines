@@ -81,7 +81,9 @@ final class MachineTests: XCTestCase {
     /// The external signals for the machine.
     var externalSignals: [ExternalSignal] {
         [
-            ExternalSignal(type: "std_logic", name: "A", mode: .input, defaultValue: "'0'", comment: "A comment")
+            ExternalSignal(
+                type: "std_logic", name: "A", mode: .input, defaultValue: "'0'", comment: "A comment"
+            )
         ]
     }
 
@@ -115,7 +117,9 @@ final class MachineTests: XCTestCase {
     /// The variables for the machine.
     var machineVariables: [VHDLVariable] {
         [
-            VHDLVariable(type: "integer", name: "x", defaultValue: "1", range: (0, 65535), comment: "Variable x")
+            VHDLVariable(
+                type: "integer", name: "x", defaultValue: "1", range: (0, 65535), comment: "Variable x"
+            )
         ]
     }
 
@@ -143,8 +147,12 @@ final class MachineTests: XCTestCase {
     /// The states in the machine.
     var states: [State] {
         [
-            State(name: "S0", actions: [:], actionOrder: [], signals: [], variables: [], externalVariables: []),
-            State(name: "S1", actions: [:], actionOrder: [], signals: [], variables: [], externalVariables: [])
+            State(
+                name: "S0", actions: [:], actionOrder: [], signals: [], variables: [], externalVariables: []
+            ),
+            State(
+                name: "S1", actions: [:], actionOrder: [], signals: [], variables: [], externalVariables: []
+            )
         ]
     }
 
@@ -236,7 +244,7 @@ final class MachineTests: XCTestCase {
         XCTAssertEqual(machine.dependentMachines, dependentMachines)
         XCTAssertEqual(machine.machineVariables, machineVariables)
         XCTAssertEqual(machine.machineSignals, machineSignals)
-        XCTAssertEqual(machine.isParameterised, true)
+        XCTAssertTrue(machine.isParameterised)
         XCTAssertEqual(machine.parameterSignals, parameterSignals)
         XCTAssertEqual(machine.returnableSignals, returnableSignals)
         XCTAssertEqual(machine.states, states)
@@ -255,16 +263,24 @@ final class MachineTests: XCTestCase {
         let newPath = URL(fileURLWithPath: "/path/to/M3")
         let newIncludes = ["use IEEE.STD_LOGIC_1164.ALL;"]
         let newExternalSignals = [
-            ExternalSignal(type: "std_logic", name: "B", mode: .input, defaultValue: "'0'", comment: "A comment")
+            ExternalSignal(
+                type: "std_logic", name: "B", mode: .input, defaultValue: "'0'", comment: "A comment"
+            )
         ]
         let newGenerics = [
-            VHDLVariable(type: "integer", name: "g2", defaultValue: "0", range: (0, 512), comment: "Generic g2")
+            VHDLVariable(
+                type: "integer", name: "g2", defaultValue: "0", range: (0, 512), comment: "Generic g2"
+            )
         ]
-        let newClocks = [Clock(name: "clk", frequency: 50, unit: .MHz), Clock(name: "clk2", frequency: 100, unit: .MHz)]
+        let newClocks = [
+            Clock(name: "clk", frequency: 50, unit: .MHz), Clock(name: "clk2", frequency: 100, unit: .MHz)
+        ]
         let newDrivingClock = 1
         let newDependentMachines = ["M1": URL(fileURLWithPath: "/path/to/M1")]
         let newMachineVariables = [
-            VHDLVariable(type: "integer", name: "x2", defaultValue: "1", range: (0, 65535), comment: "Variable x2")
+            VHDLVariable(
+                type: "integer", name: "x2", defaultValue: "1", range: (0, 65535), comment: "Variable x2"
+            )
         ]
         let newMachineSignals = [
             MachineSignal(type: "std_logic", name: "s2", defaultValue: "'0'", comment: "Signal s2")
@@ -272,9 +288,13 @@ final class MachineTests: XCTestCase {
         let newParameterSignals = [
             Parameter(type: "std_logic", name: "p2", defaultValue: "'0'", comment: "Parameter p2")
         ]
-        let newReturnableSignals = [ReturnableVariable(type: "std_logic", name: "r2", comment: "Returnable r2")]
+        let newReturnableSignals = [
+            ReturnableVariable(type: "std_logic", name: "r2", comment: "Returnable r2")
+        ]
         let newStates = [
-            State(name: "S0", actions: [:], actionOrder: [], signals: [], variables: [], externalVariables: [])
+            State(
+                name: "S0", actions: [:], actionOrder: [], signals: [], variables: [], externalVariables: []
+            )
         ]
         let newTransitions = [Transition(condition: "true", source: 0, target: 1)]
         let newInitialState = 1
