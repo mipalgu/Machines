@@ -20,7 +20,7 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages which this package depends on.
         .target(
             name: "SwiftMachines",
-            dependencies: ["swift_helpers", .product(name: "IO", package: "swift_helpers"), "MetaLanguage", .product(name: "SwiftTests", package: "MetaLanguage")]
+            dependencies: [.product(name: "swift_helpers", package: "swift_helpers"), .product(name: "IO", package: "swift_helpers"), "MetaLanguage", .product(name: "SwiftTests", package: "MetaLanguage")]
         ),
         .target(
             name: "CXXMachines",
@@ -28,11 +28,11 @@ let package = Package(
         ),
         .target(
             name: "VHDLMachines",
-            dependencies: ["swift_helpers", .product(name: "IO", package: "swift_helpers")]
+            dependencies: [.product(name: "swift_helpers", package: "swift_helpers"), .product(name: "IO", package: "swift_helpers")]
         ),
         .target(
             name: "CXXBase",
-            dependencies: ["swift_helpers", .product(name: "IO", package: "swift_helpers")]
+            dependencies: [.product(name: "swift_helpers", package: "swift_helpers"), .product(name: "IO", package: "swift_helpers")]
         ),
         .target(
             name: "UCFSMMachines",
