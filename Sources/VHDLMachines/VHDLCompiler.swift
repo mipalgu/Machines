@@ -740,7 +740,7 @@ public struct VHDLCompiler {
         return "\(name): \(signal.mode.rawValue) \(signal.type) := \(defaultValue);" + (signal.comment == nil ? "" : " -- \(signal.comment!)")
     }
     
-    private func signalToArchitectureDeclaration<T: Variable>(signal: T, with value: Bool = false, and comment: Bool = false) -> String where T.T == String {
+    private func signalToArchitectureDeclaration<T: Variable>(signal: T, with value: Bool = false, and comment: Bool = false) -> String where T.VariableType == String {
         let comment = comment ? " -- \(signal.comment ?? "")" : ""
         guard let defaultVal = signal.defaultValue else {
             return "signal \(signal.name): \(signal.type);\(comment)"
