@@ -56,7 +56,13 @@ public struct VHDLCompiler {
     }
     
     public func compile(_ machine: Machine) -> Bool {
-        let format = foldWithNewLine(
+        let format = generateVHDLFile(machine)
+        let fileName = "\(machine.name).vhd"
+        return helper.createFile(fileName, inDirectory: machine.path, withContents: format + "\n") != nil
+    }
+
+    func generateVHDLFile(_ machine: Machine) -> String {
+        foldWithNewLine(
             components: [
                 createIncludes(includes: machine.includes) + "\n",
                 createEntity(machine: machine) + "\n\n",
@@ -64,8 +70,6 @@ public struct VHDLCompiler {
             ],
             initial: ""
         )
-        let fileName = "\(machine.name).vhd"
-        return helper.createFile(fileName, inDirectory: machine.path, withContents: format + "\n") != nil
     }
     
     private func readParameterLogic(machine: Machine) -> [String] {
