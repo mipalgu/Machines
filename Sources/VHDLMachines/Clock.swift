@@ -45,7 +45,7 @@ public struct Clock: Codable {
     public var unit: FrequencyUnit
 
     /// The period of the clock.
-    public var period: Time {
+    @inlinable public var period: Time {
         let freq = Double(frequency)
         switch unit {
         case .Hz:
@@ -66,6 +66,7 @@ public struct Clock: Codable {
     ///   - name: The name of the clock.
     ///   - frequency: The frequency of the clock represented with the frequency `unit`.
     ///   - unit: The unit of frequency.
+    @inlinable
     public init(name: String, frequency: UInt, unit: FrequencyUnit) {
         self.name = name
         self.frequency = frequency

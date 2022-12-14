@@ -39,6 +39,7 @@ public struct State: Codable {
     /// represent real signals in the hardware.
     ///   - externalVariables: The name of the external variables accessed in the state. These variables are
     /// defined in the arrangement.
+    @inlinable
     public init(
         name: String,
         actions: [ActionName: String],

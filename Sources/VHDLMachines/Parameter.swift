@@ -32,6 +32,7 @@ public struct Parameter: ExternalType, Codable {
     ///   - name: The name of the parameter.
     ///   - defaultValue: The default value of the parameter.
     ///   - comment: The comment of the parameter.
+    @inlinable
     public init(type: ParameterType, name: String, defaultValue: String? = nil, comment: String? = nil) {
         self.type = type
         self.name = name

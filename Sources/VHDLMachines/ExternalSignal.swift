@@ -33,6 +33,7 @@ public struct ExternalSignal: ExternalType, Codable {
     ///   - mode: The mode of the signal.
     ///   - defaultValue: The default value of the signal.
     ///   - comment: The comment of the signal.
+    @inlinable
     public init(type: String, name: String, mode: Mode, defaultValue: String?, comment: String?) {
         self.type = type
         self.name = name

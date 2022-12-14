@@ -29,6 +29,7 @@ public struct MachineSignal: Variable, Codable {
     ///   - name: The name of the signal.
     ///   - defaultValue: The default value of the signal.
     ///   - comment: The comment of the signal.
+    @inlinable
     public init(type: String, name: String, defaultValue: String?, comment: String?) {
         self.type = type
         self.name = name

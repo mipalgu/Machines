@@ -30,6 +30,7 @@ public struct ReturnableVariable: ExternalType, Codable {
     ///   - type: The type of the variable.
     ///   - name: The name of the variable.
     ///   - comment: The comment for the variable.
+    @inlinable
     public init(type: ParameterType, name: String, comment: String? = nil) {
         self.type = type
         self.name = name

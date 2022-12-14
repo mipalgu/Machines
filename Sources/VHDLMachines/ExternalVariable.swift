@@ -37,6 +37,7 @@ public struct ExternalVariable: ExternalType {
     ///   - range: The range of valid values.
     ///   - defaultValue: The default value of the variable.
     ///   - comment: The comment associated with the variable.
+    @inlinable
     public init(
         type: String, name: String, mode: Mode, range: (Int, Int)? = nil, defaultValue: String?, comment: String?
     ) {
