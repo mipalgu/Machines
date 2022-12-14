@@ -8,7 +8,7 @@
 import Foundation
 
 /// A variable that can be returned from a parameterised machine.
-public struct ReturnableVariable: ExternalType, Codable {
+public struct ReturnableVariable: ExternalType, Codable, Equatable, Hashable, Sendable {
 
     /// The default value is nil for a returnable variable.
     public var defaultValue: String?

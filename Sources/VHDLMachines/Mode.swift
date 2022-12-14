@@ -8,7 +8,7 @@
 import Foundation
 
 /// A mode represents the direction a signal is travelling (input or output).
-public enum Mode: String, CaseIterable, Codable {
+public enum Mode: String, CaseIterable, Codable, Sendable {
 
     /// Input mode.
     case input = "in"

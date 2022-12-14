@@ -97,3 +97,29 @@ extension VHDLVariable: Codable {
     }
 
 }
+
+/// Conformance to ``Equatable``.
+extension VHDLVariable: Equatable, Hashable, Sendable {
+
+    /// Returns a Boolean value indicating whether two values are equal.
+    public static func == (lhs: VHDLVariable, rhs: VHDLVariable) -> Bool {
+        return lhs.type == rhs.type
+            && lhs.name == rhs.name
+            && lhs.defaultValue == rhs.defaultValue
+            && lhs.range?.0 == rhs.range?.0
+            && lhs.range?.1 == rhs.range?.1
+            && lhs.comment == rhs.comment
+    }
+
+    /// Hash function.
+    /// - Parameter hasher: The hasher.
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(self.type)
+        hasher.combine(self.name)
+        hasher.combine(self.defaultValue)
+        hasher.combine(self.range?.0)
+        hasher.combine(self.range?.1)
+        hasher.combine(self.comment)
+    }
+
+}

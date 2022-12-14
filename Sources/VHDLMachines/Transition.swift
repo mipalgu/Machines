@@ -9,7 +9,7 @@ import Foundation
 
 /// A transition in a state machine. This transitions acts as a guard for a transition from one state to another.
 /// The condition is restricted to be a boolean expression.
-public struct Transition: Codable {
+public struct Transition: Codable, Equatable, Hashable, Sendable {
 
     /// The condition that must be met for the transition to occur. This condition must be a VHDL boolean
     /// expression.

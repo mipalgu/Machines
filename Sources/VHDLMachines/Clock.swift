@@ -9,10 +9,10 @@ import GUUnits
 import Foundation
 
 /// A clock represents an oscillating signal with a constant frequency/period.
-public struct Clock: Codable {
+public struct Clock: Codable, Equatable, Hashable, Sendable {
 
     /// The units of frequency.
-    public enum FrequencyUnit: String, CaseIterable, Codable {
+    public enum FrequencyUnit: String, CaseIterable, Codable, Sendable {
 
         // swiftlint:disable identifier_name
 

@@ -156,18 +156,3 @@ final class StateTests: XCTestCase {
     }
 
 }
-
-/// ``Equatable`` conformance.
-extension MachineSignal: Equatable {
-
-    /// Returns a Boolean value indicating whether two values are equal.
-    /// - Parameters:
-    ///   - lhs: The first value to compare.
-    ///   - rhs: The second value to compare.
-    /// - Returns: Whether the two values are equal.
-    public static func == (lhs: MachineSignal, rhs: MachineSignal) -> Bool {
-        return lhs.type == rhs.type && lhs.name == rhs.name && lhs.defaultValue == rhs.defaultValue &&
-            lhs.comment == rhs.comment
-    }
-
-}

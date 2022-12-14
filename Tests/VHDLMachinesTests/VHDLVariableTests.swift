@@ -123,18 +123,3 @@ final class VHDLVariableTests: XCTestCase {
     }
 
 }
-
-/// Conformance to ``Equatable``.
-extension VHDLVariable: Equatable {
-
-    /// Returns a Boolean value indicating whether two values are equal.
-    public static func == (lhs: VHDLVariable, rhs: VHDLVariable) -> Bool {
-        return lhs.type == rhs.type
-            && lhs.name == rhs.name
-            && lhs.defaultValue == rhs.defaultValue
-            && lhs.range?.0 == rhs.range?.0
-            && lhs.range?.1 == rhs.range?.1
-            && lhs.comment == rhs.comment
-    }
-
-}
