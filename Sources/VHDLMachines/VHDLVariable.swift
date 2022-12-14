@@ -103,7 +103,7 @@ extension VHDLVariable: Equatable, Hashable, Sendable {
 
     /// Returns a Boolean value indicating whether two values are equal.
     public static func == (lhs: VHDLVariable, rhs: VHDLVariable) -> Bool {
-        return lhs.type == rhs.type
+        lhs.type == rhs.type
             && lhs.name == rhs.name
             && lhs.defaultValue == rhs.defaultValue
             && lhs.range?.0 == rhs.range?.0
