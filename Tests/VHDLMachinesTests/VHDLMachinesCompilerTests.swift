@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import IO
 @testable import Machines
 @testable import VHDLMachines
 import XCTest
@@ -155,15 +154,12 @@ public class VHDLMachinesCompilerTests: XCTestCase {
         let machine = factory.pingMachine
         let code = compiler.generateVHDLFile(machine)
         XCTAssertEqual(factory.pingCode, code)
-        print(factory.pingCode.difference(from: code))
     }
 
     /// Test VHDL compilation.
     func testCompilation() {
         let machine = factory.pingMachine
         XCTAssertTrue(compiler.compile(machine))
-        let helper = FileHelpers()
-        helper.createFile(atPath: factory.pingMachinePath.appendingPathComponent("vhdlFile", isDirectory: false), withContents: factory.pingCode)
     }
 
 }
