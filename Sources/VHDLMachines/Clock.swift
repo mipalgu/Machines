@@ -5,8 +5,8 @@
 //  Created by Morgan McColl on 14/4/21.
 //
 
-import GUUnits
 import Foundation
+import GUUnits
 
 /// A clock represents an oscillating signal with a constant frequency/period.
 public struct Clock: Codable, Equatable, Hashable, Sendable {

@@ -26,7 +26,8 @@ public struct State: Codable, Equatable, Hashable, Sendable {
     /// represent real signals in the hardware.
     public var variables: [VHDLVariable]
 
-    /// The name of the external variables accessed in the state. These variables are defined in the arrangement.
+    /// The name of the external variables accessed in the state. These variables are defined
+    /// in the arrangement.
     public var externalVariables: [String]
 
     /// Initialises a state with the given properties.
@@ -35,7 +36,8 @@ public struct State: Codable, Equatable, Hashable, Sendable {
     ///   - actions: The actions in the state. This property includes the code in each action.
     ///   - actionOrder: The order in which the actions should be executed.
     ///   - signals: The machine signals in the state.
-    ///   - variables: The machine variables in the state. These variable are not signals and cannot be used to
+    ///   - variables: The machine variables in the state. These variable are not signals and
+    /// cannot be used to
     /// represent real signals in the hardware.
     ///   - externalVariables: The name of the external variables accessed in the state. These variables are
     /// defined in the arrangement.

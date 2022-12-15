@@ -39,7 +39,12 @@ public struct ExternalVariable: ExternalType {
     ///   - comment: The comment associated with the variable.
     @inlinable
     public init(
-        type: String, name: String, mode: Mode, range: (Int, Int)? = nil, defaultValue: String?, comment: String?
+        type: String,
+        name: String,
+        mode: Mode,
+        range: (Int, Int)? = nil,
+        defaultValue: String?,
+        comment: String?
     ) {
         self.type = type
         self.name = name
