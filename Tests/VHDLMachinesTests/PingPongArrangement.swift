@@ -179,7 +179,7 @@ struct PingPongArrangement {
     var pingMachine: Machine {
         Machine(
             name: "PingMachine",
-            path: pingPath,
+            path: pingMachinePath,
             includes: includes,
             externalSignals: pingSignals,
             generics: [],
@@ -202,7 +202,7 @@ struct PingPongArrangement {
     var pongMachine: Machine {
         Machine(
             name: "PongMachine",
-            path: pongPath,
+            path: pongMachinePath,
             includes: includes,
             externalSignals: pongSignals,
             generics: [],
@@ -313,7 +313,6 @@ struct PingPongArrangement {
             end if;
         end process;
     end Behavioral;
-
     """
 
     /// Create a check state.

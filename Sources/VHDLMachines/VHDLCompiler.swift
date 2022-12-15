@@ -10,7 +10,7 @@ import IO
 
 public struct VHDLCompiler {
     
-    private var helper: FileHelpers = FileHelpers()
+    private let helper = FileHelpers()
     
     private func internalStates(machine: Machine) -> String {
         let suspensibleComponents = [
@@ -100,7 +100,7 @@ public struct VHDLCompiler {
                         "if (previousRinglet = \(suspendedState)) then",
                         foldWithNewLine(components: ["internalState <= onResume;"], initial: "", indentation: 1),
                         "elsif (previousRinglet = \(initialState)) then",
-                        foldWithNewLine(components: ["internalState <= noOnEntry;"], initial: "", indentation: 1),
+                        foldWithNewLine(components: ["internalState <= NoOnEntry;"], initial: "", indentation: 1),
                         "else",
                         foldWithNewLine(components: ["internalState <= onEntry;"], initial: "", indentation: 1),
                         "end if;"
@@ -115,7 +115,7 @@ public struct VHDLCompiler {
                         "currentState <= suspendedFrom;",
                         "targetState <= suspendedFrom;",
                         "if (previousRinglet = suspendedFrom) then",
-                        foldWithNewLine(components: ["internalState <= noOnEntry;"], initial: "", indentation: 1),
+                        foldWithNewLine(components: ["internalState <= NoOnEntry;"], initial: "", indentation: 1),
                         "else",
                         foldWithNewLine(components: ["internalState <= onResume;"], initial: "", indentation: 1),
                         "end if;"
@@ -131,7 +131,7 @@ public struct VHDLCompiler {
                         "currentState <= \(suspendedState);",
                         "targetState <= \(suspendedState);",
                         "if (previousRinglet = \(suspendedState)) then",
-                        foldWithNewLine(components: ["internalState <= noOnEntry;"], initial: "", indentation: 1),
+                        foldWithNewLine(components: ["internalState <= NoOnEntry;"], initial: "", indentation: 1),
                         "else",
                         foldWithNewLine(components: ["internalState <= onSuspend;"], initial: "", indentation: 1),
                         "end if;"
@@ -146,7 +146,7 @@ public struct VHDLCompiler {
                         "if (previousRinglet /= \(suspendedState)) then",
                         foldWithNewLine(components: ["internalState <= onSuspend;"], initial: "", indentation: 1),
                         "else",
-                        foldWithNewLine(components: ["internalState <= noOnEntry;"], initial: "", indentation: 1),
+                        foldWithNewLine(components: ["internalState <= NoOnEntry;"], initial: "", indentation: 1),
                         "end if;"
                     ],
                     initial: "",
@@ -170,7 +170,7 @@ public struct VHDLCompiler {
                         "if (previousRinglet /= currentState) then",
                         foldWithNewLine(components: ["internalState <= onEntry;"], initial: "", indentation: 1),
                         "else",
-                        foldWithNewLine(components: ["internalState <= noOnEntry;"], initial: "", indentation: 1),
+                        foldWithNewLine(components: ["internalState <= NoOnEntry;"], initial: "", indentation: 1),
                         "end if;"
                     ],
                     initial: "",
@@ -195,7 +195,7 @@ public struct VHDLCompiler {
                 "if (previousRinglet /= currentState) then",
                 foldWithNewLine(components: ["internalState <= onEntry;"], initial: "", indentation: 1),
                 "else",
-                foldWithNewLine(components: ["internalState <= noOnEntry;"], initial: "", indentation: 1),
+                foldWithNewLine(components: ["internalState <= NoOnEntry;"], initial: "", indentation: 1),
                 "end if;"
             ],
             initial: "",
@@ -963,7 +963,7 @@ public struct VHDLCompiler {
                 indentation: 1
             ),
             indentation: 1
-        ) + "\nend Behavioral;\n"
+        ) + "\nend Behavioral;"
     }
     
     private func foldWithNewLineExceptFirst(components: [String], initial: String = "", indentation: Int = 0) -> String {

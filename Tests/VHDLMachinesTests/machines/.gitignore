@@ -1,2 +1,3 @@
 *.json
 *.vhd
+*.machine
