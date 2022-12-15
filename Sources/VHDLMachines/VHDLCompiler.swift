@@ -518,11 +518,12 @@ public struct VHDLCompiler {
         }
         let transitions = machine.transitions.map { VHDLTransition(transition: $0, machine: machine) }
         let groupedTransitions = transitions.grouped(by: { $0.source == $1.source })
-        let code: Dictionary<String, [VHDLTransition]> = Dictionary(uniqueKeysWithValues: groupedTransitions.map { ($0[0].source, $0) })
-        let keys: [String] = Array(code.keys)
-        let vhdlCode = keys.map { transitionsToCode(transitions: code[$0]!) }
+        let code: [(String, [VHDLTransition])] = Dictionary(uniqueKeysWithValues: groupedTransitions.map { ($0[0].source, $0) }).sorted {
+            $0.0 < $1.0
+        }
+        let vhdlCode = code.map { transitionsToCode(transitions: $0.1) }
         return codeForStatesStatement(
-            names: keys,
+            names: code.map(\.0),
             code: vhdlCode,
             indentation: indentation,
             trailer: "",

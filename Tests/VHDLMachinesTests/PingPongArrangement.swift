@@ -285,9 +285,6 @@ struct PingPongArrangement {
                         internalState <= CheckTransition;
                     when CheckTransition =>
                         case currentState is
-                            when STATE_Ping =>
-                                targetState <= STATE_Check;
-                                internalState <= OnExit;
                             when STATE_Check =>
                                 if (pong = '1') then
                                     targetState <= STATE_Ping;
@@ -295,6 +292,9 @@ struct PingPongArrangement {
                                 else
                                     internalState <= Internal;
                                 end if;
+                            when STATE_Ping =>
+                                targetState <= STATE_Check;
+                                internalState <= OnExit;
                             when others =>
                                 internalState <= Internal;
                         end case;

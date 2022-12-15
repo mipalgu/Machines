@@ -153,19 +153,7 @@ public class VHDLMachinesCompilerTests: XCTestCase {
     func testPingMachineCodeGeneration() {
         let machine = factory.pingMachine
         let code = compiler.generateVHDLFile(machine)
-        // String Equality is randomly asserting false without changing this code at all. Therefore, we are
-        // going to compare the lines.
-        let codeLines = code.components(separatedBy: .newlines)
-        let pingLines = factory.pingCode.components(separatedBy: .newlines)
-        guard codeLines.count == pingLines.count else {
-            XCTFail("invalid number of lines")
-            XCTAssertEqual(code, factory.pingCode)
-            print(code.difference(from: factory.pingCode))
-            return
-        }
-        codeLines.indices.forEach {
-            XCTAssertEqual(codeLines[$0], pingLines[$0])
-        }
+        XCTAssertEqual(code, factory.pingCode)
     }
 
     /// Test VHDL compilation.
