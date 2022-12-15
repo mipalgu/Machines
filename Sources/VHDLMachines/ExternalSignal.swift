@@ -34,7 +34,7 @@ public struct ExternalSignal: ExternalType, Codable, Hashable, Sendable {
     ///   - defaultValue: The default value of the signal.
     ///   - comment: The comment of the signal.
     @inlinable
-    public init(type: String, name: String, mode: Mode, defaultValue: String?, comment: String?) {
+    public init(type: String, name: String, mode: Mode, defaultValue: String? = nil, comment: String? = nil) {
         self.type = type
         self.name = name
         self.mode = mode
