@@ -77,7 +77,15 @@ final class StateTests: XCTestCase {
 
     /// The variables.
     var variables: [VHDLVariable] {
-        [VHDLVariable(type: "integer", name: "x", defaultValue: "0", range: (0, 255), comment: "The variable x.")]
+        [
+            VHDLVariable(
+                type: "integer",
+                name: "x",
+                defaultValue: "0",
+                range: (0, 255),
+                comment: "The variable x."
+            )
+        ]
     }
 
     /// The external variables.
@@ -127,14 +135,20 @@ final class StateTests: XCTestCase {
         XCTAssertEqual(self.state.actionOrder, [["internal"]])
         self.state.signals = [
             MachineSignal(
-                type: "std_logic_vector", name: "xs", defaultValue: "(others => '0')", comment: "The signal xs."
+                type: "std_logic_vector",
+                name: "xs",
+                defaultValue: "(others => '0')",
+                comment: "The signal xs."
             )
         ]
         XCTAssertEqual(
             self.state.signals,
             [
                 MachineSignal(
-                    type: "std_logic_vector", name: "xs", defaultValue: "(others => '0')", comment: "The signal xs."
+                    type: "std_logic_vector",
+                    name: "xs",
+                    defaultValue: "(others => '0')",
+                    comment: "The signal xs."
                 )
             ]
         )

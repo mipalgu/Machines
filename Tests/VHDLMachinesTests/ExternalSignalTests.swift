@@ -61,7 +61,9 @@ import XCTest
 final class ExternalSignalTests: XCTestCase {
 
     /// The signal under test.
-    var signal = ExternalSignal(type: "std_logic", name: "x", mode: .output, defaultValue: "'1'", comment: "signal x")
+    var signal = ExternalSignal(
+        type: "std_logic", name: "x", mode: .output, defaultValue: "'1'", comment: "signal x"
+    )
 
     /// Initialises the signal under test.
     override func setUp() {

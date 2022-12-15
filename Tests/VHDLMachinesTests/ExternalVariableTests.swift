@@ -68,7 +68,12 @@ final class ExternalVariableTests: XCTestCase {
     /// Initialise the variable under test.
     override func setUp() {
         self.variable = ExternalVariable(
-            type: "integer", name: "x", mode: .input, range: (0, 255), defaultValue: "0x15", comment: "external x"
+            type: "integer",
+            name: "x",
+            mode: .input,
+            range: (0, 255),
+            defaultValue: "0x15",
+            comment: "external x"
         )
     }
 

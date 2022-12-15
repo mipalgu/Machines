@@ -65,7 +65,9 @@ final class ParameterTests: XCTestCase {
 
     /// Initialise the parameter to test.
     override func setUp() {
-        self.parameter = Parameter(type: "integer", name: "x", defaultValue: "0xFF", comment: "The parameter x.")
+        self.parameter = Parameter(
+            type: "integer", name: "x", defaultValue: "0xFF", comment: "The parameter x."
+        )
     }
 
     /// Test the init sets the stored properties correctly.
