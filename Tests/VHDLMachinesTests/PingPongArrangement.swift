@@ -77,14 +77,24 @@ struct PingPongArrangement {
         URL(fileURLWithPath: machinesFolder + "/PingPongArrangement.json", isDirectory: false)
     }
 
+    /// The path to the ping machine folder.
+    var pingMachinePath: URL {
+        URL(fileURLWithPath: machinesFolder + "/PingMachine.machine", isDirectory: true)
+    }
+
+    /// The path to the pong machine folder.
+    var pongMachinePath: URL {
+        URL(fileURLWithPath: machinesFolder + "/PongMachine.machine", isDirectory: true)
+    }
+
     /// The path to the ping machine.
     var pingPath: URL {
-        URL(fileURLWithPath: machinesFolder + "/PingMachine.json", isDirectory: false)
+        URL(fileURLWithPath: machinesFolder + "/PingMachine.machine/machine.json", isDirectory: false)
     }
 
     /// The path to the pong machine.
     var pongPath: URL {
-        URL(fileURLWithPath: machinesFolder + "/PongMachine.json", isDirectory: false)
+        URL(fileURLWithPath: machinesFolder + "/PongMachine.machine/machine.json", isDirectory: false)
     }
 
     /// The ping states actions.
