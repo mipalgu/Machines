@@ -69,6 +69,11 @@ struct PingPongArrangement {
         String(packageRootPath) + "/Tests/VHDLMachinesTests/machines"
     }
 
+    /// The path to the machines folder.
+    var machinePath: URL {
+        URL(fileURLWithPath: machinesFolder, isDirectory: true)
+    }
+
     /// A JSON encoder.
     private let encoder = JSONEncoder()
 
