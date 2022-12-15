@@ -61,11 +61,11 @@ import VHDLMachines
 struct PingPongArrangement {
 
     /// The path to the package root.
-    private let packageRootPath = URL(fileURLWithPath: #file)
+    let packageRootPath = URL(fileURLWithPath: #file)
         .pathComponents.prefix { $0 != "Tests" }.joined(separator: "/").dropFirst()
 
     /// The path to the machines folder.
-    private var machinesFolder: String {
+    var machinesFolder: String {
         String(packageRootPath) + "/Tests/VHDLMachinesTests/machines"
     }
 
