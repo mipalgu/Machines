@@ -141,10 +141,13 @@ class VHDLMachinesCompilerTests: XCTestCase {
 
     /// Create test paths for machines.
     override func setUp() {
-        if !helper.directoryExists(factory.pingMachinePath.absoluteString) {
+        if !helper.directoryExists(factory.machinesFolder) {
+            _ = helper.createDirectory(atPath: factory.machinePath)
+        }
+        if !helper.directoryExists(factory.pingMachinePath.path) {
             _ = helper.createDirectory(atPath: factory.pingMachinePath)
         }
-        if !helper.directoryExists(testMachinePath.absoluteString) {
+        if !helper.directoryExists(testMachinePath.path) {
             guard let wrapper = testMachineFileWrapper else {
                 return
             }
@@ -182,7 +185,7 @@ class VHDLMachinesCompilerTests: XCTestCase {
     }
 
     func testCompileWorksWhenParentFolderExists() {
-        if !helper.directoryExists(testMachinePath.absoluteString) {
+        if !helper.directoryExists(testMachinePath.path) {
             guard helper.createDirectory(atPath: testMachinePath) else {
                 XCTFail("Failed to create directory!")
                 return
@@ -200,7 +203,7 @@ class VHDLMachinesCompilerTests: XCTestCase {
 
     /// Test VHDL compilation.
     func testCompilationForEmptyFolder() {
-        if helper.directoryExists(factory.pingMachinePath.absoluteString) {
+        if helper.directoryExists(factory.pingMachinePath.path) {
             _ = helper.deleteItem(atPath: factory.pingMachinePath)
         }
         let machine = factory.pingMachine

@@ -58,7 +58,7 @@ public struct VHDLCompiler {
     public func compile(_ machine: Machine) -> Bool {
         let format = generateVHDLFile(machine)
         let fileName = "\(machine.name).vhd"
-        if !helper.directoryExists(machine.path.absoluteString) {
+        if !helper.directoryExists(machine.path.path) {
             guard helper.createDirectory(atPath: machine.path) else {
                 return false
             }
