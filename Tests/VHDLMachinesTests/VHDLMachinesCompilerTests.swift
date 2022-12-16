@@ -217,11 +217,13 @@ class VHDLMachinesCompilerTests: XCTestCase {
     /// Test compilation creates intermediate folder.
     func testCompileWorksInEmptySubdir() {
         var machine = factory.pingMachine
-        let newPath = factory.machinePath.appendingPathComponent(
-            "subdir/PingMachine.machine", isDirectory: true
+        let subdir = factory.machinePath.appendingPathComponent("subdir", isDirectory: true)
+        let newPath = subdir.appendingPathComponent(
+            "PingMachine.machine", isDirectory: true
         )
         machine.path = newPath
         XCTAssertTrue(compiler.compile(machine))
+        defer { _ = helper.deleteItem(atPath: subdir) }
         XCTAssertTrue(helper.fileExists(newPath.path))
     }
 
