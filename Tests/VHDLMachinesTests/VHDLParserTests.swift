@@ -69,22 +69,8 @@ final class VHDLParserTests: XCTestCase {
     /// A factory to generate test machines.
     let factory = PingPongArrangement()
 
-    /// A helper with IO.
-    let helper = FileHelpers()
-
     /// A generator to generate test machine FileWrappers.
     let generator = VHDLGenerator()
-
-    /// Create the test machine before every test.
-    override func setUpWithError() throws {
-        if helper.fileExists(factory.pingPath.absoluteString) {
-            _ = helper.deleteItem(atPath: factory.pingPath)
-        }
-        if !helper.directoryExists(factory.pingMachinePath.absoluteString) {
-            _ = helper.createDirectory(atPath: factory.pingMachinePath)
-        }
-        try factory.write(to: factory.pingPath, factory.pingMachine)
-    }
 
     /// Test parse function works correctly.
     func testParse() throws {
@@ -96,6 +82,16 @@ final class VHDLParserTests: XCTestCase {
             return
         }
         XCTAssertEqual(machine, factory.pingMachine)
+    }
+
+    /// Test parse function returns nil for invalid data.
+    func testEmptyWrapper() {
+        guard let data = Data(base64Encoded: "") else {
+            XCTFail("Failed to decode empty data.")
+            return
+        }
+        let wrapper = FileWrapper(regularFileWithContents: data)
+        XCTAssertNil(parser.parse(wrapper: wrapper))
     }
 
 }
