@@ -184,6 +184,7 @@ class VHDLMachinesCompilerTests: XCTestCase {
         XCTAssertTrue(compiler.compile(machine))
     }
 
+    /// Test compiler overwrite parent folder.
     func testCompileWorksWhenParentFolderExists() {
         if !helper.directoryExists(testMachinePath.path) {
             guard helper.createDirectory(atPath: testMachinePath) else {
@@ -192,6 +193,36 @@ class VHDLMachinesCompilerTests: XCTestCase {
             }
         }
         XCTAssertTrue(compiler.compile(machine))
+    }
+
+    /// Test compilation overwrites existing file.
+    func testCompileWorksWhenFileIsPresent() {
+        if !helper.directoryExists(testMachinePath.path) {
+            guard helper.createDirectory(atPath: testMachinePath) else {
+                XCTFail("Failed to create directory!")
+                return
+            }
+        }
+        let vhdFile = testMachinePath.path + "/\(machine.name).vhd"
+        if !helper.fileExists(vhdFile) {
+            XCTAssertTrue(
+                helper.createFile(
+                    atPath: URL(fileURLWithPath: vhdFile, isDirectory: false), withContents: "Test Data\n"
+                )
+            )
+        }
+        XCTAssertTrue(compiler.compile(machine))
+    }
+
+    /// Test compilation creates intermediate folder.
+    func testCompileWorksInEmptySubdir() {
+        var machine = factory.pingMachine
+        let newPath = factory.machinePath.appendingPathComponent(
+            "subdir/PingMachine.machine", isDirectory: true
+        )
+        machine.path = newPath
+        XCTAssertTrue(compiler.compile(machine))
+        XCTAssertTrue(helper.fileExists(newPath.path))
     }
 
     /// Test the VHDL code generation is correct for the Ping Machine.

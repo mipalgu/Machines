@@ -59,7 +59,10 @@ public struct VHDLCompiler {
         let format = generateVHDLFile(machine)
         let fileName = "\(machine.name).vhd"
         if !helper.directoryExists(machine.path.path) {
-            guard helper.createDirectory(atPath: machine.path) else {
+            let manager = FileManager()
+            guard (try? manager.createDirectory(
+                at: machine.path, withIntermediateDirectories: true
+            )) != nil else {
                 return false
             }
         }
