@@ -6,21 +6,27 @@
 //
 
 import Foundation
+import IO
 @testable import Machines
 @testable import VHDLMachines
 import XCTest
 
 /// Test class for ``VHDLCompiler``.
-public class VHDLMachinesCompilerTests: XCTestCase {
+class VHDLMachinesCompilerTests: XCTestCase {
 
     /// The compiler under test.
     let compiler = VHDLCompiler()
+
+    /// The test machine filePath.
+    var testMachinePath: URL {
+        factory.machinePath.appendingPathComponent("TestMachine.machine", isDirectory: true)
+    }
 
     /// A test machine.
     var machine: VHDLMachines.Machine {
         VHDLMachines.Machine(
             name: "TestMachine",
-            path: URL(fileURLWithPath: "\(factory.packageRootPath)/machines/VHDLCompilerTestMachine.machine"),
+            path: testMachinePath,
             includes: ["library IEEE;", "use IEEE.std_logic_1164.ALL;"],
             externalSignals: [
                 ExternalSignal(
@@ -124,6 +130,28 @@ public class VHDLMachinesCompilerTests: XCTestCase {
 
     /// Factory generating PingPong arrangements.
     let factory = PingPongArrangement()
+
+    /// IO Helper.
+    let helper = FileHelpers()
+
+    /// FileWrapper for the test machine.
+    var testMachineFileWrapper: FileWrapper? {
+        VHDLGenerator().generate(machine: machine)
+    }
+
+    /// Create test paths for machines.
+    override func setUp() {
+        if !helper.directoryExists(factory.pingMachinePath.absoluteString) {
+            _ = helper.createDirectory(atPath: factory.pingMachinePath)
+        }
+        if !helper.directoryExists(testMachinePath.absoluteString) {
+            _ = helper.createDirectory(atPath: testMachinePath)
+            guard let wrapper = testMachineFileWrapper else {
+                return
+            }
+            _ = try? wrapper.write(to: testMachinePath, originalContentsURL: nil)
+        }
+    }
 
     /// Default state creation.
     private func defaultState(name: String) -> VHDLMachines.State {
