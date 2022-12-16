@@ -62,6 +62,7 @@ import Foundation
 #if os(Linux)
 import IO
 #endif
+import MetaLanguage
 
 public final class MachineParser: ErrorContainer {
 
@@ -112,6 +113,7 @@ public final class MachineParser: ErrorContainer {
         }
         let initialState = states[0]
         let suspendState = states.lazy.filter { "Suspend" == $0.name }.first
+        let tests = self.parseTestsFromMachine(wrapper, withName: name)
         let machine = Machine(
             name: name,
             externalVariables: externalVariables,
@@ -130,7 +132,8 @@ public final class MachineParser: ErrorContainer {
             states: states,
             submachines: submachines,
             callableMachines: callableMachines,
-            invocableMachines: invocableMachines
+            invocableMachines: invocableMachines,
+            tests: tests
         )
         return machine
     }
@@ -197,6 +200,14 @@ public final class MachineParser: ErrorContainer {
             return nil
         }
         return vars
+    }
+
+    private func parseTestsFromMachine(_ wrapper: FileWrapper, withName name: String) -> [TestSuite]? {
+        guard let files = wrapper.fileWrappers?["tests"]?.fileWrappers else {
+            return nil
+        }
+        let suites = files.compactMap{ TestSuite(wrapper: $1) }
+        return suites.count > 0 ? suites : nil
     }
     
     private func parsePackageDependenciesFromMachine(_ wrapper: FileWrapper) -> [PackageDependency]? {

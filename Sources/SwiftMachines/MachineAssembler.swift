@@ -62,6 +62,8 @@
 import IO
 import Foundation
 import swift_helpers
+import MetaLanguage
+import SwiftParsing
 
 public final class MachineAssembler: Assembler, ErrorContainer {
 
@@ -110,8 +112,10 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             let data = try? Data(contentsOf: directory.appendingPathComponent("machine.json", isDirectory: false)),
             let previousMachine = try? JSONDecoder().decode(MachineToken<Machine>.self, from: data),
             previousMachine == MachineToken(data: machine),
+            let tests = self.makeTests(forMachine: machine),
             let buildDir = try? FileWrapper(url: directory, options: .immediate)
         {
+            buildDir.addFileWrapper(tests)
             return (packageDir(forMachine: machine, builtInDirectory: directory), buildDir)
         }
         guard let wrapper = self.assemble(machine, atDirectory: machineDir) else {
@@ -254,6 +258,17 @@ public final class MachineAssembler: Assembler, ErrorContainer {
     }
     
     private func makeTests(forMachine machine: Machine) -> FileWrapper? {
+        let generator = SwiftTestMachineGenerator()
+        let stateNames = machine.states.map(\.name)
+        if
+            let testData = machine.tests,
+            let testWrapper = generator.generateWrapper(tests: testData, for: machine.name, with: stateNames)
+        {
+            let newWrapper = FileWrapper(directoryWithFileWrappers: [:])
+            newWrapper.addFileWrapper(testWrapper)
+            newWrapper.preferredFilename = "Tests"
+            return newWrapper
+        }
         let str = """
             import XCTest
             @testable import \(machine.name)Machine
@@ -323,7 +338,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         let products = Set((machine.packageDependencies.flatMap { $0.products } + mandatoryProducts) .map { "\"" + $0 + "\"" })
         let productList = (products + ["\"" + machine.name + "MachineBridging\""]).sorted().combine("") { $0 + ", " + $1 }
         let str = """
-            // swift-tools-version:5.1
+            // swift-tools-version:5.2
             import PackageDescription
 
             let package = Package(
@@ -334,10 +349,11 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                         targets: ["\(machine.name)Machine"]
                     )
                 ],
-                dependencies: [\(dependencies)],
+                dependencies: [\(dependencies != "" ? dependencies + ", " : "").package(name: "MachineTests", url: "ssh://git@github.com/Morgan2010/MachineTests.git", .branch("main"))],
                 targets: [
                     .systemLibrary(name: "\(machine.name)MachineBridging"),
-                    .target(name: "\(machine.name)Machine", dependencies: [\(productList)], linkerSettings: [.linkedLibrary("FSM")])
+                    .target(name: "\(machine.name)Machine", dependencies: [\(productList)], linkerSettings: [.linkedLibrary("FSM")]),
+                    .testTarget(name: "\(machine.name)Tests", dependencies: ["\(machine.name)Machine", "MachineTests"])
                 ]
             )
 
@@ -996,9 +1012,21 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         // Actions.
         for action in state.actions {
-            str += "    public override func \(action.name)() {\n"
-            str += "\(action.implementation.components(separatedBy: "\n").reduce("") { $0 + "        \($1)\n" })"
-            str += "    }\n\n"
+            var comments: [String] = []
+            var code: [String] = []
+            let lines = action.implementation.components(separatedBy: .newlines)
+            for l in lines {
+                let sanitisedLine = l.trimmingCharacters(in: .whitespacesAndNewlines)
+                if sanitisedLine.starts(with: "///") {
+                    comments.append(sanitisedLine)
+                    continue
+                }
+                code.append(l)
+            }
+            str += comments.map(\.indent).joined(separator: "\n")
+            str += "    public override func \(action.name)() "
+            str += code.joined(separator: "\n").createBlock.indentLines
+            str += "\n\n"
         }
         // Clone.
         str += "    public override final func clone() -> State_\(state.name) {\n"
@@ -1326,7 +1354,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         str += "internal final class " + name + ": " + conformance + " {\n\n"
         // Computed Properties
         str += "    public typealias _StateType = " + stateType + "\n\n"
-        str += "    fileprivate var allStates: [String: " + stateType + "] {\n"
+        str += "    var allStates: [String: " + stateType + "] {\n"
         str += "        var stateCache: [String: " + stateType + "] = [:]\n"
         str += "        func fetchAllStates(fromState state: " + stateType + ") {\n"
         str += "            if stateCache[state.name] != nil {\n"

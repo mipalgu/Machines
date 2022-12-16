@@ -7,21 +7,53 @@
 
 import Foundation
 
-public struct Arrangement {
-    
+/// An arrangement represents a collection of machines that are executing together. An arrangment has a set of
+/// parent machines which act as entry points into the program. This structure does not infer any execution
+/// order for the machines in this arrangement. Instead, this arrangement simply defines the machines and the
+/// capability of each machine (Suspensible, Parameterised, Custom Ringlets etc).
+/// 
+/// A machine is represented with a name and URL to it's location in the file system. From the arrangements
+/// perspective, the only variables defined here are the external variables (and signals), and clocks that
+/// also act as a special external signal. The arrangment variables defined in this struct are available to
+/// all machines within the same arrangement and act as variables with global scope.
+public struct Arrangement: Equatable, Hashable, Codable {
+
+    /// All machines in the arrangement.
     public var machines: [MachineName: URL]
-    
+
+    /// The external signals in the arrangement available to every machine.
     public var externalSignals: [ExternalSignal]
-    
+
+    /// The external variables in the arrangement available to every machine.
     public var externalVariables: [VHDLVariable]
-    
+
+    /// The clocks in the arrangement available to every machine.
     public var clocks: [Clock]
-    
-    public var parents: [MachineName] // Parent Machines
-    
+
+    /// The parent machines in the arrangement. These machines act as entry points into the main program
+    /// of this arrangement.
+    public var parents: [MachineName]
+
+    /// The path to the arrangement. This is the path to the file containing the arrangement definition. This
+    /// path will be used to persist the arrangement.
     public var path: URL
-    
-    public init(machines: [MachineName: URL], externalSignals: [ExternalSignal], externalVariables: [VHDLVariable], clocks: [Clock], parents: [MachineName], path: URL) {
+
+    /// Initialises the arrangement with the given values.
+    /// - Parameters:
+    ///   - machines: The machines in the arrangement.
+    ///   - externalSignals: The external signals in the arrangement.
+    ///   - externalVariables: The external variables in the arrangement.
+    ///   - clocks: The clocks in the arrangement.
+    ///   - parents: The parent machines in the arrangement.
+    ///   - path: The file path to the arrangement.
+    public init(
+        machines: [MachineName: URL],
+        externalSignals: [ExternalSignal],
+        externalVariables: [VHDLVariable],
+        clocks: [Clock],
+        parents: [MachineName],
+        path: URL
+    ) {
         self.machines = machines
         self.externalSignals = externalSignals
         self.externalVariables = externalVariables
@@ -29,5 +61,5 @@ public struct Arrangement {
         self.parents = parents
         self.path = path
     }
-    
+
 }

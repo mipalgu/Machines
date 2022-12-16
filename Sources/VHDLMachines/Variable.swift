@@ -7,15 +7,22 @@
 
 import Foundation
 
+/// A variable in VHDL that represents machine and state variables in an LLFSM.
 public protocol Variable {
-    
-    associatedtype T: StringProtocol
-    
-    var type: T {get set}
-    
+
+    /// The type of the type of the variable.
+    associatedtype VariableType: StringProtocol
+
+    /// The type of the variable.
+    var type: VariableType {get set}
+
+    /// The name of the variable.
     var name: String {get set}
-    
+
+    /// The default value of the variable.
     var defaultValue: String? {get set}
-    
+
+    /// The range of the variable.
     var comment: String? {get set}
+
 }

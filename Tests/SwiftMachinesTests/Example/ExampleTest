@@ -1,0 +1,37 @@
+TestSuite ExampleTest {
+
+    @swift variable var x: Int?
+    
+    @swift variable var five: Int {
+        return 5
+    }
+
+    @swift setup {
+        print("Hello World!")
+        x = 5
+    }
+    
+    @swift teardown {
+        print("Tear Down!")
+    }
+
+    @swift test trueTest {
+        XCTAssertTrue(true)
+    }
+    
+    @swift test falseTest {
+        XCTAssertFalse(false)
+    }
+    
+    @swift test arrayTest {
+        let arr = [0, 1, 2]
+        arr.enumerated().forEach {
+            XCTAssertEqual($0.0, $0.1)
+        }
+    }
+    
+    @swift test xEqual5 {
+        XCTAssertEqual(x, five)
+    }
+
+}

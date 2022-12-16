@@ -6,48 +6,71 @@
 //
 
 import Foundation
+import GUUnits
 
-public struct Clock: Codable {
-    
-    public enum FrequencyUnit: String, CaseIterable, Codable {
-        
-        case Hz = "Hz"
-        
-        case kHz = "kHz"
-        
-        case MHz = "MHz"
-        
-        case GHz = "GHz"
-        
-        case THz = "THz"
+/// A clock represents an oscillating signal with a constant frequency/period.
+public struct Clock: Codable, Equatable, Hashable, Sendable {
+
+    /// The units of frequency.
+    public enum FrequencyUnit: String, CaseIterable, Codable, Sendable {
+
+        // swiftlint:disable identifier_name
+
+        /// Hertz.
+        case Hz
+
+        // swiftlint:enable identifier_name
+
+        /// kiloHertz.
+        case kHz
+
+        /// MegaHertz.
+        case MHz
+
+        /// GigaHertz.
+        case GHz
+
+        /// TeraHertz.
+        case THz
+
     }
-    
+
+    /// The name of the clock.
     public var name: String
-    
+
+    /// The frequency of the clock represented with the frequency `unit`.
     public var frequency: UInt
-    
+
+    /// The unit of frequency.
     public var unit: FrequencyUnit
-    
-    public var period: Double {
-        let f = Double(frequency)
+
+    /// The period of the clock.
+    @inlinable public var period: Time {
+        let freq = Double(frequency)
         switch unit {
         case .Hz:
-            return 1.0 / f
+            return Time.milliseconds(1000.0 / freq)
         case .kHz:
-            return 1.0 / (f * 1000)
+            return Time.microseconds(1000.0 / freq)
         case .MHz:
-            return 1.0 / (f * 1_000_000)
+            return Time.microseconds(1.0 / freq)
         case .GHz:
-            return 1.0 / (f * 1_000_000_000)
+            return Time.microseconds(0.001 / freq)
         case .THz:
-            return 1.0 / (f * 1_000_000_000_000)
+            return Time.microseconds(0.000001 / freq)
         }
     }
-    
+
+    /// Initialise a clock with the given name, frequency and unit.
+    /// - Parameters:
+    ///   - name: The name of the clock.
+    ///   - frequency: The frequency of the clock represented with the frequency `unit`.
+    ///   - unit: The unit of frequency.
+    @inlinable
     public init(name: String, frequency: UInt, unit: FrequencyUnit) {
         self.name = name
         self.frequency = frequency
         self.unit = unit
     }
-    
+
 }
