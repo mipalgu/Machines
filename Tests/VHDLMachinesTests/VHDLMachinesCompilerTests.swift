@@ -152,6 +152,12 @@ class VHDLMachinesCompilerTests: XCTestCase {
         }
     }
 
+    /// Remove test machines.
+    override func tearDown() {
+        _ = helper.deleteItem(atPath: testMachinePath)
+        _ = helper.deleteItem(atPath: factory.pingMachinePath)
+    }
+
     /// Default state creation.
     private func defaultState(name: String) -> VHDLMachines.State {
         VHDLMachines.State(
@@ -172,7 +178,16 @@ class VHDLMachinesCompilerTests: XCTestCase {
 
     /// Test can compile initial machine.
     func testInitialMachine() {
-        let machine = machine
+        XCTAssertTrue(compiler.compile(machine))
+    }
+
+    func testCompileWorksWhenParentFolderExists() {
+        if !helper.directoryExists(testMachinePath.absoluteString) {
+            guard helper.createDirectory(atPath: testMachinePath) else {
+                XCTFail("Failed to create directory!")
+                return
+            }
+        }
         XCTAssertTrue(compiler.compile(machine))
     }
 
@@ -184,7 +199,10 @@ class VHDLMachinesCompilerTests: XCTestCase {
     }
 
     /// Test VHDL compilation.
-    func testCompilation() {
+    func testCompilationForEmptyFolder() {
+        if helper.directoryExists(factory.pingMachinePath.absoluteString) {
+            _ = helper.deleteItem(atPath: factory.pingMachinePath)
+        }
         let machine = factory.pingMachine
         XCTAssertTrue(compiler.compile(machine))
     }

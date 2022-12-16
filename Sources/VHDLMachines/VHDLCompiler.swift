@@ -9,9 +9,9 @@ import Foundation
 import IO
 
 public struct VHDLCompiler {
-    
+
     private let helper = FileHelpers()
-    
+
     private func internalStates(machine: Machine) -> String {
         let suspensibleComponents = [
             "constant ReadSnapshot: std_logic_vector(3 downto 0) := \"0000\";",
@@ -41,7 +41,7 @@ public struct VHDLCompiler {
             indentation: 1
         )
     }
-    
+
     private var suspensionCommands: String {
         foldWithNewLine(
             components: [
@@ -54,10 +54,15 @@ public struct VHDLCompiler {
             indentation: 1
         )
     }
-    
+
     public func compile(_ machine: Machine) -> Bool {
         let format = generateVHDLFile(machine)
         let fileName = "\(machine.name).vhd"
+        if !helper.directoryExists(machine.path.absoluteString) {
+            guard helper.createDirectory(atPath: machine.path) else {
+                return false
+            }
+        }
         return helper.createFile(fileName, inDirectory: machine.path, withContents: format + "\n") != nil
     }
 
