@@ -54,6 +54,7 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+import IO
 @testable import VHDLMachines
 import XCTest
 
@@ -68,6 +69,9 @@ final class VHDLGeneratorTests: XCTestCase {
 
     /// A JSON decoder.
     let decoder = JSONDecoder()
+
+    /// IO helper.
+    let helper = FileHelpers()
 
     /// Test Generate creates correct file structure.
     func testGenerate() {
@@ -94,6 +98,22 @@ final class VHDLGeneratorTests: XCTestCase {
             return
         }
         XCTAssertEqual(machine, factory.pingMachine)
+    }
+
+    /// Test write creates correct file structure.
+    func testWrite() throws {
+        guard let wrapper = generator.generate(machine: factory.pingMachine) else {
+            XCTFail("Failed to create wrapper!")
+            return
+        }
+        try wrapper.write(to: factory.machinePath, originalContentsURL: nil)
+        XCTAssertTrue(helper.directoryExists(factory.pingMachinePath.absoluteString))
+        let data = try Data(contentsOf: factory.pingPath)
+        let newMachine = try decoder.decode(Machine.self, from: data)
+        XCTAssertEqual(factory.pingMachine, newMachine)
+        if helper.directoryExists(factory.pingMachinePath.absoluteString) {
+            XCTAssertTrue(helper.deleteItem(atPath: factory.pingMachinePath))
+        }
     }
 
 }
