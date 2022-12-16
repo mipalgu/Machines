@@ -145,11 +145,10 @@ class VHDLMachinesCompilerTests: XCTestCase {
             _ = helper.createDirectory(atPath: factory.pingMachinePath)
         }
         if !helper.directoryExists(testMachinePath.absoluteString) {
-            _ = helper.createDirectory(atPath: testMachinePath)
             guard let wrapper = testMachineFileWrapper else {
                 return
             }
-            _ = try? wrapper.write(to: testMachinePath, originalContentsURL: nil)
+            _ = try? wrapper.write(to: factory.machinePath, originalContentsURL: nil)
         }
     }
 
@@ -170,10 +169,10 @@ class VHDLMachinesCompilerTests: XCTestCase {
             externalVariables: []
         )
     }
-    
+
+    /// Test can compile initial machine.
     func testInitialMachine() {
         let machine = machine
-        print("File path: \(machine.path.absoluteString)")
         XCTAssertTrue(compiler.compile(machine))
     }
 
