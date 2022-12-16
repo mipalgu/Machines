@@ -778,9 +778,6 @@ public struct VHDLCompiler {
             return ""
         }
         let length = findBinaryLength(count: number)
-        print(number)
-        print("Length for \(number): \(length)")
-        print("Binary position: \(binaryPosition)")
         if length - 1 == binaryPosition {
             return "1" + toBinary(number: number - Int(pow(2, Double(binaryPosition))), binaryPosition: binaryPosition - 1)
         }
@@ -789,7 +786,6 @@ public struct VHDLCompiler {
     
     private func toStateVar(name: String, length: Int, index: Int) -> String {
         let l = max(1, length)
-        print(name)
         return "constant \(toStateName(name: name)): std_logic_vector(\(l - 1) downto 0) := \"\(toBinary(number: index, binaryPosition: l - 1))\";"
     }
     
