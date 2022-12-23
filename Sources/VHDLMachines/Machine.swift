@@ -135,4 +135,57 @@ public struct Machine: Codable, Equatable, Hashable {
         self.architectureBody = architectureBody
     }
 
+    /// Creates an initial machine that will be located at `path`. The initial machine contains an Initial and
+    /// Suspended state with the default actions (OnEntry, OnExit, Internal, OnResume, OnSuspend). This new
+    /// machine is not parameterised, but does include the suspension semantics.
+    /// - Parameter path: The path the new machine will be located at.
+    /// - Returns: The new machine.
+    public static func initial(path: URL) -> Machine {
+        let name = path.lastPathComponent.components(separatedBy: ".machine")[0]
+        let defaultActions = [
+            "OnEntry": "",
+            "OnExit": "",
+            "Internal": "",
+            "OnResume": "",
+            "OnSuspend": ""
+        ]
+        let actionOrder = [["OnResume", "OnSuspend"], ["OnEntry"], ["OnExit", "Internal"]]
+        return Machine(
+            name: name,
+            path: path,
+            includes: ["library IEEE;", "use IEEE.std_logic_1164.All;"],
+            externalSignals: [],
+            generics: [],
+            clocks: [Clock(name: "clk", frequency: 50, unit: .MHz)],
+            drivingClock: 0,
+            dependentMachines: [:],
+            machineVariables: [],
+            machineSignals: [],
+            isParameterised: false,
+            parameterSignals: [],
+            returnableSignals: [],
+            states: [
+                State(
+                    name: "Initial",
+                    actions: defaultActions,
+                    actionOrder: actionOrder,
+                    signals: [],
+                    variables: [],
+                    externalVariables: []
+                ),
+                State(
+                    name: "Suspended",
+                    actions: defaultActions,
+                    actionOrder: actionOrder,
+                    signals: [],
+                    variables: [],
+                    externalVariables: []
+                )
+            ],
+            transitions: [],
+            initialState: 0,
+            suspendedState: 1
+        )
+    }
+
 }

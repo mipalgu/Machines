@@ -339,6 +339,57 @@ final class MachineTests: XCTestCase {
         XCTAssertEqual(machine.architectureBody, newArchitectureBody)
     }
 
+    /// Test initial machine is setup correctly.
+    func testInitial() {
+        let path = URL(fileURLWithPath: "NewMachine.machine", isDirectory: true)
+        let defaultActions = [
+            "OnEntry": "",
+            "OnExit": "",
+            "Internal": "",
+            "OnResume": "",
+            "OnSuspend": ""
+        ]
+        let actionOrder = [["OnResume", "OnSuspend"], ["OnEntry"], ["OnExit", "Internal"]]
+        let machine = Machine.initial(path: path)
+        let expected = Machine(
+            name: "NewMachine",
+            path: path,
+            includes: ["library IEEE;", "use IEEE.std_logic_1164.All;"],
+            externalSignals: [],
+            generics: [],
+            clocks: [Clock(name: "clk", frequency: 50, unit: .MHz)],
+            drivingClock: 0,
+            dependentMachines: [:],
+            machineVariables: [],
+            machineSignals: [],
+            isParameterised: false,
+            parameterSignals: [],
+            returnableSignals: [],
+            states: [
+                State(
+                    name: "Initial",
+                    actions: defaultActions,
+                    actionOrder: actionOrder,
+                    signals: [],
+                    variables: [],
+                    externalVariables: []
+                ),
+                State(
+                    name: "Suspended",
+                    actions: defaultActions,
+                    actionOrder: actionOrder,
+                    signals: [],
+                    variables: [],
+                    externalVariables: []
+                )
+            ],
+            transitions: [],
+            initialState: 0,
+            suspendedState: 1
+        )
+        XCTAssertEqual(machine, expected)
+    }
+
     // swiftlint:enable function_body_length
 
 }
