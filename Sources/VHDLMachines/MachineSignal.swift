@@ -7,9 +7,9 @@
 
 import Foundation
 
-/// A machine signal is a signal that exists within the scope of a VHDL entity. It is a signal that is defined
-/// within a machine and can be though of as a type of machine variable in VHDL.
-public struct MachineSignal: Variable, Codable, Equatable, Hashable, Sendable {
+/// A local signal is a signal that exists within the scope of a VHDL entity. It is a signal that is defined
+/// within a machine/arrangement and can be though of as a type of machine variable in VHDL.
+public struct LocalSignal: Variable, Codable, Equatable, Hashable, Sendable {
 
     /// The type of the signal.
     public var type: String

@@ -82,8 +82,8 @@ class VHDLMachinesCompilerTests: XCTestCase {
                 )
             ],
             machineSignals: [
-                MachineSignal(type: "std_logic", name: "machineSignal1", defaultValue: nil, comment: nil),
-                MachineSignal(
+                LocalSignal(type: "std_logic", name: "machineSignal1", defaultValue: nil, comment: nil),
+                LocalSignal(
                     type: "std_logic_vector(2 downto 0)",
                     name: "machineSignal2",
                     defaultValue: "\"11\"",

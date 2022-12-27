@@ -71,8 +71,8 @@ final class StateTests: XCTestCase {
     }
 
     /// The signals.
-    var signals: [MachineSignal] {
-        [MachineSignal(type: "std_logic", name: "y", defaultValue: "'1'", comment: "The signal y.")]
+    var signals: [LocalSignal] {
+        [LocalSignal(type: "std_logic", name: "y", defaultValue: "'1'", comment: "The signal y.")]
     }
 
     /// The variables.
@@ -134,7 +134,7 @@ final class StateTests: XCTestCase {
         self.state.actionOrder = [["internal"]]
         XCTAssertEqual(self.state.actionOrder, [["internal"]])
         self.state.signals = [
-            MachineSignal(
+            LocalSignal(
                 type: "std_logic_vector",
                 name: "xs",
                 defaultValue: "(others => '0')",
@@ -144,7 +144,7 @@ final class StateTests: XCTestCase {
         XCTAssertEqual(
             self.state.signals,
             [
-                MachineSignal(
+                LocalSignal(
                     type: "std_logic_vector",
                     name: "xs",
                     defaultValue: "(others => '0')",

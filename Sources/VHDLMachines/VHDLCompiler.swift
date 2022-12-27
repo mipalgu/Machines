@@ -1219,7 +1219,7 @@ public struct VHDLCompiler {
     ///   - signals: The signals to generate the machine variables for.
     ///   - variables: The variables to generate the machine variables for.
     /// - Returns: The machine variables.
-    private func machineVariables(signals: [MachineSignal], variables: [VHDLVariable]) -> String {
+    private func machineVariables(signals: [LocalSignal], variables: [VHDLVariable]) -> String {
         foldWithNewLine(
             components: variables.map { variableToArchitectureDeclaration(variable: $0) },
             initial: foldWithNewLine(

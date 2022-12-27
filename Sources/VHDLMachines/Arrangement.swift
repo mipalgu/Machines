@@ -21,11 +21,14 @@ public struct Arrangement: Equatable, Hashable, Codable {
     /// All machines in the arrangement.
     public var machines: [MachineName: URL]
 
-    /// The external signals in the arrangement available to every machine.
+    /// The external signals in the arrangement that map to physical pins.
     public var externalSignals: [ExternalSignal]
 
+    /// The signals local to every machine in the arrangement, but do not map to external devices.
+    public var signals: [LocalSignal]
+
     /// The external variables in the arrangement available to every machine.
-    public var externalVariables: [VHDLVariable]
+    public var variables: [VHDLVariable]
 
     /// The clocks in the arrangement available to every machine.
     public var clocks: [Clock]
@@ -49,14 +52,16 @@ public struct Arrangement: Equatable, Hashable, Codable {
     public init(
         machines: [MachineName: URL],
         externalSignals: [ExternalSignal],
-        externalVariables: [VHDLVariable],
+        signals: [LocalSignal],
+        variables: [VHDLVariable],
         clocks: [Clock],
         parents: [MachineName],
         path: URL
     ) {
         self.machines = machines
         self.externalSignals = externalSignals
-        self.externalVariables = externalVariables
+        self.signals = signals
+        self.variables = variables
         self.clocks = clocks
         self.parents = parents
         self.path = path

@@ -124,9 +124,9 @@ final class MachineTests: XCTestCase {
     }
 
     /// The signals for the machine.
-    var machineSignals: [MachineSignal] {
+    var machineSignals: [LocalSignal] {
         [
-            MachineSignal(type: "std_logic", name: "s", defaultValue: "'0'", comment: "Signal s")
+            LocalSignal(type: "std_logic", name: "s", defaultValue: "'0'", comment: "Signal s")
         ]
     }
 
@@ -283,7 +283,7 @@ final class MachineTests: XCTestCase {
             )
         ]
         let newMachineSignals = [
-            MachineSignal(type: "std_logic", name: "s2", defaultValue: "'0'", comment: "Signal s2")
+            LocalSignal(type: "std_logic", name: "s2", defaultValue: "'0'", comment: "Signal s2")
         ]
         let newParameterSignals = [
             Parameter(type: "std_logic", name: "p2", defaultValue: "'0'", comment: "Parameter p2")

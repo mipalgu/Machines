@@ -38,7 +38,7 @@ public struct Machine: Codable, Equatable, Hashable {
     public var machineVariables: [VHDLVariable]
 
     /// The machine signals for the machine.
-    public var machineSignals: [MachineSignal]
+    public var machineSignals: [LocalSignal]
 
     /// The parameters for the machine.
     public var parameterSignals: [Parameter]
@@ -103,7 +103,7 @@ public struct Machine: Codable, Equatable, Hashable {
         drivingClock: Int,
         dependentMachines: [MachineName: URL],
         machineVariables: [VHDLVariable],
-        machineSignals: [MachineSignal],
+        machineSignals: [LocalSignal],
         isParameterised: Bool,
         parameterSignals: [Parameter],
         returnableSignals: [ReturnableVariable],

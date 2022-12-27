@@ -20,7 +20,7 @@ public struct State: Codable, Equatable, Hashable, Sendable {
     public var actionOrder: [[ActionName]]
 
     /// The machine signals in the state.
-    public var signals: [MachineSignal]
+    public var signals: [LocalSignal]
 
     /// The machine variables in the state. These variable are not signals and cannot be used to
     /// represent real signals in the hardware.
@@ -46,7 +46,7 @@ public struct State: Codable, Equatable, Hashable, Sendable {
         name: String,
         actions: [ActionName: String],
         actionOrder: [[ActionName]],
-        signals: [MachineSignal],
+        signals: [LocalSignal],
         variables: [VHDLVariable],
         externalVariables: [String]
     ) {

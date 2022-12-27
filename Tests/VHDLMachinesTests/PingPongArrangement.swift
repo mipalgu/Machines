@@ -226,7 +226,8 @@ struct PingPongArrangement {
         Arrangement(
             machines: ["PingMachine": pingPath, "PongMachine": pongPath],
             externalSignals: [],
-            externalVariables: [],
+            signals: [],
+            variables: [],
             clocks: clocks,
             parents: ["PingMachine", "PongMachine"],
             path: arrangementPath

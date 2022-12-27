@@ -57,15 +57,15 @@
 @testable import VHDLMachines
 import XCTest
 
-/// Tests the ``MachineSignal`` type.
-final class MachineSignalTests: XCTestCase {
+/// Tests the ``LocalSignal`` type.
+final class LocalSignalTests: XCTestCase {
 
     /// The signal to test.
-    var signal = MachineSignal(type: "std_logic", name: "x", defaultValue: "'1'", comment: "The signal x.")
+    var signal = LocalSignal(type: "std_logic", name: "x", defaultValue: "'1'", comment: "The signal x.")
 
     /// Initialises the signal to test.
     override func setUp() {
-        self.signal = MachineSignal(
+        self.signal = LocalSignal(
             type: "std_logic", name: "x", defaultValue: "'1'", comment: "The signal x."
         )
     }

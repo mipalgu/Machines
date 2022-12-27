@@ -72,9 +72,14 @@ final class ArrangementTests: XCTestCase {
     ]
 
     /// The external signals in the arrangement.
-    let signals = [
+    let externalSignals = [
         ExternalSignal(type: "std_logic", name: "x", mode: .input, defaultValue: "'1'", comment: "Signal x."),
         ExternalSignal(type: "std_logic", name: "y", mode: .output, defaultValue: "'0'", comment: "Signal y.")
+    ]
+
+    /// The arrangement signals.
+    let signals = [
+        LocalSignal(type: "std_logic", name: "z", defaultValue: "'0'", comment: "Signal z.")
     ]
 
     /// The external variables in the arrangement.
@@ -93,8 +98,9 @@ final class ArrangementTests: XCTestCase {
     /// The arrangement to test.
     lazy var arrangement = Arrangement(
         machines: machines,
-        externalSignals: signals,
-        externalVariables: variables,
+        externalSignals: externalSignals,
+        signals: signals,
+        variables: variables,
         clocks: clocks,
         parents: parents,
         path: path
@@ -104,8 +110,9 @@ final class ArrangementTests: XCTestCase {
     override func setUp() {
         self.arrangement = Arrangement(
             machines: machines,
-            externalSignals: signals,
-            externalVariables: variables,
+            externalSignals: externalSignals,
+            signals: signals,
+            variables: variables,
             clocks: clocks,
             parents: parents,
             path: path
@@ -115,8 +122,9 @@ final class ArrangementTests: XCTestCase {
     /// Test init sets properties correctly.
     func testInit() {
         XCTAssertEqual(self.arrangement.machines, self.machines)
-        XCTAssertEqual(self.arrangement.externalSignals, self.signals)
-        XCTAssertEqual(self.arrangement.externalVariables, self.variables)
+        XCTAssertEqual(self.arrangement.externalSignals, self.externalSignals)
+        XCTAssertEqual(self.arrangement.signals, self.signals)
+        XCTAssertEqual(self.arrangement.variables, self.variables)
         XCTAssertEqual(self.arrangement.clocks, self.clocks)
         XCTAssertEqual(self.arrangement.parents, self.parents)
         XCTAssertEqual(self.arrangement.path, self.path)
@@ -128,13 +136,17 @@ final class ArrangementTests: XCTestCase {
             "M3": URL(fileURLWithPath: "/path/to/M3"),
             "M4": URL(fileURLWithPath: "/path/to/M4")
         ]
-        let newSignals = [
+        let newExternalSignals = [
             ExternalSignal(
                 type: "std_logic", name: "z", mode: .input, defaultValue: "'1'", comment: "Signal z."
             ),
             ExternalSignal(
                 type: "std_logic", name: "w", mode: .output, defaultValue: "'0'", comment: "Signal w."
             )
+        ]
+
+        let newSignals = [
+            LocalSignal(type: "std_logic", name: "x2", defaultValue: "'1'", comment: "Signal x2.")
         ]
         let newVariables = [
             VHDLVariable(
@@ -147,14 +159,16 @@ final class ArrangementTests: XCTestCase {
         let newParents = ["M2"]
         let newPath = URL(fileURLWithPath: "/path/to/new/arrangement")
         self.arrangement.machines = newMachines
-        self.arrangement.externalSignals = newSignals
-        self.arrangement.externalVariables = newVariables
+        self.arrangement.externalSignals = newExternalSignals
+        self.arrangement.signals = newSignals
+        self.arrangement.variables = newVariables
         self.arrangement.clocks = newClocks
         self.arrangement.parents = newParents
         self.arrangement.path = newPath
         XCTAssertEqual(self.arrangement.machines, newMachines)
-        XCTAssertEqual(self.arrangement.externalSignals, newSignals)
-        XCTAssertEqual(self.arrangement.externalVariables, newVariables)
+        XCTAssertEqual(self.arrangement.externalSignals, newExternalSignals)
+        XCTAssertEqual(self.arrangement.signals, newSignals)
+        XCTAssertEqual(self.arrangement.variables, newVariables)
         XCTAssertEqual(self.arrangement.clocks, newClocks)
         XCTAssertEqual(self.arrangement.parents, newParents)
         XCTAssertEqual(self.arrangement.path, newPath)
