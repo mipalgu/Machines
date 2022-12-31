@@ -67,4 +67,25 @@ public struct Arrangement: Equatable, Hashable, Codable {
         self.path = path
     }
 
+    /// Create an initial arrangement located at the given URL. This arrangement will contain a single machine
+    /// called *Machine* that will exist within the same directory as the arrangement folder.
+    /// - Parameter url: The URL to the arrangement folder.
+    /// - Returns: The initial arrangement.
+    public static func initial(url: URL) -> Arrangement {
+        let machineURL = url.deletingLastPathComponent().appendingPathComponent(
+            "Machine.machine", isDirectory: true
+        )
+        let newMachine = Machine.initial(path: machineURL)
+        let clock = newMachine.clocks
+        return Arrangement(
+            machines: ["Machine": machineURL],
+            externalSignals: [],
+            signals: [],
+            variables: [],
+            clocks: clock,
+            parents: ["Machine"],
+            path: url
+        )
+    }
+
 }

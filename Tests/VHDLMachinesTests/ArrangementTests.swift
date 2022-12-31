@@ -174,4 +174,22 @@ final class ArrangementTests: XCTestCase {
         XCTAssertEqual(self.arrangement.path, newPath)
     }
 
+    /// Test initial function creates default arrangement correctly.
+    func testInitial() {
+        let url = URL(fileURLWithPath: "Arrangement.arrangement", isDirectory: true)
+        let arrangement = Arrangement.initial(url: url)
+        let machineURL = URL(fileURLWithPath: "./Machine.machine", isDirectory: true)
+        let machine = Machine.initial(path: machineURL)
+        let expected = Arrangement(
+            machines: ["Machine": machineURL],
+            externalSignals: [],
+            signals: [],
+            variables: [],
+            clocks: machine.clocks,
+            parents: ["Machine"],
+            path: url
+        )
+        XCTAssertEqual(arrangement, expected)
+    }
+
 }
