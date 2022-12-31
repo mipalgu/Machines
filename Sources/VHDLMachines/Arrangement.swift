@@ -71,6 +71,7 @@ public struct Arrangement: Equatable, Hashable, Codable {
     /// called *Machine* that will exist within the same directory as the arrangement folder.
     /// - Parameter url: The URL to the arrangement folder.
     /// - Returns: The initial arrangement.
+    @inlinable
     public static func initial(url: URL) -> Arrangement {
         let machineURL = url.deletingLastPathComponent().appendingPathComponent(
             "Machine.machine", isDirectory: true
