@@ -104,4 +104,19 @@ public enum SignalLiteral: RawRepresentable, Equatable, Hashable, Codable {
         }
     }
 
+    /// Checks whether this literal is valid for a given signal type.
+    /// - Parameter type: The type of the signal to check.
+    /// - Returns: Whether this literal can be assigned to the given signal type.
+    @inlinable
+    public func isValid(for type: SignalType) -> Bool {
+        switch (self, type) {
+        case (.logic, .stdLogic):
+            return true
+        case (.vector(let value), .stdLogicVector(let size)):
+            return value.size == size.size
+        default:
+            return false
+        }
+    }
+
 }

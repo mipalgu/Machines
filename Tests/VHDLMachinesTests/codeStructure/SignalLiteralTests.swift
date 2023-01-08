@@ -111,4 +111,25 @@ final class SignalLiteralTests: XCTestCase {
         )
     }
 
+    /// Test isValid function returns correct result for valid signal types.
+    func testIsValid() {
+        XCTAssertTrue(SignalLiteral.logic(value: .low).isValid(for: .stdLogic))
+        XCTAssertTrue(
+            SignalLiteral.vector(
+                value: .bits(value: [.low, .high, .low])
+            )
+            .isValid(for: .stdLogicVector(size: .downto(upper: 2, lower: 0)))
+        )
+        XCTAssertFalse(
+            SignalLiteral.vector(
+                value: .bits(value: [.low, .high])
+            )
+            .isValid(for: .stdLogicVector(size: .downto(upper: 2, lower: 0)))
+        )
+        XCTAssertFalse(
+            SignalLiteral.logic(value: .low).isValid(for: .stdLogicVector(size: .downto(upper: 2, lower: 0)))
+        )
+        XCTAssertFalse(SignalLiteral.vector(value: .bits(value: [.low, .high])).isValid(for: .stdLogic))
+    }
+
 }
