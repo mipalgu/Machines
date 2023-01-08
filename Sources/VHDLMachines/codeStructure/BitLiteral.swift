@@ -85,7 +85,7 @@ public enum BitLiteral: String, Equatable, Hashable, Codable {
     case dontCare = "'-'"
 
     /// The VHDL representation for this value inside a vector literal.
-    var vectorLiteral: String {
+    public var vectorLiteral: String {
         switch self {
         case .high:
             return "1"
