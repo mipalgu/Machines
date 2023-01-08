@@ -83,7 +83,7 @@ public enum VectorLiteral: RawRepresentable, Equatable, Hashable, Codable {
     }
 
     /// The number of bits in this vector literal.
-    public var size: Int {
+    @inlinable public var size: Int {
         switch self {
         case .bits(let values):
             return values.count
