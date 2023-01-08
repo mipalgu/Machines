@@ -110,4 +110,12 @@ final class VectorSizeTests: XCTestCase {
         XCTAssertNil(VectorSize(rawValue: raw))
     }
 
+    /// Test that init returns nil for invalid size.
+    func testInvalidSizeReturnsNil() {
+        let raw = "4 to 2"
+        XCTAssertNil(VectorSize(rawValue: raw))
+        let raw2 = "2 downto 4"
+        XCTAssertNil(VectorSize(rawValue: raw2))
+    }
+
 }

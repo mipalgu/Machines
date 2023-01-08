@@ -92,14 +92,16 @@ public enum VectorSize: RawRepresentable, Equatable, Hashable, Codable {
         }
         guard hasDownto else {
             let components = value.components(separatedBy: " to ")
-            guard let lhs = Int(components.first ?? ""), let rhs = Int(components.last ?? "") else {
+            guard
+                let lhs = Int(components.first ?? ""), let rhs = Int(components.last ?? ""), lhs <= rhs
+            else {
                 return nil
             }
             self = .to(lower: lhs, upper: rhs)
             return
         }
         let components = value.components(separatedBy: " downto ")
-        guard let lhs = Int(components.first ?? ""), let rhs = Int(components.last ?? "") else {
+        guard let lhs = Int(components.first ?? ""), let rhs = Int(components.last ?? ""), lhs >= rhs else {
             return nil
         }
         self = .downto(upper: lhs, lower: rhs)
