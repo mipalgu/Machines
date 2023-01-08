@@ -84,4 +84,35 @@ public enum BitLiteral: String, Equatable, Hashable, Codable {
     /// Don't care about the state of the signal.
     case dontCare = "'-'"
 
+    /// Initialise the `BitLiteral` from the VHDL code.
+    /// - Parameter rawValue: The VHDL code representing this literal.
+    public init?(rawValue: String) {
+        let value = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard value.count == 3 else {
+            return nil
+        }
+        switch value.uppercased() {
+        case "'1'":
+            self = .high
+        case "'0'":
+            self = .low
+        case "'U'":
+            self = .uninitialized
+        case "'X'":
+            self = .unknown
+        case "'Z'":
+            self = .highImpedance
+        case "'W'":
+            self = .weakSignal
+        case "'L'":
+            self = .weakSignalLow
+        case "'H'":
+            self = .weakSignalHigh
+        case "'-'":
+            self = .dontCare
+        default:
+            return nil
+        }
+    }
+
 }
