@@ -90,4 +90,13 @@ public enum SignalLiteral: RawRepresentable, Equatable, Hashable, Codable {
         return nil
     }
 
+    public static func `default`(for type: SignalType) -> SignalLiteral {
+        switch type {
+        case .stdLogic:
+            return .logic(value: .low)
+        case .stdLogicVector(let size):
+            return .vector(value: .bits(value: [BitLiteral](repeating: .low, count: size.size)))
+        }
+    }
+
 }

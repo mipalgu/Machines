@@ -102,4 +102,13 @@ final class SignalLiteralTests: XCTestCase {
         XCTAssertNil(SignalLiteral(rawValue: "\"1A1\""))
     }
 
+    /// Test default property sets the correct value.
+    func testDefault() {
+        XCTAssertEqual(SignalLiteral.default(for: .stdLogic), .logic(value: .low))
+        XCTAssertEqual(
+            SignalLiteral.default(for: .stdLogicVector(size: .downto(upper: 2, lower: 0))),
+            .vector(value: .bits(value: [.low, .low, .low]))
+        )
+    }
+
 }
