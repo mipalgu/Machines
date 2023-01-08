@@ -116,4 +116,17 @@ final class BitLiteralTests: XCTestCase {
         XCTAssertEqual(BitLiteral(rawValue: " 'L' "), .weakSignalLow)
     }
 
+    /// Test vector literal computed property is correct.
+    func testVectorLiteral() {
+        XCTAssertEqual(BitLiteral.high.vectorLiteral, "1")
+        XCTAssertEqual(BitLiteral.low.vectorLiteral, "0")
+        XCTAssertEqual(BitLiteral.unknown.vectorLiteral, "X")
+        XCTAssertEqual(BitLiteral.dontCare.vectorLiteral, "-")
+        XCTAssertEqual(BitLiteral.highImpedance.vectorLiteral, "Z")
+        XCTAssertEqual(BitLiteral.uninitialized.vectorLiteral, "U")
+        XCTAssertEqual(BitLiteral.weakSignal.vectorLiteral, "W")
+        XCTAssertEqual(BitLiteral.weakSignalHigh.vectorLiteral, "H")
+        XCTAssertEqual(BitLiteral.weakSignalLow.vectorLiteral, "L")
+    }
+
 }
