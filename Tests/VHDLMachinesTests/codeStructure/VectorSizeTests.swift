@@ -118,4 +118,16 @@ final class VectorSizeTests: XCTestCase {
         XCTAssertNil(VectorSize(rawValue: raw2))
     }
 
+    /// Test upercased ranges still work.
+    func testUppercasedRanges() {
+        let raw = "2 TO 4"
+        let result = VectorSize(rawValue: raw)
+        let expected = VectorSize.to(lower: 2, upper: 4)
+        XCTAssertEqual(result, expected)
+        let raw2 = "4 DOWNTO 2"
+        let result2 = VectorSize(rawValue: raw2)
+        let expected2 = VectorSize.downto(upper: 4, lower: 2)
+        XCTAssertEqual(result2, expected2)
+    }
+
 }
