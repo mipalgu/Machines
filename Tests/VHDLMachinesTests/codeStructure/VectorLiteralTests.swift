@@ -101,4 +101,11 @@ final class VectorLiteralTests: XCTestCase {
         XCTAssertNil(VectorLiteral(rawValue: "o\"67T\""))
     }
 
+    /// Test size property correctly calculates the number of bits.
+    func testSize() {
+        XCTAssertEqual(VectorLiteral.bits(value: [.high, .low, .high]).size, 3)
+        XCTAssertEqual(VectorLiteral.hexademical(value: [.ten, .eleven]).size, 8)
+        XCTAssertEqual(VectorLiteral.octal(value: [.six, .seven]).size, 6)
+    }
+
 }

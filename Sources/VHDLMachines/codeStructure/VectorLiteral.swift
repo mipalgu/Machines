@@ -82,6 +82,18 @@ public enum VectorLiteral: RawRepresentable, Equatable, Hashable, Codable {
         }
     }
 
+    /// The number of bits in this vector literal.
+    public var size: Int {
+        switch self {
+        case .bits(let values):
+            return values.count
+        case .hexademical(let values):
+            return values.count * 4
+        case .octal(let values):
+            return values.count * 3
+        }
+    }
+
     /// Creates a new vector literal from the VHDL equivalent representation.
     /// - Parameter rawValue: The VHDL equivalent representation of the vector literal.
     @inlinable
