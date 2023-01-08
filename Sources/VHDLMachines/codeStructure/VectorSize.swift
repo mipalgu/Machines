@@ -68,7 +68,7 @@ public enum VectorSize: RawRepresentable, Equatable, Hashable, Codable {
     public typealias RawValue = String
 
     /// The equivalent VHDL code for this type.
-    public var rawValue: String {
+    @inlinable public var rawValue: String {
         switch self {
         case .downto(let upper, let lower):
             return "\(upper) downto \(lower)"
@@ -78,7 +78,7 @@ public enum VectorSize: RawRepresentable, Equatable, Hashable, Codable {
     }
 
     /// The number of bits in the vector.
-    public var size: Int {
+    @inlinable public var size: Int {
         switch self {
         case .downto(let upper, let lower):
             return upper - lower + 1
@@ -89,6 +89,7 @@ public enum VectorSize: RawRepresentable, Equatable, Hashable, Codable {
 
     /// Initialse the type from a string. This will return `nil` if the string is not a valid VHDL range.
     /// - Parameter rawValue: The value to convert.
+    @inlinable
     public init?(rawValue: String) {
         let trimmedValue = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
         guard trimmedValue.count > 5, trimmedValue.count < 256 else {

@@ -67,7 +67,7 @@ public enum SignalType: RawRepresentable, Equatable, Hashable, Codable {
     public typealias RawValue = String
 
     /// The equivalent VHDL code for this type.
-    public var rawValue: String {
+    @inlinable public var rawValue: String {
         switch self {
         case .stdLogic:
             return "std_logic"

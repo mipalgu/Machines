@@ -71,7 +71,7 @@ public enum VectorLiteral: RawRepresentable, Equatable, Hashable, Codable {
     public typealias RawValue = String
 
     /// The equivalent VHDL code for representing this literal.
-    public var rawValue: String {
+    @inlinable public var rawValue: String {
         switch self {
         case .bits(let values):
             return "\"" + values.map(\.vectorLiteral).joined() + "\""
@@ -84,6 +84,7 @@ public enum VectorLiteral: RawRepresentable, Equatable, Hashable, Codable {
 
     /// Creates a new vector literal from the VHDL equivalent representation.
     /// - Parameter rawValue: The VHDL equivalent representation of the vector literal.
+    @inlinable
     public init?(rawValue: String) {
         let value = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
         guard value.count < 256 else {

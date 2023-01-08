@@ -82,7 +82,7 @@ public enum OctalLiteral: Character, Equatable, Hashable, Codable {
     case seven = "7"
 
     /// The equivalent bit vector for this octal digit.
-    public var bits: [BitLiteral] {
+    @inlinable public var bits: [BitLiteral] {
         switch self {
         case .zero:
             return [.low, .low, .low]
@@ -106,6 +106,7 @@ public enum OctalLiteral: Character, Equatable, Hashable, Codable {
     /// Creates an octal digit from the given bit vector.
     /// - Parameter bits: The bit vector to convert to an octal digit.
     /// - Note: The bit vector must have exactly 3 bits.
+    @inlinable
     public init?(bits: [BitLiteral]) {
         guard bits.count == 3 else {
             return nil

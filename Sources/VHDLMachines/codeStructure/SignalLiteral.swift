@@ -67,7 +67,7 @@ public enum SignalLiteral: RawRepresentable, Equatable, Hashable, Codable {
     public typealias RawValue = String
 
     /// The VHDL equivalent code.
-    public var rawValue: String {
+    @inlinable public var rawValue: String {
         switch self {
         case .logic(let value):
             return value.rawValue
@@ -78,6 +78,7 @@ public enum SignalLiteral: RawRepresentable, Equatable, Hashable, Codable {
 
     /// Creates a signal literal from a VHDL representation.
     /// - Parameter rawValue: The VHDL code equivalent to this literal.
+    @inlinable
     public init?(rawValue: String) {
         if let val = BitLiteral(rawValue: rawValue) {
             self = .logic(value: val)
@@ -93,6 +94,7 @@ public enum SignalLiteral: RawRepresentable, Equatable, Hashable, Codable {
     /// Creates the default signal literal for a given signal type.
     /// - Parameter type: The type to create the literal for.
     /// - Returns: The default literal for the given type.
+    @inlinable
     public static func `default`(for type: SignalType) -> SignalLiteral {
         switch type {
         case .stdLogic:

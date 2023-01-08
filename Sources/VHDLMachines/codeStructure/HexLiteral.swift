@@ -106,7 +106,7 @@ public enum HexLiteral: Character, Equatable, Hashable, Codable {
     case fifteen = "F"
 
     /// The equivalent bit vector for this hex digit.
-    public var bits: [BitLiteral] {
+    @inlinable public var bits: [BitLiteral] {
         switch self {
         case .zero:
             return [.low, .low, .low, .low]
@@ -146,6 +146,7 @@ public enum HexLiteral: Character, Equatable, Hashable, Codable {
     /// Initialise a `HexLiteral` from a `Character`.
     /// - Parameter rawValue: The character equivalent of the hex digit. Lowercased and uppercased characters
     /// can be used in this initialiser.
+    @inlinable
     public init?(rawValue: Character) {
         switch rawValue.uppercased() {
         case "0":
@@ -188,6 +189,7 @@ public enum HexLiteral: Character, Equatable, Hashable, Codable {
     /// Create the hex digit from a bit vector.
     /// - Parameter bits: The bits to convert to this hex digit.
     /// - Note: The bits vector must be exactly 4 bits long.
+    @inlinable
     public init?(bits: [BitLiteral]) {
         guard bits.count == 4 else {
             return nil

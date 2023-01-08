@@ -85,7 +85,7 @@ public enum BitLiteral: String, Equatable, Hashable, Codable {
     case dontCare = "'-'"
 
     /// The VHDL representation for this value inside a vector literal.
-    public var vectorLiteral: String {
+    @inlinable public var vectorLiteral: String {
         switch self {
         case .high:
             return "1"
@@ -110,6 +110,7 @@ public enum BitLiteral: String, Equatable, Hashable, Codable {
 
     /// Initialise the `BitLiteral` from the VHDL code.
     /// - Parameter rawValue: The VHDL code representing this literal.
+    @inlinable
     public init?(rawValue: String) {
         let value = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
         guard value.count == 3 else {
