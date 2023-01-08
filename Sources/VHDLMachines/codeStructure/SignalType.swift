@@ -88,7 +88,7 @@ public enum SignalType: RawRepresentable, Equatable, Hashable, Codable {
             self = .stdLogic
             return
         }
-        if let size = VectorSize(logicVector: value) {
+        if let size = VectorSize(vector: value, vectorType: "std_logic_vector") {
             self = .stdLogicVector(size: size)
             return
         }
@@ -100,19 +100,19 @@ public enum SignalType: RawRepresentable, Equatable, Hashable, Codable {
 /// Add conversion inits.
 private extension VectorSize {
 
-    /// Initialise from a `std_logic_vector` string.
-    init?(logicVector: String) {
-        guard logicVector.count >= 17 else {
+    /// Initialise from a vector string.
+    init?(vector: String, vectorType: String) {
+        guard vector.count >= 17 else {
             return nil
         }
-        let firstChars = logicVector[
-            String.Index(utf16Offset: 0, in: logicVector)...String.Index(utf16Offset: 16, in: logicVector)
+        let firstChars = vector[
+            String.Index(utf16Offset: 0, in: vector)...String.Index(utf16Offset: 16, in: vector)
         ]
-        let vectorString = "std_logic_vector("
+        let vectorString = "\(vectorType)("
         guard firstChars == vectorString else {
             return nil
         }
-        let other = logicVector.dropFirst(vectorString.count).dropLast()
+        let other = vector.dropFirst(vectorString.count).dropLast()
         guard let size = VectorSize(rawValue: String(other)) else {
             return nil
         }
