@@ -90,6 +90,9 @@ public enum SignalLiteral: RawRepresentable, Equatable, Hashable, Codable {
         return nil
     }
 
+    /// Creates the default signal literal for a given signal type.
+    /// - Parameter type: The type to create the literal for.
+    /// - Returns: The default literal for the given type.
     public static func `default`(for type: SignalType) -> SignalLiteral {
         switch type {
         case .stdLogic:
