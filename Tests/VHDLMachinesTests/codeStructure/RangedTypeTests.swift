@@ -62,6 +62,8 @@ final class RangedTypeTests: XCTestCase {
 
     /// Test raw values are correct.
     func testRawValues() {
+        let bitVector = RangedType.bitVector(size: .to(lower: 12, upper: 15))
+        XCTAssertEqual(bitVector.rawValue, "bit_vector(12 to 15)")
         let integer = RangedType.integer(size: .to(lower: 12, upper: 15))
         XCTAssertEqual(integer.rawValue, "integer range 12 to 15")
         let signed = RangedType.signed(size: .downto(upper: 5, lower: 3))
@@ -84,6 +86,13 @@ final class RangedTypeTests: XCTestCase {
         XCTAssertNil(RangedType(rawValue: "std"))
         XCTAssertNil(RangedType(rawValue: ""))
         XCTAssertNil(RangedType(rawValue: String(repeating: "a", count: 15)))
+    }
+
+    /// Test that a valid `bitVector` raw value creates the correct case.
+    func testBitVector() {
+        XCTAssertEqual(
+            RangedType(rawValue: "bit_vector(12 to 15)"), .bitVector(size: .to(lower: 12, upper: 15))
+        )
     }
 
     /// Test that a valid `integer` raw value creates the correct case.

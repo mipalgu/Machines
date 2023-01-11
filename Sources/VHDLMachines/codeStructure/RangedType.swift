@@ -57,6 +57,7 @@
 /// *VHDL* types that are bounded within a specific range.
 public enum RangedType: RawRepresentable, Equatable, Hashable, Codable {
 
+    /// Bit vector type (`bit_vector`).
     case bitVector(size: VectorSize)
 
     /// Integer type (`integer`).
