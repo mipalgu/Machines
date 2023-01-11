@@ -113,7 +113,9 @@ final class SignalLiteralTests: XCTestCase {
 
     /// Test rawValue initaliser for a vector value.
     func testVectorInit() {
-        XCTAssertEqual(SignalLiteral(rawValue: "\"101\""), .vector(value: .logics(value: [.high, .low, .high])))
+        XCTAssertEqual(
+            SignalLiteral(rawValue: "\"101\""), .vector(value: .logics(value: [.high, .low, .high]))
+        )
     }
 
     /// Test rawValue initialiser for a vector value with an invalid bit.
