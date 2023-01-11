@@ -100,7 +100,6 @@ final class ArrangementTests: XCTestCase {
         machines: machines,
         externalSignals: externalSignals,
         signals: signals,
-        variables: variables,
         clocks: clocks,
         parents: parents,
         path: path
@@ -112,7 +111,6 @@ final class ArrangementTests: XCTestCase {
             machines: machines,
             externalSignals: externalSignals,
             signals: signals,
-            variables: variables,
             clocks: clocks,
             parents: parents,
             path: path
@@ -124,7 +122,6 @@ final class ArrangementTests: XCTestCase {
         XCTAssertEqual(self.arrangement.machines, self.machines)
         XCTAssertEqual(self.arrangement.externalSignals, self.externalSignals)
         XCTAssertEqual(self.arrangement.signals, self.signals)
-        XCTAssertEqual(self.arrangement.variables, self.variables)
         XCTAssertEqual(self.arrangement.clocks, self.clocks)
         XCTAssertEqual(self.arrangement.parents, self.parents)
         XCTAssertEqual(self.arrangement.path, self.path)
@@ -148,11 +145,6 @@ final class ArrangementTests: XCTestCase {
         let newSignals = [
             LocalSignal(type: "std_logic", name: "x2", defaultValue: "'1'", comment: "Signal x2.")
         ]
-        let newVariables = [
-            VHDLVariable(
-                type: "integer", name: "b", defaultValue: "0xAB", range: (0, 255), comment: "Variable b."
-            )
-        ]
         let newClocks = [
             Clock(name: "clk2", frequency: 100, unit: .MHz)
         ]
@@ -161,14 +153,12 @@ final class ArrangementTests: XCTestCase {
         self.arrangement.machines = newMachines
         self.arrangement.externalSignals = newExternalSignals
         self.arrangement.signals = newSignals
-        self.arrangement.variables = newVariables
         self.arrangement.clocks = newClocks
         self.arrangement.parents = newParents
         self.arrangement.path = newPath
         XCTAssertEqual(self.arrangement.machines, newMachines)
         XCTAssertEqual(self.arrangement.externalSignals, newExternalSignals)
         XCTAssertEqual(self.arrangement.signals, newSignals)
-        XCTAssertEqual(self.arrangement.variables, newVariables)
         XCTAssertEqual(self.arrangement.clocks, newClocks)
         XCTAssertEqual(self.arrangement.parents, newParents)
         XCTAssertEqual(self.arrangement.path, newPath)
@@ -184,7 +174,6 @@ final class ArrangementTests: XCTestCase {
             machines: ["Machine": machineURL],
             externalSignals: [],
             signals: [],
-            variables: [],
             clocks: machine.clocks,
             parents: ["Machine"],
             path: url

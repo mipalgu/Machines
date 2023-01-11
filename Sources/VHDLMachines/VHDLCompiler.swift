@@ -1357,7 +1357,6 @@ public struct VHDLCompiler {
                 parameters,
                 returns
             ] + [
-                machineVariables(signals: machine.machineSignals, variables: machine.machineVariables),
                 architectureHead(head: machine.architectureHead)
             ],
             initial: "architecture Behavioral of \(machine.name) is",

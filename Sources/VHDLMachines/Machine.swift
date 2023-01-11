@@ -34,9 +34,6 @@ public struct Machine: Codable, Equatable, Hashable {
     /// The machines this machine depends on.
     public var dependentMachines: [MachineName: URL]
 
-    /// The machine variables for the machine.
-    public var machineVariables: [VHDLVariable]
-
     /// The machine signals for the machine.
     public var machineSignals: [LocalSignal]
 
@@ -102,7 +99,6 @@ public struct Machine: Codable, Equatable, Hashable {
         clocks: [Clock],
         drivingClock: Int,
         dependentMachines: [MachineName: URL],
-        machineVariables: [VHDLVariable],
         machineSignals: [LocalSignal],
         isParameterised: Bool,
         parameterSignals: [Parameter],
@@ -122,7 +118,6 @@ public struct Machine: Codable, Equatable, Hashable {
         self.clocks = clocks
         self.drivingClock = drivingClock
         self.dependentMachines = dependentMachines
-        self.machineVariables = machineVariables
         self.machineSignals = machineSignals
         self._isParameterised = isParameterised
         self.parameterSignals = parameterSignals
@@ -159,7 +154,6 @@ public struct Machine: Codable, Equatable, Hashable {
             clocks: [Clock(name: "clk", frequency: 50, unit: .MHz)],
             drivingClock: 0,
             dependentMachines: [:],
-            machineVariables: [],
             machineSignals: [],
             isParameterised: false,
             parameterSignals: [],
@@ -170,7 +164,6 @@ public struct Machine: Codable, Equatable, Hashable {
                     actions: defaultActions,
                     actionOrder: actionOrder,
                     signals: [],
-                    variables: [],
                     externalVariables: []
                 ),
                 State(
@@ -178,7 +171,6 @@ public struct Machine: Codable, Equatable, Hashable {
                     actions: defaultActions,
                     actionOrder: actionOrder,
                     signals: [],
-                    variables: [],
                     externalVariables: []
                 )
             ],

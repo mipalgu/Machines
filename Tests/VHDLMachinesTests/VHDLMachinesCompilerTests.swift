@@ -68,22 +68,6 @@ class VHDLMachinesCompilerTests: XCTestCase {
             ],
             drivingClock: 0,
             dependentMachines: [:],
-            machineVariables: [
-                VHDLVariable(
-                    type: "integer",
-                    name: "machineVar1",
-                    defaultValue: "12",
-                    range: nil,
-                    comment: "machine var 1"
-                ),
-                VHDLVariable(
-                    type: "boolean",
-                    name: "machineVar2",
-                    defaultValue: "false",
-                    range: nil,
-                    comment: "machine var 2"
-                )
-            ],
             machineSignals: [
                 LocalSignal(type: "std_logic", name: "machineSignal1", defaultValue: nil, comment: nil),
                 LocalSignal(
@@ -179,7 +163,6 @@ class VHDLMachinesCompilerTests: XCTestCase {
             ],
             actionOrder: [["onresume", "onentry"], ["onexit", "internal"], ["onsuspend"]],
             signals: [],
-            variables: [],
             externalVariables: []
         )
     }
@@ -327,8 +310,6 @@ class VHDLMachinesCompilerTests: XCTestCase {
             -- Machine Signals and Variables
             signal machineSignal1: std_logic;
             signal machineSignal2: std_logic_vector(2 downto 0) := "11"; -- machine signal 2
-            shared variable machineVar1: integer; -- machine var 1
-            shared variable machineVar2: boolean; -- machine var 2
             -- User-Specific Code for Architecture Head
             some code
                 with indentation

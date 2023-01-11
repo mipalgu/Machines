@@ -75,19 +75,6 @@ final class StateTests: XCTestCase {
         [LocalSignal(type: "std_logic", name: "y", defaultValue: "'1'", comment: "The signal y.")]
     }
 
-    /// The variables.
-    var variables: [VHDLVariable] {
-        [
-            VHDLVariable(
-                type: "integer",
-                name: "x",
-                defaultValue: "0",
-                range: (0, 255),
-                comment: "The variable x."
-            )
-        ]
-    }
-
     /// The external variables.
     var externalVariables: [String] {
         ["A"]
@@ -99,7 +86,6 @@ final class StateTests: XCTestCase {
         actions: actions,
         actionOrder: actionOrder,
         signals: signals,
-        variables: variables,
         externalVariables: externalVariables
     )
 
@@ -110,7 +96,6 @@ final class StateTests: XCTestCase {
             actions: actions,
             actionOrder: actionOrder,
             signals: signals,
-            variables: variables,
             externalVariables: externalVariables
         )
     }
@@ -121,7 +106,6 @@ final class StateTests: XCTestCase {
         XCTAssertEqual(self.state.actions, self.actions)
         XCTAssertEqual(self.state.actionOrder, self.actionOrder)
         XCTAssertEqual(self.state.signals, self.signals)
-        XCTAssertEqual(self.state.variables, self.variables)
         XCTAssertEqual(self.state.externalVariables, self.externalVariables)
     }
 
@@ -149,19 +133,6 @@ final class StateTests: XCTestCase {
                     name: "xs",
                     defaultValue: "(others => '0')",
                     comment: "The signal xs."
-                )
-            ]
-        )
-        self.state.variables = [
-            VHDLVariable(
-                type: "integer", name: "z", defaultValue: "1", range: (5, 10), comment: "The variable z."
-            )
-        ]
-        XCTAssertEqual(
-            self.state.variables,
-            [
-                VHDLVariable(
-                    type: "integer", name: "z", defaultValue: "1", range: (5, 10), comment: "The variable z."
                 )
             ]
         )

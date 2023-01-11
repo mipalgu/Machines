@@ -22,10 +22,6 @@ public struct State: Codable, Equatable, Hashable, Sendable {
     /// The machine signals in the state.
     public var signals: [LocalSignal]
 
-    /// The machine variables in the state. These variable are not signals and cannot be used to
-    /// represent real signals in the hardware.
-    public var variables: [VHDLVariable]
-
     /// The name of the external variables accessed in the state. These variables are defined
     /// in the arrangement.
     public var externalVariables: [String]
@@ -47,14 +43,12 @@ public struct State: Codable, Equatable, Hashable, Sendable {
         actions: [ActionName: String],
         actionOrder: [[ActionName]],
         signals: [LocalSignal],
-        variables: [VHDLVariable],
         externalVariables: [String]
     ) {
         self.name = name
         self.actions = actions
         self.actionOrder = actionOrder
         self.signals = signals
-        self.variables = variables
         self.externalVariables = externalVariables
     }
 

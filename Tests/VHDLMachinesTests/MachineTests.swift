@@ -114,15 +114,6 @@ final class MachineTests: XCTestCase {
         ]
     }
 
-    /// The variables for the machine.
-    var machineVariables: [VHDLVariable] {
-        [
-            VHDLVariable(
-                type: "integer", name: "x", defaultValue: "1", range: (0, 65535), comment: "Variable x"
-            )
-        ]
-    }
-
     /// The signals for the machine.
     var machineSignals: [LocalSignal] {
         [
@@ -148,10 +139,10 @@ final class MachineTests: XCTestCase {
     var states: [State] {
         [
             State(
-                name: "S0", actions: [:], actionOrder: [], signals: [], variables: [], externalVariables: []
+                name: "S0", actions: [:], actionOrder: [], signals: [], externalVariables: []
             ),
             State(
-                name: "S1", actions: [:], actionOrder: [], signals: [], variables: [], externalVariables: []
+                name: "S1", actions: [:], actionOrder: [], signals: [], externalVariables: []
             )
         ]
     }
@@ -194,7 +185,6 @@ final class MachineTests: XCTestCase {
         clocks: clocks,
         drivingClock: drivingClock,
         dependentMachines: dependentMachines,
-        machineVariables: machineVariables,
         machineSignals: machineSignals,
         isParameterised: true,
         parameterSignals: parameterSignals,
@@ -218,7 +208,6 @@ final class MachineTests: XCTestCase {
             clocks: clocks,
             drivingClock: drivingClock,
             dependentMachines: dependentMachines,
-            machineVariables: machineVariables,
             machineSignals: machineSignals,
             isParameterised: true,
             parameterSignals: parameterSignals,
@@ -242,7 +231,6 @@ final class MachineTests: XCTestCase {
         XCTAssertEqual(machine.clocks, clocks)
         XCTAssertEqual(machine.drivingClock, drivingClock)
         XCTAssertEqual(machine.dependentMachines, dependentMachines)
-        XCTAssertEqual(machine.machineVariables, machineVariables)
         XCTAssertEqual(machine.machineSignals, machineSignals)
         XCTAssertTrue(machine.isParameterised)
         XCTAssertEqual(machine.parameterSignals, parameterSignals)
@@ -277,11 +265,6 @@ final class MachineTests: XCTestCase {
         ]
         let newDrivingClock = 1
         let newDependentMachines = ["M1": URL(fileURLWithPath: "/path/to/M1")]
-        let newMachineVariables = [
-            VHDLVariable(
-                type: "integer", name: "x2", defaultValue: "1", range: (0, 65535), comment: "Variable x2"
-            )
-        ]
         let newMachineSignals = [
             LocalSignal(type: "std_logic", name: "s2", defaultValue: "'0'", comment: "Signal s2")
         ]
@@ -293,7 +276,7 @@ final class MachineTests: XCTestCase {
         ]
         let newStates = [
             State(
-                name: "S0", actions: [:], actionOrder: [], signals: [], variables: [], externalVariables: []
+                name: "S0", actions: [:], actionOrder: [], signals: [], externalVariables: []
             )
         ]
         let newTransitions = [Transition(condition: "true", source: 0, target: 1)]
@@ -309,7 +292,6 @@ final class MachineTests: XCTestCase {
         machine.clocks = newClocks
         machine.drivingClock = newDrivingClock
         machine.dependentMachines = newDependentMachines
-        machine.machineVariables = newMachineVariables
         machine.machineSignals = newMachineSignals
         machine.parameterSignals = newParameterSignals
         machine.returnableSignals = newReturnableSignals
@@ -327,7 +309,6 @@ final class MachineTests: XCTestCase {
         XCTAssertEqual(machine.clocks, newClocks)
         XCTAssertEqual(machine.drivingClock, newDrivingClock)
         XCTAssertEqual(machine.dependentMachines, newDependentMachines)
-        XCTAssertEqual(machine.machineVariables, newMachineVariables)
         XCTAssertEqual(machine.machineSignals, newMachineSignals)
         XCTAssertEqual(machine.parameterSignals, newParameterSignals)
         XCTAssertEqual(machine.returnableSignals, newReturnableSignals)
@@ -360,7 +341,6 @@ final class MachineTests: XCTestCase {
             clocks: [Clock(name: "clk", frequency: 50, unit: .MHz)],
             drivingClock: 0,
             dependentMachines: [:],
-            machineVariables: [],
             machineSignals: [],
             isParameterised: false,
             parameterSignals: [],
@@ -371,7 +351,6 @@ final class MachineTests: XCTestCase {
                     actions: defaultActions,
                     actionOrder: actionOrder,
                     signals: [],
-                    variables: [],
                     externalVariables: []
                 ),
                 State(
@@ -379,7 +358,6 @@ final class MachineTests: XCTestCase {
                     actions: defaultActions,
                     actionOrder: actionOrder,
                     signals: [],
-                    variables: [],
                     externalVariables: []
                 )
             ],

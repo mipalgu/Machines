@@ -128,7 +128,6 @@ struct PingPongArrangement {
             actions: pingActions,
             actionOrder: actionOrder,
             signals: [],
-            variables: [],
             externalVariables: ["ping", "pong"]
         )
     }
@@ -140,7 +139,6 @@ struct PingPongArrangement {
             actions: pongActions,
             actionOrder: actionOrder,
             signals: [],
-            variables: [],
             externalVariables: ["ping", "pong"]
         )
     }
@@ -186,7 +184,6 @@ struct PingPongArrangement {
             clocks: clocks,
             drivingClock: 0,
             dependentMachines: [:],
-            machineVariables: [],
             machineSignals: [],
             isParameterised: false,
             parameterSignals: [],
@@ -209,7 +206,6 @@ struct PingPongArrangement {
             clocks: clocks,
             drivingClock: 0,
             dependentMachines: [:],
-            machineVariables: [],
             machineSignals: [],
             isParameterised: false,
             parameterSignals: [],
@@ -227,7 +223,6 @@ struct PingPongArrangement {
             machines: ["PingMachine": pingPath, "PongMachine": pongPath],
             externalSignals: [],
             signals: [],
-            variables: [],
             clocks: clocks,
             parents: ["PingMachine", "PongMachine"],
             path: arrangementPath
@@ -327,7 +322,6 @@ struct PingPongArrangement {
             actions: emptyActions(reset: reset),
             actionOrder: actionOrder,
             signals: [],
-            variables: [],
             externalVariables: externalVariables
         )
     }
