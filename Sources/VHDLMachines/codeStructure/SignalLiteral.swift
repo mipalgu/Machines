@@ -57,10 +57,14 @@
 /// A type for representing all signal literals.
 public enum SignalLiteral: RawRepresentable, Equatable, Hashable, Codable {
 
+    /// A boolean literal.
+    case boolean(value: Bool)
+
+    /// An integer literal.
+    case integer(value: Int)
+
     /// A single-bit logic literal.
     case logic(value: BitLiteral)
-
-    case integer(value: Int)
 
     /// A vector of logic literals.
     case vector(value: VectorLiteral)
@@ -71,6 +75,8 @@ public enum SignalLiteral: RawRepresentable, Equatable, Hashable, Codable {
     /// The VHDL equivalent code.
     @inlinable public var rawValue: String {
         switch self {
+        case .boolean(let value):
+            return value ? "true" : "false"
         case .logic(let value):
             return value.rawValue
         case .vector(let value):
@@ -84,11 +90,24 @@ public enum SignalLiteral: RawRepresentable, Equatable, Hashable, Codable {
     /// - Parameter rawValue: The VHDL code equivalent to this literal.
     @inlinable
     public init?(rawValue: String) {
-        if let val = BitLiteral(rawValue: rawValue) {
+        let value = rawValue.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        if value == "true" {
+            self = .boolean(value: true)
+            return
+        }
+        if value == "false" {
+            self = .boolean(value: false)
+            return
+        }
+        if let val = Int(value) {
+            self = .integer(value: val)
+            return
+        }
+        if let val = BitLiteral(rawValue: value) {
             self = .logic(value: val)
             return
         }
-        if let val = VectorLiteral(rawValue: rawValue) {
+        if let val = VectorLiteral(rawValue: value) {
             self = .vector(value: val)
             return
         }
@@ -101,12 +120,19 @@ public enum SignalLiteral: RawRepresentable, Equatable, Hashable, Codable {
     @inlinable
     public static func `default`(for type: SignalType) -> SignalLiteral {
         switch type {
-        case .stdLogic:
+        case .boolean:
+            return .boolean(value: false)
+        case .integer, .natural, .positive:
+            return .integer(value: 0)
+        case .stdLogic, .stdULogic:
             return .logic(value: .low)
         case .ranged(let type):
             switch type {
-            case .integer:
-                return .integer(value: 0)
+            case .integer(let size):
+                if size.min <= 0 && size.max >= 0 {
+                    return .integer(value: 0)
+                }
+                return .integer(value: size.min)
             case .stdLogicVector(let size), .signed(let size), .unsigned(let size),
                 .stdULogicVector(let size):
                 return .vector(value: .bits(value: [BitLiteral](repeating: .low, count: size.size)))
@@ -120,7 +146,17 @@ public enum SignalLiteral: RawRepresentable, Equatable, Hashable, Codable {
     @inlinable
     public func isValid(for type: SignalType) -> Bool {
         switch (self, type) {
-        case (.logic, .stdLogic):
+        case(.boolean, .boolean):
+            return true
+        case (.integer, .integer):
+            return true
+        case (.integer(let value), .ranged(type: .integer(let size))):
+            return size.min <= value && value <= size.max
+        case (.integer(let value), .natural):
+            return value >= 0
+        case (.integer(let value), .positive):
+            return value > 0
+        case (.logic, .stdLogic), (.logic, .stdULogic):
             return true
         case (.vector(let value), .ranged(let type)):
             switch type {

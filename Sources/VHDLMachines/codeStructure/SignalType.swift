@@ -57,8 +57,18 @@
 /// Valid VHDL Signal types.
 public enum SignalType: RawRepresentable, Equatable, Hashable, Codable {
 
+    case boolean
+
+    case integer
+
+    case natural
+
+    case positive
+
     /// Standard logic (`std_logic`).
     case stdLogic
+
+    case stdULogic
 
     /// A type with a bounded range.
     case ranged(type: RangedType)
@@ -69,8 +79,18 @@ public enum SignalType: RawRepresentable, Equatable, Hashable, Codable {
     /// The equivalent VHDL code for this type.
     @inlinable public var rawValue: String {
         switch self {
+        case .boolean:
+            return "boolean"
+        case .integer:
+            return "integer"
+        case .natural:
+            return "natural"
+        case .positive:
+            return "positive"
         case .stdLogic:
             return "std_logic"
+        case .stdULogic:
+            return "std_ulogic"
         case .ranged(let type):
             return type.rawValue
         }
@@ -85,8 +105,28 @@ public enum SignalType: RawRepresentable, Equatable, Hashable, Codable {
             return nil
         }
         let value = trimmedString.lowercased()
+        if value == "boolean" {
+            self = .boolean
+            return
+        }
+        if value == "integer" {
+            self = .integer
+            return
+        }
+        if value == "natural" {
+            self = .natural
+            return
+        }
+        if value == "positive" {
+            self = .positive
+            return
+        }
         if value == "std_logic" {
             self = .stdLogic
+            return
+        }
+        if value == "std_ulogic" {
+            self = .stdULogic
             return
         }
         if let type = RangedType(rawValue: value) {

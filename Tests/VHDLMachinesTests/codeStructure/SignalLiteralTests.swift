@@ -62,10 +62,29 @@ final class SignalLiteralTests: XCTestCase {
 
     /// Test raw values are correct.
     func testRawValue() {
+        let boolean = SignalLiteral.boolean(value: true)
+        XCTAssertEqual(boolean.rawValue, "true")
+        let boolean2 = SignalLiteral.boolean(value: false)
+        XCTAssertEqual(boolean2.rawValue, "false")
+        let int = SignalLiteral.integer(value: 12)
+        XCTAssertEqual(int.rawValue, "12")
         let bitLiteral = SignalLiteral.logic(value: .high)
         XCTAssertEqual(bitLiteral.rawValue, "'1'")
         let vectorLiteral = SignalLiteral.vector(value: .bits(value: [.high, .low, .high]))
         XCTAssertEqual(vectorLiteral.rawValue, "\"101\"")
+    }
+
+    /// Test rawValue initaliser for a boolean value.
+    func testBoolInit() {
+        XCTAssertEqual(SignalLiteral(rawValue: "true"), .boolean(value: true))
+        XCTAssertEqual(SignalLiteral(rawValue: "false"), .boolean(value: false))
+    }
+
+    /// Test rawValue initaliser for an integer value.
+    func testIntInit() {
+        XCTAssertEqual(SignalLiteral(rawValue: "5"), .integer(value: 5))
+        XCTAssertEqual(SignalLiteral(rawValue: "-5"), .integer(value: -5))
+        XCTAssertEqual(SignalLiteral(rawValue: "0"), .integer(value: 0))
     }
 
     /// Test rawValue initaliser for a logic value.
@@ -103,22 +122,105 @@ final class SignalLiteralTests: XCTestCase {
     }
 
     /// Test default property sets the correct value.
-    func testDefault() {
-        XCTAssertEqual(SignalLiteral.default(for: .stdLogic), .logic(value: .low))
+    func testDefaultVectors() {
+        let expected = SignalLiteral.vector(value: .bits(value: [.low, .low, .low]))
+        let range = VectorSize.downto(upper: 2, lower: 0)
         XCTAssertEqual(
-            SignalLiteral.default(for: .ranged(type: .stdLogicVector(size: .downto(upper: 2, lower: 0)))),
-            .vector(value: .bits(value: [.low, .low, .low]))
+            SignalLiteral.default(for: .ranged(type: .stdLogicVector(size: range))),
+            expected
+        )
+        XCTAssertEqual(SignalLiteral.default(for: .ranged(type: .signed(size: range))), expected)
+        XCTAssertEqual(SignalLiteral.default(for: .ranged(type: .unsigned(size: range))), expected)
+        XCTAssertEqual(SignalLiteral.default(for: .ranged(type: .stdULogicVector(size: range))), expected)
+    }
+
+    /// Test default property sets the correct value for non-vector types.
+    func testDefaultLogicTypes() {
+        XCTAssertEqual(SignalLiteral.default(for: .stdLogic), .logic(value: .low))
+        XCTAssertEqual(SignalLiteral.default(for: .boolean), .boolean(value: false))
+        XCTAssertEqual(SignalLiteral.default(for: .integer), .integer(value: 0))
+        XCTAssertEqual(
+            SignalLiteral.default(for: .ranged(type: .integer(size: .to(lower: 5, upper: 7)))),
+            .integer(value: 5)
+        )
+        XCTAssertEqual(
+            SignalLiteral.default(for: .ranged(type: .integer(size: .to(lower: -2, upper: 7)))),
+            .integer(value: 0)
         )
     }
 
     /// Test isValid function returns correct result for valid signal types.
     func testIsValid() {
         XCTAssertTrue(SignalLiteral.logic(value: .low).isValid(for: .stdLogic))
+        XCTAssertTrue(SignalLiteral.logic(value: .low).isValid(for: .stdULogic))
+        XCTAssertFalse(SignalLiteral.integer(value: 12).isValid(for: .stdULogic))
+        XCTAssertFalse(SignalLiteral.integer(value: 12).isValid(for: .stdLogic))
+        XCTAssertTrue(SignalLiteral.boolean(value: true).isValid(for: .boolean))
+        XCTAssertFalse(SignalLiteral.integer(value: 0).isValid(for: .boolean))
+        XCTAssertFalse(SignalLiteral.logic(value: .high).isValid(for: .boolean))
+        XCTAssertFalse(SignalLiteral.vector(value: .bits(value: [.high])).isValid(for: .boolean))
+    }
+
+    /// Test isValid function returns correct result for integer types.
+    func testIsValidIntegers() {
+        XCTAssertFalse(SignalLiteral.integer(value: -12).isValid(for: .natural))
+        XCTAssertFalse(SignalLiteral.integer(value: -12).isValid(for: .positive))
+        XCTAssertTrue(SignalLiteral.integer(value: 12).isValid(for: .natural))
+        XCTAssertTrue(SignalLiteral.integer(value: 12).isValid(for: .positive))
+        XCTAssertTrue(SignalLiteral.integer(value: 12).isValid(for: .integer))
+        XCTAssertTrue(SignalLiteral.integer(value: 0).isValid(for: .natural))
+        XCTAssertFalse(SignalLiteral.integer(value: 0).isValid(for: .positive))
+        XCTAssertTrue(SignalLiteral.integer(value: 0).isValid(for: .integer))
+        XCTAssertFalse(SignalLiteral.boolean(value: false).isValid(for: .positive))
+        XCTAssertFalse(SignalLiteral.boolean(value: false).isValid(for: .natural))
+        XCTAssertFalse(SignalLiteral.boolean(value: false).isValid(for: .integer))
+        XCTAssertTrue(
+            SignalLiteral.integer(value: 12)
+                .isValid(for: .ranged(type: .integer(size: .to(lower: 0, upper: 12))))
+        )
+        XCTAssertFalse(
+            SignalLiteral.integer(value: 12)
+                .isValid(for: .ranged(type: .integer(size: .to(lower: 0, upper: 10))))
+        )
+        XCTAssertTrue(
+            SignalLiteral.integer(value: 0)
+                .isValid(for: .ranged(type: .integer(size: .to(lower: 0, upper: 12))))
+        )
+        XCTAssertFalse(
+            SignalLiteral.integer(value: -6)
+                .isValid(for: .ranged(type: .integer(size: .to(lower: -5, upper: 12))))
+        )
+        XCTAssertFalse(
+            SignalLiteral.vector(value: .bits(value: [.low]))
+                .isValid(for: .ranged(type: .integer(size: .downto(upper: 5, lower: 3))))
+        )
+    }
+
+    /// Test isValid function returns correct result for vector types.
+    func testIsValidVectors() {
         XCTAssertTrue(
             SignalLiteral.vector(
                 value: .bits(value: [.low, .high, .low])
             )
             .isValid(for: .ranged(type: .stdLogicVector(size: .downto(upper: 2, lower: 0))))
+        )
+        XCTAssertTrue(
+            SignalLiteral.vector(
+                value: .bits(value: [.low, .high, .low])
+            )
+            .isValid(for: .ranged(type: .stdULogicVector(size: .downto(upper: 2, lower: 0))))
+        )
+        XCTAssertTrue(
+            SignalLiteral.vector(
+                value: .bits(value: [.low, .high, .low])
+            )
+            .isValid(for: .ranged(type: .signed(size: .downto(upper: 2, lower: 0))))
+        )
+        XCTAssertTrue(
+            SignalLiteral.vector(
+                value: .bits(value: [.low, .high, .low])
+            )
+            .isValid(for: .ranged(type: .unsigned(size: .downto(upper: 2, lower: 0))))
         )
         XCTAssertFalse(
             SignalLiteral.vector(
