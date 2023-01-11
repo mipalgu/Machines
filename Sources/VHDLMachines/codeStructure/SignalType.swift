@@ -57,17 +57,22 @@
 /// Valid VHDL Signal types.
 public enum SignalType: RawRepresentable, Equatable, Hashable, Codable {
 
+    /// A boolean type.
     case boolean
 
+    /// An integer type.
     case integer
 
+    /// A natural type.
     case natural
 
+    /// A positive type.
     case positive
 
     /// Standard logic (`std_logic`).
     case stdLogic
 
+    /// Standard unresolved logic (`std_ulogic`).
     case stdULogic
 
     /// A type with a bounded range.
@@ -101,7 +106,7 @@ public enum SignalType: RawRepresentable, Equatable, Hashable, Codable {
     @inlinable
     public init?(rawValue: String) {
         let trimmedString = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard trimmedString.count >= 9, trimmedString.count < 256 else {
+        guard trimmedString.count < 256 else {
             return nil
         }
         let value = trimmedString.lowercased()

@@ -62,8 +62,18 @@ final class SignalTypeTests: XCTestCase {
 
     /// Test raw values are correct.
     func testRawValues() {
+        let bool = SignalType.boolean
+        XCTAssertEqual(bool.rawValue, "boolean")
+        let int = SignalType.integer
+        XCTAssertEqual(int.rawValue, "integer")
+        let natural = SignalType.natural
+        XCTAssertEqual(natural.rawValue, "natural")
+        let positive = SignalType.positive
+        XCTAssertEqual(positive.rawValue, "positive")
         let std = SignalType.stdLogic
         XCTAssertEqual(std.rawValue, "std_logic")
+        let stdU = SignalType.stdULogic
+        XCTAssertEqual(stdU.rawValue, "std_ulogic")
         let vector = SignalType.ranged(type: .stdLogicVector(size: .downto(upper: 5, lower: 3)))
         XCTAssertEqual(vector.rawValue, "std_logic_vector(5 downto 3)")
     }
@@ -114,6 +124,20 @@ final class SignalTypeTests: XCTestCase {
     /// Test incorrect size returns nil.
     func testIncorrectSize() {
         XCTAssertNil(SignalType(rawValue: "std_logic_vector(5 downtwo 3"))
+    }
+
+    /// Test that a valid raw value creates the correct case.
+    func testSimpleTypeRawInits() {
+        XCTAssertEqual(SignalType(rawValue: "boolean"), .boolean)
+        XCTAssertEqual(SignalType(rawValue: "integer"), .integer)
+        XCTAssertEqual(SignalType(rawValue: "natural"), .natural)
+        XCTAssertEqual(SignalType(rawValue: "positive"), .positive)
+        XCTAssertEqual(SignalType(rawValue: "std_ulogic"), .stdULogic)
+    }
+
+    /// Test a long string returns nil.
+    func testLongString() {
+        XCTAssertNil(SignalType(rawValue: String(repeating: "a", count: 256)))
     }
 
 }
