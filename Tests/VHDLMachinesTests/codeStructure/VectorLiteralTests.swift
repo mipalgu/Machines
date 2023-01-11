@@ -62,14 +62,14 @@ final class VectorLiteralTests: XCTestCase {
 
     /// Test the raw values are correct.
     func testRawValues() {
-        XCTAssertEqual(VectorLiteral.bits(value: [.high, .low, .high]).rawValue, "\"101\"")
+        XCTAssertEqual(VectorLiteral.logics(value: [.high, .low, .high]).rawValue, "\"101\"")
         XCTAssertEqual(VectorLiteral.hexademical(value: [.ten, .eleven]).rawValue, "x\"AB\"")
         XCTAssertEqual(VectorLiteral.octal(value: [.six, .seven]).rawValue, "o\"67\"")
     }
 
     /// Test valid raw values initialise the correct ``VectorLiteral``.
     func testRawValueInitForValidInput() {
-        XCTAssertEqual(VectorLiteral(rawValue: "\"101\""), VectorLiteral.bits(value: [.high, .low, .high]))
+        XCTAssertEqual(VectorLiteral(rawValue: "\"101\""), VectorLiteral.logics(value: [.high, .low, .high]))
         XCTAssertEqual(VectorLiteral(rawValue: "x\"AB\""), VectorLiteral.hexademical(value: [.ten, .eleven]))
         XCTAssertEqual(VectorLiteral(rawValue: "o\"67\""), VectorLiteral.octal(value: [.six, .seven]))
     }
@@ -103,7 +103,7 @@ final class VectorLiteralTests: XCTestCase {
 
     /// Test size property correctly calculates the number of bits.
     func testSize() {
-        XCTAssertEqual(VectorLiteral.bits(value: [.high, .low, .high]).size, 3)
+        XCTAssertEqual(VectorLiteral.logics(value: [.high, .low, .high]).size, 3)
         XCTAssertEqual(VectorLiteral.hexademical(value: [.ten, .eleven]).size, 8)
         XCTAssertEqual(VectorLiteral.octal(value: [.six, .seven]).size, 6)
     }

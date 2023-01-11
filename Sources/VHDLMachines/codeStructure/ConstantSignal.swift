@@ -134,7 +134,7 @@ public struct ConstantSignal: RawRepresentable, Equatable, Hashable, Codable {
             ConstantSignal(
                 name: actionNames[$0],
                 type: type,
-                value: SignalLiteral.vector(value: .bits(value: bitRepresentations[$0]))
+                value: SignalLiteral.vector(value: .logics(value: bitRepresentations[$0]))
             )
         }
         guard signals.count == actionNames.count else {

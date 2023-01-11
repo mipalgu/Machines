@@ -59,7 +59,7 @@
 public enum VectorLiteral: RawRepresentable, Equatable, Hashable, Codable {
 
     /// A vector of logic values.
-    case bits(value: [LogicLiteral])
+    case logics(value: [LogicLiteral])
 
     /// A hexadecimal value.
     case hexademical(value: [HexLiteral])
@@ -73,7 +73,7 @@ public enum VectorLiteral: RawRepresentable, Equatable, Hashable, Codable {
     /// The equivalent VHDL code for representing this literal.
     @inlinable public var rawValue: String {
         switch self {
-        case .bits(let values):
+        case .logics(let values):
             return "\"" + values.map(\.vectorLiteral).joined() + "\""
         case .hexademical(let values):
             return "x\"" + String(values.map(\.rawValue)) + "\""
@@ -85,7 +85,7 @@ public enum VectorLiteral: RawRepresentable, Equatable, Hashable, Codable {
     /// The number of bits in this vector literal.
     @inlinable public var size: Int {
         switch self {
-        case .bits(let values):
+        case .logics(let values):
             return values.count
         case .hexademical(let values):
             return values.count * 4
@@ -133,7 +133,7 @@ public enum VectorLiteral: RawRepresentable, Equatable, Hashable, Codable {
         guard bits.count == data.count else {
             return nil
         }
-        self = .bits(value: bits)
+        self = .logics(value: bits)
     }
 
 }

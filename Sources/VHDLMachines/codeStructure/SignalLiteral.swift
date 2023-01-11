@@ -57,6 +57,8 @@
 /// A type for representing all signal literals.
 public enum SignalLiteral: RawRepresentable, Equatable, Hashable, Codable {
 
+    case bit(value: BitLiteral)
+
     /// A boolean literal.
     case boolean(value: Bool)
 
@@ -75,6 +77,8 @@ public enum SignalLiteral: RawRepresentable, Equatable, Hashable, Codable {
     /// The VHDL equivalent code.
     @inlinable public var rawValue: String {
         switch self {
+        case .bit(let value):
+            return value.rawValue
         case .boolean(let value):
             return value ? "true" : "false"
         case .logic(let value):
@@ -103,6 +107,10 @@ public enum SignalLiteral: RawRepresentable, Equatable, Hashable, Codable {
             self = .integer(value: val)
             return
         }
+        if let val = BitLiteral(rawValue: value) {
+            self = .bit(value: val)
+            return
+        }
         if let val = LogicLiteral(rawValue: value) {
             self = .logic(value: val)
             return
@@ -120,6 +128,8 @@ public enum SignalLiteral: RawRepresentable, Equatable, Hashable, Codable {
     @inlinable
     public static func `default`(for type: SignalType) -> SignalLiteral {
         switch type {
+        case .bit:
+            return .bit(value: .low)
         case .boolean:
             return .boolean(value: false)
         case .integer, .natural, .positive:
@@ -135,7 +145,7 @@ public enum SignalLiteral: RawRepresentable, Equatable, Hashable, Codable {
                 return .integer(value: size.min)
             case .stdLogicVector(let size), .signed(let size), .unsigned(let size),
                 .stdULogicVector(let size):
-                return .vector(value: .bits(value: [LogicLiteral](repeating: .low, count: size.size)))
+                return .vector(value: .logics(value: [LogicLiteral](repeating: .low, count: size.size)))
             }
         }
     }

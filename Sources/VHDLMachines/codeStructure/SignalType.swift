@@ -57,6 +57,8 @@
 /// Valid VHDL Signal types.
 public enum SignalType: RawRepresentable, Equatable, Hashable, Codable {
 
+    case bit
+
     /// A boolean type.
     case boolean
 
@@ -84,6 +86,8 @@ public enum SignalType: RawRepresentable, Equatable, Hashable, Codable {
     /// The equivalent VHDL code for this type.
     @inlinable public var rawValue: String {
         switch self {
+        case .bit:
+            return "bit"
         case .boolean:
             return "boolean"
         case .integer:
@@ -110,6 +114,10 @@ public enum SignalType: RawRepresentable, Equatable, Hashable, Codable {
             return nil
         }
         let value = trimmedString.lowercased()
+        if value == "bit" {
+            self = .bit
+            return
+        }
         if value == "boolean" {
             self = .boolean
             return
