@@ -129,7 +129,7 @@ public struct ConstantSignal: RawRepresentable, Equatable, Hashable, Codable {
         let bitRepresentations = actionNames.indices.map {
             bitVersion(of: Double($0), bitPlace: bitsRequired - 1)
         }
-        let type = SignalType.stdLogicVector(size: .downto(upper: bitsRequired - 1, lower: 0))
+        let type = SignalType.ranged(type: .stdLogicVector(size: .downto(upper: bitsRequired - 1, lower: 0)))
         let signals = actionNames.indices.compactMap {
             ConstantSignal(
                 name: actionNames[$0],

@@ -106,7 +106,7 @@ final class SignalLiteralTests: XCTestCase {
     func testDefault() {
         XCTAssertEqual(SignalLiteral.default(for: .stdLogic), .logic(value: .low))
         XCTAssertEqual(
-            SignalLiteral.default(for: .stdLogicVector(size: .downto(upper: 2, lower: 0))),
+            SignalLiteral.default(for: .ranged(type: .stdLogicVector(size: .downto(upper: 2, lower: 0)))),
             .vector(value: .bits(value: [.low, .low, .low]))
         )
     }
@@ -118,16 +118,18 @@ final class SignalLiteralTests: XCTestCase {
             SignalLiteral.vector(
                 value: .bits(value: [.low, .high, .low])
             )
-            .isValid(for: .stdLogicVector(size: .downto(upper: 2, lower: 0)))
+            .isValid(for: .ranged(type: .stdLogicVector(size: .downto(upper: 2, lower: 0))))
         )
         XCTAssertFalse(
             SignalLiteral.vector(
                 value: .bits(value: [.low, .high])
             )
-            .isValid(for: .stdLogicVector(size: .downto(upper: 2, lower: 0)))
+            .isValid(for: .ranged(type: .stdLogicVector(size: .downto(upper: 2, lower: 0))))
         )
         XCTAssertFalse(
-            SignalLiteral.logic(value: .low).isValid(for: .stdLogicVector(size: .downto(upper: 2, lower: 0)))
+            SignalLiteral.logic(value: .low).isValid(
+                for: .ranged(type: .stdLogicVector(size: .downto(upper: 2, lower: 0)))
+            )
         )
         XCTAssertFalse(SignalLiteral.vector(value: .bits(value: [.low, .high])).isValid(for: .stdLogic))
     }

@@ -99,8 +99,11 @@ public enum SignalLiteral: RawRepresentable, Equatable, Hashable, Codable {
         switch type {
         case .stdLogic:
             return .logic(value: .low)
-        case .stdLogicVector(let size):
-            return .vector(value: .bits(value: [BitLiteral](repeating: .low, count: size.size)))
+        case .ranged(let type):
+            switch type {
+            case .stdLogicVector(let size):
+                return .vector(value: .bits(value: [BitLiteral](repeating: .low, count: size.size)))
+            }
         }
     }
 
@@ -112,8 +115,11 @@ public enum SignalLiteral: RawRepresentable, Equatable, Hashable, Codable {
         switch (self, type) {
         case (.logic, .stdLogic):
             return true
-        case (.vector(let value), .stdLogicVector(let size)):
-            return value.size == size.size
+        case (.vector(let value), .ranged(let type)):
+            switch type {
+            case .stdLogicVector(let size):
+                return value.size == size.size
+            }
         default:
             return false
         }

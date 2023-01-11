@@ -60,8 +60,8 @@ public enum SignalType: RawRepresentable, Equatable, Hashable, Codable {
     /// Standard logic (`std_logic`).
     case stdLogic
 
-    /// Standard logic vector (`std_logic_vector`).
-    case stdLogicVector(size: VectorSize)
+    /// A type with a bounded range.
+    case ranged(type: RangedType)
 
     /// The raw value is a String.
     public typealias RawValue = String
@@ -71,13 +71,14 @@ public enum SignalType: RawRepresentable, Equatable, Hashable, Codable {
         switch self {
         case .stdLogic:
             return "std_logic"
-        case .stdLogicVector(let size):
-            return "std_logic_vector(\(size.rawValue))"
+        case .ranged(let type):
+            return type.rawValue
         }
     }
 
     /// Initialise the type from it's VHDL representation.
     /// - Parameter rawValue: The VHDL code of this type.
+    @inlinable
     public init?(rawValue: String) {
         let trimmedString = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
         guard trimmedString.count >= 9, trimmedString.count < 256 else {
@@ -88,8 +89,8 @@ public enum SignalType: RawRepresentable, Equatable, Hashable, Codable {
             self = .stdLogic
             return
         }
-        if let size = VectorSize(vector: value, vectorType: "std_logic_vector") {
-            self = .stdLogicVector(size: size)
+        if let type = RangedType(rawValue: value) {
+            self = .ranged(type: type)
             return
         }
         return nil
@@ -98,9 +99,10 @@ public enum SignalType: RawRepresentable, Equatable, Hashable, Codable {
 }
 
 /// Add conversion inits.
-private extension VectorSize {
+extension VectorSize {
 
     /// Initialise from a vector string.
+    @usableFromInline
     init?(vector: String, vectorType: String) {
         guard vector.count >= 17 else {
             return nil

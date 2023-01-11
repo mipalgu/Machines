@@ -1,4 +1,4 @@
-// SignalTypeTests.swift
+// RangedType.swift
 // Machines
 // 
 // Created by Morgan McColl.
@@ -54,66 +54,33 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-@testable import VHDLMachines
-import XCTest
+public enum RangedType: RawRepresentable {
 
-/// Test class for ``SignalType``.
-final class SignalTypeTests: XCTestCase {
+    /// Standard logic vector (`std_logic_vector`).
+    case stdLogicVector(size: VectorSize)
 
-    /// Test raw values are correct.
-    func testRawValues() {
-        let std = SignalType.stdLogic
-        XCTAssertEqual(std.rawValue, "std_logic")
-        let vector = SignalType.ranged(type: .stdLogicVector(size: .downto(upper: 5, lower: 3)))
-        XCTAssertEqual(vector.rawValue, "std_logic_vector(5 downto 3)")
+    public typealias RawValue = String
+
+    /// The equivalent VHDL code for this type.
+    @inlinable public var rawValue: String {
+        switch self {
+        case .stdLogicVector(let size):
+            return "std_logic_vector(\(size.rawValue))"
+        }
     }
 
-    /// Test that a raw value of `std_logic` creates the correct case.
-    func testStdLogic() {
-        XCTAssertEqual(SignalType(rawValue: "std_logic"), .stdLogic)
-    }
-
-    /// Test that an uppercased `std_logic` raw value creates the correct case.
-    func testStdLogicUppercased() {
-        XCTAssertEqual(SignalType(rawValue: "STD_LOGIC"), .stdLogic)
-    }
-
-    /// Test that a small string returns nil.
-    func testSmallString() {
-        XCTAssertNil(SignalType(rawValue: "std"))
-        XCTAssertNil(SignalType(rawValue: ""))
-        XCTAssertNil(SignalType(rawValue: String(repeating: "a", count: 15)))
-    }
-
-    /// Test that a valid `std_logic_vector` raw value creates the correct case.
-    func testStdLogicVector() {
-        XCTAssertEqual(
-            SignalType(rawValue: "std_logic_vector(5 downto 3)"),
-            .ranged(type: .stdLogicVector(size: .downto(upper: 5, lower: 3)))
-        )
-    }
-
-    /// Test upercasd std_logic_vector raw value creates the correct case.
-    func testStdLogicVectorUppercased() {
-        XCTAssertEqual(
-            SignalType(rawValue: "STD_LOGIC_VECTOR(5 DOWNTO 3)"),
-            .ranged(type: .stdLogicVector(size: .downto(upper: 5, lower: 3)))
-        )
-    }
-
-    /// Test mispelled std_logic_vector raw value returns nil.
-    func testStdLogicVectorMispelled() {
-        XCTAssertNil(SignalType(rawValue: "std_logic_vectro(5 downto 3)"))
-    }
-
-    /// Test std_logic_vector with extra brackets returns nil.
-    func testStdLogicVectorAdditionlBracketReturnsNil() {
-        XCTAssertNil(SignalType(rawValue: "std_logic_vector(5 downto 3))"))
-    }
-
-    /// Test incorrect size returns nil.
-    func testIncorrectSize() {
-        XCTAssertNil(SignalType(rawValue: "std_logic_vector(5 downtwo 3"))
+    @inlinable
+    public init?(rawValue: String) {
+        let trimmedString = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmedString.count >= 9, trimmedString.count < 256 else {
+            return nil
+        }
+        let value = trimmedString.lowercased()
+        if let size = VectorSize(vector: value, vectorType: "std_logic_vector") {
+            self = .stdLogicVector(size: size)
+            return
+        }
+        return nil
     }
 
 }
