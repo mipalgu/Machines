@@ -58,6 +58,9 @@
 /// literal values to be represented.
 public enum VectorLiteral: RawRepresentable, Equatable, Hashable, Codable {
 
+    /// A vector of bit values.
+    case bits(value: [BitLiteral])
+
     /// A vector of logic values.
     case logics(value: [LogicLiteral])
 
@@ -73,6 +76,8 @@ public enum VectorLiteral: RawRepresentable, Equatable, Hashable, Codable {
     /// The equivalent VHDL code for representing this literal.
     @inlinable public var rawValue: String {
         switch self {
+        case .bits(let values):
+            return "\"" + values.map(\.vectorLiteral).joined() + "\""
         case .logics(let values):
             return "\"" + values.map(\.vectorLiteral).joined() + "\""
         case .hexademical(let values):
@@ -85,6 +90,8 @@ public enum VectorLiteral: RawRepresentable, Equatable, Hashable, Codable {
     /// The number of bits in this vector literal.
     @inlinable public var size: Int {
         switch self {
+        case .bits(let values):
+            return values.count
         case .logics(let values):
             return values.count
         case .hexademical(let values):
@@ -129,11 +136,32 @@ public enum VectorLiteral: RawRepresentable, Equatable, Hashable, Codable {
             return nil
         }
         let data = value.dropFirst().dropLast()
-        let bits = data.compactMap { LogicLiteral(rawValue: "'\($0)'") }
-        guard bits.count == data.count else {
+        let bits = data.compactMap { BitLiteral(rawValue: "'\($0)'") }
+        if bits.count == data.count {
+            self = .bits(value: bits)
+            return
+        }
+        let logics = data.compactMap { LogicLiteral(rawValue: "'\($0)'") }
+        guard logics.count == data.count else {
             return nil
         }
-        self = .logics(value: bits)
+        self = .logics(value: logics)
+    }
+
+    /// Equality operation.
+    public static func == (lhs: VectorLiteral, rhs: VectorLiteral) -> Bool {
+        switch (lhs, rhs) {
+        case (.bits(let lhs), .bits(let rhs)):
+            return lhs == rhs
+        case (.logics(let lhs), .logics(let rhs)):
+            return lhs == rhs
+        case (.hexademical(let lhs), .hexademical(let rhs)):
+            return lhs == rhs
+        case (.octal(let lhs), .octal(let rhs)):
+            return lhs == rhs
+        default:
+            return false
+        }
     }
 
 }
