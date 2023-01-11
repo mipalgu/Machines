@@ -67,6 +67,24 @@ public enum VectorSize: RawRepresentable, Equatable, Hashable, Codable {
     /// The raw value is a string.
     public typealias RawValue = String
 
+    @inlinable public var max: Int {
+        switch self {
+        case .downto(let upper, _):
+            return upper
+        case .to(_, let upper):
+            return upper
+        }
+    }
+
+    @inlinable public var min: Int {
+        switch self {
+        case .downto(_, let lower):
+            return lower
+        case .to(let lower, _):
+            return lower
+        }
+    }
+
     /// The equivalent VHDL code for this type.
     @inlinable public var rawValue: String {
         switch self {

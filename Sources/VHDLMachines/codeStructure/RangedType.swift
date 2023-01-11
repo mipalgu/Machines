@@ -57,8 +57,16 @@
 /// *VHDL* types that are bounded within a specific range.
 public enum RangedType: RawRepresentable, Equatable, Hashable, Codable {
 
+    case integer(size: VectorSize)
+
+    case signed(size: VectorSize)
+
     /// Standard logic vector (`std_logic_vector`).
     case stdLogicVector(size: VectorSize)
+
+    case stdULogicVector(size: VectorSize)
+
+    case unsigned(size: VectorSize)
 
     /// The raw value is a `String`.
     public typealias RawValue = String
@@ -66,17 +74,27 @@ public enum RangedType: RawRepresentable, Equatable, Hashable, Codable {
     /// The equivalent VHDL code for this type.
     @inlinable public var rawValue: String {
         switch self {
+        case .integer(let size):
+            return "integer range \(size.rawValue)"
+        case .signed(let size):
+            return "signed(\(size.rawValue))"
         case .stdLogicVector(let size):
             return "std_logic_vector(\(size.rawValue))"
+        case .stdULogicVector(let size):
+            return "std_ulogic_vector(\(size.rawValue))"
+        case .unsigned(let size):
+            return "unsigned(\(size.rawValue))"
         }
     }
 
     /// Initialise this ranged type from its VHDL representation.
     /// - Parameter rawValue: The VHDL code that defines this type.
-    @inlinable
     public init?(rawValue: String) {
         let trimmedString = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard trimmedString.count >= 9, trimmedString.count < 256 else {
+        guard trimmedString.count < 256 else {
+            return nil
+        }
+        guard trimmedString.count >= 9 else {
             return nil
         }
         let value = trimmedString.lowercased()
@@ -85,6 +103,31 @@ public enum RangedType: RawRepresentable, Equatable, Hashable, Codable {
             return
         }
         return nil
+    }
+
+}
+
+/// Add conversion inits.
+private extension VectorSize {
+
+    /// Initialise from a vector string.
+    init?(vector: String, vectorType: String) {
+        let primitiveSize = vectorType.count
+        guard vector.count > primitiveSize else {
+            return nil
+        }
+        let firstChars = vector[
+            String.Index(utf16Offset: 0, in: vector)...String.Index(utf16Offset: primitiveSize, in: vector)
+        ]
+        let vectorString = "\(vectorType)("
+        guard firstChars == vectorString else {
+            return nil
+        }
+        let other = vector.dropFirst(primitiveSize + 1).dropLast()
+        guard let size = VectorSize(rawValue: String(other)) else {
+            return nil
+        }
+        self = size
     }
 
 }

@@ -97,28 +97,3 @@ public enum SignalType: RawRepresentable, Equatable, Hashable, Codable {
     }
 
 }
-
-/// Add conversion inits.
-extension VectorSize {
-
-    /// Initialise from a vector string.
-    @usableFromInline
-    init?(vector: String, vectorType: String) {
-        guard vector.count >= 17 else {
-            return nil
-        }
-        let firstChars = vector[
-            String.Index(utf16Offset: 0, in: vector)...String.Index(utf16Offset: 16, in: vector)
-        ]
-        let vectorString = "\(vectorType)("
-        guard firstChars == vectorString else {
-            return nil
-        }
-        let other = vector.dropFirst(vectorString.count).dropLast()
-        guard let size = VectorSize(rawValue: String(other)) else {
-            return nil
-        }
-        self = size
-    }
-
-}
