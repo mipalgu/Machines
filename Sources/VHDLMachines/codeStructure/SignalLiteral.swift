@@ -57,6 +57,7 @@
 /// A type for representing all signal literals.
 public enum SignalLiteral: RawRepresentable, Equatable, Hashable, Codable {
 
+    /// A literal for single bit; either `high` or `low`.
     case bit(value: BitLiteral)
 
     /// A boolean literal.
@@ -150,6 +151,24 @@ public enum SignalLiteral: RawRepresentable, Equatable, Hashable, Codable {
         }
     }
 
+    /// Equality operation.
+    public static func == (lhs: SignalLiteral, rhs: SignalLiteral) -> Bool {
+        switch (lhs, rhs) {
+        case (.bit(let lhs), .bit(let rhs)):
+            return lhs == rhs
+        case (.boolean(let lhs), .boolean(let rhs)):
+            return lhs == rhs
+        case (.integer(let lhs), .integer(let rhs)):
+            return lhs == rhs
+        case (.logic(let lhs), .logic(let rhs)):
+            return lhs == rhs
+        case (.vector(let lhs), .vector(let rhs)):
+            return lhs == rhs
+        default:
+            return false
+        }
+    }
+
     /// Checks whether this literal is valid for a given signal type.
     /// - Parameter type: The type of the signal to check.
     /// - Returns: Whether this literal can be assigned to the given signal type.
@@ -162,6 +181,15 @@ public enum SignalLiteral: RawRepresentable, Equatable, Hashable, Codable {
             return true
         case (.integer(let value), .ranged(type: .integer(let size))):
             return size.min <= value && value <= size.max
+        case (.bit, .bit), (.bit, .stdLogic), (.bit, .stdULogic):
+            return true
+        case (.logic(let value), .bit):
+            switch value {
+            case .high, .low:
+                return true
+            default:
+                return false
+            }
         case (.integer(let value), .natural):
             return value >= 0
         case (.integer(let value), .positive):

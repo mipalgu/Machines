@@ -62,6 +62,8 @@ final class SignalLiteralTests: XCTestCase {
 
     /// Test raw values are correct.
     func testRawValue() {
+        let bit = SignalLiteral.bit(value: .high)
+        XCTAssertEqual(bit.rawValue, "'1'")
         let boolean = SignalLiteral.boolean(value: true)
         XCTAssertEqual(boolean.rawValue, "true")
         let boolean2 = SignalLiteral.boolean(value: false)
@@ -72,6 +74,12 @@ final class SignalLiteralTests: XCTestCase {
         XCTAssertEqual(logic.rawValue, "'1'")
         let vectorLiteral = SignalLiteral.vector(value: .logics(value: [.high, .low, .high]))
         XCTAssertEqual(vectorLiteral.rawValue, "\"101\"")
+    }
+
+    /// Test rawValue initaliser for a bit value.
+    func testBitInit() {
+        XCTAssertEqual(SignalLiteral(rawValue: "'1'"), .bit(value: .high))
+        XCTAssertEqual(SignalLiteral(rawValue: "'0'"), .bit(value: .low))
     }
 
     /// Test rawValue initaliser for a boolean value.
@@ -89,8 +97,8 @@ final class SignalLiteralTests: XCTestCase {
 
     /// Test rawValue initaliser for a logic value.
     func testLogicInit() {
-        XCTAssertEqual(SignalLiteral(rawValue: "'1'"), .logic(value: .high))
-        XCTAssertEqual(SignalLiteral(rawValue: "'0'"), .logic(value: .low))
+        XCTAssertEqual(SignalLiteral(rawValue: "'1'"), .bit(value: .high))
+        XCTAssertEqual(SignalLiteral(rawValue: "'0'"), .bit(value: .low))
         XCTAssertEqual(SignalLiteral(rawValue: "'U'"), .logic(value: .uninitialized))
         XCTAssertEqual(SignalLiteral(rawValue: "'X'"), .logic(value: .unknown))
         XCTAssertEqual(SignalLiteral(rawValue: "'Z'"), .logic(value: .highImpedance))
@@ -137,7 +145,8 @@ final class SignalLiteralTests: XCTestCase {
     }
 
     /// Test default property sets the correct value for non-vector types.
-    func testDefaultLogicTypes() {
+    func testDefaultBitTypes() {
+        XCTAssertEqual(SignalLiteral.default(for: .bit), .bit(value: .low))
         XCTAssertEqual(SignalLiteral.default(for: .stdLogic), .logic(value: .low))
         XCTAssertEqual(SignalLiteral.default(for: .boolean), .boolean(value: false))
         XCTAssertEqual(SignalLiteral.default(for: .integer), .integer(value: 0))
@@ -153,6 +162,14 @@ final class SignalLiteralTests: XCTestCase {
 
     /// Test isValid function returns correct result for valid signal types.
     func testIsValid() {
+        XCTAssertTrue(SignalLiteral.bit(value: .low).isValid(for: .stdLogic))
+        XCTAssertTrue(SignalLiteral.bit(value: .low).isValid(for: .stdULogic))
+        XCTAssertTrue(SignalLiteral.logic(value: .low).isValid(for: .bit))
+        XCTAssertTrue(SignalLiteral.logic(value: .high).isValid(for: .bit))
+        XCTAssertFalse(SignalLiteral.logic(value: .dontCare).isValid(for: .bit))
+        XCTAssertFalse(SignalLiteral.boolean(value: false).isValid(for: .bit))
+        XCTAssertFalse(SignalLiteral.integer(value: 12).isValid(for: .bit))
+        XCTAssertFalse(SignalLiteral.vector(value: .logics(value: [.low])).isValid(for: .bit))
         XCTAssertTrue(SignalLiteral.logic(value: .low).isValid(for: .stdLogic))
         XCTAssertTrue(SignalLiteral.logic(value: .low).isValid(for: .stdULogic))
         XCTAssertFalse(SignalLiteral.integer(value: 12).isValid(for: .stdULogic))
