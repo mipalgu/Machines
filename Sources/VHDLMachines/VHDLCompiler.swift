@@ -1219,18 +1219,14 @@ public struct VHDLCompiler {
     ///   - signals: The signals to generate the machine variables for.
     ///   - variables: The variables to generate the machine variables for.
     /// - Returns: The machine variables.
-    private func machineVariables(signals: [LocalSignal], variables: [VHDLVariable]) -> String {
+    private func machineVariables(signals: [LocalSignal]) -> String {
         foldWithNewLine(
-            components: variables.map { variableToArchitectureDeclaration(variable: $0) },
-            initial: foldWithNewLine(
-                components: signals.map {
-                    signalToArchitectureDeclaration(
-                        signal: $0, with: $0.defaultValue != nil, and: $0.comment != nil
-                    )
-                },
-                initial: "-- Machine Signals and Variables",
-                indentation: 1
-            ),
+            components: signals.map {
+                signalToArchitectureDeclaration(
+                    signal: $0, with: $0.defaultValue != nil, and: $0.comment != nil
+                )
+            },
+            initial: "-- Machine Signals and Variables",
             indentation: 1
         )
     }
@@ -1357,6 +1353,7 @@ public struct VHDLCompiler {
                 parameters,
                 returns
             ] + [
+                machineVariables(signals: machine.machineSignals),
                 architectureHead(head: machine.architectureHead)
             ],
             initial: "architecture Behavioral of \(machine.name) is",
