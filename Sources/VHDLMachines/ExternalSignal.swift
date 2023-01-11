@@ -9,16 +9,16 @@ import Foundation
 
 /// An external signal is equivalent to an external variable (or parameter) in an LLFSM. The external signal
 /// is a signal that exists above a VHDL entities scope. It is a signal that is not defined within the entity.
-public struct ExternalSignal: ExternalType, Codable, Hashable, Sendable {
+public struct ExternalSignal: ExternalType, Codable, Hashable, Variable {
 
     /// The type of the signal.
-    public var type: String
+    public var type: SignalType
 
     /// The name of the signal.
     public var name: String
 
     /// The default value of the signal.
-    public var defaultValue: String?
+    public var defaultValue: SignalLiteral?
 
     /// The comment of the signal.
     public var comment: String?
@@ -34,7 +34,9 @@ public struct ExternalSignal: ExternalType, Codable, Hashable, Sendable {
     ///   - defaultValue: The default value of the signal.
     ///   - comment: The comment of the signal.
     @inlinable
-    public init(type: String, name: String, mode: Mode, defaultValue: String? = nil, comment: String? = nil) {
+    public init(
+        type: SignalType, name: String, mode: Mode, defaultValue: SignalLiteral? = nil, comment: String? = nil
+    ) {
         self.type = type
         self.name = name
         self.mode = mode

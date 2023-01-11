@@ -8,7 +8,7 @@
 import Foundation
 
 /// An external type is a type that exists outside of the scope of a VHDL entity.
-public protocol ExternalType: Variable {
+public protocol ExternalType {
 
     /// The mode of the external type.
     var mode: Mode {get set}

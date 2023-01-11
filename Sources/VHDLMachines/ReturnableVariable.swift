@@ -8,16 +8,13 @@
 import Foundation
 
 /// A variable that can be returned from a parameterised machine.
-public struct ReturnableVariable: ExternalType, Codable, Equatable, Hashable, Sendable {
-
-    /// The default value is nil for a returnable variable.
-    public var defaultValue: String?
+public struct ReturnableVariable: ExternalType, Codable, Equatable, Hashable {
 
     /// The mode is an output for a returnable variable.
     public var mode: Mode = .output
 
     /// The type of the variable.
-    public var type: ParameterType
+    public var type: SignalType
 
     /// The name of the variable.
     public var name: String
@@ -31,7 +28,7 @@ public struct ReturnableVariable: ExternalType, Codable, Equatable, Hashable, Se
     ///   - name: The name of the variable.
     ///   - comment: The comment for the variable.
     @inlinable
-    public init(type: ParameterType, name: String, comment: String? = nil) {
+    public init(type: SignalType, name: String, comment: String? = nil) {
         self.type = type
         self.name = name
         self.comment = comment

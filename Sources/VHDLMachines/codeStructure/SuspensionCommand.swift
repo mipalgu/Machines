@@ -1,4 +1,4 @@
-// ConstantSignal.swift
+// SuspensionCommand.swift
 // Machines
 // 
 // Created by Morgan McColl.
@@ -54,80 +54,63 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import Foundation
+public enum SuspensionCommand: RawRepresentable, CaseIterable {
 
-public struct ConstantSignal: RawRepresentable, Equatable, Hashable, Codable {
+    case null
 
-    public let name: String
+    case restart
 
-    public let type: SignalType
+    case suspend
 
-    public let value: SignalLiteral
+    case resume
 
     public typealias RawValue = String
 
     public var rawValue: String {
-        "constant \(name): \(type.rawValue) := \(value.rawValue);"
+        switch self {
+        case .null:
+            return "COMMAND_NULL"
+        case .restart:
+            return "COMMAND_RESTART"
+        case .suspend:
+            return "COMMAND_SUSPEND"
+        case .resume:
+            return "COMMAND_RESUME"
+        }
     }
 
-    public init?(name: String, type: SignalType, value: SignalLiteral) {
-        guard value.isValid(for: type) else {
+    public static var bitRepresentation: [SuspensionCommand: VectorLiteral]? {
+        let all = SuspensionCommand.allCases.sorted { $0.rawValue < $1.rawValue }
+        guard let bitsRequired = BitLiteral.bitsRequired(for: all.count) else {
             return nil
         }
-        self.name = name
-        self.type = type
-        self.value = value
+        let bits = all.enumerated().map {
+            ($1, VectorLiteral.bits(value: BitLiteral.bitVersion(of: $0, bitsRequired: bitsRequired)))
+        }
+        return Dictionary(uniqueKeysWithValues: bits)
+    }
+
+    public static var bitsType: SignalType? {
+        guard let bitsRequired = BitLiteral.bitsRequired(for: SuspensionCommand.allCases.count) else {
+            return nil
+        }
+        return .ranged(type: .stdLogicVector(size: .downto(upper: bitsRequired - 1, lower: 0)))
     }
 
     public init?(rawValue: String) {
-        let trimmedValue = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard trimmedValue.hasPrefix("constant ") else {
+        let value = rawValue.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+        switch value {
+        case "COMMAND_NULL":
+            self = .null
+        case "COMMAND_RESTART":
+            self = .restart
+        case "COMMAND_SUSPEND":
+            self = .suspend
+        case "COMMAND_RESUME":
+            self = .resume
+        default:
             return nil
         }
-        let components = trimmedValue.components(separatedBy: ":=")
-        guard components.count == 2 else {
-            return nil
-        }
-        let value = components[1]
-        guard value.hasSuffix(";"), let literal = SignalLiteral(rawValue: String(value.dropLast())) else {
-            return nil
-        }
-        let nameAndType = components[0].components(separatedBy: ":").map {
-            $0.trimmingCharacters(in: .whitespacesAndNewlines)
-        }
-        guard
-            nameAndType.count == 2,
-            let lastComponent = nameAndType.last,
-            let type = SignalType(rawValue: lastComponent)
-        else {
-            return nil
-        }
-        self.name = nameAndType[0].dropFirst("constant ".count)
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-        self.type = type
-        self.value = literal
-    }
-
-    public static func constants(for actions: [ActionName: String]) -> [ConstantSignal]? {
-        let actionNames = actions.keys.sorted()
-        guard let bitsRequired = BitLiteral.bitsRequired(for: actionNames.count) else {
-            return nil
-        }
-        let bitRepresentations = actionNames.indices.map {
-            BitLiteral.bitVersion(of: $0, bitsRequired: bitsRequired)
-        }
-        let type = SignalType.ranged(type: .stdLogicVector(size: .downto(upper: bitsRequired - 1, lower: 0)))
-        let signals = actionNames.indices.compactMap {
-            ConstantSignal(
-                name: actionNames[$0],
-                type: type,
-                value: SignalLiteral.vector(value: .bits(value: bitRepresentations[$0]))
-            )
-        }
-        guard signals.count == actionNames.count else {
-            return nil
-        }
-        return signals
     }
 
 }

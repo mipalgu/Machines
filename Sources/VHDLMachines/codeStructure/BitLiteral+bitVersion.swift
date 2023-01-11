@@ -1,4 +1,4 @@
-// VariableRepresentation.swift
+// BitLiteral+bitVersion.swift
 // Machines
 // 
 // Created by Morgan McColl.
@@ -54,21 +54,34 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-public struct SignalRepresentation {
+import Foundation
 
-    public let signal: String
+extension BitLiteral {
 
-    public let type: SignalType
+    private static func performBitVersion(
+        of value: Double, carry: [BitLiteral] = [], bitPlace: Int
+    ) -> [BitLiteral] {
+        if bitPlace < 0 {
+            return carry
+        }
+        if exp2(Double(bitPlace)) > value {
+            return performBitVersion(of: value, carry: carry + [.low], bitPlace: bitPlace - 1)
+        }
+        return performBitVersion(of: value / 2.0, carry: carry + [.high], bitPlace: bitPlace - 1)
+    }
 
-    public let value: SignalLiteral
+    static func bitVersion(of value: Int, bitsRequired: Int) -> [BitLiteral] {
+        guard value >= 0, bitsRequired > 0, exp2(Double(bitsRequired + 1)) > Double(value) else {
+            return []
+        }
+        return performBitVersion(of: Double(value), bitPlace: bitsRequired - 1)
+    }
 
-    public init?(local: LocalSignal) {
-        guard let type = SignalType(rawValue: local.type) else {
+    static func bitsRequired(for value: Int) -> Int? {
+        guard value >= 0 else {
             return nil
         }
-        self.signal = local.name
-        self.type = type
-        self.value = SignalLiteral(rawValue: local.defaultValue ?? "") ?? .default(for: type)
+        return Int(ceil(log2(Double(value))))
     }
 
 }

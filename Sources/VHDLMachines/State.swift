@@ -8,7 +8,7 @@
 import Foundation
 
 /// A state in a machine.
-public struct State: Codable, Equatable, Hashable, Sendable {
+public struct State: Codable, Equatable, Hashable {
 
     /// The name of the state.
     public var name: String

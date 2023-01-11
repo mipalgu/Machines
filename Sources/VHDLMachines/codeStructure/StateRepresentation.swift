@@ -60,25 +60,21 @@ public struct StateRepresentation {
 
     public let bits: VectorLiteral
 
-    public let signals: [SignalRepresentation]
+    public var actions: [ConstantSignal]? {
+        ConstantSignal.constants(for: state.actions)
+    }
 
-    public let actions: [ConstantSignal]
+    public var externals: Set<String> {
+        Set(state.externalVariables)
+    }
 
-    public let externals: Set<String>
+    public var signals: [LocalSignal] {
+        state.signals
+    }
 
-    public init?(state: State, bits: VectorLiteral) {
-        let signals = state.signals.compactMap { SignalRepresentation(local: $0) }
-        guard
-            signals.count == state.signals.count,
-            let constants = ConstantSignal.constants(for: state.actions)
-        else {
-            return nil
-        }
+    public init(state: State, bits: VectorLiteral) {
         self.state = state
         self.bits = bits
-        self.signals = signals
-        self.externals = Set(state.externalVariables)
-        self.actions = constants
     }
 
 }

@@ -96,6 +96,23 @@ public enum RangedType: RawRepresentable, Equatable, Hashable, Codable {
         }
     }
 
+    @inlinable public var size: VectorSize {
+        switch self {
+        case .bitVector(let size):
+            return size
+        case .integer(let size):
+            return size
+        case .signed(let size):
+            return size
+        case .stdLogicVector(let size):
+            return size
+        case .stdULogicVector(let size):
+            return size
+        case .unsigned(let size):
+            return size
+        }
+    }
+
     /// Initialise this ranged type from its VHDL representation.
     /// - Parameter rawValue: The VHDL code that defines this type.
     public init?(rawValue: String) {

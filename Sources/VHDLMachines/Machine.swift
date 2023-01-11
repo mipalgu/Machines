@@ -23,7 +23,7 @@ public struct Machine: Codable, Equatable, Hashable {
     public var externalSignals: [ExternalSignal]
 
     /// The generics for the machine.
-    public var generics: [VHDLVariable]
+    public var generics: [LocalSignal]
 
     /// The clocks for the machine.
     public var clocks: [Clock]
@@ -95,7 +95,7 @@ public struct Machine: Codable, Equatable, Hashable {
         path: URL,
         includes: [String],
         externalSignals: [ExternalSignal],
-        generics: [VHDLVariable],
+        generics: [LocalSignal],
         clocks: [Clock],
         drivingClock: Int,
         dependentMachines: [MachineName: URL],

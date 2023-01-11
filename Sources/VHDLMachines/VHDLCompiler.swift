@@ -867,7 +867,7 @@ public struct VHDLCompiler {
     /// Create the generic block in the entity.
     /// - Parameter variables: The generic variables.
     /// - Returns: The generic block in the entity.
-    private func createGenericsBlock(variables: [VHDLVariable]) -> String {
+    private func createGenericsBlock(variables: [LocalSignal]) -> String {
         guard !variables.isEmpty else {
             return ""
         }
@@ -893,22 +893,14 @@ public struct VHDLCompiler {
     ///   - variable: The variable to convert.
     ///   - withSemicolon: True if the generic should end with a semicolon.
     /// - Returns: The generic.
-    private func variableToGeneric(variable: VHDLVariable, withSemicolon: Bool) -> String {
+    private func variableToGeneric(variable: LocalSignal, withSemicolon: Bool) -> String {
         let semiColon = withSemicolon ? ";" : ""
         let comment = variable.comment ?? ""
         let variableComment = comment.isEmpty ? "" : "-- \(comment)"
-        guard let range = variable.range else {
-            guard let defaultValue = variable.defaultValue else {
-                return "\(variable.name): \(variable.type)\(semiColon)" + " \(variableComment)"
-            }
-            return "\(variable.name): \(variable.type) := \(defaultValue)\(semiColon)" + " \(variableComment)"
-        }
         guard let defaultValue = variable.defaultValue else {
-            return "\(variable.name): \(variable.type) range \(range.0) to \(range.1)\(semiColon)" +
-                " \(variableComment)"
+            return "\(variable.name): \(variable.type)\(semiColon) \(variableComment)"
         }
-        return "\(variable.name): \(variable.type) range \(range.0) to \(range.1) := \(defaultValue)" +
-            "\(semiColon)" + " \(variableComment)"
+        return "\(variable.name): \(variable.type) := \(defaultValue)\(semiColon) \(variableComment)"
     }
 
     /// Generate a variable that goes in a port statement.
@@ -1087,7 +1079,7 @@ public struct VHDLCompiler {
     /// - Returns: The signal declaration.
     private func signalToArchitectureDeclaration<T: Variable>(
         signal: T, with value: Bool = false, and comment: Bool = false
-    ) -> String where T.VariableType == String {
+    ) -> String {
         let comment = comment ? " -- \(signal.comment ?? "")" : ""
         guard let defaultVal = signal.defaultValue else {
             return "signal \(signal.name): \(signal.type);\(comment)"
@@ -1194,7 +1186,7 @@ public struct VHDLCompiler {
     /// Generate the variable architecture representation.
     /// - Parameter variable: The variable to generate the architecture representation for.
     /// - Returns: The variable architecture representation.
-    private func variableToArchitectureDeclaration<T: Variable>(variable: T) -> String {
+    private func variableToArchitectureDeclaration(variable: LocalSignal) -> String {
         let comment = nil == variable.comment ? "" : " -- \(variable.comment ?? "")"
         return "shared variable \(variable.name): \(variable.type);\(comment)"
     }

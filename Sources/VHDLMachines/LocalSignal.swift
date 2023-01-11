@@ -9,16 +9,16 @@ import Foundation
 
 /// A local signal is a signal that exists within the scope of a VHDL entity. It is a signal that is defined
 /// within a machine/arrangement and can be though of as a type of machine variable in VHDL.
-public struct LocalSignal: Variable, Codable, Equatable, Hashable, Sendable {
+public struct LocalSignal: Codable, Equatable, Hashable, Variable {
 
     /// The type of the signal.
-    public var type: String
+    public var type: SignalType
 
     /// The name of the signal.
     public var name: String
 
     /// The default value of the signal.
-    public var defaultValue: String?
+    public var defaultValue: SignalLiteral?
 
     /// The comment of the signal.
     public var comment: String?
@@ -30,7 +30,7 @@ public struct LocalSignal: Variable, Codable, Equatable, Hashable, Sendable {
     ///   - defaultValue: The default value of the signal.
     ///   - comment: The comment of the signal.
     @inlinable
-    public init(type: String, name: String, defaultValue: String?, comment: String?) {
+    public init(type: SignalType, name: String, defaultValue: SignalLiteral?, comment: String?) {
         self.type = type
         self.name = name
         self.defaultValue = defaultValue

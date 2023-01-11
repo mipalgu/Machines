@@ -1,4 +1,4 @@
-// ConstantSignal.swift
+// MachineRepresentation.swift
 // Machines
 // 
 // Created by Morgan McColl.
@@ -54,80 +54,70 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import Foundation
+public struct MachineRepresentation {
 
-public struct ConstantSignal: RawRepresentable, Equatable, Hashable, Codable {
+    public let states: [StateRepresentation]
 
-    public let name: String
+    public let stateType: SignalType
 
-    public let type: SignalType
+    public let actions: [ConstantSignal]
 
-    public let value: SignalLiteral
+    public let generics: [LocalSignal]
 
-    public typealias RawValue = String
+    public let commands: [SuspensionCommand: VectorLiteral]
 
-    public var rawValue: String {
-        "constant \(name): \(type.rawValue) := \(value.rawValue);"
-    }
+    public let command: SignalType
 
-    public init?(name: String, type: SignalType, value: SignalLiteral) {
-        guard value.isValid(for: type) else {
-            return nil
-        }
-        self.name = name
-        self.type = type
-        self.value = value
-    }
+    public let externalSignals: [ExternalSignal]
 
-    public init?(rawValue: String) {
-        let trimmedValue = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard trimmedValue.hasPrefix("constant ") else {
-            return nil
-        }
-        let components = trimmedValue.components(separatedBy: ":=")
-        guard components.count == 2 else {
-            return nil
-        }
-        let value = components[1]
-        guard value.hasSuffix(";"), let literal = SignalLiteral(rawValue: String(value.dropLast())) else {
-            return nil
-        }
-        let nameAndType = components[0].components(separatedBy: ":").map {
-            $0.trimmingCharacters(in: .whitespacesAndNewlines)
-        }
+    public let actionType: SignalType
+
+    public let suspendedType: SignalType
+
+    public let ringletCounterType: SignalType
+
+    // public let drivingClockPeriod: ConstantSignal
+
+    public init?(machine: Machine) {
         guard
-            nameAndType.count == 2,
-            let lastComponent = nameAndType.last,
-            let type = SignalType(rawValue: lastComponent)
+            let actions = machine.states.first?.actions.keys.sorted(),
+            let bitsRequired = BitLiteral.bitsRequired(for: machine.states.count),
+            let bits = SuspensionCommand.bitRepresentation,
+            let commandType = SuspensionCommand.bitsType,
+            let actionRequiredBits = BitLiteral.bitsRequired(for: actions.count),
+            machine.clocks.count > machine.drivingClock
         else {
             return nil
         }
-        self.name = nameAndType[0].dropFirst("constant ".count)
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-        self.type = type
-        self.value = literal
-    }
-
-    public static func constants(for actions: [ActionName: String]) -> [ConstantSignal]? {
-        let actionNames = actions.keys.sorted()
-        guard let bitsRequired = BitLiteral.bitsRequired(for: actionNames.count) else {
-            return nil
-        }
-        let bitRepresentations = actionNames.indices.map {
-            BitLiteral.bitVersion(of: $0, bitsRequired: bitsRequired)
-        }
-        let type = SignalType.ranged(type: .stdLogicVector(size: .downto(upper: bitsRequired - 1, lower: 0)))
-        let signals = actionNames.indices.compactMap {
-            ConstantSignal(
-                name: actionNames[$0],
-                type: type,
-                value: SignalLiteral.vector(value: .bits(value: bitRepresentations[$0]))
+        self.states = machine.states.sorted { $0.name < $1.name }.enumerated().map {
+            StateRepresentation(
+                state: $1, bits: .bits(value: BitLiteral.bitVersion(of: $0, bitsRequired: bitsRequired))
             )
         }
-        guard signals.count == actionNames.count else {
+        self.stateType = .ranged(type: .stdLogicVector(size: .downto(upper: bitsRequired - 1, lower: 0)))
+        let actionType = SignalType.ranged(
+            type: .stdLogicVector(size: .downto(upper: actionRequiredBits - 1, lower: 0))
+        )
+        let actionConstants = actions.enumerated().compactMap {
+            ConstantSignal(
+                name: $1,
+                type: actionType,
+                value: .vector(
+                    value: .bits(value: BitLiteral.bitVersion(of: $0, bitsRequired: actionRequiredBits))
+                )
+            )
+        }
+        guard actionConstants.count == actions.count else {
             return nil
         }
-        return signals
+        self.actionType = actionType
+        self.actions = actionConstants
+        self.commands = bits
+        self.command = commandType
+        self.externalSignals = machine.externalSignals
+        self.generics = machine.generics
+        self.suspendedType = .stdLogic
+        self.ringletCounterType = .natural
     }
 
 }
