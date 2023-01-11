@@ -61,32 +61,34 @@ import XCTest
 final class LocalSignalTests: XCTestCase {
 
     /// The signal to test.
-    var signal = LocalSignal(type: "std_logic", name: "x", defaultValue: "'1'", comment: "The signal x.")
+    var signal = LocalSignal(
+        type: .stdLogic, name: "x", defaultValue: .logic(value: .high), comment: "The signal x."
+    )
 
     /// Initialises the signal to test.
     override func setUp() {
         self.signal = LocalSignal(
-            type: "std_logic", name: "x", defaultValue: "'1'", comment: "The signal x."
+            type: .stdLogic, name: "x", defaultValue: .logic(value: .high), comment: "The signal x."
         )
     }
 
     /// Test the init sets the stored properties correctly.
     func testInit() {
-        XCTAssertEqual(self.signal.type, "std_logic")
+        XCTAssertEqual(self.signal.type, .stdLogic)
         XCTAssertEqual(self.signal.name, "x")
-        XCTAssertEqual(self.signal.defaultValue, "'1'")
+        XCTAssertEqual(self.signal.defaultValue, .logic(value: .high))
         XCTAssertEqual(self.signal.comment, "The signal x.")
     }
 
     /// Test the getters and setters work correctly.
     func testGettersAndSetters() {
-        self.signal.type = "std_logic_vector(3 downto 0)"
+        self.signal.type = .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0)))
         self.signal.name = "y"
-        self.signal.defaultValue = "'0000'"
+        self.signal.defaultValue = .vector(value: .bits(value: [.low, .low, .low, .low]))
         self.signal.comment = "The signal y."
-        XCTAssertEqual(self.signal.type, "std_logic_vector(3 downto 0)")
+        XCTAssertEqual(self.signal.type, .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))))
         XCTAssertEqual(self.signal.name, "y")
-        XCTAssertEqual(self.signal.defaultValue, "'0000'")
+        XCTAssertEqual(self.signal.defaultValue, .vector(value: .bits(value: [.low, .low, .low, .low])))
         XCTAssertEqual(self.signal.comment, "The signal y.")
     }
 

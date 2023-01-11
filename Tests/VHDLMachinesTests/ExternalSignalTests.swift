@@ -62,36 +62,36 @@ final class ExternalSignalTests: XCTestCase {
 
     /// The signal under test.
     var signal = ExternalSignal(
-        type: "std_logic", name: "x", mode: .output, defaultValue: "'1'", comment: "signal x"
+        type: .stdLogic, name: "x", mode: .output, defaultValue: .logic(value: .high), comment: "signal x"
     )
 
     /// Initialises the signal under test.
     override func setUp() {
         self.signal = ExternalSignal(
-            type: "std_logic", name: "x", mode: .output, defaultValue: "'1'", comment: "signal x"
-        )
+        type: .stdLogic, name: "x", mode: .output, defaultValue: .logic(value: .high), comment: "signal x"
+    )
     }
 
     /// Test init sets properties correctly.
     func testInit() {
-        XCTAssertEqual(self.signal.type, "std_logic")
+        XCTAssertEqual(self.signal.type, .stdLogic)
         XCTAssertEqual(self.signal.name, "x")
         XCTAssertEqual(self.signal.mode, .output)
-        XCTAssertEqual(self.signal.defaultValue, "'1'")
+        XCTAssertEqual(self.signal.defaultValue, .logic(value: .high))
         XCTAssertEqual(self.signal.comment, "signal x")
     }
 
     /// Test getters and setters work correctly.
     func testGettersAndSetters() {
-        self.signal.type = "std_logic_vector"
+        self.signal.type = .ranged(type: .stdLogicVector(size: .downto(upper: 7, lower: 0)))
         self.signal.name = "y"
         self.signal.mode = .input
-        self.signal.defaultValue = "(others => '1')"
+        self.signal.defaultValue = .vector(value: .hexademical(value: [.ten, .ten]))
         self.signal.comment = "signal y"
-        XCTAssertEqual(self.signal.type, "std_logic_vector")
+        XCTAssertEqual(self.signal.type, .ranged(type: .stdLogicVector(size: .downto(upper: 7, lower: 0))))
         XCTAssertEqual(self.signal.name, "y")
         XCTAssertEqual(self.signal.mode, .input)
-        XCTAssertEqual(self.signal.defaultValue, "(others => '1')")
+        XCTAssertEqual(self.signal.defaultValue, .vector(value: .hexademical(value: [.ten, .ten])))
         XCTAssertEqual(self.signal.comment, "signal y")
     }
 

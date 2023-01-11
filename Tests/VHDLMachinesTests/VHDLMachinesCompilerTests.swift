@@ -33,33 +33,31 @@ class VHDLMachinesCompilerTests: XCTestCase {
             includes: ["library IEEE;", "use IEEE.std_logic_1164.ALL;"],
             externalSignals: [
                 ExternalSignal(
-                    type: "std_logic",
+                    type: .stdLogic,
                     name: "x",
                     mode: .input,
-                    defaultValue: "'1'",
+                    defaultValue: .logic(value: .high),
                     comment: "A std_logic variable."
                 ),
                 ExternalSignal(
-                    type: "std_logic_vector(1 downto 0)",
+                    type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
                     name: "xx",
                     mode: .output,
-                    defaultValue: "\"00\"",
+                    defaultValue: .vector(value: .bits(value: [.low, .low])),
                     comment: "A variable called xx."
                 )
             ],
             generics: [
-                VHDLVariable(
-                    type: "integer",
+                LocalSignal(
+                    type: SignalType.ranged(type: .integer(size: .to(lower: 0, upper: 65535))),
                     name: "y",
-                    defaultValue: "0",
-                    range: (0, 65535),
+                    defaultValue: .integer(value: 0),
                     comment: "A uint16 variable called y."
                 ),
-                VHDLVariable(
-                    type: "boolean",
+                LocalSignal(
+                    type: .boolean,
                     name: "yy",
-                    defaultValue: "false",
-                    range: nil,
+                    defaultValue: .boolean(value: false),
                     comment: "A variable called yy"
                 )
             ],
@@ -69,28 +67,35 @@ class VHDLMachinesCompilerTests: XCTestCase {
             drivingClock: 0,
             dependentMachines: [:],
             machineSignals: [
-                LocalSignal(type: "std_logic", name: "machineSignal1", defaultValue: nil, comment: nil),
+                LocalSignal(type: .stdLogic, name: "machineSignal1", defaultValue: nil, comment: nil),
                 LocalSignal(
-                    type: "std_logic_vector(2 downto 0)",
+                    type: .ranged(type: .stdLogicVector(size: .downto(upper: 2, lower: 0))),
                     name: "machineSignal2",
-                    defaultValue: "\"11\"",
+                    defaultValue: .vector(value: .bits(value: [.high, .high, .high])),
                     comment: "machine signal 2"
                 )
             ],
             isParameterised: true,
             parameterSignals: [
-                Parameter(type: "std_logic", name: "parX", defaultValue: "'1'", comment: "Parameter parX"),
                 Parameter(
-                    type: "std_logic_vector(1 downto 0)",
+                    type: .stdLogic,
+                    name: "parX",
+                    defaultValue: .logic(value: .high),
+                    comment: "Parameter parX"
+                ),
+                Parameter(
+                    type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
                     name: "parXs",
-                    defaultValue: "\"01\"",
+                    defaultValue: .vector(value: .bits(value: [.low, .high])),
                     comment: "Parameter parXs"
                 )
             ],
             returnableSignals: [
-                ReturnableVariable(type: "std_logic", name: "retX", comment: "Returnable retX"),
+                ReturnableVariable(type: .stdLogic, name: "retX", comment: "Returnable retX"),
                 ReturnableVariable(
-                    type: "std_logic_vector(1 downto 0)", name: "retXs", comment: "Returnable retXs"
+                    type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
+                    name: "retXs",
+                    comment: "Returnable retXs"
                 )
             ],
             states: [
@@ -219,7 +224,7 @@ class VHDLMachinesCompilerTests: XCTestCase {
     func testPingMachineCodeGeneration() {
         let machine = factory.pingMachine
         let code = compiler.generateVHDLFile(machine)
-        XCTAssertEqual(code, factory.pingCode)
+        XCTAssertEqual(code, factory.pingCode, "\(code.difference(from: factory.pingCode))")
     }
 
     /// Test VHDL compilation.
@@ -309,7 +314,7 @@ class VHDLMachinesCompilerTests: XCTestCase {
             signal retXs: std_logic_vector(1 downto 0);
             -- Machine Signals
             signal machineSignal1: std_logic;
-            signal machineSignal2: std_logic_vector(2 downto 0) := "11"; -- machine signal 2
+            signal machineSignal2: std_logic_vector(2 downto 0) := "111"; -- machine signal 2
             -- User-Specific Code for Architecture Head
             some code
                 with indentation

@@ -152,11 +152,11 @@ public enum SignalType: RawRepresentable, Equatable, Hashable, Codable {
 
 }
 
-// extension SignalType: CustomStringConvertible {
+extension SignalType: CustomStringConvertible {
 
-//     /// The equivalent VHDL code for this type.
-//     @inlinable public var description: String {
-//         self.rawValue
-//     }
+    /// The equivalent VHDL code for this type.
+    @inlinable public var description: String {
+        self.rawValue
+    }
 
-// }
+}

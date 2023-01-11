@@ -82,15 +82,24 @@ final class MachineTests: XCTestCase {
     var externalSignals: [ExternalSignal] {
         [
             ExternalSignal(
-                type: "std_logic", name: "A", mode: .input, defaultValue: "'0'", comment: "A comment"
+                type: .stdLogic,
+                name: "A",
+                mode: .input,
+                defaultValue: .logic(value: .low),
+                comment: "A comment"
             )
         ]
     }
 
     /// The generics for the machine.
-    var generics: [VHDLVariable] {
+    var generics: [LocalSignal] {
         [
-            VHDLVariable(type: "integer", name: "g", defaultValue: "0", range: (0, 512), comment: "Generic g")
+            LocalSignal(
+                type: .ranged(type: .integer(size: .to(lower: 0, upper: 512))),
+                name: "g",
+                defaultValue: .integer(value: 0),
+                comment: "Generic g"
+            )
         ]
     }
 
@@ -117,21 +126,21 @@ final class MachineTests: XCTestCase {
     /// The signals for the machine.
     var machineSignals: [LocalSignal] {
         [
-            LocalSignal(type: "std_logic", name: "s", defaultValue: "'0'", comment: "Signal s")
+            LocalSignal(type: .stdLogic, name: "s", defaultValue: .logic(value: .low), comment: "Signal s")
         ]
     }
 
     /// The parameters for the machine.
     var parameterSignals: [Parameter] {
         [
-            Parameter(type: "std_logic", name: "p", defaultValue: "'0'", comment: "Parameter p")
+            Parameter(type: .stdLogic, name: "p", defaultValue: .logic(value: .low), comment: "Parameter p")
         ]
     }
 
     /// The returnable signals for the machine.
     var returnableSignals: [ReturnableVariable] {
         [
-            ReturnableVariable(type: "std_logic", name: "r", comment: "Returnable r")
+            ReturnableVariable(type: .stdLogic, name: "r", comment: "Returnable r")
         ]
     }
 
@@ -252,12 +261,19 @@ final class MachineTests: XCTestCase {
         let newIncludes = ["use IEEE.STD_LOGIC_1164.ALL;"]
         let newExternalSignals = [
             ExternalSignal(
-                type: "std_logic", name: "B", mode: .input, defaultValue: "'0'", comment: "A comment"
+                type: .stdLogic,
+                name: "B",
+                mode: .input,
+                defaultValue: .logic(value: .low),
+                comment: "A comment"
             )
         ]
         let newGenerics = [
-            VHDLVariable(
-                type: "integer", name: "g2", defaultValue: "0", range: (0, 512), comment: "Generic g2"
+            LocalSignal(
+                type: .ranged(type: .integer(size: .to(lower: 0, upper: 512))),
+                name: "g2",
+                defaultValue: .integer(value: 0),
+                comment: "Generic g2"
             )
         ]
         let newClocks = [
@@ -266,13 +282,13 @@ final class MachineTests: XCTestCase {
         let newDrivingClock = 1
         let newDependentMachines = ["M1": URL(fileURLWithPath: "/path/to/M1")]
         let newMachineSignals = [
-            LocalSignal(type: "std_logic", name: "s2", defaultValue: "'0'", comment: "Signal s2")
+            LocalSignal(type: .stdLogic, name: "s2", defaultValue: .logic(value: .low), comment: "Signal s2")
         ]
         let newParameterSignals = [
-            Parameter(type: "std_logic", name: "p2", defaultValue: "'0'", comment: "Parameter p2")
+            Parameter(type: .stdLogic, name: "p2", defaultValue: .logic(value: .low), comment: "Parameter p2")
         ]
         let newReturnableSignals = [
-            ReturnableVariable(type: "std_logic", name: "r2", comment: "Returnable r2")
+            ReturnableVariable(type: .stdLogic, name: "r2", comment: "Returnable r2")
         ]
         let newStates = [
             State(

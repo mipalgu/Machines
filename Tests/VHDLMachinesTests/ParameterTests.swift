@@ -61,32 +61,34 @@ import XCTest
 final class ParameterTests: XCTestCase {
 
     /// The parameter to test.
-    var parameter = Parameter(type: "integer", name: "x", defaultValue: "0xFF", comment: "The parameter x.")
+    var parameter = Parameter(
+        type: .integer, name: "x", defaultValue: .integer(value: 255), comment: "The parameter x."
+    )
 
     /// Initialise the parameter to test.
     override func setUp() {
         self.parameter = Parameter(
-            type: "integer", name: "x", defaultValue: "0xFF", comment: "The parameter x."
-        )
+        type: .integer, name: "x", defaultValue: .integer(value: 255), comment: "The parameter x."
+    )
     }
 
     /// Test the init sets the stored properties correctly.
     func testInit() {
-        XCTAssertEqual(self.parameter.type, "integer")
+        XCTAssertEqual(self.parameter.type, .integer)
         XCTAssertEqual(self.parameter.name, "x")
-        XCTAssertEqual(self.parameter.defaultValue, "0xFF")
+        XCTAssertEqual(self.parameter.defaultValue, .integer(value: 255))
         XCTAssertEqual(self.parameter.comment, "The parameter x.")
     }
 
     /// Test Getters and Setters work correctly.
     func testGettersAndSetters() {
-        self.parameter.type = "boolean"
+        self.parameter.type = .boolean
         self.parameter.name = "y"
-        self.parameter.defaultValue = "true"
+        self.parameter.defaultValue = .boolean(value: true)
         self.parameter.comment = "The parameter y."
-        XCTAssertEqual(self.parameter.type, "boolean")
+        XCTAssertEqual(self.parameter.type, .boolean)
         XCTAssertEqual(self.parameter.name, "y")
-        XCTAssertEqual(self.parameter.defaultValue, "true")
+        XCTAssertEqual(self.parameter.defaultValue, .boolean(value: true))
         XCTAssertEqual(self.parameter.comment, "The parameter y.")
     }
 

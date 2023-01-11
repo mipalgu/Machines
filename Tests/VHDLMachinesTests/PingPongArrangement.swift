@@ -145,14 +145,14 @@ struct PingPongArrangement {
 
     /// The ping Signals.
     let pingSignals = [
-        ExternalSignal(type: "std_logic", name: "ping", mode: .output),
-        ExternalSignal(type: "std_logic", name: "pong", mode: .input)
+        ExternalSignal(type: .stdLogic, name: "ping", mode: .output),
+        ExternalSignal(type: .stdLogic, name: "pong", mode: .input)
     ]
 
     /// The pong Signals.
     let pongSignals = [
-        ExternalSignal(type: "std_logic", name: "ping", mode: .input),
-        ExternalSignal(type: "std_logic", name: "pong", mode: .output)
+        ExternalSignal(type: .stdLogic, name: "ping", mode: .input),
+        ExternalSignal(type: .stdLogic, name: "pong", mode: .output)
     ]
 
     /// The clocks.

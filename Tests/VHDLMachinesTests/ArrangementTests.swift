@@ -73,20 +73,17 @@ final class ArrangementTests: XCTestCase {
 
     /// The external signals in the arrangement.
     let externalSignals = [
-        ExternalSignal(type: "std_logic", name: "x", mode: .input, defaultValue: "'1'", comment: "Signal x."),
-        ExternalSignal(type: "std_logic", name: "y", mode: .output, defaultValue: "'0'", comment: "Signal y.")
+        ExternalSignal(
+            type: .stdLogic, name: "x", mode: .input, defaultValue: .logic(value: .high), comment: "Signal x."
+        ),
+        ExternalSignal(
+            type: .stdLogic, name: "y", mode: .output, defaultValue: .logic(value: .low), comment: "Signal y."
+        )
     ]
 
     /// The arrangement signals.
     let signals = [
-        LocalSignal(type: "std_logic", name: "z", defaultValue: "'0'", comment: "Signal z.")
-    ]
-
-    /// The external variables in the arrangement.
-    let variables = [
-        VHDLVariable(
-            type: "integer", name: "a", defaultValue: "0xAB", range: (0, 255), comment: "Variable a."
-        )
+        LocalSignal(type: .stdLogic, name: "z", defaultValue: .logic(value: .low), comment: "Signal z.")
     ]
 
     /// The parent machines in the arrangement.
@@ -135,15 +132,25 @@ final class ArrangementTests: XCTestCase {
         ]
         let newExternalSignals = [
             ExternalSignal(
-                type: "std_logic", name: "z", mode: .input, defaultValue: "'1'", comment: "Signal z."
+                type: .stdLogic,
+                name: "z",
+                mode: .input,
+                defaultValue: .logic(value: .high),
+                comment: "Signal z."
             ),
             ExternalSignal(
-                type: "std_logic", name: "w", mode: .output, defaultValue: "'0'", comment: "Signal w."
+                type: .stdLogic,
+                name: "w",
+                mode: .output,
+                defaultValue: .logic(value: .low),
+                comment: "Signal w."
             )
         ]
 
         let newSignals = [
-            LocalSignal(type: "std_logic", name: "x2", defaultValue: "'1'", comment: "Signal x2.")
+            LocalSignal(
+                type: .stdLogic, name: "x2", defaultValue: .logic(value: .high), comment: "Signal x2."
+            )
         ]
         let newClocks = [
             Clock(name: "clk2", frequency: 100, unit: .MHz)

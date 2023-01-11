@@ -72,7 +72,11 @@ final class StateTests: XCTestCase {
 
     /// The signals.
     var signals: [LocalSignal] {
-        [LocalSignal(type: "std_logic", name: "y", defaultValue: "'1'", comment: "The signal y.")]
+        [
+            LocalSignal(
+                type: .stdLogic, name: "y", defaultValue: .logic(value: .high), comment: "The signal y."
+            )
+        ]
     }
 
     /// The external variables.
@@ -119,9 +123,9 @@ final class StateTests: XCTestCase {
         XCTAssertEqual(self.state.actionOrder, [["internal"]])
         self.state.signals = [
             LocalSignal(
-                type: "std_logic_vector",
+                type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),
                 name: "xs",
-                defaultValue: "(others => '0')",
+                defaultValue: .vector(value: .hexademical(value: [.five])),
                 comment: "The signal xs."
             )
         ]
@@ -129,9 +133,9 @@ final class StateTests: XCTestCase {
             self.state.signals,
             [
                 LocalSignal(
-                    type: "std_logic_vector",
+                    type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),
                     name: "xs",
-                    defaultValue: "(others => '0')",
+                    defaultValue: .vector(value: .hexademical(value: [.five])),
                     comment: "The signal xs."
                 )
             ]

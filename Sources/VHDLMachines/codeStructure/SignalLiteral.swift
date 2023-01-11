@@ -229,3 +229,11 @@ public enum SignalLiteral: RawRepresentable, Equatable, Hashable, Codable {
     // swiftlint:enable function_body_length
 
 }
+
+extension SignalLiteral: CustomStringConvertible {
+
+    public var description: String {
+        rawValue
+    }
+
+}

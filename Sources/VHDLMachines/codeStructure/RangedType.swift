@@ -153,6 +153,14 @@ public enum RangedType: RawRepresentable, Equatable, Hashable, Codable {
 
 }
 
+extension RangedType: CustomStringConvertible {
+
+    public var description: String {
+        rawValue
+    }
+
+}
+
 /// Add conversion inits.
 private extension VectorSize {
 
