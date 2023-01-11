@@ -62,6 +62,8 @@ final class SignalTypeTests: XCTestCase {
 
     /// Test raw values are correct.
     func testRawValues() {
+        let bit = SignalType.bit
+        XCTAssertEqual(bit.rawValue, "bit")
         let bool = SignalType.boolean
         XCTAssertEqual(bool.rawValue, "boolean")
         let int = SignalType.integer
@@ -128,6 +130,7 @@ final class SignalTypeTests: XCTestCase {
 
     /// Test that a valid raw value creates the correct case.
     func testSimpleTypeRawInits() {
+        XCTAssertEqual(SignalType(rawValue: "bit"), .bit)
         XCTAssertEqual(SignalType(rawValue: "boolean"), .boolean)
         XCTAssertEqual(SignalType(rawValue: "integer"), .integer)
         XCTAssertEqual(SignalType(rawValue: "natural"), .natural)
