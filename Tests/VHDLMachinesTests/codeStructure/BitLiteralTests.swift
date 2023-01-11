@@ -1,4 +1,4 @@
-// BitLiteral.swift
+// BitLiteralTests.swift
 // Machines
 // 
 // Created by Morgan McColl.
@@ -54,41 +54,40 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-/// Type for expressing single-bit bit values in *VHDL*.
-public enum BitLiteral: String, Equatable, Hashable, Codable {
+@testable import VHDLMachines
+import XCTest
 
-    /// A logic-high.
-    case high = "'1'"
+/// Test class for ``BitLiteral``.
+final class BitLiteralTests: XCTestCase {
 
-    /// A logic-low.
-    case low = "'0'"
-
-    /// The VHDL representation for this value inside a vector literal.
-    @inlinable public var vectorLiteral: String {
-        switch self {
-        case .high:
-            return "1"
-        case .low:
-            return "0"
-        }
+    /// Test rawValue is created correctly.
+    func testRawValue() {
+        XCTAssertEqual(BitLiteral.high.rawValue, "'1'")
+        XCTAssertEqual(BitLiteral.low.rawValue, "'0'")
     }
 
-    /// Initialise the `BitLiteral` from the VHDL code.
-    /// - Parameter rawValue: The VHDL code representing this literal.
-    @inlinable
-    public init?(rawValue: String) {
-        let value = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard value.count == 3 else {
-            return nil
-        }
-        switch value {
-        case "'1'":
-            self = .high
-        case "'0'":
-            self = .low
-        default:
-            return nil
-        }
+    /// Test that the init sets the correct case for valid raw values.
+    func testValidRawInit() {
+        XCTAssertEqual(BitLiteral(rawValue: "'1'"), .high)
+        XCTAssertEqual(BitLiteral(rawValue: "'0'"), .low)
+    }
+
+    /// Test init returns nil for invalid raw values.
+    func testInvalidRawValueInit() {
+        XCTAssertNil(BitLiteral(rawValue: "1"))
+        XCTAssertNil(BitLiteral(rawValue: "'i'"))
+    }
+
+    /// Test rawValue init creates correct cases when whitespace is present.
+    func testWhitespaceRawValues() {
+        XCTAssertEqual(BitLiteral(rawValue: " '1' "), .high)
+        XCTAssertEqual(BitLiteral(rawValue: " '0' "), .low)
+    }
+
+    /// Test vector literal computed property is correct.
+    func testVectorLiteral() {
+        XCTAssertEqual(BitLiteral.high.vectorLiteral, "1")
+        XCTAssertEqual(BitLiteral.low.vectorLiteral, "0")
     }
 
 }
