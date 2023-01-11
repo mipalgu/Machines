@@ -307,7 +307,7 @@ class VHDLMachinesCompilerTests: XCTestCase {
             -- Snapshot of Output Signals and Variables
             signal retX: std_logic;
             signal retXs: std_logic_vector(1 downto 0);
-            -- Machine Signals and Variables
+            -- Machine Signals
             signal machineSignal1: std_logic;
             signal machineSignal2: std_logic_vector(2 downto 0) := "11"; -- machine signal 2
             -- User-Specific Code for Architecture Head

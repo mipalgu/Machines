@@ -262,7 +262,7 @@ struct PingPongArrangement {
         -- Snapshot of External Signals and Variables
         signal ping: std_logic;
         signal pong: std_logic;
-        -- Machine Signals and Variables
+        -- Machine Signals
     begin
         process(clk)
         begin

@@ -1226,7 +1226,7 @@ public struct VHDLCompiler {
                     signal: $0, with: $0.defaultValue != nil, and: $0.comment != nil
                 )
             },
-            initial: "-- Machine Signals and Variables",
+            initial: "-- Machine Signals",
             indentation: 1
         )
     }
