@@ -138,4 +138,20 @@ final class VectorSizeTests: XCTestCase {
         XCTAssertEqual(to.size, 6)
     }
 
+    /// Test the min value is correct.
+    func testMin() {
+        let downto = VectorSize.downto(upper: 12, lower: 5)
+        XCTAssertEqual(downto.min, 5)
+        let to = VectorSize.to(lower: 2, upper: 7)
+        XCTAssertEqual(to.min, 2)
+    }
+
+    /// Test the max value is correct.
+    func testMax() {
+        let downto = VectorSize.downto(upper: 12, lower: 5)
+        XCTAssertEqual(downto.max, 12)
+        let to = VectorSize.to(lower: 2, upper: 7)
+        XCTAssertEqual(to.max, 7)
+    }
+
 }

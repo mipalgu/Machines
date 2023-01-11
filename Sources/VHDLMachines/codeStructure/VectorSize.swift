@@ -67,6 +67,7 @@ public enum VectorSize: RawRepresentable, Equatable, Hashable, Codable {
     /// The raw value is a string.
     public typealias RawValue = String
 
+    /// The upper bound in the range.
     @inlinable public var max: Int {
         switch self {
         case .downto(let upper, _):
@@ -76,6 +77,7 @@ public enum VectorSize: RawRepresentable, Equatable, Hashable, Codable {
         }
     }
 
+    /// The lower bound in this range.
     @inlinable public var min: Int {
         switch self {
         case .downto(_, let lower):
