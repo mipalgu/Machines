@@ -62,8 +62,16 @@ final class RangedTypeTests: XCTestCase {
 
     /// Test raw values are correct.
     func testRawValues() {
+        let integer = RangedType.integer(size: .to(lower: 12, upper: 15))
+        XCTAssertEqual(integer.rawValue, "integer range 12 to 15")
+        let signed = RangedType.signed(size: .downto(upper: 5, lower: 3))
+        XCTAssertEqual(signed.rawValue, "signed(5 downto 3)")
         let vector = RangedType.stdLogicVector(size: .downto(upper: 5, lower: 3))
         XCTAssertEqual(vector.rawValue, "std_logic_vector(5 downto 3)")
+        let stdULogicVector = RangedType.stdULogicVector(size: .downto(upper: 5, lower: 3))
+        XCTAssertEqual(stdULogicVector.rawValue, "std_ulogic_vector(5 downto 3)")
+        let unsigned = RangedType.unsigned(size: .to(lower: 12, upper: 15))
+        XCTAssertEqual(unsigned.rawValue, "unsigned(12 to 15)")
     }
 
     /// Test that a long raw value returns nil.
