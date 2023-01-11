@@ -64,7 +64,7 @@ public enum SignalLiteral: RawRepresentable, Equatable, Hashable, Codable {
     case integer(value: Int)
 
     /// A single-bit logic literal.
-    case logic(value: BitLiteral)
+    case logic(value: LogicLiteral)
 
     /// A vector of logic literals.
     case vector(value: VectorLiteral)
@@ -103,7 +103,7 @@ public enum SignalLiteral: RawRepresentable, Equatable, Hashable, Codable {
             self = .integer(value: val)
             return
         }
-        if let val = BitLiteral(rawValue: value) {
+        if let val = LogicLiteral(rawValue: value) {
             self = .logic(value: val)
             return
         }
@@ -135,7 +135,7 @@ public enum SignalLiteral: RawRepresentable, Equatable, Hashable, Codable {
                 return .integer(value: size.min)
             case .stdLogicVector(let size), .signed(let size), .unsigned(let size),
                 .stdULogicVector(let size):
-                return .vector(value: .bits(value: [BitLiteral](repeating: .low, count: size.size)))
+                return .vector(value: .bits(value: [LogicLiteral](repeating: .low, count: size.size)))
             }
         }
     }

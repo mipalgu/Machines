@@ -109,8 +109,8 @@ public struct ConstantSignal: RawRepresentable, Equatable, Hashable, Codable {
     }
 
     private static func bitVersion(
-        of value: Double, carry: [BitLiteral] = [], bitPlace: Int
-    ) -> [BitLiteral] {
+        of value: Double, carry: [LogicLiteral] = [], bitPlace: Int
+    ) -> [LogicLiteral] {
         if bitPlace < 0 {
             return carry
         }

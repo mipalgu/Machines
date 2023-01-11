@@ -1,4 +1,4 @@
-// BitLiteralTests.swift
+// LogicLiteralTests.swift
 // Machines
 // 
 // Created by Morgan McColl.
@@ -57,76 +57,76 @@
 @testable import VHDLMachines
 import XCTest
 
-/// Test class for ``BitLiteral``.
-final class BitLiteralTests: XCTestCase {
+/// Test class for ``LogicLiteral``.
+final class LogicLiteralTests: XCTestCase {
 
     /// Test rawValue is created correctly.
     func testRawValue() {
-        XCTAssertEqual(BitLiteral.high.rawValue, "'1'")
-        XCTAssertEqual(BitLiteral.low.rawValue, "'0'")
-        XCTAssertEqual(BitLiteral.unknown.rawValue, "'X'")
-        XCTAssertEqual(BitLiteral.dontCare.rawValue, "'-'")
-        XCTAssertEqual(BitLiteral.highImpedance.rawValue, "'Z'")
-        XCTAssertEqual(BitLiteral.uninitialized.rawValue, "'U'")
-        XCTAssertEqual(BitLiteral.weakSignal.rawValue, "'W'")
-        XCTAssertEqual(BitLiteral.weakSignalHigh.rawValue, "'H'")
-        XCTAssertEqual(BitLiteral.weakSignalLow.rawValue, "'L'")
+        XCTAssertEqual(LogicLiteral.high.rawValue, "'1'")
+        XCTAssertEqual(LogicLiteral.low.rawValue, "'0'")
+        XCTAssertEqual(LogicLiteral.unknown.rawValue, "'X'")
+        XCTAssertEqual(LogicLiteral.dontCare.rawValue, "'-'")
+        XCTAssertEqual(LogicLiteral.highImpedance.rawValue, "'Z'")
+        XCTAssertEqual(LogicLiteral.uninitialized.rawValue, "'U'")
+        XCTAssertEqual(LogicLiteral.weakSignal.rawValue, "'W'")
+        XCTAssertEqual(LogicLiteral.weakSignalHigh.rawValue, "'H'")
+        XCTAssertEqual(LogicLiteral.weakSignalLow.rawValue, "'L'")
     }
 
     /// Test that the init sets the correct case for valid raw values.
     func testValidRawInit() {
-        XCTAssertEqual(BitLiteral(rawValue: "'1'"), .high)
-        XCTAssertEqual(BitLiteral(rawValue: "'0'"), .low)
-        XCTAssertEqual(BitLiteral(rawValue: "'X'"), .unknown)
-        XCTAssertEqual(BitLiteral(rawValue: "'-'"), .dontCare)
-        XCTAssertEqual(BitLiteral(rawValue: "'Z'"), .highImpedance)
-        XCTAssertEqual(BitLiteral(rawValue: "'U'"), .uninitialized)
-        XCTAssertEqual(BitLiteral(rawValue: "'W'"), .weakSignal)
-        XCTAssertEqual(BitLiteral(rawValue: "'H'"), .weakSignalHigh)
-        XCTAssertEqual(BitLiteral(rawValue: "'L'"), .weakSignalLow)
+        XCTAssertEqual(LogicLiteral(rawValue: "'1'"), .high)
+        XCTAssertEqual(LogicLiteral(rawValue: "'0'"), .low)
+        XCTAssertEqual(LogicLiteral(rawValue: "'X'"), .unknown)
+        XCTAssertEqual(LogicLiteral(rawValue: "'-'"), .dontCare)
+        XCTAssertEqual(LogicLiteral(rawValue: "'Z'"), .highImpedance)
+        XCTAssertEqual(LogicLiteral(rawValue: "'U'"), .uninitialized)
+        XCTAssertEqual(LogicLiteral(rawValue: "'W'"), .weakSignal)
+        XCTAssertEqual(LogicLiteral(rawValue: "'H'"), .weakSignalHigh)
+        XCTAssertEqual(LogicLiteral(rawValue: "'L'"), .weakSignalLow)
     }
 
     /// Test init returns nil for invalid raw values.
     func testInvalidRawValueInit() {
-        XCTAssertNil(BitLiteral(rawValue: "1"))
-        XCTAssertNil(BitLiteral(rawValue: "'i'"))
+        XCTAssertNil(LogicLiteral(rawValue: "1"))
+        XCTAssertNil(LogicLiteral(rawValue: "'i'"))
     }
 
     /// Test that the raw value init creates the correct cases for lowercased raw values.
     func testLowercasedRawValues() {
-        XCTAssertEqual(BitLiteral(rawValue: "'x'"), .unknown)
-        XCTAssertEqual(BitLiteral(rawValue: "'-'"), .dontCare)
-        XCTAssertEqual(BitLiteral(rawValue: "'z'"), .highImpedance)
-        XCTAssertEqual(BitLiteral(rawValue: "'u'"), .uninitialized)
-        XCTAssertEqual(BitLiteral(rawValue: "'w'"), .weakSignal)
-        XCTAssertEqual(BitLiteral(rawValue: "'h'"), .weakSignalHigh)
-        XCTAssertEqual(BitLiteral(rawValue: "'l'"), .weakSignalLow)
+        XCTAssertEqual(LogicLiteral(rawValue: "'x'"), .unknown)
+        XCTAssertEqual(LogicLiteral(rawValue: "'-'"), .dontCare)
+        XCTAssertEqual(LogicLiteral(rawValue: "'z'"), .highImpedance)
+        XCTAssertEqual(LogicLiteral(rawValue: "'u'"), .uninitialized)
+        XCTAssertEqual(LogicLiteral(rawValue: "'w'"), .weakSignal)
+        XCTAssertEqual(LogicLiteral(rawValue: "'h'"), .weakSignalHigh)
+        XCTAssertEqual(LogicLiteral(rawValue: "'l'"), .weakSignalLow)
     }
 
     /// Test rawValue init creates correct cases when whitespace is present.
     func testWhitespaceRawValues() {
-        XCTAssertEqual(BitLiteral(rawValue: " '1' "), .high)
-        XCTAssertEqual(BitLiteral(rawValue: " '0' "), .low)
-        XCTAssertEqual(BitLiteral(rawValue: " 'X' "), .unknown)
-        XCTAssertEqual(BitLiteral(rawValue: " '-' "), .dontCare)
-        XCTAssertEqual(BitLiteral(rawValue: " 'Z' "), .highImpedance)
-        XCTAssertEqual(BitLiteral(rawValue: " 'U' "), .uninitialized)
-        XCTAssertEqual(BitLiteral(rawValue: " 'W' "), .weakSignal)
-        XCTAssertEqual(BitLiteral(rawValue: " 'H' "), .weakSignalHigh)
-        XCTAssertEqual(BitLiteral(rawValue: " 'L' "), .weakSignalLow)
+        XCTAssertEqual(LogicLiteral(rawValue: " '1' "), .high)
+        XCTAssertEqual(LogicLiteral(rawValue: " '0' "), .low)
+        XCTAssertEqual(LogicLiteral(rawValue: " 'X' "), .unknown)
+        XCTAssertEqual(LogicLiteral(rawValue: " '-' "), .dontCare)
+        XCTAssertEqual(LogicLiteral(rawValue: " 'Z' "), .highImpedance)
+        XCTAssertEqual(LogicLiteral(rawValue: " 'U' "), .uninitialized)
+        XCTAssertEqual(LogicLiteral(rawValue: " 'W' "), .weakSignal)
+        XCTAssertEqual(LogicLiteral(rawValue: " 'H' "), .weakSignalHigh)
+        XCTAssertEqual(LogicLiteral(rawValue: " 'L' "), .weakSignalLow)
     }
 
     /// Test vector literal computed property is correct.
     func testVectorLiteral() {
-        XCTAssertEqual(BitLiteral.high.vectorLiteral, "1")
-        XCTAssertEqual(BitLiteral.low.vectorLiteral, "0")
-        XCTAssertEqual(BitLiteral.unknown.vectorLiteral, "X")
-        XCTAssertEqual(BitLiteral.dontCare.vectorLiteral, "-")
-        XCTAssertEqual(BitLiteral.highImpedance.vectorLiteral, "Z")
-        XCTAssertEqual(BitLiteral.uninitialized.vectorLiteral, "U")
-        XCTAssertEqual(BitLiteral.weakSignal.vectorLiteral, "W")
-        XCTAssertEqual(BitLiteral.weakSignalHigh.vectorLiteral, "H")
-        XCTAssertEqual(BitLiteral.weakSignalLow.vectorLiteral, "L")
+        XCTAssertEqual(LogicLiteral.high.vectorLiteral, "1")
+        XCTAssertEqual(LogicLiteral.low.vectorLiteral, "0")
+        XCTAssertEqual(LogicLiteral.unknown.vectorLiteral, "X")
+        XCTAssertEqual(LogicLiteral.dontCare.vectorLiteral, "-")
+        XCTAssertEqual(LogicLiteral.highImpedance.vectorLiteral, "Z")
+        XCTAssertEqual(LogicLiteral.uninitialized.vectorLiteral, "U")
+        XCTAssertEqual(LogicLiteral.weakSignal.vectorLiteral, "W")
+        XCTAssertEqual(LogicLiteral.weakSignalHigh.vectorLiteral, "H")
+        XCTAssertEqual(LogicLiteral.weakSignalLow.vectorLiteral, "L")
     }
 
 }

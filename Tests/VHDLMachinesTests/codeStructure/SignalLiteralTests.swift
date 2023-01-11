@@ -68,8 +68,8 @@ final class SignalLiteralTests: XCTestCase {
         XCTAssertEqual(boolean2.rawValue, "false")
         let int = SignalLiteral.integer(value: 12)
         XCTAssertEqual(int.rawValue, "12")
-        let bitLiteral = SignalLiteral.logic(value: .high)
-        XCTAssertEqual(bitLiteral.rawValue, "'1'")
+        let logic = SignalLiteral.logic(value: .high)
+        XCTAssertEqual(logic.rawValue, "'1'")
         let vectorLiteral = SignalLiteral.vector(value: .bits(value: [.high, .low, .high]))
         XCTAssertEqual(vectorLiteral.rawValue, "\"101\"")
     }

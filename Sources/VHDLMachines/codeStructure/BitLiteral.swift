@@ -54,35 +54,11 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-/// The possible values for a single bit logic value in `VHDL`.
 public enum BitLiteral: String, Equatable, Hashable, Codable {
 
-    /// A logic high.
     case high = "'1'"
 
-    /// A logic low.
     case low = "'0'"
-
-    /// The signal is uninitialized.
-    case uninitialized = "'U'"
-
-    /// The signal is unknown.
-    case unknown = "'X'"
-
-    /// The signal has high impedance.
-    case highImpedance = "'Z'"
-
-    /// The signal is weak.
-    case weakSignal = "'W'"
-
-    /// The signal is weak so should go to low.
-    case weakSignalLow = "'L'"
-
-    /// The signal is weak so should go to high.
-    case weakSignalHigh = "'H'"
-
-    /// Don't care about the state of the signal.
-    case dontCare = "'-'"
 
     /// The VHDL representation for this value inside a vector literal.
     @inlinable public var vectorLiteral: String {
@@ -91,20 +67,6 @@ public enum BitLiteral: String, Equatable, Hashable, Codable {
             return "1"
         case .low:
             return "0"
-        case .uninitialized:
-            return "U"
-        case .unknown:
-            return "X"
-        case .highImpedance:
-            return "Z"
-        case .weakSignal:
-            return "W"
-        case .weakSignalLow:
-            return "L"
-        case .weakSignalHigh:
-            return "H"
-        case .dontCare:
-            return "-"
         }
     }
 
@@ -121,20 +83,6 @@ public enum BitLiteral: String, Equatable, Hashable, Codable {
             self = .high
         case "'0'":
             self = .low
-        case "'U'":
-            self = .uninitialized
-        case "'X'":
-            self = .unknown
-        case "'Z'":
-            self = .highImpedance
-        case "'W'":
-            self = .weakSignal
-        case "'L'":
-            self = .weakSignalLow
-        case "'H'":
-            self = .weakSignalHigh
-        case "'-'":
-            self = .dontCare
         default:
             return nil
         }

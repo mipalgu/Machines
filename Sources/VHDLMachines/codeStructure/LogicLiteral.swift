@@ -1,4 +1,4 @@
-// VectorLiteral.swift
+// BitLiteral.swift
 // Machines
 // 
 // Created by Morgan McColl.
@@ -54,86 +54,90 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-/// A vector literal is a string of bits, hexademical digits, or octal digits. This enum allows VHDL signal
-/// literal values to be represented.
-public enum VectorLiteral: RawRepresentable, Equatable, Hashable, Codable {
+/// The possible values for a single bit logic value in `VHDL`.
+public enum LogicLiteral: String, Equatable, Hashable, Codable {
 
-    /// A vector of logic values.
-    case bits(value: [LogicLiteral])
+    /// A logic high.
+    case high = "'1'"
 
-    /// A hexadecimal value.
-    case hexademical(value: [HexLiteral])
+    /// A logic low.
+    case low = "'0'"
 
-    /// An octal value.
-    case octal(value: [OctalLiteral])
+    /// The signal is uninitialized.
+    case uninitialized = "'U'"
 
-    /// The raw value is a string.
-    public typealias RawValue = String
+    /// The signal is unknown.
+    case unknown = "'X'"
 
-    /// The equivalent VHDL code for representing this literal.
-    @inlinable public var rawValue: String {
+    /// The signal has high impedance.
+    case highImpedance = "'Z'"
+
+    /// The signal is weak.
+    case weakSignal = "'W'"
+
+    /// The signal is weak so should go to low.
+    case weakSignalLow = "'L'"
+
+    /// The signal is weak so should go to high.
+    case weakSignalHigh = "'H'"
+
+    /// Don't care about the state of the signal.
+    case dontCare = "'-'"
+
+    /// The VHDL representation for this value inside a vector literal.
+    @inlinable public var vectorLiteral: String {
         switch self {
-        case .bits(let values):
-            return "\"" + values.map(\.vectorLiteral).joined() + "\""
-        case .hexademical(let values):
-            return "x\"" + String(values.map(\.rawValue)) + "\""
-        case .octal(let values):
-            return "o\"" + String(values.map(\.rawValue)) + "\""
+        case .high:
+            return "1"
+        case .low:
+            return "0"
+        case .uninitialized:
+            return "U"
+        case .unknown:
+            return "X"
+        case .highImpedance:
+            return "Z"
+        case .weakSignal:
+            return "W"
+        case .weakSignalLow:
+            return "L"
+        case .weakSignalHigh:
+            return "H"
+        case .dontCare:
+            return "-"
         }
     }
 
-    /// The number of bits in this vector literal.
-    @inlinable public var size: Int {
-        switch self {
-        case .bits(let values):
-            return values.count
-        case .hexademical(let values):
-            return values.count * 4
-        case .octal(let values):
-            return values.count * 3
-        }
-    }
-
-    /// Creates a new vector literal from the VHDL equivalent representation.
-    /// - Parameter rawValue: The VHDL equivalent representation of the vector literal.
+    /// Initialise the `BitLiteral` from the VHDL code.
+    /// - Parameter rawValue: The VHDL code representing this literal.
     @inlinable
     public init?(rawValue: String) {
         let value = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard value.count < 256 else {
+        guard value.count == 3 else {
             return nil
         }
-        guard !(value.first?.lowercased() == "x" || value.first?.lowercased() == "o") else {
-            let isHex = value.first?.lowercased() == "x"
-            let dataString = value.dropFirst()
-            guard dataString.hasPrefix("\""), dataString.hasSuffix("\"") else {
-                return nil
-            }
-            let data = dataString.dropFirst().dropLast()
-            if isHex {
-                let bits = data.compactMap { HexLiteral(rawValue: $0) }
-                guard bits.count == data.count else {
-                    return nil
-                }
-                self = .hexademical(value: bits)
-                return
-            } else {
-                let bits = data.compactMap { OctalLiteral(rawValue: $0) }
-                guard bits.count == data.count else {
-                    return nil
-                }
-                self = .octal(value: bits)
-                return
-            }
-        }
-        guard value.hasPrefix("\"") && value.hasSuffix("\"") else {
+        switch value.uppercased() {
+        case "'1'":
+            self = .high
+        case "'0'":
+            self = .low
+        case "'U'":
+            self = .uninitialized
+        case "'X'":
+            self = .unknown
+        case "'Z'":
+            self = .highImpedance
+        case "'W'":
+            self = .weakSignal
+        case "'L'":
+            self = .weakSignalLow
+        case "'H'":
+            self = .weakSignalHigh
+        case "'-'":
+            self = .dontCare
+        default:
             return nil
         }
-        let data = value.dropFirst().dropLast()
-        let bits = data.compactMap { LogicLiteral(rawValue: "'\($0)'") }
-        guard bits.count == data.count else {
-            return nil
-        }
-        self = .bits(value: bits)
     }
 
 }
