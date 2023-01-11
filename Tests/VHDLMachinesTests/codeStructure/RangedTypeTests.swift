@@ -1,4 +1,4 @@
-// RangedType.swift
+// RangedTypeTests.swift
 // Machines
 // 
 // Created by Morgan McColl.
@@ -54,37 +54,54 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-/// *VHDL* types that are bounded within a specific range.
-public enum RangedType: RawRepresentable, Equatable, Hashable, Codable {
+@testable import VHDLMachines
+import XCTest
 
-    /// Standard logic vector (`std_logic_vector`).
-    case stdLogicVector(size: VectorSize)
+/// Test class for ``RangedType``.
+final class RangedTypeTests: XCTestCase {
 
-    /// The raw value is a `String`.
-    public typealias RawValue = String
-
-    /// The equivalent VHDL code for this type.
-    @inlinable public var rawValue: String {
-        switch self {
-        case .stdLogicVector(let size):
-            return "std_logic_vector(\(size.rawValue))"
-        }
+    /// Test raw values are correct.
+    func testRawValues() {
+        let vector = RangedType.stdLogicVector(size: .downto(upper: 5, lower: 3))
+        XCTAssertEqual(vector.rawValue, "std_logic_vector(5 downto 3)")
     }
 
-    /// Initialise this ranged type from its VHDL representation.
-    /// - Parameter rawValue: The VHDL code that defines this type.
-    @inlinable
-    public init?(rawValue: String) {
-        let trimmedString = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard trimmedString.count >= 9, trimmedString.count < 256 else {
-            return nil
-        }
-        let value = trimmedString.lowercased()
-        if let size = VectorSize(vector: value, vectorType: "std_logic_vector") {
-            self = .stdLogicVector(size: size)
-            return
-        }
-        return nil
+    /// Test that a small string returns nil.
+    func testSmallString() {
+        XCTAssertNil(RangedType(rawValue: "std"))
+        XCTAssertNil(RangedType(rawValue: ""))
+        XCTAssertNil(RangedType(rawValue: String(repeating: "a", count: 15)))
+    }
+
+    /// Test that a valid `std_logic_vector` raw value creates the correct case.
+    func testStdLogicVector() {
+        XCTAssertEqual(
+            RangedType(rawValue: "std_logic_vector(5 downto 3)"),
+            .stdLogicVector(size: .downto(upper: 5, lower: 3))
+        )
+    }
+
+    /// Test upercasd std_logic_vector raw value creates the correct case.
+    func testStdLogicVectorUppercased() {
+        XCTAssertEqual(
+            RangedType(rawValue: "STD_LOGIC_VECTOR(5 DOWNTO 3)"),
+            .stdLogicVector(size: .downto(upper: 5, lower: 3))
+        )
+    }
+
+    /// Test mispelled std_logic_vector raw value returns nil.
+    func testStdLogicVectorMispelled() {
+        XCTAssertNil(RangedType(rawValue: "std_logic_vectro(5 downto 3)"))
+    }
+
+    /// Test std_logic_vector with extra brackets returns nil.
+    func testStdLogicVectorAdditionlBracketReturnsNil() {
+        XCTAssertNil(RangedType(rawValue: "std_logic_vector(5 downto 3))"))
+    }
+
+    /// Test incorrect size returns nil.
+    func testIncorrectSize() {
+        XCTAssertNil(RangedType(rawValue: "std_logic_vector(5 downtwo 3"))
     }
 
 }
