@@ -144,10 +144,7 @@ private extension VectorSize {
             return nil
         }
         let other = vector.dropFirst(primitiveSize + 1).dropLast()
-        guard let size = VectorSize(rawValue: String(other)) else {
-            return nil
-        }
-        self = size
+        self.init(rawValue: String(other))
     }
 
     /// Initialise the vector size from a raw string containing the VHDL code for a ranged integer.
