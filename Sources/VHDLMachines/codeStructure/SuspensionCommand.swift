@@ -54,7 +54,7 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-public enum SuspensionCommand: RawRepresentable, CaseIterable {
+public enum SuspensionCommand: RawRepresentable, CaseIterable, Equatable, Hashable, Codable, Sendable {
 
     case null
 

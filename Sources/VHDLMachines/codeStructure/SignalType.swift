@@ -55,7 +55,7 @@
 // 
 
 /// Valid VHDL Signal types.
-public enum SignalType: RawRepresentable, Equatable, Hashable, Codable {
+public enum SignalType: RawRepresentable, Equatable, Hashable, Codable, Sendable {
 
     /// A bit type.
     case bit

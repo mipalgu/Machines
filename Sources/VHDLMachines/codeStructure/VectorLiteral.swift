@@ -56,7 +56,7 @@
 
 /// A vector literal is a string of bits, hexademical digits, or octal digits. This enum allows VHDL signal
 /// literal values to be represented.
-public enum VectorLiteral: RawRepresentable, Equatable, Hashable, Codable {
+public enum VectorLiteral: RawRepresentable, Equatable, Hashable, Codable, Sendable {
 
     /// A vector of bit values.
     case bits(value: [BitLiteral])

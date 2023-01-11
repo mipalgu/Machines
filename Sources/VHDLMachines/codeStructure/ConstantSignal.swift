@@ -56,7 +56,7 @@
 
 import Foundation
 
-public struct ConstantSignal: RawRepresentable, Equatable, Hashable, Codable {
+public struct ConstantSignal: RawRepresentable, Equatable, Hashable, Codable, Sendable {
 
     public let name: String
 

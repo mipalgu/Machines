@@ -56,7 +56,7 @@
 
 /// A type for representing VHDL vector sizes. This type is equivalent to the `range` of a VHDL vector type,
 /// e.g. *5 downto 3* or *3 to 5*.
-public enum VectorSize: RawRepresentable, Equatable, Hashable, Codable {
+public enum VectorSize: RawRepresentable, Equatable, Hashable, Codable, Sendable {
 
     /// The `downto` case. This represents the range as an upper limit down to a lower limit.
     case downto(upper: Int, lower: Int)

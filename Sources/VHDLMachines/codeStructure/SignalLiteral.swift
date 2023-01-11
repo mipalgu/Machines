@@ -55,7 +55,7 @@
 // 
 
 /// A type for representing all signal literals.
-public enum SignalLiteral: RawRepresentable, Equatable, Hashable, Codable {
+public enum SignalLiteral: RawRepresentable, Equatable, Hashable, Codable, Sendable {
 
     /// A literal for single bit; either `high` or `low`.
     case bit(value: BitLiteral)

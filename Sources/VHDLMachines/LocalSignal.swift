@@ -9,7 +9,7 @@ import Foundation
 
 /// A local signal is a signal that exists within the scope of a VHDL entity. It is a signal that is defined
 /// within a machine/arrangement and can be though of as a type of machine variable in VHDL.
-public struct LocalSignal: Codable, Equatable, Hashable, Variable {
+public struct LocalSignal: Codable, Equatable, Hashable, Variable, Sendable {
 
     /// The type of the signal.
     public var type: SignalType

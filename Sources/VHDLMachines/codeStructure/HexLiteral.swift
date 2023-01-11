@@ -55,7 +55,7 @@
 // 
 
 /// All of the possible values for a single hexadecimal digit (4 bits).
-public enum HexLiteral: Character, Equatable, Hashable, Codable {
+public enum HexLiteral: Character, Equatable, Hashable, Codable, Sendable {
 
     /// The value 0.
     case zero = "0"

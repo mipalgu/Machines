@@ -55,7 +55,7 @@
 // 
 
 /// Type for expressing single-bit bit values in *VHDL*.
-public enum BitLiteral: String, Equatable, Hashable, Codable {
+public enum BitLiteral: String, Equatable, Hashable, Codable, Sendable {
 
     /// A logic-high.
     case high = "'1'"

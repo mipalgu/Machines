@@ -55,7 +55,7 @@
 // 
 
 /// The possible values for a single bit logic value in `VHDL`.
-public enum LogicLiteral: String, Equatable, Hashable, Codable {
+public enum LogicLiteral: String, Equatable, Hashable, Codable, Sendable {
 
     /// A logic high.
     case high = "'1'"

@@ -55,7 +55,7 @@
 // 
 
 /// Possible octal values for a single octal digit (3 bits).
-public enum OctalLiteral: Character, Equatable, Hashable, Codable {
+public enum OctalLiteral: Character, Equatable, Hashable, Codable, Sendable {
 
     /// The octal value 0.
     case zero = "0"

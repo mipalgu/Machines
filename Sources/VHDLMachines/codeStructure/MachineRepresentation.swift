@@ -54,7 +54,7 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-public struct MachineRepresentation {
+public struct MachineRepresentation: Equatable, Hashable, Codable, Sendable {
 
     public let states: [StateRepresentation]
 

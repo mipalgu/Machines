@@ -9,7 +9,7 @@ import Foundation
 
 /// An external signal is equivalent to an external variable (or parameter) in an LLFSM. The external signal
 /// is a signal that exists above a VHDL entities scope. It is a signal that is not defined within the entity.
-public struct ExternalSignal: ExternalType, Codable, Hashable, Variable {
+public struct ExternalSignal: ExternalType, Codable, Hashable, Variable, Sendable {
 
     /// The type of the signal.
     public var type: SignalType
