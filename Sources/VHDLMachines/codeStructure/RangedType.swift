@@ -57,6 +57,8 @@
 /// *VHDL* types that are bounded within a specific range.
 public enum RangedType: RawRepresentable, Equatable, Hashable, Codable {
 
+    case bitVector(size: VectorSize)
+
     /// Integer type (`integer`).
     case integer(size: VectorSize)
 
@@ -78,6 +80,8 @@ public enum RangedType: RawRepresentable, Equatable, Hashable, Codable {
     /// The equivalent VHDL code for this type.
     @inlinable public var rawValue: String {
         switch self {
+        case .bitVector(let size):
+            return "bit_vector(\(size.rawValue))"
         case .integer(let size):
             return "integer range \(size.rawValue)"
         case .signed(let size):
@@ -102,6 +106,10 @@ public enum RangedType: RawRepresentable, Equatable, Hashable, Codable {
             return nil
         }
         let value = trimmedString.lowercased()
+        if let size = VectorSize(vector: value, vectorType: "bit_vector") {
+            self = .bitVector(size: size)
+            return
+        }
         if let size = VectorSize(vector: value, vectorType: "signed") {
             self = .signed(size: size)
             return

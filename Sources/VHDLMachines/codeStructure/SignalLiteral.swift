@@ -144,6 +144,8 @@ public enum SignalLiteral: RawRepresentable, Equatable, Hashable, Codable {
                     return .integer(value: 0)
                 }
                 return .integer(value: size.min)
+            case .bitVector(let size):
+                return .vector(value: .bits(value: [BitLiteral](repeating: .low, count: size.size)))
             case .stdLogicVector(let size), .signed(let size), .unsigned(let size),
                 .stdULogicVector(let size):
                 return .vector(value: .logics(value: [LogicLiteral](repeating: .low, count: size.size)))
@@ -168,6 +170,8 @@ public enum SignalLiteral: RawRepresentable, Equatable, Hashable, Codable {
             return false
         }
     }
+
+    // swiftlint:disable function_body_length
 
     /// Checks whether this literal is valid for a given signal type.
     /// - Parameter type: The type of the signal to check.
@@ -197,16 +201,31 @@ public enum SignalLiteral: RawRepresentable, Equatable, Hashable, Codable {
         case (.logic, .stdLogic), (.logic, .stdULogic):
             return true
         case (.vector(let value), .ranged(let type)):
-            switch type {
-            case .integer:
-                return false
-            case .stdLogicVector(let size), .signed(let size), .unsigned(let size),
-                .stdULogicVector(let size):
-                return value.size == size.size
+            switch value {
+            case .logics(let values):
+                switch type {
+                case .integer:
+                    return false
+                case .stdLogicVector(let size), .signed(let size), .unsigned(let size),
+                    .stdULogicVector(let size):
+                    return value.size == size.size
+                case .bitVector(let size):
+                    return values.count == size.size && values.allSatisfy { $0 == .low || $0 == .high }
+                }
+            default:
+                switch type {
+                case .integer:
+                    return false
+                case .stdLogicVector(let size), .signed(let size), .unsigned(let size),
+                    .stdULogicVector(let size), .bitVector(let size):
+                    return value.size == size.size
+                }
             }
         default:
             return false
         }
     }
+
+    // swiftlint:enable function_body_length
 
 }
