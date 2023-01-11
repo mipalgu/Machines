@@ -66,11 +66,64 @@ final class RangedTypeTests: XCTestCase {
         XCTAssertEqual(vector.rawValue, "std_logic_vector(5 downto 3)")
     }
 
+    /// Test that a long raw value returns nil.
+    func testLongString() {
+        XCTAssertNil(RangedType(rawValue: String(repeating: "a", count: 256)))
+    }
+
     /// Test that a small string returns nil.
     func testSmallString() {
         XCTAssertNil(RangedType(rawValue: "std"))
         XCTAssertNil(RangedType(rawValue: ""))
         XCTAssertNil(RangedType(rawValue: String(repeating: "a", count: 15)))
+    }
+
+    /// Test that a valid `integer` raw value creates the correct case.
+    func testInteger() {
+        XCTAssertEqual(
+            RangedType(rawValue: "integer range 12 to 15"), .integer(size: .to(lower: 12, upper: 15))
+        )
+    }
+
+    /// Test upercased integer raw value creates the correct case.
+    func testIntegerUppercased() {
+        XCTAssertEqual(
+            RangedType(rawValue: "INTEGER RANGE 12 TO 15"), .integer(size: .to(lower: 12, upper: 15))
+        )
+    }
+
+    /// Test mispelled integer raw value returns nil.
+    func testIntegerMispelled() {
+        XCTAssertNil(RangedType(rawValue: "integar range 12 to 15"))
+    }
+
+    /// Test integer with extra brackets returns nil.
+    func testIntegerAdditionlBracketReturnsNil() {
+        XCTAssertNil(RangedType(rawValue: "integer range 12 to 15)"))
+    }
+
+    /// Test that a valid `signed` raw value creates the correct case.
+    func testSigned() {
+        XCTAssertEqual(
+            RangedType(rawValue: "signed(5 downto 3)"),
+            .signed(size: .downto(upper: 5, lower: 3))
+        )
+    }
+
+    /// Test that a valid `stdULogicVector` raw value creates the correct case.
+    func testStdULogicVector() {
+        XCTAssertEqual(
+            RangedType(rawValue: "std_ulogic_vector(5 downto 3)"),
+            .stdULogicVector(size: .downto(upper: 5, lower: 3))
+        )
+    }
+
+    /// Test that a valid `unsigned` raw value creates the correct case.
+    func testUnsigned() {
+        XCTAssertEqual(
+            RangedType(rawValue: "unsigned(5 downto 3)"),
+            .unsigned(size: .downto(upper: 5, lower: 3))
+        )
     }
 
     /// Test that a valid `std_logic_vector` raw value creates the correct case.

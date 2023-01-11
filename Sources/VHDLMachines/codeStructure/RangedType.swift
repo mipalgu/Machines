@@ -57,15 +57,19 @@
 /// *VHDL* types that are bounded within a specific range.
 public enum RangedType: RawRepresentable, Equatable, Hashable, Codable {
 
+    /// Integer type (`integer`).
     case integer(size: VectorSize)
 
+    /// Signed type (`signed`).
     case signed(size: VectorSize)
 
     /// Standard logic vector (`std_logic_vector`).
     case stdLogicVector(size: VectorSize)
 
+    /// Standard unresolved logic vector (`std_ulogic_vector`).
     case stdULogicVector(size: VectorSize)
 
+    /// Unsigned type (`unsigned`).
     case unsigned(size: VectorSize)
 
     /// The raw value is a `String`.
@@ -98,8 +102,24 @@ public enum RangedType: RawRepresentable, Equatable, Hashable, Codable {
             return nil
         }
         let value = trimmedString.lowercased()
+        if let size = VectorSize(vector: value, vectorType: "signed") {
+            self = .signed(size: size)
+            return
+        }
         if let size = VectorSize(vector: value, vectorType: "std_logic_vector") {
             self = .stdLogicVector(size: size)
+            return
+        }
+        if let size = VectorSize(vector: value, vectorType: "std_ulogic_vector") {
+            self = .stdULogicVector(size: size)
+            return
+        }
+        if let size = VectorSize(vector: value, vectorType: "unsigned") {
+            self = .unsigned(size: size)
+            return
+        }
+        if let size = VectorSize(raw: value, integerType: "integer") {
+            self = .integer(size: size)
             return
         }
         return nil
@@ -128,6 +148,19 @@ private extension VectorSize {
             return nil
         }
         self = size
+    }
+
+    /// Initialise the vector size from a raw string containing the VHDL code for a ranged integer.
+    /// - Parameters:
+    ///   - raw: The VHDL code to extract the range from.
+    ///   - integerType: The type of the integer in the code.
+    init?(raw: String, integerType: String) {
+        let words = raw.components(separatedBy: .whitespacesAndNewlines)
+        guard words.count > 2, words[0] == "integer", words[1] == "range" else {
+            return nil
+        }
+        let range = words.dropFirst(2).joined(separator: " ")
+        self.init(rawValue: range)
     }
 
 }
