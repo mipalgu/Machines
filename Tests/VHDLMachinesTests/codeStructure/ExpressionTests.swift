@@ -81,6 +81,10 @@ final class ExpressionTests: XCTestCase {
             Expression.expressionWithComment(expression: .variable(name: "a"), comment: "b").rawValue,
             "a; -- b"
         )
+        XCTAssertEqual(
+            Expression.literal(value: .logic(value: .uninitialized)).rawValue,
+            LogicLiteral.uninitialized.rawValue
+        )
     }
 
     /// Test init successfully creates `Expression` for simple statements.
@@ -108,6 +112,10 @@ final class ExpressionTests: XCTestCase {
         XCTAssertEqual(
             Expression(rawValue: "a - b"),
             .subtraction(lhs: .variable(name: "a"), rhs: .variable(name: "b"))
+        )
+        XCTAssertEqual(
+            Expression(rawValue: "a + 5"),
+            .addition(lhs: .variable(name: "a"), rhs: .literal(value: .integer(value: 5)))
         )
     }
 
@@ -196,6 +204,29 @@ final class ExpressionTests: XCTestCase {
                 rhs: .addition(
                     lhs: .variable(name: "c"),
                     rhs: .division(lhs: .variable(name: "d"), rhs: .variable(name: "e"))
+                )
+            ),
+            comment: "a nice comment!"
+        )
+        let result = Expression(rawValue: raw)
+        XCTAssertEqual(result, expected)
+    }
+
+    /// Test another complex raw value.
+    func testComplexInit4() {
+        let raw = "a + b * c + d / e - 5; -- a nice comment!"
+        let expected = Expression.expressionWithComment(
+            expression: .multiplication(
+                lhs: .addition(
+                    lhs: .variable(name: "a"),
+                    rhs: .variable(name: "b")
+                ),
+                rhs: .addition(
+                    lhs: .variable(name: "c"),
+                    rhs: .subtraction(
+                        lhs: .division(lhs: .variable(name: "d"), rhs: .variable(name: "e")),
+                        rhs: .literal(value: .integer(value: 5))
+                    )
                 )
             ),
             comment: "a nice comment!"

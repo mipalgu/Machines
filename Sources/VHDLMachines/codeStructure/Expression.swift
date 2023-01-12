@@ -62,6 +62,9 @@ indirect public enum Expression: RawRepresentable, Equatable, Hashable, Codable 
     /// A reference to a variable.
     case variable(name: String)
 
+    /// A literal value.
+    case literal(value: SignalLiteral)
+
     /// An addition operation.
     case addition(lhs: Expression, rhs: Expression)
 
@@ -87,10 +90,12 @@ indirect public enum Expression: RawRepresentable, Equatable, Hashable, Codable 
     public typealias RawValue = String
 
     /// The equivalent VHDL code of this expression.
-    public var rawValue: String {
+    @inlinable public var rawValue: String {
         switch self {
         case .variable(let name):
             return name
+        case .literal(let value):
+            return value.rawValue
         case .addition(let lhs, let rhs):
             return "\(lhs.rawValue) + \(rhs.rawValue)"
         case .subtraction(let lhs, let rhs):
@@ -132,6 +137,10 @@ indirect public enum Expression: RawRepresentable, Equatable, Hashable, Codable 
             return
         }
         let value = trimmedString.uptoSemicolon
+        if let literal = SignalLiteral(rawValue: value) {
+            self = .literal(value: literal)
+            return
+        }
         let operators = CharacterSet.vhdlOperators
         guard operators.within(string: value) else {
             guard !CharacterSet.whitespacesAndNewlines.within(string: value) else {
