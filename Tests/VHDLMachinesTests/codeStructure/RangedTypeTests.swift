@@ -174,4 +174,48 @@ final class RangedTypeTests: XCTestCase {
         XCTAssertNil(RangedType(rawValue: "std_logic_vector(5 downtwo 3"))
     }
 
+    /// Test size property.
+    func testSize() {
+        XCTAssertEqual(
+            RangedType.bitVector(size: .to(lower: 12, upper: 15)).size,
+            .to(lower: 12, upper: 15)
+        )
+        XCTAssertEqual(
+            RangedType.integer(size: .to(lower: 12, upper: 15)).size,
+            .to(lower: 12, upper: 15)
+        )
+        XCTAssertEqual(
+            RangedType.signed(size: .downto(upper: 5, lower: 3)).size,
+            .downto(upper: 5, lower: 3)
+        )
+        XCTAssertEqual(
+            RangedType.stdLogicVector(size: .downto(upper: 5, lower: 3)).size,
+            .downto(upper: 5, lower: 3)
+        )
+        XCTAssertEqual(
+            RangedType.stdULogicVector(size: .downto(upper: 5, lower: 3)).size,
+            .downto(upper: 5, lower: 3)
+        )
+        XCTAssertEqual(
+            RangedType.unsigned(size: .to(lower: 12, upper: 15)).size,
+            .to(lower: 12, upper: 15)
+        )
+    }
+
+    /// Test description matches rawValue.
+    func testDesciption() {
+        let bitVector = RangedType.bitVector(size: .downto(upper: 5, lower: 3))
+        XCTAssertEqual(bitVector.description, bitVector.rawValue)
+        let integer = RangedType.integer(size: .to(lower: 0, upper: 512))
+        XCTAssertEqual(integer.description, integer.rawValue)
+        let signed = RangedType.signed(size: .downto(upper: 5, lower: 3))
+        XCTAssertEqual(signed.description, signed.rawValue)
+        let stdLogicVector = RangedType.stdLogicVector(size: .downto(upper: 5, lower: 3))
+        XCTAssertEqual(stdLogicVector.description, stdLogicVector.rawValue)
+        let stdULogicVector = RangedType.stdULogicVector(size: .downto(upper: 5, lower: 3))
+        XCTAssertEqual(stdULogicVector.description, stdULogicVector.rawValue)
+        let unsigned = RangedType.unsigned(size: .to(lower: 0, upper: 512))
+        XCTAssertEqual(unsigned.description, unsigned.rawValue)
+    }
+
 }

@@ -96,6 +96,7 @@ public enum RangedType: RawRepresentable, Equatable, Hashable, Codable, Sendable
         }
     }
 
+    /// Retrieve the size from the ranged type.
     @inlinable public var size: VectorSize {
         switch self {
         case .bitVector(let size):
@@ -153,8 +154,10 @@ public enum RangedType: RawRepresentable, Equatable, Hashable, Codable, Sendable
 
 }
 
+/// CustomStringConvertible conformance.
 extension RangedType: CustomStringConvertible {
 
+    /// The description is the VHDL code.
     public var description: String {
         rawValue
     }
