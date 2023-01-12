@@ -53,11 +53,11 @@ public struct Clock: Codable, Equatable, Hashable, Sendable {
         case .kHz:
             return Time.microseconds(1000.0 / freq)
         case .MHz:
-            return Time.microseconds(1.0 / freq)
+            return Time.nanoseconds(1000.0 / freq)
         case .GHz:
-            return Time.microseconds(0.001 / freq)
+            return Time.picoseconds(1000.0 / freq)
         case .THz:
-            return Time.microseconds(0.000001 / freq)
+            return Time.picoseconds(1.0 / freq)
         }
     }
 

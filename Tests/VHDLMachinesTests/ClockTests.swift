@@ -100,11 +100,11 @@ final class ClockTests: XCTestCase {
         self.clock.unit = .kHz
         XCTAssertEqual(self.clock.period.microseconds_t, 10)
         self.clock.unit = .MHz
-        XCTAssertEqual(self.clock.period.microseconds_d, 0.01)
+        XCTAssertEqual(self.clock.period.nanoseconds_t, 10)
         self.clock.unit = .GHz
-        XCTAssertEqual(self.clock.period.microseconds_d, 0.00001)
+        XCTAssertEqual(self.clock.period.picoseconds_t, 10)
         self.clock.unit = .THz
-        XCTAssertEqual(self.clock.period.microseconds_d, 0.00000001)
+        XCTAssertEqual(self.clock.period.picoseconds_d, 0.01)
     }
 
 }
