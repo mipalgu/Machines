@@ -90,4 +90,50 @@ final class BitLiteralTests: XCTestCase {
         XCTAssertEqual(BitLiteral.low.vectorLiteral, "0")
     }
 
+    /// Test bits required calculates the correct number of bits for an unsigned number.
+    func testBitsRequired() {
+        XCTAssertNil(BitLiteral.bitsRequired(for: 0))
+        XCTAssertEqual(BitLiteral.bitsRequired(for: 1), 1)
+        XCTAssertEqual(BitLiteral.bitsRequired(for: 2), 2)
+        XCTAssertEqual(BitLiteral.bitsRequired(for: 3), 2)
+        XCTAssertEqual(BitLiteral.bitsRequired(for: 4), 3)
+        XCTAssertEqual(BitLiteral.bitsRequired(for: 5), 3)
+        XCTAssertEqual(BitLiteral.bitsRequired(for: 6), 3)
+        XCTAssertEqual(BitLiteral.bitsRequired(for: 7), 3)
+        XCTAssertEqual(BitLiteral.bitsRequired(for: 8), 4)
+    }
+
+    /// Test bitVersions creates a correct layout of BitLiterals for a given value and size.
+    func testBitVersion() {
+        XCTAssertTrue(BitLiteral.bitVersion(of: -1, bitsRequired: 1).isEmpty)
+        XCTAssertTrue(BitLiteral.bitVersion(of: 1, bitsRequired: 0).isEmpty)
+        XCTAssertTrue(BitLiteral.bitVersion(of: 1, bitsRequired: -1).isEmpty)
+        XCTAssertTrue(BitLiteral.bitVersion(of: 8, bitsRequired: 2).isEmpty)
+        XCTAssertTrue(BitLiteral.bitVersion(of: 8, bitsRequired: 3).isEmpty)
+        XCTAssertEqual(BitLiteral.bitVersion(of: 0, bitsRequired: 4), [.low, .low, .low, .low])
+        XCTAssertEqual(BitLiteral.bitVersion(of: 1, bitsRequired: 4), [.low, .low, .low, .high])
+        XCTAssertEqual(BitLiteral.bitVersion(of: 2, bitsRequired: 4), [.low, .low, .high, .low])
+        XCTAssertEqual(BitLiteral.bitVersion(of: 3, bitsRequired: 4), [.low, .low, .high, .high])
+        XCTAssertEqual(BitLiteral.bitVersion(of: 4, bitsRequired: 4), [.low, .high, .low, .low])
+        XCTAssertEqual(BitLiteral.bitVersion(of: 5, bitsRequired: 4), [.low, .high, .low, .high])
+        XCTAssertEqual(BitLiteral.bitVersion(of: 6, bitsRequired: 4), [.low, .high, .high, .low])
+        XCTAssertEqual(BitLiteral.bitVersion(of: 7, bitsRequired: 4), [.low, .high, .high, .high])
+        XCTAssertEqual(BitLiteral.bitVersion(of: 1, bitsRequired: 1), [.high])
+        XCTAssertEqual(BitLiteral.bitVersion(of: 2, bitsRequired: 2), [.high, .low])
+        XCTAssertEqual(BitLiteral.bitVersion(of: 3, bitsRequired: 2), [.high, .high])
+        XCTAssertEqual(BitLiteral.bitVersion(of: 4, bitsRequired: 3), [.high, .low, .low])
+        XCTAssertEqual(BitLiteral.bitVersion(of: 5, bitsRequired: 3), [.high, .low, .high])
+        XCTAssertEqual(BitLiteral.bitVersion(of: 6, bitsRequired: 3), [.high, .high, .low])
+        XCTAssertEqual(BitLiteral.bitVersion(of: 7, bitsRequired: 3), [.high, .high, .high])
+        XCTAssertEqual(BitLiteral.bitVersion(of: 8, bitsRequired: 4), [.high, .low, .low, .low])
+        XCTAssertEqual(BitLiteral.bitVersion(of: 9, bitsRequired: 4), [.high, .low, .low, .high])
+        XCTAssertEqual(BitLiteral.bitVersion(of: 10, bitsRequired: 4), [.high, .low, .high, .low])
+        XCTAssertEqual(BitLiteral.bitVersion(of: 11, bitsRequired: 4), [.high, .low, .high, .high])
+        XCTAssertEqual(BitLiteral.bitVersion(of: 12, bitsRequired: 4), [.high, .high, .low, .low])
+        XCTAssertEqual(BitLiteral.bitVersion(of: 13, bitsRequired: 4), [.high, .high, .low, .high])
+        XCTAssertEqual(BitLiteral.bitVersion(of: 14, bitsRequired: 4), [.high, .high, .high, .low])
+        XCTAssertEqual(BitLiteral.bitVersion(of: 15, bitsRequired: 4), [.high, .high, .high, .high])
+        XCTAssertEqual(BitLiteral.bitVersion(of: 16, bitsRequired: 5), [.high, .low, .low, .low, .low])
+    }
+
 }
