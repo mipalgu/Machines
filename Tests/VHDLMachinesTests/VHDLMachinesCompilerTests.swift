@@ -30,7 +30,7 @@ class VHDLMachinesCompilerTests: XCTestCase {
         VHDLMachines.Machine(
             name: "TestMachine",
             path: testMachinePath,
-            includes: ["library IEEE;", "use IEEE.std_logic_1164.ALL;"],
+            includes: [.library(value: "IEEE"), .include(value: "IEEE.std_logic_1164.ALL")],
             externalSignals: [
                 ExternalSignal(
                     type: .stdLogic,

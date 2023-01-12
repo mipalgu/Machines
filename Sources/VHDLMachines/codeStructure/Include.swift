@@ -1,4 +1,4 @@
-// MachineRepresentation.swift
+// Include.swift
 // Machines
 // 
 // Created by Morgan McColl.
@@ -54,73 +54,47 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-public struct MachineRepresentation: Equatable, Hashable, Codable, Sendable {
+public enum Include: RawRepresentable, Equatable, Hashable, Codable, Sendable {
 
-    public let states: [StateRepresentation]
+    case library(value: String)
 
-    public let stateType: SignalType
+    case include(value: String)
 
-    public let actions: [ConstantSignal]
+    public typealias RawValue = String
 
-    public let generics: [LocalSignal]
+    public var rawValue: String {
+        switch self {
+        case .library(let value):
+            return "library \(value)"
+        case .include(let value):
+            return "use \(value)"
+        }
+    }
 
-    public let commands: [SuspensionCommand: VectorLiteral]
-
-    public let command: SignalType
-
-    public let externalSignals: [ExternalSignal]
-
-    public let actionType: SignalType
-
-    public let suspendedType: SignalType
-
-    public let ringletCounterType: SignalType
-
-    public let includes: [Include]
-
-    // public let drivingClockPeriod: ConstantSignal
-
-    public init?(machine: Machine) {
-        guard
-            let actions = machine.states.first?.actions.keys.sorted(),
-            let bitsRequired = BitLiteral.bitsRequired(for: machine.states.count),
-            let bits = SuspensionCommand.bitRepresentation,
-            let commandType = SuspensionCommand.bitsType,
-            let actionRequiredBits = BitLiteral.bitsRequired(for: actions.count),
-            machine.clocks.count > machine.drivingClock
-        else {
+    public init?(rawValue: String) {
+        let trimmedString = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmedString.count < 256 else {
             return nil
         }
-        self.states = machine.states.sorted { $0.name < $1.name }.enumerated().map {
-            StateRepresentation(
-                state: $1, bits: .bits(value: BitLiteral.bitVersion(of: $0, bitsRequired: bitsRequired))
-            )
-        }
-        self.stateType = .ranged(type: .stdLogicVector(size: .downto(upper: bitsRequired - 1, lower: 0)))
-        let actionType = SignalType.ranged(
-            type: .stdLogicVector(size: .downto(upper: actionRequiredBits - 1, lower: 0))
-        )
-        let actionConstants = actions.enumerated().compactMap {
-            ConstantSignal(
-                name: $1,
-                type: actionType,
-                value: .vector(
-                    value: .bits(value: BitLiteral.bitVersion(of: $0, bitsRequired: actionRequiredBits))
-                )
-            )
-        }
-        guard actionConstants.count == actions.count else {
+        let value = trimmedString.lowercased()
+        if value.hasPrefix("library ") {
+            self = .library(value: String(value.dropFirst(8)))
+        } else if value.hasPrefix("use ") {
+            self = .include(value: String(value.dropFirst(4)))
+        } else {
             return nil
         }
-        self.includes = machine.includes
-        self.actionType = actionType
-        self.actions = actionConstants
-        self.commands = bits
-        self.command = commandType
-        self.externalSignals = machine.externalSignals
-        self.generics = machine.generics
-        self.suspendedType = .stdLogic
-        self.ringletCounterType = .natural
+    }
+
+    public static func == (lhs: Include, rhs: Include) -> Bool {
+        switch (lhs, rhs) {
+        case (.library(let lhs), .library(let rhs)):
+            return lhs.lowercased() == rhs.lowercased()
+        case (.include(let lhs), .include(let rhs)):
+            return lhs.lowercased() == rhs.lowercased()
+        default:
+            return false
+        }
     }
 
 }

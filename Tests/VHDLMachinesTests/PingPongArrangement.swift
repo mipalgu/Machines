@@ -171,7 +171,9 @@ struct PingPongArrangement {
     let pongWaitTransition = Transition(condition: "ping = '1'", source: 0, target: 1)
 
     /// The includes.
-    let includes = ["use IEEE.STD_LOGIC_1164.ALL;", "use IEEE.NUMERIC_STD.ALL;"]
+    let includes: [Include] = [
+        .include(value: "IEEE.STD_LOGIC_1164.ALL"), .include(value: "IEEE.NUMERIC_STD.ALL")
+    ]
 
     /// The ping machine.
     var pingMachine: Machine {

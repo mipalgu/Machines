@@ -71,10 +71,10 @@ final class MachineTests: XCTestCase {
     }
 
     /// The includes for the machine.
-    var includes: [String] {
+    var includes: [Include] {
         [
-            "use IEEE.STD_LOGIC_1164.ALL;",
-            "use IEEE.NUMERIC_STD.ALL;"
+            .include(value: "IEEE.STD_LOGIC_1164.ALL"),
+            .include(value: "IEEE.NUMERIC_STD.ALL")
         ]
     }
 
@@ -258,7 +258,7 @@ final class MachineTests: XCTestCase {
     func testGettersAndSetters() {
         let newMachineName = "M3"
         let newPath = URL(fileURLWithPath: "/path/to/M3")
-        let newIncludes = ["use IEEE.STD_LOGIC_1164.ALL;"]
+        let newIncludes = [Include.include(value: "IEEE.STD_LOGIC_1164.ALL")]
         let newExternalSignals = [
             ExternalSignal(
                 type: .stdLogic,
@@ -351,7 +351,7 @@ final class MachineTests: XCTestCase {
         let expected = Machine(
             name: "NewMachine",
             path: path,
-            includes: ["library IEEE;", "use IEEE.std_logic_1164.All;"],
+            includes: [.library(value: "IEEE"), .include(value: "IEEE.std_logic_1164.All")],
             externalSignals: [],
             generics: [],
             clocks: [Clock(name: "clk", frequency: 50, unit: .MHz)],

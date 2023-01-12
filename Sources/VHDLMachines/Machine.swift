@@ -17,7 +17,7 @@ public struct Machine: Codable, Equatable, Hashable {
     public var path: URL
 
     /// The includes for the machine.
-    public var includes: [String]
+    public var includes: [Include]
 
     /// The external signals for the machine.
     public var externalSignals: [ExternalSignal]
@@ -93,7 +93,7 @@ public struct Machine: Codable, Equatable, Hashable {
     public init(
         name: MachineName,
         path: URL,
-        includes: [String],
+        includes: [Include],
         externalSignals: [ExternalSignal],
         generics: [LocalSignal],
         clocks: [Clock],
@@ -148,7 +148,7 @@ public struct Machine: Codable, Equatable, Hashable {
         return Machine(
             name: name,
             path: path,
-            includes: ["library IEEE;", "use IEEE.std_logic_1164.All;"],
+            includes: [.library(value: "IEEE"), .include(value: "IEEE.std_logic_1164.All")],
             externalSignals: [],
             generics: [],
             clocks: [Clock(name: "clk", frequency: 50, unit: .MHz)],
