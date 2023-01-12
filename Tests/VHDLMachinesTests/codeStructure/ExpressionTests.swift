@@ -184,4 +184,43 @@ final class ExpressionTests: XCTestCase {
         XCTAssertEqual(result, expected)
     }
 
+    /// Test another complex raw value.
+    func testComplexInit3() {
+        let raw = "a + b * c + d / e; -- a nice comment!"
+        let expected = Expression.expressionWithComment(
+            expression: .multiplication(
+                lhs: .addition(
+                    lhs: .variable(name: "a"),
+                    rhs: .variable(name: "b")
+                ),
+                rhs: .addition(
+                    lhs: .variable(name: "c"),
+                    rhs: .division(lhs: .variable(name: "d"), rhs: .variable(name: "e"))
+                )
+            ),
+            comment: "a nice comment!"
+        )
+        let result = Expression(rawValue: raw)
+        XCTAssertEqual(result, expected)
+    }
+
+    /// Test raw value works for complex expression.
+    func testComplexRawValue() {
+        let expected = "a + b * c + d / e; -- a nice comment!"
+        let expression = Expression.expressionWithComment(
+            expression: .multiplication(
+                lhs: .addition(
+                    lhs: .variable(name: "a"),
+                    rhs: .variable(name: "b")
+                ),
+                rhs: .addition(
+                    lhs: .variable(name: "c"),
+                    rhs: .division(lhs: .variable(name: "d"), rhs: .variable(name: "e"))
+                )
+            ),
+            comment: "a nice comment!"
+        )
+        XCTAssertEqual(expected, expression.rawValue)
+    }
+
 }
