@@ -56,26 +56,37 @@
 
 import Foundation
 
+/// An `Expression` represents the RHS of a statement in VHDL.
 indirect public enum Expression: RawRepresentable, Equatable, Hashable, Codable {
 
+    /// A reference to a variable.
     case variable(name: String)
 
+    /// An addition operation.
     case addition(lhs: Expression, rhs: Expression)
 
+    /// A subtraction operation.
     case subtraction(lhs: Expression, rhs: Expression)
 
+    /// A multiplication operation.
     case multiplication(lhs: Expression, rhs: Expression)
 
+    /// A division operation.
     case division(lhs: Expression, rhs: Expression)
 
+    /// A precedence operation. This is equivalent to placing brackets around an Expression.
     case precedence(value: Expression)
 
+    /// A comment.
     case comment(comment: String)
 
+    /// An expression with a comment.
     case expressionWithComment(expression: Expression, comment: String)
 
+    /// The raw value is a string.
     public typealias RawValue = String
 
+    /// The equivalent VHDL code of this expression.
     public var rawValue: String {
         switch self {
         case .variable(let name):
@@ -97,6 +108,11 @@ indirect public enum Expression: RawRepresentable, Equatable, Hashable, Codable 
         }
     }
 
+    // swiftlint:disable function_body_length
+    // swiftlint:disable cyclomatic_complexity
+
+    /// Create an `Expression` from valid VHDL code.
+    /// - Parameter rawValue: The code to convert to this expression.
     public init?(rawValue: String) {
         let trimmedString = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
         guard trimmedString.count < 256 else {
@@ -159,6 +175,13 @@ indirect public enum Expression: RawRepresentable, Equatable, Hashable, Codable 
         self = multiplicative
     }
 
+    // swiftlint:enable function_body_length
+    // swiftlint:enable cyclomatic_complexity
+
+    /// Create a binary `Expression` from a string and a set of possible operations.
+    /// - Parameters:
+    ///   - value: The string containing a binary operation.
+    ///   - characters: The valid characters representing the operator of this operation.
     private init?(value: String, characters: CharacterSet) {
         guard
             let (parts, char) = value.split(on: characters),
@@ -172,6 +195,11 @@ indirect public enum Expression: RawRepresentable, Equatable, Hashable, Codable 
         self.init(lhs: lhsExp, rhs: rhsExp, char: char)
     }
 
+    /// Create a binary `Expression` from a left and right hand side and an operator.
+    /// - Parameters:
+    ///   - lhs: The left-hand side expression.
+    ///   - rhs: The right-hand side expression.
+    ///   - char: The operator betweent the lhs and rhs.
     private init?(lhs: Expression, rhs: Expression, char: Character) {
         switch char {
         case "-":
@@ -190,32 +218,42 @@ indirect public enum Expression: RawRepresentable, Equatable, Hashable, Codable 
 
 }
 
+/// Add common VHDL character sets.
 private extension CharacterSet {
 
+    /// All VHDL operators.
     static var vhdlOperators: CharacterSet {
         CharacterSet(charactersIn: "+-/*()")
     }
 
+    /// The VHDL binary operators.
     static var vhdlOperations: CharacterSet {
         CharacterSet(charactersIn: "+-/*")
     }
 
+    /// The VHDL operators with additive precedence.
     static var vhdlAdditiveOperations: CharacterSet {
         CharacterSet(charactersIn: "+-")
     }
 
+    /// The VHDL operators with multiplicative precedence.
     static var vhdlMultiplicativeOperations: CharacterSet {
         CharacterSet(charactersIn: "*/")
     }
 
+    /// Whether a string contains characters in this character set.
+    /// - Parameter string: The string to check.
+    /// - Returns: Whether the string contains characters in this character set.
     func within(string: String) -> Bool {
         string.unicodeScalars.contains { self.contains($0) }
     }
 
 }
 
+/// Add helper methods for VHDL parsing.
 private extension String {
 
+    /// Find all expressions within self that exist within a set of brackets.
     var subExpressions: [Substring]? {
         var expressions: [Substring] = []
         var openCount = 0
@@ -247,6 +285,7 @@ private extension String {
         return expressions
     }
 
+    /// The string up to the first semicolon.
     var uptoSemicolon: String {
         guard let semicolonIndex = self.firstIndex(where: { $0 == ";" }) else {
             return self
@@ -254,6 +293,10 @@ private extension String {
         return String(self[self.startIndex..<semicolonIndex]).trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
+    /// Split the string into 2 strings. The first string is the string up to the first character in the given
+    /// character set.
+    /// - Parameter characters: The characters to split on.
+    /// - Returns: A tuple containing the 2 halves of the string and the character that was split on.
     func split(on characters: CharacterSet) -> ([String], Character)? {
         guard let firstIndex = self.unicodeScalars.firstIndex(where: { characters.contains($0) }) else {
             return nil
