@@ -75,6 +75,8 @@ public struct MachineRepresentation: Equatable, Hashable, Codable {
     public let suspendedType: SignalType
 
     public let ringletCounterType: SignalType
+    
+    public let clockPeriod: ConstantSignal
 
     public init?(machine: Machine) {
         guard
@@ -108,9 +110,16 @@ public struct MachineRepresentation: Equatable, Hashable, Codable {
             }
             return ($1, constant)
         }
-        guard actionConstants.count == actions.count else {
+        let period = Double(machine.clocks[machine.drivingClock].period.picoseconds_d)
+        guard
+            actionConstants.count == actions.count,
+            let periodConstant = ConstantSignal(
+                name: "clockPeriod", type: .real, value: .decimal(value: period)
+            )
+        else {
             return nil
         }
+        self.clockPeriod = periodConstant
         self.actionType = actionType
         self.actionRepresentation = Dictionary(uniqueKeysWithValues: actionConstants)
         self.commands = bits
