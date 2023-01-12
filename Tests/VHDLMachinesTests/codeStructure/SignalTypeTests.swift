@@ -72,6 +72,8 @@ final class SignalTypeTests: XCTestCase {
         XCTAssertEqual(natural.rawValue, "natural")
         let positive = SignalType.positive
         XCTAssertEqual(positive.rawValue, "positive")
+        let real = SignalType.real
+        XCTAssertEqual(real.rawValue, "real")
         let std = SignalType.stdLogic
         XCTAssertEqual(std.rawValue, "std_logic")
         let stdU = SignalType.stdULogic
@@ -136,6 +138,7 @@ final class SignalTypeTests: XCTestCase {
         XCTAssertEqual(SignalType(rawValue: "natural"), .natural)
         XCTAssertEqual(SignalType(rawValue: "positive"), .positive)
         XCTAssertEqual(SignalType(rawValue: "std_ulogic"), .stdULogic)
+        XCTAssertEqual(SignalType(rawValue: "real"), .real)
     }
 
     /// Test a long string returns nil.

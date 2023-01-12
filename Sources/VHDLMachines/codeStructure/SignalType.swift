@@ -161,6 +161,7 @@ public enum SignalType: RawRepresentable, Equatable, Hashable, Codable, Sendable
 
 }
 
+/// `CustomStringConvertible` conformance.
 extension SignalType: CustomStringConvertible {
 
     /// The equivalent VHDL code for this type.
