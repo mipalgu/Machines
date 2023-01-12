@@ -155,18 +155,7 @@ indirect public enum Expression: RawRepresentable, Equatable, Hashable, Codable 
             else {
                 return nil
             }
-            switch char {
-            case "-":
-                self = .subtraction(lhs: .precedence(value: expression), rhs: rhsExp)
-            case "+":
-                self = .addition(lhs: .precedence(value: expression), rhs: rhsExp)
-            case "*":
-                self = .multiplication(lhs: .precedence(value: expression), rhs: rhsExp)
-            case "/":
-                self = .division(lhs: .precedence(value: expression), rhs: rhsExp)
-            default:
-                return nil
-            }
+            self.init(lhs: .precedence(value: expression), rhs: rhsExp, char: char)
             return
         }
         if let (parts, char) = value.split(on: .vhdlMultiplicativeOperations) {
@@ -178,14 +167,7 @@ indirect public enum Expression: RawRepresentable, Equatable, Hashable, Codable 
             else {
                 return nil
             }
-            switch char {
-            case "*":
-                self = .multiplication(lhs: lhsExp, rhs: rhsExp)
-            case "/":
-                self = .division(lhs: lhsExp, rhs: rhsExp)
-            default:
-                return nil
-            }
+            self.init(lhs: lhsExp, rhs: rhsExp, char: char)
             return
         }
         if let (parts, char) = value.split(on: .vhdlAdditiveOperations) {
@@ -197,14 +179,7 @@ indirect public enum Expression: RawRepresentable, Equatable, Hashable, Codable 
             else {
                 return nil
             }
-            switch char {
-            case "+":
-                self = .addition(lhs: lhsExp, rhs: rhsExp)
-            case "-":
-                self = .subtraction(lhs: lhsExp, rhs: rhsExp)
-            default:
-                return nil
-            }
+            self.init(lhs: lhsExp, rhs: rhsExp, char: char)
             return
         }
         return nil
