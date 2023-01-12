@@ -72,6 +72,9 @@ public enum SignalType: RawRepresentable, Equatable, Hashable, Codable, Sendable
     /// A positive type.
     case positive
 
+    /// A real type.
+    case real
+
     /// Standard logic (`std_logic`).
     case stdLogic
 
@@ -97,6 +100,8 @@ public enum SignalType: RawRepresentable, Equatable, Hashable, Codable, Sendable
             return "natural"
         case .positive:
             return "positive"
+        case .real:
+            return "real"
         case .stdLogic:
             return "std_logic"
         case .stdULogic:
@@ -133,6 +138,10 @@ public enum SignalType: RawRepresentable, Equatable, Hashable, Codable, Sendable
         }
         if value == "positive" {
             self = .positive
+            return
+        }
+        if value == "real" {
+            self = .real
             return
         }
         if value == "std_logic" {

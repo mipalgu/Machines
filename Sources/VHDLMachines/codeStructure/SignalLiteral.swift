@@ -63,6 +63,9 @@ public enum SignalLiteral: RawRepresentable, Equatable, Hashable, Codable, Senda
     /// A boolean literal.
     case boolean(value: Bool)
 
+    /// A decimal literal.
+    case decimal(value: Double)
+
     /// An integer literal.
     case integer(value: Int)
 
@@ -82,6 +85,8 @@ public enum SignalLiteral: RawRepresentable, Equatable, Hashable, Codable, Senda
             return value.rawValue
         case .boolean(let value):
             return value ? "true" : "false"
+        case .decimal(let value):
+            return "\(value)"
         case .logic(let value):
             return value.rawValue
         case .vector(let value):
@@ -106,6 +111,10 @@ public enum SignalLiteral: RawRepresentable, Equatable, Hashable, Codable, Senda
         }
         if let val = Int(value) {
             self = .integer(value: val)
+            return
+        }
+        if value.contains("."), let val = Double(value) {
+            self = .decimal(value: val)
             return
         }
         if let val = BitLiteral(rawValue: value) {
@@ -133,6 +142,8 @@ public enum SignalLiteral: RawRepresentable, Equatable, Hashable, Codable, Senda
             return .bit(value: .low)
         case .boolean:
             return .boolean(value: false)
+        case .real:
+            return .decimal(value: 0.0)
         case .integer, .natural, .positive:
             return .integer(value: 0)
         case .stdLogic, .stdULogic:
@@ -160,6 +171,8 @@ public enum SignalLiteral: RawRepresentable, Equatable, Hashable, Codable, Senda
             return lhs == rhs
         case (.boolean(let lhs), .boolean(let rhs)):
             return lhs == rhs
+        case (.decimal(let lhs), .decimal(let rhs)):
+            return lhs == rhs
         case (.integer(let lhs), .integer(let rhs)):
             return lhs == rhs
         case (.logic(let lhs), .logic(let rhs)):
@@ -181,7 +194,7 @@ public enum SignalLiteral: RawRepresentable, Equatable, Hashable, Codable, Senda
         switch (self, type) {
         case(.boolean, .boolean):
             return true
-        case (.integer, .integer):
+        case (.integer, .integer), (.integer, .real), (.decimal, .real):
             return true
         case (.integer(let value), .ranged(type: .integer(let size))):
             return size.min <= value && value <= size.max
