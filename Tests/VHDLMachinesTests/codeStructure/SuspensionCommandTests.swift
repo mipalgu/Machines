@@ -1,4 +1,4 @@
-// SuspensionCommand.swift
+// SuspensionCommandTests.swift
 // Machines
 // 
 // Created by Morgan McColl.
@@ -54,82 +54,46 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-/// The suspension command bit representations.
-public enum SuspensionCommand: RawRepresentable, CaseIterable, Equatable, Hashable, Codable, Sendable {
+@testable import VHDLMachines
+import XCTest
 
-    /// Null command.
-    case null
+/// Test class for ``SuspensionCommand``.
+final class SuspensionCommandTests: XCTestCase {
 
-    /// Restart a machine.
-    case restart
-
-    /// Suspend a machine.
-    case suspend
-
-    /// Resume a machine.
-    case resume
-
-    /// The raw value is a string.
-    public typealias RawValue = String
-
-    /// The binary representations of these commands.
-    public static var bitRepresentation: [SuspensionCommand: VectorLiteral]? {
-        let all = SuspensionCommand.allCases.sorted { $0.rawValue < $1.rawValue }
-        guard let bitsRequired = BitLiteral.bitsRequired(for: all.count - 1) else {
-            return nil
-        }
-        let bits = all.enumerated().map {
-            ($1, VectorLiteral.bits(value: BitLiteral.bitVersion(of: $0, bitsRequired: bitsRequired)))
-        }
-        return Dictionary(uniqueKeysWithValues: bits)
+    /// Test raw values are correct.
+    func testRawValues() {
+        XCTAssertEqual(SuspensionCommand.null.rawValue, "COMMAND_NULL")
+        XCTAssertEqual(SuspensionCommand.suspend.rawValue, "COMMAND_SUSPEND")
+        XCTAssertEqual(SuspensionCommand.resume.rawValue, "COMMAND_RESUME")
+        XCTAssertEqual(SuspensionCommand.restart.rawValue, "COMMAND_RESTART")
     }
 
-    /// The type of the signal that represents these commands.
-    @inlinable public static var bitsType: SignalType? {
-        guard let bitsRequired = BitLiteral.bitsRequired(for: SuspensionCommand.allCases.count - 1) else {
-            return nil
-        }
-        return .ranged(type: .stdLogicVector(size: .downto(upper: bitsRequired - 1, lower: 0)))
+    /// Test bit representation is correct.
+    func testBitRepresentation() {
+        let expected: [SuspensionCommand: VectorLiteral] = [
+            .null: .bits(value: [.low, .low]),
+            .restart: .bits(value: [.low, .high]),
+            .resume: .bits(value: [.high, .low]),
+            .suspend: .bits(value: [.high, .high])
+        ]
+        XCTAssertEqual(SuspensionCommand.bitRepresentation, expected)
     }
 
-    /// The VHDL constant labels for these commands.
-    @inlinable public var rawValue: String {
-        switch self {
-        case .null:
-            return "COMMAND_NULL"
-        case .restart:
-            return "COMMAND_RESTART"
-        case .suspend:
-            return "COMMAND_SUSPEND"
-        case .resume:
-            return "COMMAND_RESUME"
-        }
+    /// Test the signal type is correct.
+    func testBitsType() {
+        XCTAssertEqual(
+            SuspensionCommand.bitsType, .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0)))
+        )
     }
 
-    /// Initialise this command from it's label.
-    /// - Parameter rawValue: The VHDL label for the command.
-    @inlinable
-    public init?(rawValue: String) {
-        let trimmedString = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard
-            let maxSize = Self.allCases.map({ $0.rawValue.count }).max(),
-            trimmedString.count <= maxSize
-        else {
-            return nil
-        }
-        let value = trimmedString.uppercased()
-        switch value {
-        case "COMMAND_NULL":
-            self = .null
-        case "COMMAND_RESTART":
-            self = .restart
-        case "COMMAND_SUSPEND":
-            self = .suspend
-        case "COMMAND_RESUME":
-            self = .resume
-        default:
-            return nil
-        }
+    /// Test rawValue init creates correct case.
+    func testInit() {
+        XCTAssertEqual(SuspensionCommand(rawValue: "COMMAND_NULL"), .null)
+        XCTAssertEqual(SuspensionCommand(rawValue: "COMMAND_SUSPEND"), .suspend)
+        XCTAssertEqual(SuspensionCommand(rawValue: "COMMAND_RESUME"), .resume)
+        XCTAssertEqual(SuspensionCommand(rawValue: "COMMAND_RESTART"), .restart)
+        XCTAssertNil(SuspensionCommand(rawValue: "COMMAND_NIL"))
+        XCTAssertNil(SuspensionCommand(rawValue: "COMMAND_SUSPENDS2"))
     }
 
 }

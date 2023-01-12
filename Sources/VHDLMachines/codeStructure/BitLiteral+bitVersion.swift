@@ -109,6 +109,7 @@ extension BitLiteral {
     /// - Parameter value: The positive number to represent.
     /// - Returns: Nil if the value is negative or zero, otherwise the number of bits required to represent
     /// the value.
+    @inlinable
     static func bitsRequired(for value: Int) -> Int? {
         guard value > 0 else {
             return nil

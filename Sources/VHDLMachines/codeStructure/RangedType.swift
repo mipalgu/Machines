@@ -158,7 +158,7 @@ public enum RangedType: RawRepresentable, Equatable, Hashable, Codable, Sendable
 extension RangedType: CustomStringConvertible {
 
     /// The description is the VHDL code.
-    public var description: String {
+    @inlinable public var description: String {
         rawValue
     }
 

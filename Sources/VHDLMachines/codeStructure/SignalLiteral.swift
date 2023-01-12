@@ -251,7 +251,7 @@ public enum SignalLiteral: RawRepresentable, Equatable, Hashable, Codable, Senda
 extension SignalLiteral: CustomStringConvertible {
 
     /// The description is the equivalent `VHDL` code.
-    public var description: String {
+    @inlinable public var description: String {
         rawValue
     }
 
