@@ -115,13 +115,7 @@ indirect public enum Expression: RawRepresentable, Equatable, Hashable, Codable 
             self = .expressionWithComment(expression: expression, comment: comment)
             return
         }
-        let value: String
-        if let semicolonIndex = trimmedString.firstIndex(where: { $0 == ";" }) {
-            value = String(trimmedString[trimmedString.startIndex..<semicolonIndex])
-                .trimmingCharacters(in: .whitespacesAndNewlines)
-        } else {
-            value = trimmedString
-        }
+        let value = trimmedString.uptoSemicolon
         let operators = CharacterSet.vhdlOperators
         guard operators.within(string: value) else {
             guard !CharacterSet.whitespacesAndNewlines.within(string: value) else {
@@ -158,31 +152,24 @@ indirect public enum Expression: RawRepresentable, Equatable, Hashable, Codable 
             self.init(lhs: .precedence(value: expression), rhs: rhsExp, char: char)
             return
         }
-        if let (parts, char) = value.split(on: .vhdlMultiplicativeOperations) {
-            guard
-                let lhs = parts.first,
-                let rhs = parts.last,
-                let lhsExp = Expression(rawValue: lhs),
-                let rhsExp = Expression(rawValue: rhs)
-            else {
-                return nil
-            }
-            self.init(lhs: lhsExp, rhs: rhsExp, char: char)
+        guard let multiplicative = Expression(value: value, characters: .vhdlMultiplicativeOperations) else {
+            self.init(value: value, characters: .vhdlAdditiveOperations)
             return
         }
-        if let (parts, char) = value.split(on: .vhdlAdditiveOperations) {
-            guard
-                let lhs = parts.first,
-                let rhs = parts.last,
-                let lhsExp = Expression(rawValue: lhs),
-                let rhsExp = Expression(rawValue: rhs)
-            else {
-                return nil
-            }
-            self.init(lhs: lhsExp, rhs: rhsExp, char: char)
-            return
+        self = multiplicative
+    }
+
+    private init?(value: String, characters: CharacterSet) {
+        guard
+            let (parts, char) = value.split(on: characters),
+            let lhs = parts.first,
+            let rhs = parts.last,
+            let lhsExp = Expression(rawValue: lhs),
+            let rhsExp = Expression(rawValue: rhs)
+        else {
+            return nil
         }
-        return nil
+        self.init(lhs: lhsExp, rhs: rhsExp, char: char)
     }
 
     private init?(lhs: Expression, rhs: Expression, char: Character) {
@@ -258,6 +245,13 @@ private extension String {
             return nil
         }
         return expressions
+    }
+
+    var uptoSemicolon: String {
+        guard let semicolonIndex = self.firstIndex(where: { $0 == ";" }) else {
+            return self
+        }
+        return String(self[self.startIndex..<semicolonIndex]).trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     func split(on characters: CharacterSet) -> ([String], Character)? {
