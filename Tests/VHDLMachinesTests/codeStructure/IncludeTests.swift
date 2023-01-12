@@ -1,4 +1,4 @@
-// Include.swift
+// IncludeTests.swift
 // Machines
 // 
 // Created by Morgan McColl.
@@ -54,55 +54,48 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-/// A type for representing VHDL include statements.
-public enum Include: RawRepresentable, Equatable, Hashable, Codable, Sendable {
+@testable import VHDLMachines
+import XCTest
 
-    /// Include a library.
-    case library(value: String)
+/// Test class for ``Include``.
+final class IncludeTests: XCTestCase {
 
-    /// Use a module from a library.
-    case include(value: String)
-
-    /// The raw value is a string.
-    public typealias RawValue = String
-
-    /// The VHDL code equivalent to this include.
-    public var rawValue: String {
-        switch self {
-        case .library(let value):
-            return "library \(value)"
-        case .include(let value):
-            return "use \(value)"
-        }
+    /// Test raw values generate VHDL code correctly.
+    func testRawValues() {
+        XCTAssertEqual(Include.library(value: "IEEE").rawValue, "library IEEE")
+        XCTAssertEqual(
+            Include.include(value: "IEEE.std_logic_1164.all").rawValue, "use IEEE.std_logic_1164.all"
+        )
     }
 
-    /// Create an include from the VHDL representation.
-    /// - Parameter rawValue: The VHDL code for the include.
-    public init?(rawValue: String) {
-        let trimmedString = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard trimmedString.count < 256 else {
-            return nil
-        }
-        let value = trimmedString.lowercased()
-        if value.hasPrefix("library ") {
-            self = .library(value: String(value.dropFirst(8)).trimmingCharacters(in: .whitespaces))
-        } else if value.hasPrefix("use ") {
-            self = .include(value: String(value.dropFirst(4)).trimmingCharacters(in: .whitespaces))
-        } else {
-            return nil
-        }
+    /// Test equality operation works correctly.
+    func testEquality() {
+        XCTAssertEqual(Include.library(value: "IEEE"), Include.library(value: "IEEE"))
+        XCTAssertEqual(
+            Include.include(value: "IEEE.std_logic_1164.all"),
+            Include.include(value: "IEEE.std_logic_1164.all")
+        )
+        XCTAssertNotEqual(Include.library(value: "IEEE"), Include.library(value: "IEEE2"))
+        XCTAssertNotEqual(
+            Include.include(value: "IEEE.std_logic_1164.all"),
+            Include.include(value: "IEEE2.std_logic_1164.all")
+        )
+        XCTAssertNotEqual(Include.library(value: "IEEE"), Include.include(value: "IEEE.std_logic_1164.all"))
     }
 
-    /// Equality operation.
-    public static func == (lhs: Include, rhs: Include) -> Bool {
-        switch (lhs, rhs) {
-        case (.library(let lhs), .library(let rhs)):
-            return lhs.lowercased() == rhs.lowercased()
-        case (.include(let lhs), .include(let rhs)):
-            return lhs.lowercased() == rhs.lowercased()
-        default:
-            return false
-        }
+    /// Test can create an ``Include`` from a raw value.
+    func testRawValueInit() {
+        XCTAssertEqual(Include(rawValue: "library IEEE"), .library(value: "IEEE"))
+        XCTAssertEqual(
+            Include(rawValue: "use IEEE.std_logic_1164.all"), .include(value: "IEEE.std_logic_1164.all")
+        )
+        XCTAssertNil(Include(rawValue: "library"))
+        XCTAssertNil(Include(rawValue: "use"))
+        XCTAssertEqual(Include(rawValue: "library   IEEE  "), .library(value: "IEEE"))
+        XCTAssertEqual(
+            Include(rawValue: "use   IEEE.std_logic_1164.all  "), .include(value: "IEEE.std_logic_1164.all")
+        )
+        XCTAssertNil(Include(rawValue: String(repeating: "l", count: 256)))
     }
 
 }
