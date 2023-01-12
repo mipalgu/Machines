@@ -54,31 +54,27 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-public struct MachineRepresentation: Equatable, Hashable, Codable, Sendable {
+public struct MachineRepresentation: Equatable, Hashable, Codable {
 
-    public let states: [StateRepresentation]
+    public let statesRepresentations: [State: VectorLiteral]
 
     public let stateType: SignalType
 
-    public let actions: [ConstantSignal]
-
-    public let generics: [LocalSignal]
+    public let actionRepresentation: [ActionName: ConstantSignal]
 
     public let commands: [SuspensionCommand: VectorLiteral]
 
     public let command: SignalType
 
     public let externalSignals: [ExternalSignal]
+    
+    public let machine: Machine
 
     public let actionType: SignalType
 
     public let suspendedType: SignalType
 
     public let ringletCounterType: SignalType
-
-    public let includes: [Include]
-
-    // public let drivingClockPeriod: ConstantSignal
 
     public init?(machine: Machine) {
         guard
@@ -91,36 +87,38 @@ public struct MachineRepresentation: Equatable, Hashable, Codable, Sendable {
         else {
             return nil
         }
-        self.states = machine.states.sorted { $0.name < $1.name }.enumerated().map {
-            StateRepresentation(
-                state: $1, bits: .bits(value: BitLiteral.bitVersion(of: $0, bitsRequired: bitsRequired))
-            )
-        }
+        self.statesRepresentations = Dictionary(uniqueKeysWithValues: machine.states.sorted { $0.name < $1.name }.enumerated().map {
+            ($1, .bits(value: BitLiteral.bitVersion(of: $0, bitsRequired: bitsRequired)))
+        })
         self.stateType = .ranged(type: .stdLogicVector(size: .downto(upper: bitsRequired - 1, lower: 0)))
         let actionType = SignalType.ranged(
             type: .stdLogicVector(size: .downto(upper: actionRequiredBits - 1, lower: 0))
         )
-        let actionConstants = actions.enumerated().compactMap {
-            ConstantSignal(
-                name: $1,
-                type: actionType,
-                value: .vector(
-                    value: .bits(value: BitLiteral.bitVersion(of: $0, bitsRequired: actionRequiredBits))
+        let actionConstants: [(ActionName, ConstantSignal)] = actions.enumerated().compactMap {
+            guard
+                let constant = ConstantSignal(
+                    name: $1,
+                    type: actionType,
+                    value: .vector(
+                        value: .bits(value: BitLiteral.bitVersion(of: $0, bitsRequired: actionRequiredBits))
+                    )
                 )
-            )
+            else {
+                return nil
+            }
+            return ($1, constant)
         }
         guard actionConstants.count == actions.count else {
             return nil
         }
-        self.includes = machine.includes
         self.actionType = actionType
-        self.actions = actionConstants
+        self.actionRepresentation = Dictionary(uniqueKeysWithValues: actionConstants)
         self.commands = bits
         self.command = commandType
         self.externalSignals = machine.externalSignals
-        self.generics = machine.generics
         self.suspendedType = .stdLogic
         self.ringletCounterType = .natural
+        self.machine = machine
     }
 
 }
