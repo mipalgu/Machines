@@ -14,7 +14,7 @@ let package = Package(
         // .package(url: /* package url */, from: "1.0.0"),
         .package(name: "swift_helpers", url: "https://github.com/mipalgu/swift_helpers.git", from: "1.0.1"),
         .package(name: "MetaLanguage", url: "ssh://git@github.com/Morgan2010/MetaLanguage.git", .branch("main")),
-        .package(url: "git@github.com:mipalgu/GUUnits", from: "2.0.1")
+        .package(url: "git@github.com:mipalgu/GUUnits", from: "2.1.0")
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
