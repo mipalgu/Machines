@@ -100,7 +100,11 @@ public enum SignalLiteral: RawRepresentable, Equatable, Hashable, Codable, Senda
     /// - Parameter rawValue: The VHDL code equivalent to this literal.
     @inlinable
     public init?(rawValue: String) {
-        let value = rawValue.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        let trimmedCharacters = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmedCharacters.count < 256 else {
+            return nil
+        }
+        let value = trimmedCharacters.lowercased()
         if value == "true" {
             self = .boolean(value: true)
             return
@@ -243,8 +247,10 @@ public enum SignalLiteral: RawRepresentable, Equatable, Hashable, Codable, Senda
 
 }
 
+/// `CustomStringConvertible` conformance.
 extension SignalLiteral: CustomStringConvertible {
 
+    /// The description is the equivalent `VHDL` code.
     public var description: String {
         rawValue
     }

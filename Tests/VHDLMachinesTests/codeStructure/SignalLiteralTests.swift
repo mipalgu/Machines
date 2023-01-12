@@ -68,6 +68,8 @@ final class SignalLiteralTests: XCTestCase {
         XCTAssertEqual(boolean.rawValue, "true")
         let boolean2 = SignalLiteral.boolean(value: false)
         XCTAssertEqual(boolean2.rawValue, "false")
+        let decimal = SignalLiteral.decimal(value: 12.0)
+        XCTAssertEqual(decimal.rawValue, "12.0")
         let int = SignalLiteral.integer(value: 12)
         XCTAssertEqual(int.rawValue, "12")
         let logic = SignalLiteral.logic(value: .high)
@@ -86,6 +88,13 @@ final class SignalLiteralTests: XCTestCase {
     func testBoolInit() {
         XCTAssertEqual(SignalLiteral(rawValue: "true"), .boolean(value: true))
         XCTAssertEqual(SignalLiteral(rawValue: "false"), .boolean(value: false))
+    }
+
+    /// Test rawValue initaliser for a decimal value.
+    func testDecimalInit() {
+        XCTAssertEqual(SignalLiteral(rawValue: "5.0"), .decimal(value: 5.0))
+        XCTAssertEqual(SignalLiteral(rawValue: "-5.0"), .decimal(value: -5.0))
+        XCTAssertEqual(SignalLiteral(rawValue: "0.0"), .decimal(value: 0.0))
     }
 
     /// Test rawValue initaliser for an integer value.
@@ -165,6 +174,7 @@ final class SignalLiteralTests: XCTestCase {
             SignalLiteral.default(for: .ranged(type: .integer(size: .to(lower: -2, upper: 7)))),
             .integer(value: 0)
         )
+        XCTAssertEqual(SignalLiteral.default(for: .real), .decimal(value: 0.0))
     }
 
     /// Test isValid function returns correct result for valid signal types.
@@ -282,6 +292,54 @@ final class SignalLiteralTests: XCTestCase {
             )
         )
         XCTAssertFalse(SignalLiteral.vector(value: .logics(value: [.low, .high])).isValid(for: .stdLogic))
+    }
+
+    /// Test isValid function returns correct result for decimal types.
+    func testIsValidDecimal() {
+        XCTAssertTrue(SignalLiteral.decimal(value: 1.0).isValid(for: .real))
+        XCTAssertFalse(SignalLiteral.decimal(value: 1.0).isValid(for: .positive))
+        XCTAssertFalse(SignalLiteral.decimal(value: 1.0).isValid(for: .natural))
+        XCTAssertFalse(SignalLiteral.decimal(value: 1.0).isValid(for: .integer))
+        XCTAssertFalse(SignalLiteral.decimal(value: 1.0).isValid(for: .stdLogic))
+        XCTAssertFalse(SignalLiteral.decimal(value: 1.0).isValid(for: .stdULogic))
+        XCTAssertFalse(SignalLiteral.decimal(value: 1.0).isValid(for: .bit))
+        XCTAssertFalse(
+            SignalLiteral.decimal(value: 1.0)
+                .isValid(for: .ranged(type: .bitVector(size: .to(lower: 0, upper: 1))))
+        )
+        XCTAssertFalse(
+            SignalLiteral.decimal(value: 1.0)
+                .isValid(for: .ranged(type: .stdLogicVector(size: .to(lower: 0, upper: 1))))
+        )
+        XCTAssertFalse(
+            SignalLiteral.decimal(value: 1.0)
+                .isValid(for: .ranged(type: .stdULogicVector(size: .to(lower: 0, upper: 1))))
+        )
+        XCTAssertFalse(
+            SignalLiteral.decimal(value: 1.0)
+                .isValid(for: .ranged(type: .integer(size: .to(lower: 0, upper: 1))))
+        )
+        XCTAssertFalse(
+            SignalLiteral.decimal(value: 1.0)
+                .isValid(for: .ranged(type: .signed(size: .to(lower: 0, upper: 1))))
+        )
+        XCTAssertFalse(
+            SignalLiteral.decimal(value: 1.0)
+                .isValid(for: .ranged(type: .unsigned(size: .to(lower: 0, upper: 1))))
+        )
+        XCTAssertTrue(SignalLiteral.integer(value: 5).isValid(for: .real))
+    }
+
+    /// Test description returns rawValue.
+    func testDescription() {
+        let integer = SignalLiteral.integer(value: 12)
+        XCTAssertEqual(integer.description, integer.rawValue)
+        let boolean = SignalLiteral.boolean(value: true)
+        XCTAssertEqual(boolean.description, boolean.rawValue)
+        let vector = SignalLiteral.vector(value: .logics(value: [.low, .high, .low]))
+        XCTAssertEqual(vector.description, vector.rawValue)
+        let logic = SignalLiteral.logic(value: .high)
+        XCTAssertEqual(logic.description, logic.rawValue)
     }
 
 }
