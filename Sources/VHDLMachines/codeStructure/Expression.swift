@@ -57,7 +57,7 @@
 import Foundation
 
 /// An `Expression` represents the RHS of a statement in VHDL.
-indirect public enum Expression: RawRepresentable, Equatable, Hashable, Codable {
+indirect public enum Expression: RawRepresentable, Equatable, Hashable, Codable, Sendable {
 
     /// A reference to a variable.
     case variable(name: String)

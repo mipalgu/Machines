@@ -103,9 +103,9 @@ public struct MachineRepresentation: Equatable, Hashable, Codable {
                 let constant = ConstantSignal(
                     name: $1,
                     type: actionType,
-                    value: .vector(
+                    value: .literal(value: .vector(
                         value: .bits(value: BitLiteral.bitVersion(of: $0, bitsRequired: actionRequiredBits))
-                    )
+                    ))
                 )
             else {
                 return nil
@@ -116,7 +116,7 @@ public struct MachineRepresentation: Equatable, Hashable, Codable {
         guard
             actionConstants.count == actions.count,
             let periodConstant = ConstantSignal(
-                name: "clockPeriod", type: .real, value: .decimal(value: period)
+                name: "clockPeriod", type: .real, value: .literal(value: .decimal(value: period))
             )
         else {
             return nil

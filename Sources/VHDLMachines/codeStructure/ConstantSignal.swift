@@ -62,7 +62,7 @@ public struct ConstantSignal: RawRepresentable, Equatable, Hashable, Codable, Se
 
     public let type: SignalType
 
-    public let value: SignalLiteral
+    public let value: Expression
 
     public let comment: String?
 
@@ -76,9 +76,11 @@ public struct ConstantSignal: RawRepresentable, Equatable, Hashable, Codable, Se
         return declaration + " -- \(comment)"
     }
 
-    public init?(name: String, type: SignalType, value: SignalLiteral, comment: String? = nil) {
-        guard value.isValid(for: type) else {
-            return nil
+    public init?(name: String, type: SignalType, value: Expression, comment: String? = nil) {
+        if case Expression.literal(let literal) = value {
+            guard literal.isValid(for: type) else {
+                return nil
+            }
         }
         self.name = name
         self.type = type
@@ -91,55 +93,73 @@ public struct ConstantSignal: RawRepresentable, Equatable, Hashable, Codable, Se
         guard trimmedValue.hasPrefix("constant ") else {
             return nil
         }
-        var hasDash = false
-        var index: Int?
-        for (i, c) in trimmedValue.enumerated() {
-            if hasDash && c == "-" {
-                index = i - 1
-                break
-            } else if c == "-" {
-                hasDash = true
-            } else {
-                hasDash = false
-            }
-        }
-        let components: [String]
-        var comment: String?
-        if let index = index {
-            let endIndex = String.Index(utf16Offset: index, in: trimmedValue)
-            let declaration = trimmedValue[String.Index(utf16Offset: 0, in: trimmedValue)..<endIndex]
-            components = declaration.components(separatedBy: ":=")
-            comment = trimmedValue[endIndex...].dropFirst(2).trimmingCharacters(in: .whitespaces)
-        } else {
-            components = trimmedValue.components(separatedBy: ":=")
-        }
-        guard components.count == 2 else {
-            return nil
-        }
-        let value = components[1]
-        guard value.hasSuffix(";"), let literal = SignalLiteral(rawValue: String(value.dropLast())) else {
-            return nil
-        }
-        let nameAndType = components[0].components(separatedBy: ":").map {
-            $0.trimmingCharacters(in: .whitespacesAndNewlines)
-        }
+        let components = trimmedValue.components(separatedBy: ";")
         guard
-            nameAndType.count == 2,
-            let lastComponent = nameAndType.last,
-            let type = SignalType(rawValue: lastComponent),
-            literal.isValid(for: type)
+            components.count == 2, let declaration = components.first, let commentString = components.last
         else {
             return nil
         }
-        self.name = nameAndType[0].dropFirst("constant ".count)
-            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let comment = String(comment: commentString)
+        let declComponents = declaration.components(separatedBy: ":=")
+        guard
+            declComponents.count == 2,
+            let valueString = declComponents.last,
+            let value = Expression(rawValue: valueString),
+            let declaration = declComponents.first?.trimmingCharacters(in: .whitespaces)
+        else {
+            return nil
+        }
+        let signalComponents = declaration.components(separatedBy: .whitespacesAndNewlines)
+        guard signalComponents.count >= 2 else {
+            return nil
+        }
+        let hasColonSuffix = signalComponents[1].hasSuffix(":")
+        let colonComponents = signalComponents.filter { $0.contains(":") }
+        guard
+            signalComponents.count >= 3,
+            hasColonSuffix || signalComponents[2] == ":",
+            colonComponents.count == 1,
+            colonComponents[0].filter({ $0 == ":" }).count == 1
+        else {
+            return nil
+        }
+        let typeIndex = hasColonSuffix ? 2 : 3
+        guard
+            signalComponents.first == "constant",
+            signalComponents.count >= typeIndex,
+            let type = SignalType(rawValue: signalComponents[typeIndex...].joined(separator: " "))
+        else {
+            return nil
+        }
+        let name = hasColonSuffix ? String(signalComponents[1].dropLast()) : signalComponents[1]
+        guard !name.isEmpty, !CharacterSet.whitespacesAndNewlines.within(string: name) else {
+            return nil
+        }
+        if case Expression.literal(let literal) = value {
+            guard literal.isValid(for: type) else {
+                return nil
+            }
+        }
+        self.name = name
         self.type = type
-        self.value = literal
+        self.value = value
         self.comment = comment
     }
 
     public static func constants(for actions: [ActionName: String]) -> [ConstantSignal]? {
-        let actionNames = actions.keys.sorted()
+        let keys = actions.keys
+        guard
+            !keys.contains("NoOnEntry"),
+            !keys.contains("CheckTransition"),
+            !keys.contains("ReadSnapshot"),
+            !keys.contains("WriteSnapshot")
+        else {
+            fatalError("Actions contain a reserved name.")
+        }
+        let actionNamesArray = actions.keys + [
+            "NoOnEntry", "CheckTransition", "ReadSnapshot", "WriteSnapshot"
+        ]
+        let actionNames = actionNamesArray.sorted()
         guard let bitsRequired = BitLiteral.bitsRequired(for: actionNames.count) else {
             return nil
         }
@@ -151,7 +171,7 @@ public struct ConstantSignal: RawRepresentable, Equatable, Hashable, Codable, Se
             ConstantSignal(
                 name: actionNames[$0],
                 type: type,
-                value: SignalLiteral.vector(value: .bits(value: bitRepresentations[$0]))
+                value: .literal(value: .vector(value: .bits(value: bitRepresentations[$0])))
             )
         }
         guard signals.count == actionNames.count else {
