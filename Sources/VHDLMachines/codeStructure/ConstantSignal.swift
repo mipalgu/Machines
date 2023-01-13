@@ -55,6 +55,7 @@
 // 
 
 import Foundation
+import GUUnits
 
 /// A type representing a valid constant declaration in `VHDL`.
 public struct ConstantSignal: RawRepresentable, Equatable, Hashable, Codable, Sendable {
@@ -73,6 +74,58 @@ public struct ConstantSignal: RawRepresentable, Equatable, Hashable, Codable, Se
 
     /// The comment associated with this constant.
     public let comment: Comment?
+
+    @inlinable public static var ringletConstants: [ConstantSignal] {
+        guard
+            let ringletLength = ConstantSignal(
+                name: .ringletLength,
+                type: .real,
+                value: .multiplication(
+                    lhs: .literal(value: .decimal(value: 5.0)), rhs: .variable(name: .clockPeriod)
+                )
+            ),
+            let ringletPerPs = ConstantSignal(
+                name: .ringletPerPs,
+                type: .real,
+                value: .division(
+                    lhs: .literal(value: .decimal(value: 1.0)), rhs: .variable(name: .ringletLength)
+                )
+            ),
+            let ringletPerNs = ConstantSignal(
+                name: .ringletPerNs,
+                type: .real,
+                value: .multiplication(
+                    lhs: .literal(value: .decimal(value: 1000.0)), rhs: .variable(name: .ringletPerPs)
+                )
+            ),
+            let ringletPerUs = ConstantSignal(
+                name: .ringletPerUs,
+                type: .real,
+                value: .multiplication(
+                    lhs: .literal(value: .decimal(value: 1_000_000.0)), rhs: .variable(name: .ringletPerPs)
+                )
+            ),
+            let ringletPerMs = ConstantSignal(
+                name: .ringletPerMs,
+                type: .real,
+                value: .multiplication(
+                    lhs: .literal(value: .decimal(value: 1_000_000_000.0)),
+                    rhs: .variable(name: .ringletPerPs)
+                )
+            ),
+            let ringletPerS = ConstantSignal(
+                name: .ringletPerS,
+                type: .real,
+                value: .multiplication(
+                    lhs: .literal(value: .decimal(value: 1_000_000_000_000.0)),
+                    rhs: .variable(name: .ringletPerPs)
+                )
+            )
+        else {
+            fatalError("Could not create ringlet constants.")
+        }
+        return [ringletLength, ringletPerPs, ringletPerNs, ringletPerUs, ringletPerMs, ringletPerS]
+    }
 
     /// The `VHDL` code defining this constant.
     @inlinable public var rawValue: String {
@@ -207,6 +260,17 @@ public struct ConstantSignal: RawRepresentable, Equatable, Hashable, Codable, Se
             return nil
         }
         return signals
+    }
+
+    public static func clockPeriod(period: Time) -> ConstantSignal {
+        guard let constant = ConstantSignal(
+            name: VariableName.clockPeriod,
+            type: .real,
+            value: .literal(value: .decimal(value: Double(period.picoseconds_d)))
+        ) else {
+            fatalError("Could not create clock period constant.")
+        }
+        return constant
     }
 
 }

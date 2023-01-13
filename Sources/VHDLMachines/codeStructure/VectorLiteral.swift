@@ -164,4 +164,15 @@ public enum VectorLiteral: RawRepresentable, Equatable, Hashable, Codable, Senda
         }
     }
 
+    public static func representation(for states: [State]) -> [State: VectorLiteral]? {
+        guard let bitsRequired = BitLiteral.bitsRequired(for: states.count) else {
+            return nil
+        }
+        return Dictionary(
+            uniqueKeysWithValues: states.sorted { $0.name < $1.name }.enumerated().map {
+                ($1, VectorLiteral.bits(value: BitLiteral.bitVersion(of: $0, bitsRequired: bitsRequired)))
+            }
+        )
+    }
+
 }

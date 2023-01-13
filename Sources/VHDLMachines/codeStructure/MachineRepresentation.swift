@@ -80,51 +80,24 @@ public struct MachineRepresentation: Equatable, Hashable, Codable {
 
     public init?(machine: Machine) {
         guard
-            let actions = machine.states.first?.actions.keys.sorted(),
-            let bitsRequired = BitLiteral.bitsRequired(for: machine.states.count),
+            let actions = machine.states.first?.actions,
+            let actionConstants = ConstantSignal.constants(for: actions),
             let bits = SuspensionCommand.bitRepresentation,
             let commandType = SuspensionCommand.bitsType,
-            let actionRequiredBits = BitLiteral.bitsRequired(for: actions.count),
-            machine.clocks.count > machine.drivingClock
+            let actionType = actionConstants.first?.type,
+            machine.clocks.count > machine.drivingClock,
+            let stateType = SignalType.type(for: machine.states),
+            let stateRepresentation = VectorLiteral.representation(for: machine.states)
         else {
             return nil
         }
-        self.statesRepresentations = Dictionary(
-            uniqueKeysWithValues: machine.states.sorted { $0.name < $1.name }.enumerated().map {
-                ($1, .bits(value: BitLiteral.bitVersion(of: $0, bitsRequired: bitsRequired)))
-            }
-        )
-        self.stateType = .ranged(type: .stdLogicVector(size: .downto(upper: bitsRequired - 1, lower: 0)))
-        let actionType = SignalType.ranged(
-            type: .stdLogicVector(size: .downto(upper: actionRequiredBits - 1, lower: 0))
-        )
-        let actionConstants: [(ActionName, ConstantSignal)] = actions.enumerated().compactMap {
-            guard
-                let constant = ConstantSignal(
-                    name: $1,
-                    type: actionType,
-                    value: .literal(value: .vector(
-                        value: .bits(value: BitLiteral.bitVersion(of: $0, bitsRequired: actionRequiredBits))
-                    ))
-                )
-            else {
-                return nil
-            }
-            return ($1, constant)
-        }
-        let period = Double(machine.clocks[machine.drivingClock].period.picoseconds_d)
-        guard
-            actionConstants.count == actions.count,
-            let clockName = VariableName(rawValue: "clockPeriod"),
-            let periodConstant = ConstantSignal(
-                name: clockName, type: .real, value: .literal(value: .decimal(value: period))
-            )
-        else {
-            return nil
-        }
-        self.clockPeriod = periodConstant
+        self.statesRepresentations = stateRepresentation
+        self.stateType = stateType
+        self.clockPeriod = ConstantSignal.clockPeriod(period: machine.clocks[machine.drivingClock].period)
         self.actionType = actionType
-        self.actionRepresentation = Dictionary(uniqueKeysWithValues: actionConstants)
+        self.actionRepresentation = Dictionary(
+            uniqueKeysWithValues: actionConstants.map { ($0.name, $0) }
+        )
         self.commands = bits
         self.command = commandType
         self.externalSignals = machine.externalSignals

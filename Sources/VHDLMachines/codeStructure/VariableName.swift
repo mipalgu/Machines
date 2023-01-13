@@ -61,6 +61,20 @@ import Foundation
 public struct VariableName: RawRepresentable,
     CustomStringConvertible, Equatable, Hashable, Codable, Sendable, Comparable {
 
+    public static let clockPeriod = VariableName(text: "clockPeriod")
+
+    public static let ringletLength = VariableName(text: "ringletLength")
+
+    public static let ringletPerPs = VariableName(text: "RINGLETS_PER_PS")
+
+    public static let ringletPerNs = VariableName(text: "RINGLETS_PER_NS")
+
+    public static let ringletPerUs = VariableName(text: "RINGLETS_PER_US")
+
+    public static let ringletPerMs = VariableName(text: "RINGLETS_PER_MS")
+
+    public static let ringletPerS = VariableName(text: "RINGLETS_PER_S")
+
     /// The variable name.
     public let rawValue: String
 
