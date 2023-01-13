@@ -23,12 +23,14 @@ public struct LocalSignal: RawRepresentable, Codable, Equatable, Hashable, Varia
     /// The comment of the signal.
     public var comment: String?
 
+    /// The VHDL code that represents this signals definition.
     @inlinable public var rawValue: String {
         let declaration = "signal \(name): \(type.rawValue)"
+        let comment = self.comment.map { " -- \($0)" } ?? ""
         guard let defaultValue = defaultValue else {
-            return declaration + ";"
+            return declaration + ";\(comment)"
         }
-        return declaration + " := \(defaultValue.rawValue);"
+        return declaration + " := \(defaultValue.rawValue);\(comment)"
     }
 
     /// Initialises a new machine signal with the given type, name, default value and comment.
@@ -54,14 +56,18 @@ public struct LocalSignal: RawRepresentable, Codable, Equatable, Hashable, Varia
         guard components.count <= 2, !components.isEmpty else {
             return nil
         }
-        let comment = String(comment: components.last ?? "")
+        let comment = String(comment: components.last ?? "")?.trimmingCharacters(in: .whitespaces)
         let declaration = trimmedString.uptoSemicolon
         guard !declaration.contains(":=") else {
             let declComponents = declaration.components(separatedBy: ":=")
             guard declComponents.count == 2 else {
                 return nil
             }
-            self.init(declaration: declComponents[0], defaultValue: declComponents[1], comment: comment)
+            self.init(
+                declaration: declComponents[0].trimmingCharacters(in: .whitespaces),
+                defaultValue: declComponents[1].trimmingCharacters(in: .whitespaces),
+                comment: comment
+            )
             return
         }
         self.init(declaration: declaration, comment: comment)

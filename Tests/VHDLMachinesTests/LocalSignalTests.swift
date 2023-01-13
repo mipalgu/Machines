@@ -92,4 +92,26 @@ final class LocalSignalTests: XCTestCase {
         XCTAssertEqual(self.signal.comment, "The signal y.")
     }
 
+    /// Test rawValue returns the correct value.
+    func testRawValue() {
+        XCTAssertEqual(self.signal.rawValue, "signal x: std_logic := '1'; -- The signal x.")
+        self.signal.defaultValue = nil
+        XCTAssertEqual(self.signal.rawValue, "signal x: std_logic; -- The signal x.")
+        self.signal.comment = nil
+        XCTAssertEqual(self.signal.rawValue, "signal x: std_logic;")
+        self.signal.defaultValue = .logic(value: .low)
+        XCTAssertEqual(self.signal.rawValue, "signal x: std_logic := '0';")
+    }
+
+    /// Test the rawValue init creates the signal correctly.
+    func testRawValueInit() {
+        XCTAssertEqual(LocalSignal(rawValue: "signal x: std_logic := '1'; -- The signal x."), self.signal)
+        self.signal.comment = nil
+        XCTAssertEqual(LocalSignal(rawValue: "signal x: std_logic := '1';"), self.signal)
+        self.signal.defaultValue = nil
+        XCTAssertEqual(LocalSignal(rawValue: "signal x: std_logic;"), self.signal)
+        self.signal.comment = "The signal x."
+        XCTAssertEqual(LocalSignal(rawValue: "signal x: std_logic; -- The signal x."), self.signal)
+    }
+
 }
