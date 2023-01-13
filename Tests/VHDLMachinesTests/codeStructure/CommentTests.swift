@@ -1,4 +1,4 @@
-// Comment.swift
+// CommentTests.swift
 // Machines
 // 
 // Created by Morgan McColl.
@@ -54,46 +54,44 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import Foundation
+@testable import VHDLMachines
+import XCTest
 
-/// A single-lined VHDL comment.
-public struct Comment: RawRepresentable, CustomStringConvertible, Equatable, Hashable, Codable, Sendable {
+/// Test class for ``Comment``.
+final class CommentTests: XCTestCase {
 
-    /// The comment text within the declaration.
-    public let text: String
+    /// The comment under test.
+    var comment = Comment(text: "abc")
 
-    /// The VHDL code that represents this comment.
-    @inlinable public var rawValue: String {
-        "-- \(text)"
+    /// Initialise the comment before every test.
+    override func setUp() {
+        self.comment = Comment(text: "abc")
     }
 
-    /// The description is the VHDL code that defines the single-lined comment.
-    @inlinable public var description: String {
-        rawValue
+    /// Test that the raw value is created correctly.
+    func testRawValue() {
+        XCTAssertEqual(self.comment.rawValue, "-- abc")
     }
 
-    /// Creates a new single-lined comment with the given text.
-    /// - Parameter text: The text of this comment.
-    /// - Warning: This initialiser should only be used when the text is already verified to be valid.
-    /// Otherwise, use the `init?(rawValue:)` initialiser.
-    @usableFromInline
-    init(text: String) {
-        self.text = text
+    /// Test the description matches the raw value.
+    func testDescription() {
+        XCTAssertEqual(self.comment.description, self.comment.rawValue)
     }
 
-    /// Creates a new single-lined comment from the VHDL code that defines it.
-    /// - Parameter rawValue: The VHDL code that defines the single-lined comment.
-    @inlinable
-    public init?(rawValue: String) {
-        let trimmedComment = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard trimmedComment.count < 256, trimmedComment.hasPrefix("--") else {
-            return nil
-        }
-        let text = trimmedComment.dropFirst(2).trimmingCharacters(in: .whitespaces)
-        guard !text.isEmpty, !CharacterSet.newlines.within(string: text) else {
-            return nil
-        }
-        self.text = text
+    /// Test the text init sets the stored property correctly.
+    func testInit() {
+        XCTAssertEqual(self.comment.text, "abc")
+    }
+
+    /// Test that the rawValue init parses the VHDL code correctly.
+    func testRawValueInit() {
+        XCTAssertEqual(Comment(rawValue: "-- abc"), self.comment)
+        XCTAssertEqual(Comment(rawValue: "-- --"), Comment(text: "--"))
+        XCTAssertNil(Comment(rawValue: "--"))
+        XCTAssertNil(Comment(rawValue: "abc"))
+        XCTAssertNil(Comment(rawValue: ""))
+        XCTAssertNil(Comment(rawValue: "-- "))
+        XCTAssertNil(Comment(rawValue: "-- abc\ndef"))
     }
 
 }
