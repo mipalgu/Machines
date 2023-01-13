@@ -112,6 +112,16 @@ final class LocalSignalTests: XCTestCase {
         XCTAssertEqual(LocalSignal(rawValue: "signal x: std_logic;"), self.signal)
         self.signal.comment = "The signal x."
         XCTAssertEqual(LocalSignal(rawValue: "signal x: std_logic; -- The signal x."), self.signal)
+        var signal = LocalSignal(
+            type: .stdLogic, name: "x", defaultValue: .logic(value: .high), comment: "The signal x."
+        )
+        XCTAssertEqual(LocalSignal(rawValue: "signal x : std_logic := '1'; -- The signal x."), signal)
+        signal.comment = nil
+        XCTAssertEqual(LocalSignal(rawValue: "signal x : std_logic := '1';"), signal)
+        signal.defaultValue = nil
+        XCTAssertEqual(LocalSignal(rawValue: "signal x : std_logic;"), signal)
+        signal.comment = "The signal x."
+        XCTAssertEqual(LocalSignal(rawValue: "signal x : std_logic; -- The signal x."), signal)
     }
 
 }

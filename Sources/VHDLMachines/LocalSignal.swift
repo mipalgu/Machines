@@ -76,15 +76,17 @@ public struct LocalSignal: RawRepresentable, Codable, Equatable, Hashable, Varia
     private init?(declaration: String, defaultValue: String? = nil, comment: String? = nil) {
         let signalComponents = declaration.components(separatedBy: .whitespacesAndNewlines)
         let value = SignalLiteral(rawValue: defaultValue ?? "")
+        let typeIndex = signalComponents.count == 3 ? 2 : 3
         guard
             signalComponents.first == "signal",
-            signalComponents.count == 3,
-            signalComponents[1].hasSuffix(":"),
-            let type = SignalType(rawValue: signalComponents[2])
+            signalComponents.count >= 3,
+            (!signalComponents[1].hasSuffix(":") && signalComponents.count == 4 && signalComponents[2] == ":")
+                || signalComponents[1].hasSuffix(":") && signalComponents.count == 3,
+            let type = SignalType(rawValue: signalComponents[typeIndex])
         else {
             return nil
         }
-        let name = String(signalComponents[1].dropLast())
+        let name = signalComponents.count == 3 ? String(signalComponents[1].dropLast()) : signalComponents[1]
         guard !name.isEmpty, !CharacterSet.whitespacesAndNewlines.within(string: name) else {
             return nil
         }
