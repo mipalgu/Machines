@@ -68,6 +68,13 @@ extension String {
         return self.components(separatedBy: .newlines).map { indentAmount + $0 }.joined(separator: "\n")
     }
 
+    mutating func removeLast(character: Character) {
+        guard let lastIndex = self.lastIndex(of: character) else {
+            return
+        }
+        _ = self.remove(at: lastIndex)
+    }
+
     /// Find all expressions within self that exist within a set of brackets.
     @usableFromInline var subExpressions: [Substring]? {
         var expressions: [Substring] = []

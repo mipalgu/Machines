@@ -1,4 +1,4 @@
-// MachineRepresentation.swift
+// MachineRepresentation+VHDLCompilation.swift
 // Machines
 // 
 // Created by Morgan McColl.
@@ -54,71 +54,51 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-public struct MachineRepresentation: RawRepresentable, Equatable, Hashable, Codable {
+extension MachineRepresentation {
 
-    public let statesRepresentations: [State: VectorLiteral]
-
-    public let stateType: SignalType
-
-    public let actionRepresentation: [ActionName: ConstantSignal]
-
-    public let commands: [SuspensionCommand: VectorLiteral]
-
-    public let command: SignalType
-
-    public let externalSignals: [ExternalSignal]
-
-    public let machine: Machine
-
-    public let actionType: SignalType
-
-    public let suspendedType: SignalType
-
-    public let ringletCounterType: SignalType
-
-    public let clockPeriod: ConstantSignal
-
-    public let ringletConstants: [ConstantSignal]
-
-    public var rawValue: String {
-        """
-        \(includeStrings)
-
-        \(entity)
+    var entity: String {
+        guard let generics = generics else {
+            return """
+            entity \(machine.name) is
+            \(port.indent(amount: 1))
+            end \(machine.name);
+            """
+        }
+        return """
+        entity \(machine.name) is
+        \(generics.indent(amount: 1))
+        \(port.indent(amount: 1))
+        end \(machine.name);
         """
     }
 
-    public init?(machine: Machine) {
-        guard
-            let actions = machine.states.first?.actions,
-            let actionConstants = ConstantSignal.constants(for: actions),
-            let bits = SuspensionCommand.bitRepresentation,
-            let commandType = SuspensionCommand.bitsType,
-            let actionType = actionConstants.first?.type,
-            machine.clocks.count > machine.drivingClock,
-            let stateType = SignalType.type(for: machine.states),
-            let stateRepresentation = VectorLiteral.representation(for: machine.states)
-        else {
+    var includeStrings: String {
+        machine.includes.map { $0.rawValue + ";" }.joined(separator: "\n")
+    }
+
+    var port: String {
+        let suspended = "suspended: out \(suspendedType.rawValue);"
+        let commandSignal = "command: in \(command.rawValue)"
+        let externalSignals = (machine.externalSignals.map(\.rawValue) + [suspended, commandSignal])
+            .joined(separator: "\n")
+        return """
+        port(
+        \(externalSignals.indent(amount: 1))
+        );
+        """
+    }
+
+    var generics: String? {
+        guard !machine.generics.isEmpty else {
             return nil
         }
-        self.statesRepresentations = stateRepresentation
-        self.stateType = stateType
-        self.clockPeriod = ConstantSignal.clockPeriod(period: machine.clocks[machine.drivingClock].period)
-        self.actionType = actionType
-        self.actionRepresentation = Dictionary(
-            uniqueKeysWithValues: actionConstants.map { ($0.name, $0) }
-        )
-        self.commands = bits
-        self.command = commandType
-        self.externalSignals = machine.externalSignals
-        self.suspendedType = .stdLogic
-        self.ringletCounterType = .natural
-        self.machine = machine
-        self.ringletConstants = ConstantSignal.ringletConstants
-    }
-
-    public init?(rawValue: String) {
-        fatalError("Not yet supported!")
+        var signals = machine.generics.map(\.rawValue).joined(separator: "\n")
+        signals.removeLast(character: ";")
+        return """
+        generic(
+        \(signals.indent(amount: 1))
+        );
+        """
     }
 
 }

@@ -1,4 +1,4 @@
-// MachineRepresentation.swift
+// MachineRepresentationTests.swift
 // Machines
 // 
 // Created by Morgan McColl.
@@ -54,71 +54,20 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-public struct MachineRepresentation: RawRepresentable, Equatable, Hashable, Codable {
+@testable import VHDLMachines
+import XCTest
 
-    public let statesRepresentations: [State: VectorLiteral]
+final class MachineRepresentationTests: XCTestCase {
 
-    public let stateType: SignalType
+    var machine = MachineRepresentation(machine: Machine.initial(path: URL(fileURLWithPath: "/tmp")))
 
-    public let actionRepresentation: [ActionName: ConstantSignal]
-
-    public let commands: [SuspensionCommand: VectorLiteral]
-
-    public let command: SignalType
-
-    public let externalSignals: [ExternalSignal]
-
-    public let machine: Machine
-
-    public let actionType: SignalType
-
-    public let suspendedType: SignalType
-
-    public let ringletCounterType: SignalType
-
-    public let clockPeriod: ConstantSignal
-
-    public let ringletConstants: [ConstantSignal]
-
-    public var rawValue: String {
-        """
-        \(includeStrings)
-
-        \(entity)
-        """
+    override func setUp() {
+        self.machine = MachineRepresentation(machine: Machine.initial(path: URL(fileURLWithPath: "/tmp")))
     }
 
-    public init?(machine: Machine) {
-        guard
-            let actions = machine.states.first?.actions,
-            let actionConstants = ConstantSignal.constants(for: actions),
-            let bits = SuspensionCommand.bitRepresentation,
-            let commandType = SuspensionCommand.bitsType,
-            let actionType = actionConstants.first?.type,
-            machine.clocks.count > machine.drivingClock,
-            let stateType = SignalType.type(for: machine.states),
-            let stateRepresentation = VectorLiteral.representation(for: machine.states)
-        else {
-            return nil
-        }
-        self.statesRepresentations = stateRepresentation
-        self.stateType = stateType
-        self.clockPeriod = ConstantSignal.clockPeriod(period: machine.clocks[machine.drivingClock].period)
-        self.actionType = actionType
-        self.actionRepresentation = Dictionary(
-            uniqueKeysWithValues: actionConstants.map { ($0.name, $0) }
-        )
-        self.commands = bits
-        self.command = commandType
-        self.externalSignals = machine.externalSignals
-        self.suspendedType = .stdLogic
-        self.ringletCounterType = .natural
-        self.machine = machine
-        self.ringletConstants = ConstantSignal.ringletConstants
-    }
-
-    public init?(rawValue: String) {
-        fatalError("Not yet supported!")
+    func testInit() {
+        XCTAssertNotNil(machine)
+        print(machine?.rawValue ?? "nil")
     }
 
 }
