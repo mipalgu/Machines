@@ -108,20 +108,6 @@ extension String {
         return String(self[self.startIndex..<semicolonIndex]).trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
-    init?(name: String) {
-        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        let allowedChars = CharacterSet.variableNames
-        guard
-            trimmedName.count < 256,
-            let firstChar = trimmedName.unicodeScalars.first,
-            CharacterSet.letters.contains(firstChar),
-            name.unicodeScalars.allSatisfy({ allowedChars.contains($0) })
-        else {
-            return nil
-        }
-        self = trimmedName
-    }
-
     /// Split the string into 2 strings. The first string is the string up to the first character in the given
     /// character set.
     /// - Parameter characters: The characters to split on.

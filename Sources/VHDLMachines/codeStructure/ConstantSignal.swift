@@ -58,7 +58,7 @@ import Foundation
 
 public struct ConstantSignal: RawRepresentable, Equatable, Hashable, Codable, Sendable {
 
-    public let name: String
+    public let name: VariableName
 
     public let type: SignalType
 
@@ -76,7 +76,7 @@ public struct ConstantSignal: RawRepresentable, Equatable, Hashable, Codable, Se
         return declaration + " \(comment)"
     }
 
-    public init?(name: String, type: SignalType, value: Expression, comment: Comment? = nil) {
+    public init?(name: VariableName, type: SignalType, value: Expression, comment: Comment? = nil) {
         if case Expression.literal(let literal) = value {
             guard literal.isValid(for: type) else {
                 return nil
@@ -132,7 +132,11 @@ public struct ConstantSignal: RawRepresentable, Equatable, Hashable, Codable, Se
             return nil
         }
         let name = hasColonSuffix ? String(signalComponents[1].dropLast()) : signalComponents[1]
-        guard !name.isEmpty, !CharacterSet.whitespacesAndNewlines.within(string: name) else {
+        guard
+            !name.isEmpty,
+            !CharacterSet.whitespacesAndNewlines.within(string: name),
+            let varName = VariableName(rawValue: name)
+        else {
             return nil
         }
         if case Expression.literal(let literal) = value {
@@ -140,7 +144,7 @@ public struct ConstantSignal: RawRepresentable, Equatable, Hashable, Codable, Se
                 return nil
             }
         }
-        self.name = name
+        self.name = varName
         self.type = type
         self.value = value
         self.comment = comment
@@ -163,9 +167,12 @@ public struct ConstantSignal: RawRepresentable, Equatable, Hashable, Codable, Se
             BitLiteral.bitVersion(of: $0, bitsRequired: bitsRequired)
         }
         let type = SignalType.ranged(type: .stdLogicVector(size: .downto(upper: bitsRequired - 1, lower: 0)))
-        let signals = actionNames.indices.compactMap {
-            ConstantSignal(
-                name: actionNames[$0],
+        let signals: [ConstantSignal] = actionNames.indices.compactMap {
+            guard let name = VariableName(rawValue: actionNames[$0]) else {
+                return nil
+            }
+            return ConstantSignal(
+                name: name,
                 type: type,
                 value: .literal(value: .vector(value: .bits(value: bitRepresentations[$0])))
             )

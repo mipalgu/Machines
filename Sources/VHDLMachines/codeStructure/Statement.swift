@@ -60,7 +60,7 @@ public enum Statement: RawRepresentable, Equatable, Hashable, Codable {
 
     case definition(signal: LocalSignal)
 
-    case assignment(name: String, value: Expression)
+    case assignment(name: VariableName, value: Expression)
 
     case expression(value: Expression)
 
@@ -93,7 +93,7 @@ public enum Statement: RawRepresentable, Equatable, Hashable, Codable {
             let components = value.components(separatedBy: "<=")
             guard
                 components.count == 2,
-                let name = String(name: components[0]),
+                let name = VariableName(rawValue: components[0]),
                 let exp = Expression(rawValue: components[1].trimmingCharacters(in: .whitespacesAndNewlines))
             else {
                 return nil

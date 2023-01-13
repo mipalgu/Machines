@@ -17,7 +17,7 @@ public struct ReturnableVariable: ExternalType, Codable, Equatable, Hashable {
     public var type: SignalType
 
     /// The name of the variable.
-    public var name: String
+    public var name: VariableName
 
     /// The comment for the variable.
     public var comment: Comment?
@@ -28,7 +28,7 @@ public struct ReturnableVariable: ExternalType, Codable, Equatable, Hashable {
     ///   - name: The name of the variable.
     ///   - comment: The comment for the variable.
     @inlinable
-    public init(type: SignalType, name: String, comment: Comment? = nil) {
+    public init(type: SignalType, name: VariableName, comment: Comment? = nil) {
         self.type = type
         self.name = name
         self.comment = comment

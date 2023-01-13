@@ -60,7 +60,7 @@ import Foundation
 indirect public enum Expression: RawRepresentable, Equatable, Hashable, Codable, Sendable {
 
     /// A reference to a variable.
-    case variable(name: String)
+    case variable(name: VariableName)
 
     /// A literal value.
     case literal(value: SignalLiteral)
@@ -93,7 +93,7 @@ indirect public enum Expression: RawRepresentable, Equatable, Hashable, Codable,
     @inlinable public var rawValue: String {
         switch self {
         case .variable(let name):
-            return name
+            return name.rawValue
         case .literal(let value):
             return value.rawValue
         case .addition(let lhs, let rhs):
@@ -150,10 +150,10 @@ indirect public enum Expression: RawRepresentable, Equatable, Hashable, Codable,
         }
         let operators = CharacterSet.vhdlOperators
         guard operators.within(string: value) else {
-            guard !CharacterSet.whitespacesAndNewlines.within(string: value) else {
+            guard let name = VariableName(rawValue: value) else {
                 return nil
             }
-            self = .variable(name: value)
+            self = .variable(name: name)
             return
         }
         if value.hasPrefix("(") && value.hasSuffix(")") {

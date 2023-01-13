@@ -14,7 +14,7 @@ public protocol Variable {
     var type: SignalType {get set}
 
     /// The name of the variable.
-    var name: String {get set}
+    var name: VariableName {get set}
 
     /// The default value of the variable.
     var defaultValue: SignalLiteral? {get set}

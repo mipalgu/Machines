@@ -68,21 +68,21 @@ final class ArrangementTests: XCTestCase {
 
     /// The clocks in the arrangement.
     let clocks = [
-        Clock(name: "clk", frequency: 100, unit: .MHz)
+        Clock(name: VariableName(text: "clk"), frequency: 100, unit: .MHz)
     ]
 
     /// The external signals in the arrangement.
     let externalSignals = [
         ExternalSignal(
             type: .stdLogic,
-            name: "x",
+            name: VariableName(text: "x"),
             mode: .input,
             defaultValue: .logic(value: .high),
             comment: Comment(text: "Signal x.")
         ),
         ExternalSignal(
             type: .stdLogic,
-            name: "y",
+            name: VariableName(text: "y"),
             mode: .output,
             defaultValue: .logic(value: .low),
             comment: Comment(text: "Signal y.")
@@ -92,7 +92,10 @@ final class ArrangementTests: XCTestCase {
     /// The arrangement signals.
     let signals = [
         LocalSignal(
-            type: .stdLogic, name: "z", defaultValue: .logic(value: .low), comment: Comment(text: "Signal z.")
+            type: .stdLogic,
+            name: VariableName(text: "z"),
+            defaultValue: .logic(value: .low),
+            comment: Comment(text: "Signal z.")
         )
     ]
 
@@ -143,14 +146,14 @@ final class ArrangementTests: XCTestCase {
         let newExternalSignals = [
             ExternalSignal(
                 type: .stdLogic,
-                name: "z",
+                name: VariableName(text: "z"),
                 mode: .input,
                 defaultValue: .logic(value: .high),
                 comment: Comment(text: "Signal z.")
             ),
             ExternalSignal(
                 type: .stdLogic,
-                name: "w",
+                name: VariableName(text: "w"),
                 mode: .output,
                 defaultValue: .logic(value: .low),
                 comment: Comment(text: "Signal w.")
@@ -160,13 +163,13 @@ final class ArrangementTests: XCTestCase {
         let newSignals = [
             LocalSignal(
                 type: .stdLogic,
-                name: "x2",
+                name: VariableName(text: "x2"),
                 defaultValue: .logic(value: .high),
                 comment: Comment(text: "Signal x2.")
             )
         ]
         let newClocks = [
-            Clock(name: "clk2", frequency: 100, unit: .MHz)
+            Clock(name: VariableName(text: "clk2"), frequency: 100, unit: .MHz)
         ]
         let newParents = ["M2"]
         let newPath = URL(fileURLWithPath: "/path/to/new/arrangement")

@@ -63,7 +63,7 @@ final class ExternalSignalTests: XCTestCase {
     /// The signal under test.
     var signal = ExternalSignal(
         type: .stdLogic,
-        name: "x",
+        name: VariableName(text: "x"),
         mode: .output,
         defaultValue: .logic(value: .high),
         comment: Comment(text: "signal x")
@@ -73,7 +73,7 @@ final class ExternalSignalTests: XCTestCase {
     override func setUp() {
         self.signal = ExternalSignal(
             type: .stdLogic,
-            name: "x",
+            name: VariableName(text: "x"),
             mode: .output,
             defaultValue: .logic(value: .high),
             comment: Comment(text: "signal x")
@@ -87,7 +87,7 @@ final class ExternalSignalTests: XCTestCase {
             return
         }
         XCTAssertEqual(self.signal.type, .stdLogic)
-        XCTAssertEqual(self.signal.name, "x")
+        XCTAssertEqual(self.signal.name, VariableName(text: "x"))
         XCTAssertEqual(self.signal.mode, .output)
         XCTAssertEqual(self.signal.defaultValue, .logic(value: .high))
         XCTAssertEqual(self.signal.comment, comment)
@@ -100,12 +100,12 @@ final class ExternalSignalTests: XCTestCase {
             return
         }
         self.signal.type = .ranged(type: .stdLogicVector(size: .downto(upper: 7, lower: 0)))
-        self.signal.name = "y"
+        self.signal.name = VariableName(text: "y")
         self.signal.mode = .input
         self.signal.defaultValue = .vector(value: .hexademical(value: [.ten, .ten]))
         self.signal.comment = comment
         XCTAssertEqual(self.signal.type, .ranged(type: .stdLogicVector(size: .downto(upper: 7, lower: 0))))
-        XCTAssertEqual(self.signal.name, "y")
+        XCTAssertEqual(self.signal.name, VariableName(text: "y"))
         XCTAssertEqual(self.signal.mode, .input)
         XCTAssertEqual(self.signal.defaultValue, .vector(value: .hexademical(value: [.ten, .ten])))
         XCTAssertEqual(self.signal.comment, comment)

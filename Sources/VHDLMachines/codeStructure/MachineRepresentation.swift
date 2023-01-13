@@ -100,8 +100,9 @@ public struct MachineRepresentation: Equatable, Hashable, Codable {
         )
         let actionConstants: [(ActionName, ConstantSignal)] = actions.enumerated().compactMap {
             guard
+                let name = VariableName(rawValue: $1),
                 let constant = ConstantSignal(
-                    name: $1,
+                    name: name,
                     type: actionType,
                     value: .literal(value: .vector(
                         value: .bits(value: BitLiteral.bitVersion(of: $0, bitsRequired: actionRequiredBits))
@@ -115,8 +116,9 @@ public struct MachineRepresentation: Equatable, Hashable, Codable {
         let period = Double(machine.clocks[machine.drivingClock].period.picoseconds_d)
         guard
             actionConstants.count == actions.count,
+            let clockName = VariableName(rawValue: "clockPeriod"),
             let periodConstant = ConstantSignal(
-                name: "clockPeriod", type: .real, value: .literal(value: .decimal(value: period))
+                name: clockName, type: .real, value: .literal(value: .decimal(value: period))
             )
         else {
             return nil

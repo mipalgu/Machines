@@ -15,7 +15,7 @@ public struct ExternalVariable: ExternalType {
     public var type: String
 
     /// The name of the variable.
-    public var name: String
+    public var name: VariableName
 
     /// The range of valid values.
     public var range: (Int, Int)?
@@ -40,7 +40,7 @@ public struct ExternalVariable: ExternalType {
     @inlinable
     public init(
         type: String,
-        name: String,
+        name: VariableName,
         mode: Mode,
         range: (Int, Int)? = nil,
         defaultValue: String?,

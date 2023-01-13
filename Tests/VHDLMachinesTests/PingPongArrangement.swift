@@ -55,7 +55,7 @@
 // 
 
 import Foundation
-import VHDLMachines
+@testable import VHDLMachines
 
 /// A factory for creating a PingPong arrangement.
 struct PingPongArrangement {
@@ -124,7 +124,7 @@ struct PingPongArrangement {
     /// The Ping state.
     var pingState: State {
         State(
-            name: "Ping",
+            name: VariableName(text: "Ping"),
             actions: pingActions,
             actionOrder: actionOrder,
             signals: [],
@@ -135,7 +135,7 @@ struct PingPongArrangement {
     /// The Pong state.
     var pongState: State {
         State(
-            name: "Pong",
+            name: VariableName(text: "Pong"),
             actions: pongActions,
             actionOrder: actionOrder,
             signals: [],
@@ -145,18 +145,18 @@ struct PingPongArrangement {
 
     /// The ping Signals.
     let pingSignals = [
-        ExternalSignal(type: .stdLogic, name: "ping", mode: .output),
-        ExternalSignal(type: .stdLogic, name: "pong", mode: .input)
+        ExternalSignal(type: .stdLogic, name: VariableName(text: "ping"), mode: .output),
+        ExternalSignal(type: .stdLogic, name: VariableName(text: "pong"), mode: .input)
     ]
 
     /// The pong Signals.
     let pongSignals = [
-        ExternalSignal(type: .stdLogic, name: "ping", mode: .input),
-        ExternalSignal(type: .stdLogic, name: "pong", mode: .output)
+        ExternalSignal(type: .stdLogic, name: VariableName(text: "ping"), mode: .input),
+        ExternalSignal(type: .stdLogic, name: VariableName(text: "pong"), mode: .output)
     ]
 
     /// The clocks.
-    let clocks = [Clock(name: "clk", frequency: 50, unit: .MHz)]
+    let clocks = [Clock(name: VariableName(text: "clk"), frequency: 50, unit: .MHz)]
 
     /// The ping states transition.
     let pingTransition = Transition(condition: "true", source: 0, target: 1)
@@ -320,7 +320,7 @@ struct PingPongArrangement {
     /// - Returns: The check state.
     func checkState(externalVariables: [String], reset: String) -> State {
         State(
-            name: "Check",
+            name: VariableName(text: "Check"),
             actions: emptyActions(reset: reset),
             actionOrder: actionOrder,
             signals: [],

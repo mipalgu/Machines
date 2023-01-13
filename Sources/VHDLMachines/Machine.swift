@@ -151,7 +151,7 @@ public struct Machine: Codable, Equatable, Hashable {
             includes: [.library(value: "IEEE"), .include(value: "IEEE.std_logic_1164.All")],
             externalSignals: [],
             generics: [],
-            clocks: [Clock(name: "clk", frequency: 50, unit: .MHz)],
+            clocks: [Clock(name: VariableName(text: "clk"), frequency: 50, unit: .MHz)],
             drivingClock: 0,
             dependentMachines: [:],
             machineSignals: [],
@@ -160,14 +160,14 @@ public struct Machine: Codable, Equatable, Hashable {
             returnableSignals: [],
             states: [
                 State(
-                    name: "Initial",
+                    name: VariableName(text: "Initial"),
                     actions: defaultActions,
                     actionOrder: actionOrder,
                     signals: [],
                     externalVariables: []
                 ),
                 State(
-                    name: "Suspended",
+                    name: VariableName(text: "Suspended"),
                     actions: defaultActions,
                     actionOrder: actionOrder,
                     signals: [],

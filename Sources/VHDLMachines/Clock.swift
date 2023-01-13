@@ -36,7 +36,7 @@ public struct Clock: Codable, Equatable, Hashable, Sendable {
     }
 
     /// The name of the clock.
-    public var name: String
+    public var name: VariableName
 
     /// The frequency of the clock represented with the frequency `unit`.
     public var frequency: UInt
@@ -67,7 +67,7 @@ public struct Clock: Codable, Equatable, Hashable, Sendable {
     ///   - frequency: The frequency of the clock represented with the frequency `unit`.
     ///   - unit: The unit of frequency.
     @inlinable
-    public init(name: String, frequency: UInt, unit: FrequencyUnit) {
+    public init(name: VariableName, frequency: UInt, unit: FrequencyUnit) {
         self.name = name
         self.frequency = frequency
         self.unit = unit

@@ -75,7 +75,7 @@ final class StateTests: XCTestCase {
         [
             LocalSignal(
                 type: .stdLogic,
-                name: "y",
+                name: VariableName(text: "y"),
                 defaultValue: .logic(value: .high),
                 comment: Comment(text: "The signal y.")
             )
@@ -89,7 +89,7 @@ final class StateTests: XCTestCase {
 
     /// The state to test.
     lazy var state = State(
-        name: "S0",
+        name: VariableName(text: "S0"),
         actions: actions,
         actionOrder: actionOrder,
         signals: signals,
@@ -99,7 +99,7 @@ final class StateTests: XCTestCase {
     /// Initialises the state to test.
     override func setUp() {
         self.state = State(
-            name: "S0",
+            name: VariableName(text: "S0"),
             actions: actions,
             actionOrder: actionOrder,
             signals: signals,
@@ -109,7 +109,7 @@ final class StateTests: XCTestCase {
 
     /// Test init sets the properties correctly.
     func testInit() {
-        XCTAssertEqual(self.state.name, "S0")
+        XCTAssertEqual(self.state.name, VariableName(text: "S0"))
         XCTAssertEqual(self.state.actions, self.actions)
         XCTAssertEqual(self.state.actionOrder, self.actionOrder)
         XCTAssertEqual(self.state.signals, self.signals)
@@ -118,8 +118,8 @@ final class StateTests: XCTestCase {
 
     /// Test getters and setters work correctly.
     func testGettersAndSetters() {
-        self.state.name = "S1"
-        XCTAssertEqual(self.state.name, "S1")
+        self.state.name = VariableName(text: "S1")
+        XCTAssertEqual(self.state.name, VariableName(text: "S1"))
         self.state.actions = ["internal": "x := 0;"]
         XCTAssertEqual(self.state.actions, ["internal": "x := 0;"])
         self.state.actionOrder = [["internal"]]
@@ -127,7 +127,7 @@ final class StateTests: XCTestCase {
         self.state.signals = [
             LocalSignal(
                 type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),
-                name: "xs",
+                name: VariableName(text: "xs"),
                 defaultValue: .vector(value: .hexademical(value: [.five])),
                 comment: Comment(text: "The signal xs.")
             )
@@ -137,7 +137,7 @@ final class StateTests: XCTestCase {
             [
                 LocalSignal(
                     type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),
-                    name: "xs",
+                    name: VariableName(text: "xs"),
                     defaultValue: .vector(value: .hexademical(value: [.five])),
                     comment: Comment(text: "The signal xs.")
                 )

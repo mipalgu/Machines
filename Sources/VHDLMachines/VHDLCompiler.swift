@@ -19,10 +19,10 @@ public struct VHDLCompiler {
     private struct VHDLTransition {
 
         /// The source state.
-        var source: String
+        var source: VariableName
 
         /// The target state.
-        var target: String
+        var target: VariableName
 
         /// The condition that causes the transition to fire.
         var condition: String
@@ -32,7 +32,7 @@ public struct VHDLCompiler {
         ///   - source: The source state.
         ///   - target: The target state.
         ///   - condition: The condition that causes the transition to fire.
-        init(source: String, target: String, condition: String) {
+        init(source: VariableName, target: VariableName, condition: String) {
             self.source = source
             self.target = target
             self.condition = condition
@@ -374,7 +374,7 @@ public struct VHDLCompiler {
     ///   - defaultCode: The code to execute if no case matches.
     /// - Returns: The internal state switch statement.
     private func codeForStatesStatement(
-        names: [String],
+        names: [VariableName],
         code: [String],
         indentation: Int,
         trailer: String,
@@ -768,9 +768,11 @@ public struct VHDLCompiler {
         }
         let transitions = machine.transitions.map { VHDLTransition(transition: $0, machine: machine) }
         let groupedTransitions = transitions.grouped { $0.source == $1.source }
-        let code: [(String, [VHDLTransition])] = Dictionary(uniqueKeysWithValues: groupedTransitions.map {
-            ($0[0].source, $0)
-        })
+        let code: [(VariableName, [VHDLTransition])] = Dictionary(
+            uniqueKeysWithValues: groupedTransitions.map {
+                ($0[0].source, $0)
+            }
+        )
         .sorted {
             $0.0 < $1.0
         }
@@ -1010,21 +1012,21 @@ public struct VHDLCompiler {
     /// Create the Returnable name.
     /// - Parameter name: The name of the returnable.
     /// - Returns: The new returnable name.
-    private func toReturnable(name: String) -> String {
+    private func toReturnable(name: VariableName) -> String {
         "OUTPUT_\(name)"
     }
 
     /// Create the parameter name.
     /// - Parameter name: The name of the parameter.
     /// - Returns: The new parameter name.
-    private func toParameter(name: String) -> String {
+    private func toParameter(name: VariableName) -> String {
         "PARAMETER_\(name)"
     }
 
     /// Create the external name.
     /// - Parameter name: The name of the external signal.
     /// - Returns: The new external name.
-    private func toExternal(name: String) -> String {
+    private func toExternal(name: VariableName) -> String {
         "EXTERNAL_\(name)"
     }
 
@@ -1105,7 +1107,7 @@ public struct VHDLCompiler {
     /// Generate the state name for a state.
     /// - Parameter name: The name of the state.
     /// - Returns: The state name.
-    private func toStateName(name: String) -> String {
+    private func toStateName(name: VariableName) -> String {
         "STATE_\(name)"
     }
 
@@ -1136,7 +1138,7 @@ public struct VHDLCompiler {
     ///   - length: The length of the state.
     ///   - index: The index of the binary representation.
     /// - Returns: The state representation.
-    private func toStateVar(name: String, length: Int, index: Int) -> String {
+    private func toStateVar(name: VariableName, length: Int, index: Int) -> String {
         let l = max(1, length)
         return "constant \(toStateName(name: name)): std_logic_vector(\(l - 1) downto 0) := \"" +
             "\(toBinary(number: index, binaryPosition: l - 1))\";"
@@ -1149,9 +1151,16 @@ public struct VHDLCompiler {
         let states = machine.states
         let initialState = machine.states[machine.initialState].name
         // swiftlint:disable:next force_unwrapping
-        let suspendedState = machine.suspendedState != nil ? machine.states[machine.suspendedState!].name : ""
-        let defaultState = machine.isParameterised &&
-            machine.suspendedState != nil ? suspendedState : initialState
+        let defaultState: VariableName
+        if let suspendIndex = machine.suspendedState {
+            if machine.isParameterised {
+                defaultState = machine.states[suspendIndex].name
+            } else {
+                defaultState = initialState
+            }
+        } else {
+            defaultState = initialState
+        }
         let stateLength = findBinaryLength(count: states.count)
         return """
          -- State Representation Bits

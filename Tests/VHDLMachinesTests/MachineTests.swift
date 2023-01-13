@@ -83,7 +83,7 @@ final class MachineTests: XCTestCase {
         [
             ExternalSignal(
                 type: .stdLogic,
-                name: "A",
+                name: VariableName(text: "A"),
                 mode: .input,
                 defaultValue: .logic(value: .low),
                 comment: Comment(text: "A comment")
@@ -96,7 +96,7 @@ final class MachineTests: XCTestCase {
         [
             LocalSignal(
                 type: .ranged(type: .integer(size: .to(lower: 0, upper: 512))),
-                name: "g",
+                name: VariableName(text: "g"),
                 defaultValue: .integer(value: 0),
                 comment: Comment(text: "Generic g")
             )
@@ -106,7 +106,7 @@ final class MachineTests: XCTestCase {
     /// The clocks for the machine.
     var clocks: [Clock] {
         [
-            Clock(name: "clk", frequency: 50, unit: .MHz)
+            Clock(name: VariableName(text: "clk"), frequency: 50, unit: .MHz)
         ]
     }
 
@@ -128,7 +128,7 @@ final class MachineTests: XCTestCase {
         [
             LocalSignal(
                 type: .stdLogic,
-                name: "s",
+                name: VariableName(text: "s"),
                 defaultValue: .logic(value: .low),
                 comment: Comment(text: "Signal s")
             )
@@ -140,7 +140,7 @@ final class MachineTests: XCTestCase {
         [
             Parameter(
                 type: .stdLogic,
-                name: "p",
+                name: VariableName(text: "p"),
                 defaultValue: .logic(value: .low),
                 comment: Comment(text: "Parameter p")
             )
@@ -150,7 +150,9 @@ final class MachineTests: XCTestCase {
     /// The returnable signals for the machine.
     var returnableSignals: [ReturnableVariable] {
         [
-            ReturnableVariable(type: .stdLogic, name: "r", comment: Comment(text: "Returnable r"))
+            ReturnableVariable(
+                type: .stdLogic, name: VariableName(text: "r"), comment: Comment(text: "Returnable r")
+            )
         ]
     }
 
@@ -158,10 +160,18 @@ final class MachineTests: XCTestCase {
     var states: [State] {
         [
             State(
-                name: "S0", actions: [:], actionOrder: [], signals: [], externalVariables: []
+                name: VariableName(text: "S0"),
+                actions: [:],
+                actionOrder: [],
+                signals: [],
+                externalVariables: []
             ),
             State(
-                name: "S1", actions: [:], actionOrder: [], signals: [], externalVariables: []
+                name: VariableName(text: "S1"),
+                actions: [:],
+                actionOrder: [],
+                signals: [],
+                externalVariables: []
             )
         ]
     }
@@ -272,7 +282,7 @@ final class MachineTests: XCTestCase {
         let newExternalSignals = [
             ExternalSignal(
                 type: .stdLogic,
-                name: "B",
+                name: VariableName(text: "B"),
                 mode: .input,
                 defaultValue: .logic(value: .low),
                 comment: Comment(text: "A comment")
@@ -281,20 +291,21 @@ final class MachineTests: XCTestCase {
         let newGenerics = [
             LocalSignal(
                 type: .ranged(type: .integer(size: .to(lower: 0, upper: 512))),
-                name: "g2",
+                name: VariableName(text: "g2"),
                 defaultValue: .integer(value: 0),
                 comment: Comment(text: "Generic g2")
             )
         ]
         let newClocks = [
-            Clock(name: "clk", frequency: 50, unit: .MHz), Clock(name: "clk2", frequency: 100, unit: .MHz)
+            Clock(name: VariableName(text: "clk"), frequency: 50, unit: .MHz),
+            Clock(name: VariableName(text: "clk2"), frequency: 100, unit: .MHz)
         ]
         let newDrivingClock = 1
         let newDependentMachines = ["M1": URL(fileURLWithPath: "/path/to/M1")]
         let newMachineSignals = [
             LocalSignal(
                 type: .stdLogic,
-                name: "s2",
+                name: VariableName(text: "s2"),
                 defaultValue: .logic(value: .low),
                 comment: Comment(text: "Signal s2")
             )
@@ -302,17 +313,23 @@ final class MachineTests: XCTestCase {
         let newParameterSignals = [
             Parameter(
                 type: .stdLogic,
-                name: "p2",
+                name: VariableName(text: "p2"),
                 defaultValue: .logic(value: .low),
                 comment: Comment(text: "Parameter p2")
             )
         ]
         let newReturnableSignals = [
-            ReturnableVariable(type: .stdLogic, name: "r2", comment: Comment(text: "Returnable r2"))
+            ReturnableVariable(
+                type: .stdLogic, name: VariableName(text: "r2"), comment: Comment(text: "Returnable r2")
+            )
         ]
         let newStates = [
             State(
-                name: "S0", actions: [:], actionOrder: [], signals: [], externalVariables: []
+                name: VariableName(text: "S0"),
+                actions: [:],
+                actionOrder: [],
+                signals: [],
+                externalVariables: []
             )
         ]
         let newTransitions = [Transition(condition: "true", source: 0, target: 1)]
@@ -374,7 +391,7 @@ final class MachineTests: XCTestCase {
             includes: [.library(value: "IEEE"), .include(value: "IEEE.std_logic_1164.All")],
             externalSignals: [],
             generics: [],
-            clocks: [Clock(name: "clk", frequency: 50, unit: .MHz)],
+            clocks: [Clock(name: VariableName(text: "clk"), frequency: 50, unit: .MHz)],
             drivingClock: 0,
             dependentMachines: [:],
             machineSignals: [],
@@ -383,14 +400,14 @@ final class MachineTests: XCTestCase {
             returnableSignals: [],
             states: [
                 State(
-                    name: "Initial",
+                    name: VariableName(text: "Initial"),
                     actions: defaultActions,
                     actionOrder: actionOrder,
                     signals: [],
                     externalVariables: []
                 ),
                 State(
-                    name: "Suspended",
+                    name: VariableName(text: "Suspended"),
                     actions: defaultActions,
                     actionOrder: actionOrder,
                     signals: [],

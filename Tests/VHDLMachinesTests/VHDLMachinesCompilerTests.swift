@@ -34,14 +34,14 @@ class VHDLMachinesCompilerTests: XCTestCase {
             externalSignals: [
                 ExternalSignal(
                     type: .stdLogic,
-                    name: "x",
+                    name: VariableName(text: "x"),
                     mode: .input,
                     defaultValue: .logic(value: .high),
                     comment: Comment(text: "A std_logic variable.")
                 ),
                 ExternalSignal(
                     type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
-                    name: "xx",
+                    name: VariableName(text: "xx"),
                     mode: .output,
                     defaultValue: .vector(value: .bits(value: [.low, .low])),
                     comment: Comment(text: "A variable called xx.")
@@ -50,27 +50,33 @@ class VHDLMachinesCompilerTests: XCTestCase {
             generics: [
                 LocalSignal(
                     type: SignalType.ranged(type: .integer(size: .to(lower: 0, upper: 65535))),
-                    name: "y",
+                    name: VariableName(text: "y"),
                     defaultValue: .integer(value: 0),
                     comment: Comment(text: "A uint16 variable called y.")
                 ),
                 LocalSignal(
                     type: .boolean,
-                    name: "yy",
+                    name: VariableName(text: "yy"),
                     defaultValue: .boolean(value: false),
                     comment: Comment(text: "A variable called yy")
                 )
             ],
             clocks: [
-                Clock(name: "clk", frequency: 50, unit: .MHz), Clock(name: "clk2", frequency: 20, unit: .kHz)
+                Clock(name: VariableName(text: "clk"), frequency: 50, unit: .MHz),
+                Clock(name: VariableName(text: "clk2"), frequency: 20, unit: .kHz)
             ],
             drivingClock: 0,
             dependentMachines: [:],
             machineSignals: [
-                LocalSignal(type: .stdLogic, name: "machineSignal1", defaultValue: nil, comment: nil),
+                LocalSignal(
+                    type: .stdLogic,
+                    name: VariableName(text: "machineSignal1"),
+                    defaultValue: nil,
+                    comment: nil
+                ),
                 LocalSignal(
                     type: .ranged(type: .stdLogicVector(size: .downto(upper: 2, lower: 0))),
-                    name: "machineSignal2",
+                    name: VariableName(text: "machineSignal2"),
                     defaultValue: .vector(value: .bits(value: [.high, .high, .high])),
                     comment: Comment(text: "machine signal 2")
                 )
@@ -79,22 +85,26 @@ class VHDLMachinesCompilerTests: XCTestCase {
             parameterSignals: [
                 Parameter(
                     type: .stdLogic,
-                    name: "parX",
+                    name: VariableName(text: "parX"),
                     defaultValue: .logic(value: .high),
                     comment: Comment(text: "Parameter parX")
                 ),
                 Parameter(
                     type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
-                    name: "parXs",
+                    name: VariableName(text: "parXs"),
                     defaultValue: .vector(value: .bits(value: [.low, .high])),
                     comment: Comment(text: "Parameter parXs")
                 )
             ],
             returnableSignals: [
-                ReturnableVariable(type: .stdLogic, name: "retX", comment: Comment(text: "Returnable retX")),
+                ReturnableVariable(
+                    type: .stdLogic,
+                    name: VariableName(text: "retX"),
+                    comment: Comment(text: "Returnable retX")
+                ),
                 ReturnableVariable(
                     type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
-                    name: "retXs",
+                    name: VariableName(text: "retXs"),
                     comment: Comment(text: "Returnable retXs")
                 )
             ],
@@ -158,7 +168,7 @@ class VHDLMachinesCompilerTests: XCTestCase {
     /// Default state creation.
     private func defaultState(name: String) -> VHDLMachines.State {
         VHDLMachines.State(
-            name: name,
+            name: VariableName(text: name),
             actions: [
                 "OnEntry": "x <= '1';\nxx <= '0'; -- \(name) onEntry",
                 "OnExit": "x <= '0'; -- \(name) OnExit",

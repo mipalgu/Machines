@@ -11,7 +11,7 @@ import Foundation
 public struct State: Codable, Equatable, Hashable, Sendable {
 
     /// The name of the state.
-    public var name: String
+    public var name: VariableName
 
     /// The actions in the state. This property includes the code in each action.
     public var actions: [ActionName: String]
@@ -39,7 +39,7 @@ public struct State: Codable, Equatable, Hashable, Sendable {
     /// defined in the arrangement.
     @inlinable
     public init(
-        name: String,
+        name: VariableName,
         actions: [ActionName: String],
         actionOrder: [[ActionName]],
         signals: [LocalSignal],

@@ -1,8 +1,8 @@
-// ParameterTests.swift
+// VariableName.swift
 // Machines
 // 
 // Created by Morgan McColl.
-// Copyright © 2022 Morgan McColl. All rights reserved.
+// Copyright © 2023 Morgan McColl. All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -54,48 +54,37 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-@testable import VHDLMachines
-import XCTest
+import Foundation
 
-/// Tests the ``Parameter`` type.
-final class ParameterTests: XCTestCase {
+public struct VariableName: RawRepresentable,
+    CustomStringConvertible, Equatable, Hashable, Codable, Sendable, Comparable {
 
-    /// The parameter to test.
-    var parameter = Parameter(
-        type: .integer,
-        name: VariableName(text: "x"),
-        defaultValue: .integer(value: 255),
-        comment: Comment(text: "The parameter x.")
-    )
+    public let rawValue: String
 
-    /// Initialise the parameter to test.
-    override func setUp() {
-        self.parameter = Parameter(
-            type: .integer,
-            name: VariableName(text: "x"),
-            defaultValue: .integer(value: 255),
-            comment: Comment(text: "The parameter x.")
-        )
+    @inlinable public var description: String {
+        rawValue
     }
 
-    /// Test the init sets the stored properties correctly.
-    func testInit() {
-        XCTAssertEqual(self.parameter.type, .integer)
-        XCTAssertEqual(self.parameter.name, VariableName(text: "x"))
-        XCTAssertEqual(self.parameter.defaultValue, .integer(value: 255))
-        XCTAssertEqual(self.parameter.comment, Comment(text: "The parameter x."))
+    init(text: String) {
+        self.rawValue = text
     }
 
-    /// Test Getters and Setters work correctly.
-    func testGettersAndSetters() {
-        self.parameter.type = .boolean
-        self.parameter.name = VariableName(text: "y")
-        self.parameter.defaultValue = .boolean(value: true)
-        self.parameter.comment = Comment(text: "The parameter y.")
-        XCTAssertEqual(self.parameter.type, .boolean)
-        XCTAssertEqual(self.parameter.name, VariableName(text: "y"))
-        XCTAssertEqual(self.parameter.defaultValue, .boolean(value: true))
-        XCTAssertEqual(self.parameter.comment, Comment(text: "The parameter y."))
+    public init?(rawValue: String) {
+        let trimmedName = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        let allowedChars = CharacterSet.variableNames
+        guard
+            trimmedName.count < 256,
+            let firstChar = trimmedName.unicodeScalars.first,
+            CharacterSet.letters.contains(firstChar),
+            rawValue.unicodeScalars.allSatisfy({ allowedChars.contains($0) })
+        else {
+            return nil
+        }
+        self.rawValue = trimmedName
+    }
+
+    public static func < (lhs: VariableName, rhs: VariableName) -> Bool {
+        lhs.rawValue < rhs.rawValue
     }
 
 }
