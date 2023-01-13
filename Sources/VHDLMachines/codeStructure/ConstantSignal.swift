@@ -56,19 +56,26 @@
 
 import Foundation
 
+/// A type representing a valid constant declaration in `VHDL`.
 public struct ConstantSignal: RawRepresentable, Equatable, Hashable, Codable, Sendable {
 
-    public let name: VariableName
-
-    public let type: SignalType
-
-    public let value: Expression
-
-    public let comment: Comment?
-
+    /// The rawValue is a string.
     public typealias RawValue = String
 
-    public var rawValue: String {
+    /// The name of the constant.
+    public let name: VariableName
+
+    /// The type of the constant.
+    public let type: SignalType
+
+    /// The value of this constant.
+    public let value: Expression
+
+    /// The comment associated with this constant.
+    public let comment: Comment?
+
+    /// The `VHDL` code defining this constant.
+    @inlinable public var rawValue: String {
         let declaration = "constant \(name): \(type.rawValue) := \(value.rawValue);"
         guard let comment = comment else {
             return declaration
@@ -76,6 +83,14 @@ public struct ConstantSignal: RawRepresentable, Equatable, Hashable, Codable, Se
         return declaration + " \(comment)"
     }
 
+    /// Initialise this constant with the given name, type, value and comment.
+    /// - Parameters:
+    ///   - name: The name of the constant.
+    ///   - type: The type of the constant.
+    ///   - value: The value of the constant.
+    ///   - comment: The comment associated with this constant.
+    /// - Note: This initialiser will verify that the value is valid for the type of this constant.
+    @inlinable
     public init?(name: VariableName, type: SignalType, value: Expression, comment: Comment? = nil) {
         if case Expression.literal(let literal) = value {
             guard literal.isValid(for: type) else {
@@ -88,6 +103,13 @@ public struct ConstantSignal: RawRepresentable, Equatable, Hashable, Codable, Se
         self.comment = comment
     }
 
+    // swiftlint:disable function_body_length
+
+    /// Initialise this constant from the `VHDL` code that defines it.
+    /// - Parameter rawValue: The `VHDL` code defining this constant. This code should include the entire
+    /// declaration of the constant, including the `constant` keyword, the name, the type, the value,
+    /// semicolon and optionally the comment after the semicolon.
+    @inlinable
     public init?(rawValue: String) {
         let trimmedValue = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
         guard trimmedValue.hasPrefix("constant ") else {
@@ -150,6 +172,13 @@ public struct ConstantSignal: RawRepresentable, Equatable, Hashable, Codable, Se
         self.comment = comment
     }
 
+    // swiftlint:enable function_body_length
+
+    /// Create the constant declaration for the state actions within a machine.
+    /// - Parameter actions: The actions to convert.
+    /// - Returns: The constant declaration for the state actions.
+    /// - Note: This method also includes the reserved actions `NoOnEntry`, `CheckTransition`, `ReadSnapshot`
+    /// and `WriteSnapshot`.
     public static func constants(for actions: [ActionName: String]) -> [ConstantSignal]? {
         let keys = actions.keys
         let actionNamesArray = [
