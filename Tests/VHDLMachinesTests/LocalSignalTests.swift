@@ -132,6 +132,18 @@ final class LocalSignalTests: XCTestCase {
                 comment: "The signal x."
             )
         )
+        XCTAssertEqual(
+            LocalSignal(rawValue: "signal x : std_logic_vector(3 downto 0) := x\"4\"; -- The signal x."),
+            LocalSignal(
+                type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),
+                name: "x",
+                defaultValue: .vector(value: .hexademical(value: [.four])),
+                comment: "The signal x."
+            )
+        )
+        XCTAssertNil(
+            LocalSignal(rawValue: "signal x : std_logic_vector(3 downto 0) := o\"4\"; -- The signal x.")
+        )
     }
 
 }
