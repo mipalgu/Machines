@@ -26,9 +26,10 @@ public struct ExternalSignal: ExternalType, RawRepresentable, Codable, Hashable,
     /// The mode of the signal.
     public var mode: Mode
 
-    public var rawValue: String {
+    /// The `VHDL` code that represents this signal definition.
+    @inlinable public var rawValue: String {
         let declaration = "\(name): \(mode.rawValue) \(type.rawValue)"
-        let comment = self.comment.map { $0.rawValue } ?? ""
+        let comment = self.comment.map { " " + $0.rawValue } ?? ""
         guard let defaultValue = defaultValue else {
             return declaration + ";\(comment)"
         }
@@ -57,6 +58,9 @@ public struct ExternalSignal: ExternalType, RawRepresentable, Codable, Hashable,
         self.comment = comment
     }
 
+    /// Initialise the external signal from the VHDL code that defines it.
+    /// - Parameter rawValue: The VHDL code that defines this signal. This code is the statement found within
+    /// the port declaration of an entity block.
     public init?(rawValue: String) {
         let trimmedString = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
         guard trimmedString.count < 256 else {
@@ -73,16 +77,23 @@ public struct ExternalSignal: ExternalType, RawRepresentable, Codable, Hashable,
             return nil
         }
         let typeComponents = typeDeclaration.components(separatedBy: .whitespaces)
-        guard typeComponents.count >= 3 else {
+        guard typeComponents.count >= 2 else {
             return nil
         }
+        let hasColonComponents = typeComponents[1].trimmingCharacters(in: .whitespaces) == ":"
         let nameComponents = typeComponents[0]
-        let modeComponents = typeComponents[1]
-        let typeString = typeComponents[2...].joined(separator: " ")
-        guard let mode = Mode(rawValue: modeComponents), nameComponents.hasSuffix(":") else {
+        let minCount = hasColonComponents ? 4 : 3
+        guard typeComponents.count >= minCount else {
             return nil
         }
-        let nameString = String(nameComponents.dropLast())
+        let modeComponents = hasColonComponents ? typeComponents[2] : typeComponents[1]
+        let typeString = typeComponents[(minCount - 1)...].joined(separator: " ")
+        guard
+            let mode = Mode(rawValue: modeComponents), hasColonComponents || nameComponents.hasSuffix(":")
+        else {
+            return nil
+        }
+        let nameString = hasColonComponents ? nameComponents : String(nameComponents.dropLast())
         guard
             let name = VariableName(rawValue: nameString), let type = SignalType(rawValue: typeString)
         else {

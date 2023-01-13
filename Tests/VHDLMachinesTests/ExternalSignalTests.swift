@@ -111,4 +111,55 @@ final class ExternalSignalTests: XCTestCase {
         XCTAssertEqual(self.signal.comment, comment)
     }
 
+    /// Test rawValue creates correct representation.
+    func testRawValue() {
+        XCTAssertEqual(self.signal.rawValue, "x: out std_logic := '1'; -- signal x")
+        self.signal.comment = nil
+        XCTAssertEqual(self.signal.rawValue, "x: out std_logic := '1';")
+        self.signal.defaultValue = nil
+        XCTAssertEqual(self.signal.rawValue, "x: out std_logic;")
+        self.signal.comment = Comment(text: "signal x")
+        XCTAssertEqual(self.signal.rawValue, "x: out std_logic; -- signal x")
+    }
+
+    /// Test rawValue init works for valid string.
+    func testRawValueInit() {
+        XCTAssertEqual(ExternalSignal(rawValue: "x: out std_logic := '1'; -- signal x"), self.signal)
+        self.signal.comment = nil
+        XCTAssertEqual(ExternalSignal(rawValue: "x: out std_logic := '1';"), self.signal)
+        self.signal.defaultValue = nil
+        XCTAssertEqual(ExternalSignal(rawValue: "x: out std_logic;"), self.signal)
+        self.signal.comment = Comment(text: "signal x")
+        XCTAssertEqual(ExternalSignal(rawValue: "x: out std_logic; -- signal x"), self.signal)
+    }
+
+    /// Test rawValue init when the colon has spaces around it.
+    func testRawValueInitWithSpace() {
+        XCTAssertEqual(ExternalSignal(rawValue: "x : out std_logic := '1'; -- signal x"), self.signal)
+        self.signal.comment = nil
+        XCTAssertEqual(ExternalSignal(rawValue: "x : out std_logic := '1';"), self.signal)
+        self.signal.defaultValue = nil
+        XCTAssertEqual(ExternalSignal(rawValue: "x : out std_logic;"), self.signal)
+        self.signal.comment = Comment(text: "signal x")
+        XCTAssertEqual(ExternalSignal(rawValue: "x : out std_logic; -- signal x"), self.signal)
+    }
+
+    /// Test rawValue init works for vector types.
+    func testRawValueInitVectorType() {
+        signal.type = .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0)))
+        XCTAssertEqual(
+            ExternalSignal(rawValue: "x: out std_logic_vector(3 downto 0) := '1'; -- signal x"), signal
+        )
+        signal.comment = nil
+        XCTAssertEqual(
+            ExternalSignal(rawValue: "x: out std_logic_vector(3 downto 0) := '1';"), signal
+        )
+        signal.defaultValue = nil
+        XCTAssertEqual(ExternalSignal(rawValue: "x: out std_logic_vector(3 downto 0);"), signal)
+        signal.comment = Comment(text: "signal x")
+        XCTAssertEqual(
+            ExternalSignal(rawValue: "x: out std_logic_vector(3 downto 0); -- signal x"), signal
+        )
+    }
+
 }
