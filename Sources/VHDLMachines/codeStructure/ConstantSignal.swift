@@ -64,19 +64,26 @@ public struct ConstantSignal: RawRepresentable, Equatable, Hashable, Codable, Se
 
     public let value: SignalLiteral
 
+    public let comment: String?
+
     public typealias RawValue = String
 
     public var rawValue: String {
-        "constant \(name): \(type.rawValue) := \(value.rawValue);"
+        let declaration = "constant \(name): \(type.rawValue) := \(value.rawValue);"
+        guard let comment = comment else {
+            return declaration
+        }
+        return declaration + " -- \(comment)"
     }
 
-    public init?(name: String, type: SignalType, value: SignalLiteral) {
+    public init?(name: String, type: SignalType, value: SignalLiteral, comment: String? = nil) {
         guard value.isValid(for: type) else {
             return nil
         }
         self.name = name
         self.type = type
         self.value = value
+        self.comment = comment
     }
 
     public init?(rawValue: String) {
@@ -84,7 +91,28 @@ public struct ConstantSignal: RawRepresentable, Equatable, Hashable, Codable, Se
         guard trimmedValue.hasPrefix("constant ") else {
             return nil
         }
-        let components = trimmedValue.components(separatedBy: ":=")
+        var hasDash = false
+        var index: Int?
+        for (i, c) in trimmedValue.enumerated() {
+            if hasDash && c == "-" {
+                index = i - 1
+                break
+            } else if c == "-" {
+                hasDash = true
+            } else {
+                hasDash = false
+            }
+        }
+        let components: [String]
+        var comment: String?
+        if let index = index {
+            let endIndex = String.Index(utf16Offset: index, in: trimmedValue)
+            let declaration = trimmedValue[String.Index(utf16Offset: 0, in: trimmedValue)..<endIndex]
+            components = declaration.components(separatedBy: ":=")
+            comment = trimmedValue[endIndex...].dropFirst(2).trimmingCharacters(in: .whitespaces)
+        } else {
+            components = trimmedValue.components(separatedBy: ":=")
+        }
         guard components.count == 2 else {
             return nil
         }
@@ -98,7 +126,8 @@ public struct ConstantSignal: RawRepresentable, Equatable, Hashable, Codable, Se
         guard
             nameAndType.count == 2,
             let lastComponent = nameAndType.last,
-            let type = SignalType(rawValue: lastComponent)
+            let type = SignalType(rawValue: lastComponent),
+            literal.isValid(for: type)
         else {
             return nil
         }
@@ -106,6 +135,7 @@ public struct ConstantSignal: RawRepresentable, Equatable, Hashable, Codable, Se
             .trimmingCharacters(in: .whitespacesAndNewlines)
         self.type = type
         self.value = literal
+        self.comment = comment
     }
 
     public static func constants(for actions: [ActionName: String]) -> [ConstantSignal]? {

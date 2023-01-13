@@ -1,4 +1,4 @@
-// MachineRepresentation.swift
+// Statement.swift
 // Machines
 // 
 // Created by Morgan McColl.
@@ -54,82 +54,68 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-public struct MachineRepresentation: Equatable, Hashable, Codable {
+public enum Statement: RawRepresentable, Equatable, Hashable, Codable {
 
-    public let statesRepresentations: [State: VectorLiteral]
+    case constant(value: ConstantSignal)
 
-    public let stateType: SignalType
+    case definition(signal: LocalSignal)
 
-    public let actionRepresentation: [ActionName: ConstantSignal]
+    case assignment(name: String, value: Expression)
 
-    public let commands: [SuspensionCommand: VectorLiteral]
+    case expression(value: Expression)
 
-    public let command: SignalType
+    public typealias RawValue = String
 
-    public let externalSignals: [ExternalSignal]
+    public var rawValue: String {
+        switch self {
+        case .constant(let value):
+            return value.rawValue
+        case .definition(let signal):
+            return signal.rawValue
+        case .assignment(let name, let value):
+            return "\(name) := \(value.rawValue)"
+        case .expression(let value):
+            return value.rawValue
+        }
+    }
 
-    public let machine: Machine
-
-    public let actionType: SignalType
-
-    public let suspendedType: SignalType
-
-    public let ringletCounterType: SignalType
-
-    public let clockPeriod: ConstantSignal
-
-    public init?(machine: Machine) {
-        guard
-            let actions = machine.states.first?.actions.keys.sorted(),
-            let bitsRequired = BitLiteral.bitsRequired(for: machine.states.count),
-            let bits = SuspensionCommand.bitRepresentation,
-            let commandType = SuspensionCommand.bitsType,
-            let actionRequiredBits = BitLiteral.bitsRequired(for: actions.count),
-            machine.clocks.count > machine.drivingClock
-        else {
+    public init?(rawValue: String) {
+        let trimmedString = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmedString.count < 256 else {
             return nil
         }
-        self.statesRepresentations = Dictionary(
-            uniqueKeysWithValues: machine.states.sorted { $0.name < $1.name }.enumerated().map {
-                ($1, .bits(value: BitLiteral.bitVersion(of: $0, bitsRequired: bitsRequired)))
-            }
-        )
-        self.stateType = .ranged(type: .stdLogicVector(size: .downto(upper: bitsRequired - 1, lower: 0)))
-        let actionType = SignalType.ranged(
-            type: .stdLogicVector(size: .downto(upper: actionRequiredBits - 1, lower: 0))
-        )
-        let actionConstants: [(ActionName, ConstantSignal)] = actions.enumerated().compactMap {
+        let value = trimmedString.lowercased()
+        guard !value.contains("<=") else {
+            let components = value.components(separatedBy: "<=")
             guard
-                let constant = ConstantSignal(
-                    name: $1,
-                    type: actionType,
-                    value: .vector(
-                        value: .bits(value: BitLiteral.bitVersion(of: $0, bitsRequired: actionRequiredBits))
-                    )
-                )
+                components.count == 2,
+                let name = String(name: components[0]),
+                let exp = Expression(rawValue: components[1].trimmingCharacters(in: .whitespacesAndNewlines))
             else {
                 return nil
             }
-            return ($1, constant)
+            self = .assignment(name: name, value: exp)
+            return
         }
-        let period = Double(machine.clocks[machine.drivingClock].period.picoseconds_d)
-        guard
-            actionConstants.count == actions.count,
-            let periodConstant = ConstantSignal(
-                name: "clockPeriod", type: .real, value: .decimal(value: period)
-            )
-        else {
-            return nil
+        guard !value.contains("constant ") else {
+            guard let constant = ConstantSignal(rawValue: value) else {
+                return nil
+            }
+            self = .constant(value: constant)
+            return
         }
-        self.clockPeriod = periodConstant
-        self.actionType = actionType
-        self.actionRepresentation = Dictionary(uniqueKeysWithValues: actionConstants)
-        self.commands = bits
-        self.command = commandType
-        self.externalSignals = machine.externalSignals
-        self.suspendedType = .stdLogic
-        self.ringletCounterType = .natural
-        self.machine = machine
+        guard !value.contains("signal ") else {
+            guard let signal = LocalSignal(rawValue: value) else {
+                return nil
+            }
+            self = .definition(signal: signal)
+            return
+        }
+        if let exp = Expression(rawValue: value) {
+            self = .expression(value: exp)
+            return
+        }
+        return nil
     }
 
 }
