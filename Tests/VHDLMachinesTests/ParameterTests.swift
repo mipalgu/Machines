@@ -84,6 +84,7 @@ final class ParameterTests: XCTestCase {
         XCTAssertEqual(self.parameter.name, VariableName(text: "x"))
         XCTAssertEqual(self.parameter.defaultValue, .integer(value: 255))
         XCTAssertEqual(self.parameter.comment, Comment(text: "The parameter x."))
+        XCTAssertEqual(self.parameter.mode, .input)
     }
 
     /// Test Getters and Setters work correctly.

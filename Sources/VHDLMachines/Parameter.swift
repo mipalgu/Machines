@@ -12,7 +12,16 @@ import Foundation
 public struct Parameter: ExternalType, Codable, Equatable, Hashable, Variable {
 
     /// The mode of the parameter.
-    public var mode: Mode = .input
+    public var mode: Mode {
+        get {
+            .input
+        }
+        set {
+            guard newValue == .input else {
+                fatalError("You cannot change the parameters mode.")
+            }
+        }
+    }
 
     /// The type of the parameter.
     public var type: SignalType
