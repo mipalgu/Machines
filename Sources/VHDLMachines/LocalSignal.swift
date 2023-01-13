@@ -39,8 +39,15 @@ public struct LocalSignal: RawRepresentable, Codable, Equatable, Hashable, Varia
     ///   - name: The name of the signal.
     ///   - defaultValue: The default value of the signal.
     ///   - comment: The comment of the signal.
+    /// - Warning: Make sure the `defaultValue` is valid for the given signal `type`. The program will crash
+    /// if this is not the case.
     @inlinable
     public init(type: SignalType, name: String, defaultValue: SignalLiteral?, comment: String?) {
+        if let defaultValue = defaultValue {
+            guard defaultValue.isValid(for: type) else {
+                fatalError("Invalid literal \(defaultValue) for signal type \(type).")
+            }
+        }
         self.type = type
         self.name = name
         self.defaultValue = defaultValue
@@ -96,6 +103,11 @@ public struct LocalSignal: RawRepresentable, Codable, Equatable, Hashable, Varia
         let name = signalComponents.count == 3 ? String(signalComponents[1].dropLast()) : signalComponents[1]
         guard !name.isEmpty, !CharacterSet.whitespacesAndNewlines.within(string: name) else {
             return nil
+        }
+        if let val = value {
+            guard val.isValid(for: type) else {
+                return nil
+            }
         }
         self.name = name
         self.type = type
