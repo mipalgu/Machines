@@ -76,9 +76,11 @@ final class ExpressionTests: XCTestCase {
             Expression.division(lhs: .variable(name: "a"), rhs: .variable(name: "b")).rawValue, "a / b"
         )
         XCTAssertEqual(Expression.precedence(value: .variable(name: "a")).rawValue, "(a)")
-        XCTAssertEqual(Expression.comment(comment: "a").rawValue, "-- a")
+        XCTAssertEqual(Expression.comment(comment: Comment(text: "a")).rawValue, "-- a")
         XCTAssertEqual(
-            Expression.expressionWithComment(expression: .variable(name: "a"), comment: "b").rawValue,
+            Expression.expressionWithComment(
+                expression: .variable(name: "a"), comment: Comment(text: "b")
+            ).rawValue,
             "a; -- b"
         )
         XCTAssertEqual(
@@ -89,12 +91,12 @@ final class ExpressionTests: XCTestCase {
 
     /// Test init successfully creates `Expression` for simple statements.
     func testSimpleInit() {
-        XCTAssertEqual(Expression(rawValue: "-- a"), .comment(comment: "a"))
+        XCTAssertEqual(Expression(rawValue: "-- a"), .comment(comment: Comment(text: "a")))
         XCTAssertEqual(Expression(rawValue: "a"), .variable(name: "a"))
         XCTAssertEqual(Expression(rawValue: "a;"), .variable(name: "a"))
         XCTAssertEqual(
             Expression(rawValue: "a; -- b"),
-            .expressionWithComment(expression: .variable(name: "a"), comment: "b")
+            .expressionWithComment(expression: .variable(name: "a"), comment: Comment(text: "b"))
         )
         XCTAssertEqual(Expression(rawValue: "(a)"), .precedence(value: .variable(name: "a")))
         XCTAssertEqual(
@@ -161,7 +163,7 @@ final class ExpressionTests: XCTestCase {
                 ),
                 rhs: .division(lhs: .variable(name: "d"), rhs: .variable(name: "e"))
             ),
-            comment: "a nice comment!"
+            comment: Comment(text: "a nice comment!")
         )
         let result = Expression(rawValue: raw)
         XCTAssertEqual(result, expected)
@@ -186,7 +188,7 @@ final class ExpressionTests: XCTestCase {
                     rhs: .variable(name: "e")
                 )
             ),
-            comment: "a nice comment!"
+            comment: Comment(text: "a nice comment!")
         )
         let result = Expression(rawValue: raw)
         XCTAssertEqual(result, expected)
@@ -206,7 +208,7 @@ final class ExpressionTests: XCTestCase {
                     rhs: .division(lhs: .variable(name: "d"), rhs: .variable(name: "e"))
                 )
             ),
-            comment: "a nice comment!"
+            comment: Comment(text: "a nice comment!")
         )
         let result = Expression(rawValue: raw)
         XCTAssertEqual(result, expected)
@@ -229,7 +231,7 @@ final class ExpressionTests: XCTestCase {
                     )
                 )
             ),
-            comment: "a nice comment!"
+            comment: Comment(text: "a nice comment!")
         )
         let result = Expression(rawValue: raw)
         XCTAssertEqual(result, expected)
@@ -249,7 +251,7 @@ final class ExpressionTests: XCTestCase {
                     rhs: .division(lhs: .variable(name: "d"), rhs: .variable(name: "e"))
                 )
             ),
-            comment: "a nice comment!"
+            comment: Comment(text: "a nice comment!")
         )
         XCTAssertEqual(expected, expression.rawValue)
     }

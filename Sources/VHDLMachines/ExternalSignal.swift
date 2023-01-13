@@ -21,14 +21,14 @@ public struct ExternalSignal: ExternalType, RawRepresentable, Codable, Hashable,
     public var defaultValue: SignalLiteral?
 
     /// The comment of the signal.
-    public var comment: String?
+    public var comment: Comment?
 
     /// The mode of the signal.
     public var mode: Mode
 
     public var rawValue: String {
         let declaration = "\(name): \(mode.rawValue) \(type.rawValue)"
-        let comment = self.comment.map { " -- \($0)" } ?? ""
+        let comment = self.comment.map { $0.rawValue } ?? ""
         guard let defaultValue = defaultValue else {
             return declaration + ";\(comment)"
         }
@@ -44,7 +44,11 @@ public struct ExternalSignal: ExternalType, RawRepresentable, Codable, Hashable,
     ///   - comment: The comment of the signal.
     @inlinable
     public init(
-        type: SignalType, name: String, mode: Mode, defaultValue: SignalLiteral? = nil, comment: String? = nil
+        type: SignalType,
+        name: String,
+        mode: Mode,
+        defaultValue: SignalLiteral? = nil,
+        comment: Comment? = nil
     ) {
         self.type = type
         self.name = name
@@ -62,7 +66,7 @@ public struct ExternalSignal: ExternalType, RawRepresentable, Codable, Hashable,
         guard components.count <= 2, !components.isEmpty else {
             return nil
         }
-        let comment = components.count == 2 ? String(comment: components.last ?? "") : nil
+        let comment = components.count == 2 ? components.last.flatMap { Comment(rawValue: $0) } : nil
         let declaration = trimmedString.uptoSemicolon
         let assignmentComponents = declaration.components(separatedBy: ":=")
         guard assignmentComponents.count <= 2, let typeDeclaration = assignmentComponents.first else {

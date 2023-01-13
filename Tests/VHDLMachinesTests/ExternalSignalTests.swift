@@ -62,37 +62,53 @@ final class ExternalSignalTests: XCTestCase {
 
     /// The signal under test.
     var signal = ExternalSignal(
-        type: .stdLogic, name: "x", mode: .output, defaultValue: .logic(value: .high), comment: "signal x"
+        type: .stdLogic,
+        name: "x",
+        mode: .output,
+        defaultValue: .logic(value: .high),
+        comment: Comment(text: "signal x")
     )
 
     /// Initialises the signal under test.
     override func setUp() {
         self.signal = ExternalSignal(
-        type: .stdLogic, name: "x", mode: .output, defaultValue: .logic(value: .high), comment: "signal x"
-    )
+            type: .stdLogic,
+            name: "x",
+            mode: .output,
+            defaultValue: .logic(value: .high),
+            comment: Comment(text: "signal x")
+        )
     }
 
     /// Test init sets properties correctly.
     func testInit() {
+        guard let comment = Comment(rawValue: "-- signal x") else {
+            XCTFail("Failed to create comment.")
+            return
+        }
         XCTAssertEqual(self.signal.type, .stdLogic)
         XCTAssertEqual(self.signal.name, "x")
         XCTAssertEqual(self.signal.mode, .output)
         XCTAssertEqual(self.signal.defaultValue, .logic(value: .high))
-        XCTAssertEqual(self.signal.comment, "signal x")
+        XCTAssertEqual(self.signal.comment, comment)
     }
 
     /// Test getters and setters work correctly.
     func testGettersAndSetters() {
+        guard let comment = Comment(rawValue: "-- signal y") else {
+            XCTFail("Failed to create comment.")
+            return
+        }
         self.signal.type = .ranged(type: .stdLogicVector(size: .downto(upper: 7, lower: 0)))
         self.signal.name = "y"
         self.signal.mode = .input
         self.signal.defaultValue = .vector(value: .hexademical(value: [.ten, .ten]))
-        self.signal.comment = "signal y"
+        self.signal.comment = comment
         XCTAssertEqual(self.signal.type, .ranged(type: .stdLogicVector(size: .downto(upper: 7, lower: 0))))
         XCTAssertEqual(self.signal.name, "y")
         XCTAssertEqual(self.signal.mode, .input)
         XCTAssertEqual(self.signal.defaultValue, .vector(value: .hexademical(value: [.ten, .ten])))
-        XCTAssertEqual(self.signal.comment, "signal y")
+        XCTAssertEqual(self.signal.comment, comment)
     }
 
 }

@@ -64,7 +64,7 @@ public struct ConstantSignal: RawRepresentable, Equatable, Hashable, Codable, Se
 
     public let value: Expression
 
-    public let comment: String?
+    public let comment: Comment?
 
     public typealias RawValue = String
 
@@ -73,10 +73,10 @@ public struct ConstantSignal: RawRepresentable, Equatable, Hashable, Codable, Se
         guard let comment = comment else {
             return declaration
         }
-        return declaration + " -- \(comment)"
+        return declaration + " \(comment)"
     }
 
-    public init?(name: String, type: SignalType, value: Expression, comment: String? = nil) {
+    public init?(name: String, type: SignalType, value: Expression, comment: Comment? = nil) {
         if case Expression.literal(let literal) = value {
             guard literal.isValid(for: type) else {
                 return nil
@@ -99,7 +99,7 @@ public struct ConstantSignal: RawRepresentable, Equatable, Hashable, Codable, Se
         else {
             return nil
         }
-        let comment = String(comment: commentString)
+        let comment = Comment(rawValue: commentString)
         let declComponents = declaration.components(separatedBy: ":=")
         guard
             declComponents.count == 2,

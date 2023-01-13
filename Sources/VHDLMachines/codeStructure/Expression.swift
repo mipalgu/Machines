@@ -81,10 +81,10 @@ indirect public enum Expression: RawRepresentable, Equatable, Hashable, Codable,
     case precedence(value: Expression)
 
     /// A comment.
-    case comment(comment: String)
+    case comment(comment: Comment)
 
     /// An expression with a comment.
-    case expressionWithComment(expression: Expression, comment: String)
+    case expressionWithComment(expression: Expression, comment: Comment)
 
     /// The raw value is a string.
     public typealias RawValue = String
@@ -107,9 +107,9 @@ indirect public enum Expression: RawRepresentable, Equatable, Hashable, Codable,
         case .precedence(let value):
             return "(\(value.rawValue))"
         case .comment(let comment):
-            return "-- \(comment)"
+            return "\(comment)"
         case .expressionWithComment(let expression, let comment):
-            return "\(expression.rawValue); -- \(comment)"
+            return "\(expression.rawValue); \(comment)"
         }
     }
 
@@ -124,7 +124,10 @@ indirect public enum Expression: RawRepresentable, Equatable, Hashable, Codable,
             return nil
         }
         guard !trimmedString.hasPrefix("--") else {
-            self = .comment(comment: trimmedString.dropFirst(2).trimmingCharacters(in: .whitespaces))
+            guard let comment = Comment(rawValue: trimmedString) else {
+                return nil
+            }
+            self = .comment(comment: comment)
             return
         }
         guard !trimmedString.contains("--") else {
@@ -132,8 +135,12 @@ indirect public enum Expression: RawRepresentable, Equatable, Hashable, Codable,
             guard components.count >= 2, let expression = Expression(rawValue: components[0]) else {
                 return nil
             }
-            let comment = components[1...].joined(separator: "--").trimmingCharacters(in: .whitespaces)
-            self = .expressionWithComment(expression: expression, comment: comment)
+            let comment = "-- " + components[1...].joined(separator: "--")
+                .trimmingCharacters(in: .whitespaces)
+            guard let commentValue = Comment(rawValue: comment) else {
+                return nil
+            }
+            self = .expressionWithComment(expression: expression, comment: commentValue)
             return
         }
         let value = trimmedString.uptoSemicolon

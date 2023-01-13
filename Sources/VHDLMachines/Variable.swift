@@ -20,6 +20,6 @@ public protocol Variable {
     var defaultValue: SignalLiteral? {get set}
 
     /// The range of the variable.
-    var comment: String? {get set}
+    var comment: Comment? {get set}
 
 }

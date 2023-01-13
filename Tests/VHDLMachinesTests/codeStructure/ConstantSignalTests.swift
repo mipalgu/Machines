@@ -62,24 +62,36 @@ final class ConstantSignalTests: XCTestCase {
 
     /// The signal under test.
     var signal = ConstantSignal(
-        name: "x", type: .stdLogic, value: .literal(value: .logic(value: .high)), comment: "signal x."
+        name: "x",
+        type: .stdLogic,
+        value: .literal(value: .logic(value: .high)),
+        comment: Comment(text: "signal x.")
     )
 
     /// Initialise the signal under test before every test case.
     override func setUp() {
         self.signal = ConstantSignal(
-            name: "x", type: .stdLogic, value: .literal(value: .logic(value: .high)), comment: "signal x."
+            name: "x",
+            type: .stdLogic,
+            value: .literal(value: .logic(value: .high)),
+            comment: Comment(text: "signal x.")
         )
     }
 
     /// Test init sets properties correctly.
     func testInit() {
+        guard
+            let xComment = Comment(rawValue: "-- signal x."), let yComment = Comment(rawValue: "-- signal y.")
+        else {
+            XCTFail("Could not create comments.")
+            return
+        }
         XCTAssertEqual(signal?.name, "x")
         XCTAssertEqual(signal?.type, .stdLogic)
         XCTAssertEqual(signal?.value, .literal(value: .logic(value: .high)))
-        XCTAssertEqual(signal?.comment, "signal x.")
+        XCTAssertEqual(signal?.comment, xComment)
         let newSignal = ConstantSignal(
-            name: "y", type: .stdLogic, value: .literal(value: .integer(value: 5)), comment: "signal y."
+            name: "y", type: .stdLogic, value: .literal(value: .integer(value: 5)), comment: yComment
         )
         XCTAssertNil(newSignal)
     }
@@ -162,15 +174,19 @@ final class ConstantSignalTests: XCTestCase {
 
     /// Test raw value init creates signal correctly.
     func testRawValueInit() {
+        guard let comment = Comment(rawValue: "-- signal x.") else {
+            XCTFail("Failed to create comment")
+            return
+        }
         let result = ConstantSignal(rawValue: "constant x: std_logic := '1'; -- signal x.")
         let expected = ConstantSignal(
-            name: "x", type: .stdLogic, value: .literal(value: .logic(value: .high)), comment: "signal x."
+            name: "x", type: .stdLogic, value: .literal(value: .logic(value: .high)), comment: comment
         )
         XCTAssertNotNil(expected)
         XCTAssertEqual(result, expected)
         let result1 = ConstantSignal(rawValue: "constant x : std_logic := '1'; -- signal x.")
         let expected1 = ConstantSignal(
-            name: "x", type: .stdLogic, value: .literal(value: .logic(value: .high)), comment: "signal x."
+            name: "x", type: .stdLogic, value: .literal(value: .logic(value: .high)), comment: comment
         )
         XCTAssertNotNil(expected1)
         XCTAssertEqual(result1, expected1)
@@ -181,7 +197,7 @@ final class ConstantSignalTests: XCTestCase {
             name: "x",
             type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),
             value: .literal(value: .vector(value: .bits(value: [.low, .high, .low, .high]))),
-            comment: "signal x."
+            comment: comment
         )
         XCTAssertNotNil(expected2)
         XCTAssertEqual(result2, expected2)

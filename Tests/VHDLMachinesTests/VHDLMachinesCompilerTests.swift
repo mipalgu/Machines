@@ -37,14 +37,14 @@ class VHDLMachinesCompilerTests: XCTestCase {
                     name: "x",
                     mode: .input,
                     defaultValue: .logic(value: .high),
-                    comment: "A std_logic variable."
+                    comment: Comment(text: "A std_logic variable.")
                 ),
                 ExternalSignal(
                     type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
                     name: "xx",
                     mode: .output,
                     defaultValue: .vector(value: .bits(value: [.low, .low])),
-                    comment: "A variable called xx."
+                    comment: Comment(text: "A variable called xx.")
                 )
             ],
             generics: [
@@ -52,13 +52,13 @@ class VHDLMachinesCompilerTests: XCTestCase {
                     type: SignalType.ranged(type: .integer(size: .to(lower: 0, upper: 65535))),
                     name: "y",
                     defaultValue: .integer(value: 0),
-                    comment: "A uint16 variable called y."
+                    comment: Comment(text: "A uint16 variable called y.")
                 ),
                 LocalSignal(
                     type: .boolean,
                     name: "yy",
                     defaultValue: .boolean(value: false),
-                    comment: "A variable called yy"
+                    comment: Comment(text: "A variable called yy")
                 )
             ],
             clocks: [
@@ -72,7 +72,7 @@ class VHDLMachinesCompilerTests: XCTestCase {
                     type: .ranged(type: .stdLogicVector(size: .downto(upper: 2, lower: 0))),
                     name: "machineSignal2",
                     defaultValue: .vector(value: .bits(value: [.high, .high, .high])),
-                    comment: "machine signal 2"
+                    comment: Comment(text: "machine signal 2")
                 )
             ],
             isParameterised: true,
@@ -81,21 +81,21 @@ class VHDLMachinesCompilerTests: XCTestCase {
                     type: .stdLogic,
                     name: "parX",
                     defaultValue: .logic(value: .high),
-                    comment: "Parameter parX"
+                    comment: Comment(text: "Parameter parX")
                 ),
                 Parameter(
                     type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
                     name: "parXs",
                     defaultValue: .vector(value: .bits(value: [.low, .high])),
-                    comment: "Parameter parXs"
+                    comment: Comment(text: "Parameter parXs")
                 )
             ],
             returnableSignals: [
-                ReturnableVariable(type: .stdLogic, name: "retX", comment: "Returnable retX"),
+                ReturnableVariable(type: .stdLogic, name: "retX", comment: Comment(text: "Returnable retX")),
                 ReturnableVariable(
                     type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
                     name: "retXs",
-                    comment: "Returnable retXs"
+                    comment: Comment(text: "Returnable retXs")
                 )
             ],
             states: [

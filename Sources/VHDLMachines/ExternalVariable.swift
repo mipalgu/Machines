@@ -24,7 +24,7 @@ public struct ExternalVariable: ExternalType {
     public var defaultValue: String?
 
     /// The comment associated with the variable.
-    public var comment: String?
+    public var comment: Comment?
 
     /// The mode of the variable.
     public var mode: Mode
@@ -44,7 +44,7 @@ public struct ExternalVariable: ExternalType {
         mode: Mode,
         range: (Int, Int)? = nil,
         defaultValue: String?,
-        comment: String?
+        comment: Comment?
     ) {
         self.type = type
         self.name = name

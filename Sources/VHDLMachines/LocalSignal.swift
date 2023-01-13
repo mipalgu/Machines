@@ -21,12 +21,12 @@ public struct LocalSignal: RawRepresentable, Codable, Equatable, Hashable, Varia
     public var defaultValue: SignalLiteral?
 
     /// The comment of the signal.
-    public var comment: String?
+    public var comment: Comment?
 
     /// The VHDL code that represents this signals definition.
     @inlinable public var rawValue: String {
         let declaration = "signal \(name): \(type.rawValue)"
-        let comment = self.comment.map { " -- \($0)" } ?? ""
+        let comment = self.comment.map { " " + $0.rawValue } ?? ""
         guard let defaultValue = defaultValue else {
             return declaration + ";\(comment)"
         }
@@ -42,7 +42,7 @@ public struct LocalSignal: RawRepresentable, Codable, Equatable, Hashable, Varia
     /// - Warning: Make sure the `defaultValue` is valid for the given signal `type`. The program will crash
     /// if this is not the case.
     @inlinable
-    public init(type: SignalType, name: String, defaultValue: SignalLiteral?, comment: String?) {
+    public init(type: SignalType, name: String, defaultValue: SignalLiteral?, comment: Comment?) {
         if let defaultValue = defaultValue {
             guard defaultValue.isValid(for: type) else {
                 fatalError("Invalid literal \(defaultValue) for signal type \(type).")
@@ -65,7 +65,7 @@ public struct LocalSignal: RawRepresentable, Codable, Equatable, Hashable, Varia
         guard components.count <= 2, !components.isEmpty else {
             return nil
         }
-        let comment = components.last.flatMap { String(comment: $0) }?.trimmingCharacters(in: .whitespaces)
+        let comment = components.last.flatMap { Comment(rawValue: $0) }
         let declaration = trimmedString.uptoSemicolon
         guard !declaration.contains(":=") else {
             let declComponents = declaration.components(separatedBy: ":=")
@@ -87,7 +87,7 @@ public struct LocalSignal: RawRepresentable, Codable, Equatable, Hashable, Varia
     ///   - declaration: The declaration string consisting of the signal name and type definition.
     ///   - defaultValue: The default value of the signal. This value appears on the rhs of the `:=` operator.
     ///   - comment: The comment that appears on the rhs of the `--` operator.
-    private init?(declaration: String, defaultValue: String? = nil, comment: String? = nil) {
+    private init?(declaration: String, defaultValue: String? = nil, comment: Comment? = nil) {
         let signalComponents = declaration.components(separatedBy: .whitespacesAndNewlines)
         let value = SignalLiteral(rawValue: defaultValue ?? "")
         guard signalComponents.count >= 2 else {

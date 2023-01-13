@@ -62,13 +62,19 @@ final class LocalSignalTests: XCTestCase {
 
     /// The signal to test.
     var signal = LocalSignal(
-        type: .stdLogic, name: "x", defaultValue: .logic(value: .high), comment: "The signal x."
+        type: .stdLogic,
+        name: "x",
+        defaultValue: .logic(value: .high),
+        comment: Comment(text: "The signal x.")
     )
 
     /// Initialises the signal to test.
     override func setUp() {
         self.signal = LocalSignal(
-            type: .stdLogic, name: "x", defaultValue: .logic(value: .high), comment: "The signal x."
+            type: .stdLogic,
+            name: "x",
+            defaultValue: .logic(value: .high),
+            comment: Comment(text: "The signal x.")
         )
     }
 
@@ -77,7 +83,7 @@ final class LocalSignalTests: XCTestCase {
         XCTAssertEqual(self.signal.type, .stdLogic)
         XCTAssertEqual(self.signal.name, "x")
         XCTAssertEqual(self.signal.defaultValue, .logic(value: .high))
-        XCTAssertEqual(self.signal.comment, "The signal x.")
+        XCTAssertEqual(self.signal.comment, Comment(text: "The signal x."))
     }
 
     /// Test the getters and setters work correctly.
@@ -85,11 +91,11 @@ final class LocalSignalTests: XCTestCase {
         self.signal.type = .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0)))
         self.signal.name = "y"
         self.signal.defaultValue = .vector(value: .bits(value: [.low, .low, .low, .low]))
-        self.signal.comment = "The signal y."
+        self.signal.comment = Comment(text: "The signal y.")
         XCTAssertEqual(self.signal.type, .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))))
         XCTAssertEqual(self.signal.name, "y")
         XCTAssertEqual(self.signal.defaultValue, .vector(value: .bits(value: [.low, .low, .low, .low])))
-        XCTAssertEqual(self.signal.comment, "The signal y.")
+        XCTAssertEqual(self.signal.comment, Comment(text: "The signal y."))
     }
 
     /// Test rawValue returns the correct value.
@@ -110,17 +116,18 @@ final class LocalSignalTests: XCTestCase {
         XCTAssertEqual(LocalSignal(rawValue: "signal x: std_logic := '1';"), self.signal)
         self.signal.defaultValue = nil
         XCTAssertEqual(LocalSignal(rawValue: "signal x: std_logic;"), self.signal)
-        self.signal.comment = "The signal x."
+        let comment = Comment(text: "The signal x.")
+        self.signal.comment = comment
         XCTAssertEqual(LocalSignal(rawValue: "signal x: std_logic; -- The signal x."), self.signal)
         var signal = LocalSignal(
-            type: .stdLogic, name: "x", defaultValue: .logic(value: .high), comment: "The signal x."
+            type: .stdLogic, name: "x", defaultValue: .logic(value: .high), comment: comment
         )
         XCTAssertEqual(LocalSignal(rawValue: "signal x : std_logic := '1'; -- The signal x."), signal)
         signal.comment = nil
         XCTAssertEqual(LocalSignal(rawValue: "signal x : std_logic := '1';"), signal)
         signal.defaultValue = nil
         XCTAssertEqual(LocalSignal(rawValue: "signal x : std_logic;"), signal)
-        signal.comment = "The signal x."
+        signal.comment = comment
         XCTAssertEqual(LocalSignal(rawValue: "signal x : std_logic; -- The signal x."), signal)
         XCTAssertNil(LocalSignal(rawValue: "signal x : std_logic := \"11\"; -- The signal x."))
         XCTAssertEqual(
@@ -129,7 +136,7 @@ final class LocalSignalTests: XCTestCase {
                 type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),
                 name: "x",
                 defaultValue: nil,
-                comment: "The signal x."
+                comment: comment
             )
         )
         XCTAssertEqual(
@@ -138,7 +145,7 @@ final class LocalSignalTests: XCTestCase {
                 type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),
                 name: "x",
                 defaultValue: .vector(value: .hexademical(value: [.four])),
-                comment: "The signal x."
+                comment: comment
             )
         )
         XCTAssertNil(

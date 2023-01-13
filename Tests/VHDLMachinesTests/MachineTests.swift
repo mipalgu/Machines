@@ -86,7 +86,7 @@ final class MachineTests: XCTestCase {
                 name: "A",
                 mode: .input,
                 defaultValue: .logic(value: .low),
-                comment: "A comment"
+                comment: Comment(text: "A comment")
             )
         ]
     }
@@ -98,7 +98,7 @@ final class MachineTests: XCTestCase {
                 type: .ranged(type: .integer(size: .to(lower: 0, upper: 512))),
                 name: "g",
                 defaultValue: .integer(value: 0),
-                comment: "Generic g"
+                comment: Comment(text: "Generic g")
             )
         ]
     }
@@ -126,21 +126,31 @@ final class MachineTests: XCTestCase {
     /// The signals for the machine.
     var machineSignals: [LocalSignal] {
         [
-            LocalSignal(type: .stdLogic, name: "s", defaultValue: .logic(value: .low), comment: "Signal s")
+            LocalSignal(
+                type: .stdLogic,
+                name: "s",
+                defaultValue: .logic(value: .low),
+                comment: Comment(text: "Signal s")
+            )
         ]
     }
 
     /// The parameters for the machine.
     var parameterSignals: [Parameter] {
         [
-            Parameter(type: .stdLogic, name: "p", defaultValue: .logic(value: .low), comment: "Parameter p")
+            Parameter(
+                type: .stdLogic,
+                name: "p",
+                defaultValue: .logic(value: .low),
+                comment: Comment(text: "Parameter p")
+            )
         ]
     }
 
     /// The returnable signals for the machine.
     var returnableSignals: [ReturnableVariable] {
         [
-            ReturnableVariable(type: .stdLogic, name: "r", comment: "Returnable r")
+            ReturnableVariable(type: .stdLogic, name: "r", comment: Comment(text: "Returnable r"))
         ]
     }
 
@@ -265,7 +275,7 @@ final class MachineTests: XCTestCase {
                 name: "B",
                 mode: .input,
                 defaultValue: .logic(value: .low),
-                comment: "A comment"
+                comment: Comment(text: "A comment")
             )
         ]
         let newGenerics = [
@@ -273,7 +283,7 @@ final class MachineTests: XCTestCase {
                 type: .ranged(type: .integer(size: .to(lower: 0, upper: 512))),
                 name: "g2",
                 defaultValue: .integer(value: 0),
-                comment: "Generic g2"
+                comment: Comment(text: "Generic g2")
             )
         ]
         let newClocks = [
@@ -282,13 +292,23 @@ final class MachineTests: XCTestCase {
         let newDrivingClock = 1
         let newDependentMachines = ["M1": URL(fileURLWithPath: "/path/to/M1")]
         let newMachineSignals = [
-            LocalSignal(type: .stdLogic, name: "s2", defaultValue: .logic(value: .low), comment: "Signal s2")
+            LocalSignal(
+                type: .stdLogic,
+                name: "s2",
+                defaultValue: .logic(value: .low),
+                comment: Comment(text: "Signal s2")
+            )
         ]
         let newParameterSignals = [
-            Parameter(type: .stdLogic, name: "p2", defaultValue: .logic(value: .low), comment: "Parameter p2")
+            Parameter(
+                type: .stdLogic,
+                name: "p2",
+                defaultValue: .logic(value: .low),
+                comment: Comment(text: "Parameter p2")
+            )
         ]
         let newReturnableSignals = [
-            ReturnableVariable(type: .stdLogic, name: "r2", comment: "Returnable r2")
+            ReturnableVariable(type: .stdLogic, name: "r2", comment: Comment(text: "Returnable r2"))
         ]
         let newStates = [
             State(

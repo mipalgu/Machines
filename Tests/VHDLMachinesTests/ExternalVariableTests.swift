@@ -62,7 +62,12 @@ final class ExternalVariableTests: XCTestCase {
 
     /// The variable under test.
     var variable = ExternalVariable(
-        type: "integer", name: "x", mode: .input, range: (0, 255), defaultValue: "0x15", comment: "external x"
+        type: "integer",
+        name: "x",
+        mode: .input,
+        range: (0, 255),
+        defaultValue: "0x15",
+        comment: Comment(text: "external x")
     )
 
     /// Initialise the variable under test.
@@ -73,7 +78,7 @@ final class ExternalVariableTests: XCTestCase {
             mode: .input,
             range: (0, 255),
             defaultValue: "0x15",
-            comment: "external x"
+            comment: Comment(text: "external x")
         )
     }
 
@@ -85,7 +90,7 @@ final class ExternalVariableTests: XCTestCase {
         XCTAssertEqual(self.variable.range?.0, 0)
         XCTAssertEqual(self.variable.range?.1, 255)
         XCTAssertEqual(self.variable.defaultValue, "0x15")
-        XCTAssertEqual(self.variable.comment, "external x")
+        XCTAssertEqual(self.variable.comment, Comment(text: "external x"))
     }
 
     /// Test getters and setters.
@@ -101,8 +106,8 @@ final class ExternalVariableTests: XCTestCase {
         XCTAssertEqual(self.variable.range?.1, 65535)
         self.variable.defaultValue = "0xABCD"
         XCTAssertEqual(self.variable.defaultValue, "0xABCD")
-        self.variable.comment = "external y"
-        XCTAssertEqual(self.variable.comment, "external y")
+        self.variable.comment = Comment(text: "external y")
+        XCTAssertEqual(self.variable.comment, Comment(text: "external y"))
     }
 
 }

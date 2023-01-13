@@ -74,16 +74,26 @@ final class ArrangementTests: XCTestCase {
     /// The external signals in the arrangement.
     let externalSignals = [
         ExternalSignal(
-            type: .stdLogic, name: "x", mode: .input, defaultValue: .logic(value: .high), comment: "Signal x."
+            type: .stdLogic,
+            name: "x",
+            mode: .input,
+            defaultValue: .logic(value: .high),
+            comment: Comment(text: "Signal x.")
         ),
         ExternalSignal(
-            type: .stdLogic, name: "y", mode: .output, defaultValue: .logic(value: .low), comment: "Signal y."
+            type: .stdLogic,
+            name: "y",
+            mode: .output,
+            defaultValue: .logic(value: .low),
+            comment: Comment(text: "Signal y.")
         )
     ]
 
     /// The arrangement signals.
     let signals = [
-        LocalSignal(type: .stdLogic, name: "z", defaultValue: .logic(value: .low), comment: "Signal z.")
+        LocalSignal(
+            type: .stdLogic, name: "z", defaultValue: .logic(value: .low), comment: Comment(text: "Signal z.")
+        )
     ]
 
     /// The parent machines in the arrangement.
@@ -136,20 +146,23 @@ final class ArrangementTests: XCTestCase {
                 name: "z",
                 mode: .input,
                 defaultValue: .logic(value: .high),
-                comment: "Signal z."
+                comment: Comment(text: "Signal z.")
             ),
             ExternalSignal(
                 type: .stdLogic,
                 name: "w",
                 mode: .output,
                 defaultValue: .logic(value: .low),
-                comment: "Signal w."
+                comment: Comment(text: "Signal w.")
             )
         ]
 
         let newSignals = [
             LocalSignal(
-                type: .stdLogic, name: "x2", defaultValue: .logic(value: .high), comment: "Signal x2."
+                type: .stdLogic,
+                name: "x2",
+                defaultValue: .logic(value: .high),
+                comment: Comment(text: "Signal x2.")
             )
         ]
         let newClocks = [

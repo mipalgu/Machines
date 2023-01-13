@@ -895,8 +895,7 @@ public struct VHDLCompiler {
     /// - Returns: The generic.
     private func variableToGeneric(variable: LocalSignal, withSemicolon: Bool) -> String {
         let semiColon = withSemicolon ? ";" : ""
-        let comment = variable.comment ?? ""
-        let variableComment = comment.isEmpty ? "" : "-- \(comment)"
+        let variableComment = variable.comment?.rawValue ?? ""
         guard let defaultValue = variable.defaultValue else {
             return "\(variable.name): \(variable.type)\(semiColon) \(variableComment)"
         }
@@ -910,8 +909,8 @@ public struct VHDLCompiler {
     /// - Returns: The variable that goes in a port statement.
     private func variableToPort(variable: ExternalVariable, withSemicolon: Bool) -> String {
         let semiColon = withSemicolon ? ";" : ""
-        let comment = variable.comment ?? ""
-        let variableComment = comment.isEmpty ? "" : "-- \(comment)"
+        let comment = variable.comment?.rawValue ?? ""
+        let variableComment = comment.isEmpty ? "" : "\(comment)"
         guard let range = variable.range else {
             guard let defaultValue = variable.defaultValue else {
                 return "\(variable.name): \(variable.type)\(semiColon)" + " \(variableComment)"
@@ -989,13 +988,13 @@ public struct VHDLCompiler {
     /// - Returns: The variable.
     private func toParameterDeclaration(parameter: Parameter) -> String {
         let name = toParameter(name: parameter.name)
-        let parameterComment = parameter.comment ?? ""
+        let parameterComment = parameter.comment?.rawValue ?? ""
         guard let defaultValue = parameter.defaultValue else {
             return "\(name): in \(parameter.type);" +
-                (parameter.comment == nil ? "" : " -- \(parameterComment)")
+                (parameter.comment == nil ? "" : " \(parameterComment)")
         }
         return "\(name): in \(parameter.type) := \(defaultValue);" +
-            (parameter.comment == nil ? "" : " -- \(parameterComment)")
+            (parameter.comment == nil ? "" : " \(parameterComment)")
     }
 
     /// Create the returnable variable.
@@ -1003,9 +1002,9 @@ public struct VHDLCompiler {
     /// - Returns: The variable.
     private func toReturnDeclaration(returnable: ReturnableVariable) -> String {
         let name = toReturnable(name: returnable.name)
-        let returnableComment = returnable.comment ?? ""
+        let returnableComment = returnable.comment?.rawValue ?? ""
         return "\(name): out \(returnable.type);" +
-            (returnable.comment == nil ? "" : " -- \(returnableComment)")
+            (returnable.comment == nil ? "" : " \(returnableComment)")
     }
 
     /// Create the Returnable name.
@@ -1062,13 +1061,13 @@ public struct VHDLCompiler {
     /// - Returns: The parameter.
     private func signalToEntityDeclaration(signal: ExternalSignal) -> String {
         let name = toExternal(name: signal.name)
-        let signalComment = signal.comment ?? ""
+        let signalComment = signal.comment?.rawValue ?? ""
         guard let defaultValue = signal.defaultValue else {
             return "\(name): \(signal.mode.rawValue) \(signal.type);" +
-                (signal.comment == nil ? "" : " -- \(signalComment)")
+                (signal.comment == nil ? "" : " \(signalComment)")
         }
         return "\(name): \(signal.mode.rawValue) \(signal.type) := \(defaultValue);" +
-            (signal.comment == nil ? "" : " -- \(signalComment)")
+            (signal.comment == nil ? "" : " \(signalComment)")
     }
 
     /// Generate a signal architecture declaration.
@@ -1080,7 +1079,7 @@ public struct VHDLCompiler {
     private func signalToArchitectureDeclaration<T: Variable>(
         signal: T, with value: Bool = false, and comment: Bool = false
     ) -> String {
-        let comment = comment ? " -- \(signal.comment ?? "")" : ""
+        let comment = comment ? " \(signal.comment?.rawValue ?? "")" : ""
         guard let defaultVal = signal.defaultValue else {
             return "signal \(signal.name): \(signal.type);\(comment)"
         }
@@ -1187,7 +1186,7 @@ public struct VHDLCompiler {
     /// - Parameter variable: The variable to generate the architecture representation for.
     /// - Returns: The variable architecture representation.
     private func variableToArchitectureDeclaration(variable: LocalSignal) -> String {
-        let comment = nil == variable.comment ? "" : " -- \(variable.comment ?? "")"
+        let comment = nil == variable.comment ? "" : " \(variable.comment?.rawValue ?? "")"
         return "shared variable \(variable.name): \(variable.type);\(comment)"
     }
 
