@@ -90,17 +90,28 @@ public struct LocalSignal: RawRepresentable, Codable, Equatable, Hashable, Varia
     private init?(declaration: String, defaultValue: String? = nil, comment: String? = nil) {
         let signalComponents = declaration.components(separatedBy: .whitespacesAndNewlines)
         let value = SignalLiteral(rawValue: defaultValue ?? "")
-        let typeIndex = signalComponents.count == 3 ? 2 : 3
+        guard signalComponents.count >= 2 else {
+            return nil
+        }
+        let hasColonSuffix = signalComponents[1].hasSuffix(":")
+        let colonComponents = signalComponents.filter { $0.contains(":") }
         guard
-            signalComponents.first == "signal",
             signalComponents.count >= 3,
-            (!signalComponents[1].hasSuffix(":") && signalComponents.count == 4 && signalComponents[2] == ":")
-                || signalComponents[1].hasSuffix(":") && signalComponents.count == 3,
-            let type = SignalType(rawValue: signalComponents[typeIndex])
+            hasColonSuffix || signalComponents[2] == ":",
+            colonComponents.count == 1,
+            colonComponents[0].filter({ $0 == ":" }).count == 1
         else {
             return nil
         }
-        let name = signalComponents.count == 3 ? String(signalComponents[1].dropLast()) : signalComponents[1]
+        let typeIndex = hasColonSuffix ? 2 : 3
+        guard
+            signalComponents.first == "signal",
+            signalComponents.count >= typeIndex,
+            let type = SignalType(rawValue: signalComponents[typeIndex...].joined(separator: " "))
+        else {
+            return nil
+        }
+        let name = hasColonSuffix ? String(signalComponents[1].dropLast()) : signalComponents[1]
         guard !name.isEmpty, !CharacterSet.whitespacesAndNewlines.within(string: name) else {
             return nil
         }
