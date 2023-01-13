@@ -1,4 +1,4 @@
-// VariableName.swift
+// VariableNameTests.swift
 // Machines
 // 
 // Created by Morgan McColl.
@@ -54,66 +54,66 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import Foundation
+@testable import VHDLMachines
+import XCTest
 
-/// Valid VHDL variable names. This struct represents a valid VHDL variable name. It is impossible to create
-/// an invalid name using the public interface of this struct.
-public struct VariableName: RawRepresentable,
-    CustomStringConvertible, Equatable, Hashable, Codable, Sendable, Comparable {
+/// Test class for ``VariableName``.
+final class VariableNameTests: XCTestCase {
 
-    /// The variable name.
-    public let rawValue: String
+    /// The name under test.
+    var variable = VariableName(text: "clk")
 
-    /// The description is the same as the raw value.
-    @inlinable public var description: String {
-        rawValue
+    /// Initialise the name under test before every test.
+    override func setUp() {
+        self.variable = VariableName(text: "clk")
     }
 
-    /// Initialise this type with a valid VHDL variable name.
-    /// - Parameter text: The verified VHDL variable name.
-    /// - Warning: This initialiser does not verify that the name is valid. It is only intended to be used
-    /// internally. Use the public initialiser instead.
-    @usableFromInline
-    init(text: String) {
-        self.rawValue = text
+    /// Test init sets stored property correctly.
+    func testInit() {
+        XCTAssertEqual(self.variable.rawValue, "clk")
     }
 
-    /// Initialise this type with a valid VHDL variable name.
-    /// - Parameter rawValue: The name of the variable.
-    /// - Note: This initialiser will verify that the `rawValue` is valid, and will return nil if this is not
-    /// the case.
-    @inlinable
-    public init?(rawValue: String) {
-        let trimmedName = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        let allowedChars = CharacterSet.variableNames
-        guard
-            trimmedName.count < 256,
-            let firstChar = trimmedName.unicodeScalars.first,
-            CharacterSet.letters.contains(firstChar),
-            rawValue.unicodeScalars.allSatisfy({ allowedChars.contains($0) }),
-            !Set<String>.vhdlAllReservedWords.contains(rawValue)
-        else {
-            return nil
-        }
-        self.rawValue = trimmedName
+    /// Test that the description matches the raw value.
+    func testDescription() {
+        XCTAssertEqual(self.variable.description, self.variable.rawValue)
     }
 
-    /// Comparison operator. Comparison of variable names is irrespective of case.
-    @inlinable
-    public static func < (lhs: VariableName, rhs: VariableName) -> Bool {
-        lhs.rawValue.lowercased() < rhs.rawValue.lowercased()
+    /// Test comparison operator.
+    func testComparison() {
+        XCTAssertLessThan(VariableName(text: "clk"), VariableName(text: "dlk"))
     }
 
-    /// Equality operation. Equality of variable names is irrespective of case.
-    @inlinable
-    public static func == (lhs: VariableName, rhs: VariableName) -> Bool {
-        lhs.rawValue.lowercased() == rhs.rawValue.lowercased()
+    /// Test equality works correctly.
+    func testEquality() {
+        XCTAssertEqual(VariableName(text: "CLK"), self.variable)
+        XCTAssertNotEqual(VariableName(text: "clk2"), self.variable)
     }
 
-    /// Hashable operation. Hashing of variable names is irrespective of case.
-    @inlinable
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(self.rawValue.lowercased())
+    /// Test hashable conformance.
+    func testHasher() {
+        XCTAssertEqual(self.variable.hashValue, "clk".hashValue)
+        XCTAssertEqual(VariableName(text: "CLK").hashValue, "clk".hashValue)
+    }
+
+    /// Test rawValue init works correctly.
+    func testRawValueInit() {
+        XCTAssertEqual(VariableName(rawValue: "clk"), self.variable)
+        XCTAssertEqual(VariableName(rawValue: "CLK"), self.variable)
+        XCTAssertEqual(VariableName(rawValue: "clk12"), VariableName(text: "clk12"))
+        XCTAssertNil(VariableName(rawValue: ""))
+        XCTAssertNil(VariableName(rawValue: "2clk"))
+        XCTAssertNil(VariableName(rawValue: "clk-"))
+        XCTAssertEqual(VariableName(rawValue: "clk_"), VariableName(text: "clk_"))
+        XCTAssertNil(VariableName(rawValue: "clk-12"))
+        XCTAssertEqual(VariableName(rawValue: "clk_12"), VariableName(text: "clk_12"))
+        XCTAssertNil(VariableName(rawValue: "clk-12_"))
+        XCTAssertNil(VariableName(rawValue: "clk_12-"))
+        XCTAssertNil(VariableName(rawValue: "clk-12_12"))
+        XCTAssertNil(VariableName(rawValue: "std_logic"))
+        XCTAssertNil(VariableName(rawValue: "std_logic_vector"))
+        XCTAssertNil(VariableName(rawValue: "std_ulogic"))
+        XCTAssertNil(VariableName(rawValue: "xor"))
+        XCTAssertNil(VariableName(rawValue: "clk 12"))
     }
 
 }
