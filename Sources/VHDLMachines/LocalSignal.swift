@@ -58,7 +58,7 @@ public struct LocalSignal: RawRepresentable, Codable, Equatable, Hashable, Varia
         guard components.count <= 2, !components.isEmpty else {
             return nil
         }
-        let comment = String(comment: components.last ?? "")?.trimmingCharacters(in: .whitespaces)
+        let comment = components.last.flatMap { String(comment: $0) }?.trimmingCharacters(in: .whitespaces)
         let declaration = trimmedString.uptoSemicolon
         guard !declaration.contains(":=") else {
             let declComponents = declaration.components(separatedBy: ":=")
