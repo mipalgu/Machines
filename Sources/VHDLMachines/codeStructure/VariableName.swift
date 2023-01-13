@@ -84,7 +84,15 @@ public struct VariableName: RawRepresentable,
     }
 
     public static func < (lhs: VariableName, rhs: VariableName) -> Bool {
-        lhs.rawValue < rhs.rawValue
+        lhs.rawValue.lowercased() < rhs.rawValue.lowercased()
+    }
+
+    public static func == (lhs: VariableName, rhs: VariableName) -> Bool {
+        lhs.rawValue.lowercased() == rhs.rawValue.lowercased()
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(self.rawValue.lowercased())
     }
 
 }
