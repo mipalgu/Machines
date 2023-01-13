@@ -47,6 +47,8 @@ public struct LocalSignal: RawRepresentable, Codable, Equatable, Hashable, Varia
         self.comment = comment
     }
 
+    /// Initialises a new local signal from the VHDL code that defines it.
+    /// - Parameter rawValue: The VHDL code that defines this signal.
     public init?(rawValue: String) {
         let trimmedString = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
         guard trimmedString.count < 256, trimmedString.hasPrefix("signal ") else {
@@ -73,6 +75,11 @@ public struct LocalSignal: RawRepresentable, Codable, Equatable, Hashable, Varia
         self.init(declaration: declaration, comment: comment)
     }
 
+    /// Initialises a new local signal from the given declaration, default value and comment VHDL components.
+    /// - Parameters:
+    ///   - declaration: The declaration string consisting of the signal name and type definition.
+    ///   - defaultValue: The default value of the signal. This value appears on the rhs of the `:=` operator.
+    ///   - comment: The comment that appears on the rhs of the `--` operator.
     private init?(declaration: String, defaultValue: String? = nil, comment: String? = nil) {
         let signalComponents = declaration.components(separatedBy: .whitespacesAndNewlines)
         let value = SignalLiteral(rawValue: defaultValue ?? "")
