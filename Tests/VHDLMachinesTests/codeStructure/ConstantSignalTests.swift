@@ -185,6 +185,17 @@ final class ConstantSignalTests: XCTestCase {
         )
         XCTAssertNotNil(expected2)
         XCTAssertEqual(result2, expected2)
+        let result3 = ConstantSignal(
+            rawValue: "constant x : std_logic_vector(3 downto 0) := \"0101\";"
+        )
+        let expected3 = ConstantSignal(
+            name: "x",
+            type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),
+            value: .literal(value: .vector(value: .bits(value: [.low, .high, .low, .high]))),
+            comment: nil
+        )
+        XCTAssertNotNil(expected3)
+        XCTAssertEqual(result3, expected3)
     }
 
 }
