@@ -148,12 +148,8 @@ public struct ConstantSignal: RawRepresentable, Equatable, Hashable, Codable, Se
 
     public static func constants(for actions: [ActionName: String]) -> [ConstantSignal]? {
         let keys = actions.keys
-        guard
-            !keys.contains("NoOnEntry"),
-            !keys.contains("CheckTransition"),
-            !keys.contains("ReadSnapshot"),
-            !keys.contains("WriteSnapshot")
-        else {
+        let invalidKeys: Set<ActionName> = ["NoOnEntry", "CheckTransition", "ReadSnapshot", "WriteSnapshot"]
+        guard keys.filter({ invalidKeys.contains($0) }).isEmpty else {
             fatalError("Actions contain a reserved name.")
         }
         let actionNamesArray = actions.keys + [
