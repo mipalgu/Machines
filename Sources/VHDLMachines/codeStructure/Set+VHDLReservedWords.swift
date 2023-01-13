@@ -54,8 +54,10 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+/// Add VHDL reserved words Sets.
 public extension Set where Element == String {
 
+    /// The `VHDL` signal types.
     static var vhdlSignalTypes: Set<String> {
         [
             "std_logic",
@@ -74,6 +76,8 @@ public extension Set where Element == String {
         ]
     }
 
+    /// The `VHDL` reserved words not including the `VHDL` signal types. If you need both, then use
+    /// `Set<String>.vhdlAllReservedWords`.
     static var vhdlReservedWords: Set<String> {
         [
             "abs", "access", "after", "alias", "all", "and", "architecture", "array",
@@ -91,6 +95,7 @@ public extension Set where Element == String {
         ]
     }
 
+    /// All `VHDL` reserved words including the `VHDL` signal types.
     static var vhdlAllReservedWords: Set<String> {
         Self.vhdlSignalTypes.union(Self.vhdlReservedWords)
     }
