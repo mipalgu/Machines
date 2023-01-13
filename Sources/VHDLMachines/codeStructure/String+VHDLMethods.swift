@@ -108,14 +108,6 @@ extension String {
         return String(self[self.startIndex..<semicolonIndex]).trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
-    init?(comment: String) {
-        let trimmedComment = comment.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard trimmedComment.count < 256, trimmedComment.hasPrefix("--") else {
-            return nil
-        }
-        self = trimmedComment.dropFirst(2).trimmingCharacters(in: .whitespaces)
-    }
-
     init?(name: String) {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         let allowedChars = CharacterSet.variableNames
