@@ -1,4 +1,4 @@
-// VariableName.swift
+// Set+VHDLReservedWords.swift
 // Machines
 // 
 // Created by Morgan McColl.
@@ -54,46 +54,45 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import Foundation
+public extension Set where Element == String {
 
-public struct VariableName: RawRepresentable,
-    CustomStringConvertible, Equatable, Hashable, Codable, Sendable, Comparable {
-
-    public let rawValue: String
-
-    @inlinable public var description: String {
-        rawValue
+    static var vhdlSignalTypes: Set<String> {
+        [
+            "std_logic",
+            "std_ulogic",
+            "signed",
+            "unsigned",
+            "std_logic_vector",
+            "std_ulogic_vector",
+            "bit",
+            "bit_vector",
+            "boolean",
+            "integer",
+            "natural",
+            "positive",
+            "real"
+        ]
     }
 
-    init(text: String) {
-        self.rawValue = text
+    static var vhdlReservedWords: Set<String> {
+        [
+            "abs", "access", "after", "alias", "all", "and", "architecture", "array",
+            "assert", "attribute", "begin", "block", "body", "buffer", "bus", "case",
+            "component", "configuration", "constant", "disconnect", "downto", "else",
+            "elsif", "end", "entity", "exit", "file", "for", "function", "generate",
+            "generic", "group", "guarded", "if", "impure", "in", "inertial", "inout",
+            "is", "label", "library", "linkage", "literal", "loop", "map", "mod", "nand",
+            "new", "next", "nor", "not", "null", "of", "on", "open", "or", "others",
+            "out", "package", "port", "postponed", "procedure", "process", "pure",
+            "range", "record", "register", "reject", "return", "rol", "ror", "select",
+            "severity", "signal", "shared", "sla", "sli", "sra", "srl", "subtype",
+            "then", "to", "transport", "type", "unaffected", "units", "until", "use",
+            "variable", "wait", "when", "while", "with", "xnor", "xor"
+        ]
     }
 
-    public init?(rawValue: String) {
-        let trimmedName = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        let allowedChars = CharacterSet.variableNames
-        guard
-            trimmedName.count < 256,
-            let firstChar = trimmedName.unicodeScalars.first,
-            CharacterSet.letters.contains(firstChar),
-            rawValue.unicodeScalars.allSatisfy({ allowedChars.contains($0) }),
-            !Set<String>.vhdlAllReservedWords.contains(rawValue)
-        else {
-            return nil
-        }
-        self.rawValue = trimmedName
-    }
-
-    public static func < (lhs: VariableName, rhs: VariableName) -> Bool {
-        lhs.rawValue.lowercased() < rhs.rawValue.lowercased()
-    }
-
-    public static func == (lhs: VariableName, rhs: VariableName) -> Bool {
-        lhs.rawValue.lowercased() == rhs.rawValue.lowercased()
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(self.rawValue.lowercased())
+    static var vhdlAllReservedWords: Set<String> {
+        Self.vhdlSignalTypes.union(Self.vhdlReservedWords)
     }
 
 }
