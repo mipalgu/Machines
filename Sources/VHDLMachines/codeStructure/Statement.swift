@@ -64,9 +64,11 @@ public enum Statement: RawRepresentable, Equatable, Hashable, Codable {
 
     case expression(value: Expression)
 
+    case externalDefinition(value: ExternalSignal)
+
     public typealias RawValue = String
 
-    public var rawValue: String {
+    @inlinable public var rawValue: String {
         switch self {
         case .constant(let value):
             return value.rawValue
@@ -75,6 +77,8 @@ public enum Statement: RawRepresentable, Equatable, Hashable, Codable {
         case .assignment(let name, let value):
             return "\(name) := \(value.rawValue)"
         case .expression(let value):
+            return value.rawValue
+        case .externalDefinition(let value):
             return value.rawValue
         }
     }
@@ -109,6 +113,16 @@ public enum Statement: RawRepresentable, Equatable, Hashable, Codable {
                 return nil
             }
             self = .definition(signal: signal)
+            return
+        }
+        let modes = Set(Mode.allCases.map(\.rawValue))
+        guard
+            !value.components(separatedBy: .whitespacesAndNewlines).contains(where: { modes.contains($0) })
+        else {
+            guard let external = ExternalSignal(rawValue: value) else {
+                return nil
+            }
+            self = .externalDefinition(value: external)
             return
         }
         if let exp = Expression(rawValue: value) {
