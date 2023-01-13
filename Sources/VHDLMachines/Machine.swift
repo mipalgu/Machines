@@ -138,13 +138,17 @@ public struct Machine: Codable, Equatable, Hashable {
     public static func initial(path: URL) -> Machine {
         let name = path.lastPathComponent.components(separatedBy: ".machine")[0]
         let defaultActions = [
-            "OnEntry": "",
-            "OnExit": "",
-            "Internal": "",
-            "OnResume": "",
-            "OnSuspend": ""
+            ActionName(text: "OnEntry"): "",
+            ActionName(text: "OnExit"): "",
+            ActionName(text: "Internal"): "",
+            ActionName(text: "OnResume"): "",
+            ActionName(text: "OnSuspend"): ""
         ]
-        let actionOrder = [["OnResume", "OnSuspend"], ["OnEntry"], ["OnExit", "Internal"]]
+        let actionOrder = [
+            [ActionName(text: "OnResume"), ActionName(text: "OnSuspend")],
+            [ActionName(text: "OnEntry")],
+            [ActionName(text: "OnExit"), ActionName(text: "Internal")]
+        ]
         return Machine(
             name: name,
             path: path,

@@ -100,9 +100,8 @@ public struct MachineRepresentation: Equatable, Hashable, Codable {
         )
         let actionConstants: [(ActionName, ConstantSignal)] = actions.enumerated().compactMap {
             guard
-                let name = VariableName(rawValue: $1),
                 let constant = ConstantSignal(
-                    name: name,
+                    name: $1,
                     type: actionType,
                     value: .literal(value: .vector(
                         value: .bits(value: BitLiteral.bitVersion(of: $0, bitsRequired: actionRequiredBits))

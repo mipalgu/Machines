@@ -170,13 +170,17 @@ class VHDLMachinesCompilerTests: XCTestCase {
         VHDLMachines.State(
             name: VariableName(text: name),
             actions: [
-                "OnEntry": "x <= '1';\nxx <= '0'; -- \(name) onEntry",
-                "OnExit": "x <= '0'; -- \(name) OnExit",
-                "OnResume": "x <= '0'; -- \(name) OnResume",
-                "OnSuspend": "xx <= '1'; -- \(name) onSuspend",
-                "Internal": "x <= '1'; -- \(name) Internal"
+                ActionName(text: "OnEntry"): "x <= '1';\nxx <= '0'; -- \(name) onEntry",
+                ActionName(text: "OnExit"): "x <= '0'; -- \(name) OnExit",
+                ActionName(text: "OnResume"): "x <= '0'; -- \(name) OnResume",
+                ActionName(text: "OnSuspend"): "xx <= '1'; -- \(name) onSuspend",
+                ActionName(text: "Internal"): "x <= '1'; -- \(name) Internal"
             ],
-            actionOrder: [["onresume", "onentry"], ["onexit", "internal"], ["onsuspend"]],
+            actionOrder: [
+                [ActionName(text: "onresume"), ActionName(text: "onentry")],
+                [ActionName(text: "onexit"), ActionName(text: "internal")],
+                [ActionName(text: "onsuspend")]
+            ],
             signals: [],
             externalVariables: []
         )

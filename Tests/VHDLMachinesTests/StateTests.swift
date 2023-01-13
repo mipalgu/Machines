@@ -62,12 +62,12 @@ final class StateTests: XCTestCase {
 
     /// The state actions.
     var actions: [ActionName: String] {
-        ["onEntry": "x := x + 1;", "onExit": "x := 0;"]
+        [ActionName(text: "onEntry"): "x := x + 1;", ActionName(text: "onExit"): "x := 0;"]
     }
 
     /// The order in which the actions should be executed.
     var actionOrder: [[ActionName]] {
-        [["onEntry", "onExit"]]
+        [[ActionName(text: "onEntry"), ActionName(text: "onExit")]]
     }
 
     /// The signals.
@@ -120,10 +120,10 @@ final class StateTests: XCTestCase {
     func testGettersAndSetters() {
         self.state.name = VariableName(text: "S1")
         XCTAssertEqual(self.state.name, VariableName(text: "S1"))
-        self.state.actions = ["internal": "x := 0;"]
-        XCTAssertEqual(self.state.actions, ["internal": "x := 0;"])
-        self.state.actionOrder = [["internal"]]
-        XCTAssertEqual(self.state.actionOrder, [["internal"]])
+        self.state.actions = [ActionName(text: "internal"): "x := 0;"]
+        XCTAssertEqual(self.state.actions, [ActionName(text: "internal"): "x := 0;"])
+        self.state.actionOrder = [[ActionName(text: "internal")]]
+        XCTAssertEqual(self.state.actionOrder, [[ActionName(text: "internal")]])
         self.state.signals = [
             LocalSignal(
                 type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),

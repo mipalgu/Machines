@@ -420,7 +420,7 @@ public struct VHDLCompiler {
     ///   - trailers: Any trailers to add to the code.
     /// - Returns: The code for the action.
     private func actionForStates(
-        machine: Machine, actionName: String, trailers: [String]? = nil
+        machine: Machine, actionName: ActionName, trailers: [String]? = nil
     ) -> [String] {
         guard let unwrappedTrailers = trailers else {
             return machine.states.map { $0.actions[actionName] ?? "" }
@@ -448,7 +448,9 @@ public struct VHDLCompiler {
         }
         return codeForStatesStatement(
             names: machine.states.map(\.name),
-            code: actionForStates(machine: machine, actionName: "OnEntry", trailers: trailers),
+            code: actionForStates(
+                machine: machine, actionName: ActionName(text: "OnEntry"), trailers: trailers
+            ),
             indentation: indentation,
             trailer: "internalState <= CheckTransition;"
         )
@@ -462,7 +464,7 @@ public struct VHDLCompiler {
     private func onExit(machine: Machine, indentation: Int) -> String {
         codeForStatesStatement(
             names: machine.states.map(\.name),
-            code: actionForStates(machine: machine, actionName: "OnExit"),
+            code: actionForStates(machine: machine, actionName: ActionName(text: "OnExit")),
             indentation: indentation,
             trailer: "internalState <= WriteSnapshot;"
         )
@@ -485,7 +487,9 @@ public struct VHDLCompiler {
         }
         return codeForStatesStatement(
             names: machine.states.map(\.name),
-            code: actionForStates(machine: machine, actionName: "Internal", trailers: trailers),
+            code: actionForStates(
+                machine: machine, actionName: ActionName(text: "Internal"), trailers: trailers
+            ),
             indentation: indentation,
             trailer: "internalState <= WriteSnapshot;"
         )
@@ -498,7 +502,7 @@ public struct VHDLCompiler {
     ///   - trailers: The trailers to add to the code.
     /// - Returns: The code for the actions.
     private func actionsForStates(
-        machine: Machine, actionsNames: [String], trailers: [String]? = nil
+        machine: Machine, actionsNames: [ActionName], trailers: [String]? = nil
     ) -> [String] {
         guard let unwrappedTrailers = trailers else {
             return machine.states.map { state in
@@ -532,7 +536,9 @@ public struct VHDLCompiler {
         return codeForStatesStatement(
             names: machine.states.map(\.name),
             code: actionsForStates(
-                machine: machine, actionsNames: ["OnResume", "OnEntry"], trailers: trailers
+                machine: machine,
+                actionsNames: [ActionName(text: "OnResume"), ActionName(text: "OnEntry")],
+                trailers: trailers
             ),
             indentation: indentation,
             trailer: "internalState <= CheckTransition;"
@@ -546,12 +552,12 @@ public struct VHDLCompiler {
     /// - Returns: The OnSuspend internal state.
     private func onSuspend(machine: Machine, indentation: Int) -> String {
         // swiftlint:disable:next force_unwrapping
-        let onEntry = (machine.states[machine.suspendedState!].actions["OnEntry"] ?? "")
+        let onEntry = (machine.states[machine.suspendedState!].actions[ActionName(text: "OnEntry")] ?? "")
             .split(separator: "\n").map { String($0) }
 //        if onEntry.count > 0 {
 //            onEntry[0] = "    " + onEntry[0]
 //        }
-        let actions = actionForStates(machine: machine, actionName: "OnSuspend")
+        let actions = actionForStates(machine: machine, actionName: ActionName(text: "OnSuspend"))
         return codeForStatesStatement(
             names: machine.states.map(\.name),
             code: actions,
@@ -1150,7 +1156,6 @@ public struct VHDLCompiler {
     private func stateRepresenation(machine: Machine) -> String {
         let states = machine.states
         let initialState = machine.states[machine.initialState].name
-        // swiftlint:disable:next force_unwrapping
         let defaultState: VariableName
         if let suspendIndex = machine.suspendedState {
             if machine.isParameterised {

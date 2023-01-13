@@ -377,13 +377,17 @@ final class MachineTests: XCTestCase {
     func testInitial() {
         let path = URL(fileURLWithPath: "NewMachine.machine", isDirectory: true)
         let defaultActions = [
-            "OnEntry": "",
-            "OnExit": "",
-            "Internal": "",
-            "OnResume": "",
-            "OnSuspend": ""
+            ActionName(text: "OnEntry"): "",
+            ActionName(text: "OnExit"): "",
+            ActionName(text: "Internal"): "",
+            ActionName(text: "OnResume"): "",
+            ActionName(text: "OnSuspend"): ""
         ]
-        let actionOrder = [["OnResume", "OnSuspend"], ["OnEntry"], ["OnExit", "Internal"]]
+        let actionOrder = [
+            [ActionName(text: "OnResume"), ActionName(text: "OnSuspend")],
+            [ActionName(text: "OnEntry")],
+            [ActionName(text: "OnExit"), ActionName(text: "Internal")]
+        ]
         let machine = Machine.initial(path: path)
         let expected = Machine(
             name: "NewMachine",

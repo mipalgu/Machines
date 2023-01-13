@@ -104,21 +104,21 @@ struct PingPongArrangement {
 
     /// The ping states actions.
     let pingActions: [ActionName: String] = [
-        "onEntry": "",
-        "onExit": "ping <= '1'",
-        "internal": ""
+        ActionName(text: "onEntry"): "",
+        ActionName(text: "onExit"): "ping <= '1'",
+        ActionName(text: "internal"): ""
     ]
 
     /// The pong states actions.
     let pongActions: [ActionName: String] = [
-        "onEntry": "",
-        "onExit": "pong <= '1'",
-        "internal": ""
+        ActionName(text: "onEntry"): "",
+        ActionName(text: "onExit"): "pong <= '1'",
+        ActionName(text: "internal"): ""
     ]
 
     /// The action order.
     let actionOrder: [[ActionName]] = [
-        ["onEntry"], ["internal", "onExit"]
+        [ActionName(text: "onEntry")], [ActionName(text: "internal"), ActionName(text: "onExit")]
     ]
 
     /// The Ping state.
@@ -297,6 +297,14 @@ struct PingPongArrangement {
                                 internalState <= Internal;
                         end case;
                     when OnExit =>
+                        case currentState is
+                            when STATE_Ping =>
+                                ping <= '1'
+                            when STATE_Check =>
+                                ping <= '0';
+                            when others =>
+                                null;
+                        end case;
                         internalState <= WriteSnapshot;
                     when Internal =>
                         internalState <= WriteSnapshot;
@@ -343,9 +351,9 @@ struct PingPongArrangement {
     /// - Returns: The actions.
     func emptyActions(reset: String) -> [ActionName: String] {
         [
-            "onEntry": "",
-            "onExit": "\(reset) <= '0';",
-            "internal": ""
+            ActionName(text: "onEntry"): "",
+            ActionName(text: "onExit"): "\(reset) <= '0';",
+            ActionName(text: "internal"): ""
         ]
     }
 

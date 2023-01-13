@@ -152,14 +152,14 @@ public struct ConstantSignal: RawRepresentable, Equatable, Hashable, Codable, Se
 
     public static func constants(for actions: [ActionName: String]) -> [ConstantSignal]? {
         let keys = actions.keys
-        let invalidKeys: Set<ActionName> = ["NoOnEntry", "CheckTransition", "ReadSnapshot", "WriteSnapshot"]
-        guard keys.filter({ invalidKeys.contains($0) }).isEmpty else {
+        let actionNamesArray = [
+            "NoOnEntry", "CheckTransition", "ReadSnapshot", "WriteSnapshot"
+        ].map { ActionName(text: $0) }
+        let invalidKeys = Set(actionNamesArray)
+        guard !keys.contains(where: { invalidKeys.contains($0) }) else {
             fatalError("Actions contain a reserved name.")
         }
-        let actionNamesArray = actions.keys + [
-            "NoOnEntry", "CheckTransition", "ReadSnapshot", "WriteSnapshot"
-        ]
-        let actionNames = actionNamesArray.sorted()
+        let actionNames = (actionNamesArray + keys).sorted()
         guard let bitsRequired = BitLiteral.bitsRequired(for: actionNames.count) else {
             return nil
         }
@@ -168,11 +168,8 @@ public struct ConstantSignal: RawRepresentable, Equatable, Hashable, Codable, Se
         }
         let type = SignalType.ranged(type: .stdLogicVector(size: .downto(upper: bitsRequired - 1, lower: 0)))
         let signals: [ConstantSignal] = actionNames.indices.compactMap {
-            guard let name = VariableName(rawValue: actionNames[$0]) else {
-                return nil
-            }
-            return ConstantSignal(
-                name: name,
+            ConstantSignal(
+                name: actionNames[$0],
                 type: type,
                 value: .literal(value: .vector(value: .bits(value: bitRepresentations[$0])))
             )

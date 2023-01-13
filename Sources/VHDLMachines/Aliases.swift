@@ -11,7 +11,7 @@ import Foundation
 public typealias MachineName = String
 
 /// The type of a machine's action.
-public typealias ActionName = String
+public typealias ActionName = VariableName
 
 // public typealias SignalType = String
 //
