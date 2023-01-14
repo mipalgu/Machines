@@ -77,6 +77,10 @@ public struct VariableName: RawRepresentable,
 
     public static let ringletCounter = VariableName(text: "ringletCounter")
 
+    public static let suspended = VariableName(text: "suspended")
+
+    public static let command = VariableName(text: "command")
+
     /// The variable name.
     public let rawValue: String
 

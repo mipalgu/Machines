@@ -124,4 +124,16 @@ public struct ExternalSignal: ExternalType, RawRepresentable, Codable, Hashable,
         self.comment = comment
     }
 
+    public init(clock: Clock) {
+        self.init(type: .stdLogic, name: clock.name, mode: .input, defaultValue: nil, comment: nil)
+    }
+
+    public static func commandSignal(type: SignalType) -> ExternalSignal {
+        ExternalSignal(type: type, name: .command, mode: .input)
+    }
+
+    public static func suspendedSignal(type: SignalType) -> ExternalSignal {
+        ExternalSignal(type: type, name: .suspended, mode: .output)
+    }
+
 }
