@@ -88,6 +88,7 @@ public struct MachineRepresentation: RawRepresentable,
         \(entity)
 
         \(architecture)
+
         """
     }
 

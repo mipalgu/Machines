@@ -99,7 +99,17 @@ public extension MachineVHDLRepresentable {
     }
 
     var architectureBody: String {
-        ""
+        guard let body = machine.architectureBody else {
+            return """
+            \(processBody)
+            """
+        }
+        return """
+        -- User-Specific Code for Architecture Body
+        \(body)
+
+        \(processBody)
+        """
     }
 
     var architectureHead: String {
@@ -215,6 +225,30 @@ public extension MachineVHDLRepresentable {
         """
     }
 
+    var process: String {
+        let drivingClock = machine.clocks[machine.drivingClock]
+        return """
+        process(\(drivingClock.name.rawValue))
+        begin
+        \(processBody.indent(amount: 1))
+        end process;
+        """
+    }
+
+    var processBody: String {
+        let drivingClock = machine.clocks[machine.drivingClock]
+        let actionCases = actionRepresentation.keys.compactMap { actionCase(action: $0) } + [String.nullBlock]
+        let internalStateCase = "case \(VariableName.internalState.rawValue) is"
+        let endCase = "end case;"
+        return """
+        if rising_edge(\(drivingClock.name.rawValue)) then
+        \(internalStateCase.indent(amount: 1))
+        \(actionCases.joined(separator: "\n").indent(amount: 2))
+        \(endCase.indent(amount: 1))
+        end if;
+        """
+    }
+
     var returnableSnapshots: String? {
         guard machine.isParameterised else {
             return nil
@@ -267,6 +301,36 @@ public extension MachineVHDLRepresentable {
         return """
         -- User-Specific Code for Architecture Head
         \(head)
+        """
+    }
+
+    func actionCase(action: ActionName) -> String? {
+        let stateImplementations: [(State, String)] = machine.states.compactMap {
+            guard let implementation = $0.actions[action] else {
+                return nil
+            }
+            return ($0, implementation.trimmingCharacters(in: .whitespacesAndNewlines))
+        }
+        .filter { !$0.1.isEmpty }
+        .sorted {
+            $0.0.name < $1.0.name
+        }
+        guard !stateImplementations.isEmpty else {
+            return nil
+        }
+        let caseStatements = stateImplementations.map { state, implementation in
+            """
+            when \(VariableName.name(for: state).rawValue) =>
+            \(implementation.indent(amount: 1))
+            """
+        } + [String.nullBlock]
+        let currentStateCase = "case \(VariableName.currentState.rawValue) is"
+        let endCase = "end case;"
+        return """
+        when \(action.rawValue) =>
+        \(currentStateCase.indent(amount: 1))
+        \(caseStatements.joined(separator: "\n").indent(amount: 2))
+        \(endCase.indent(amount: 1))
         """
     }
 

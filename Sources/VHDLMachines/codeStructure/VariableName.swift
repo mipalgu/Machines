@@ -81,6 +81,24 @@ public struct VariableName: RawRepresentable,
 
     public static let command = VariableName(text: "command")
 
+    public static let currentState = VariableName(text: "currentState")
+
+    public static let targetState = VariableName(text: "targetState")
+
+    public static let previousRinglet = VariableName(text: "previousRinglet")
+
+    public static let suspendedFrom = VariableName(text: "suspendedFrom")
+
+    public static let internalState = VariableName(text: "internalState")
+
+    public static let readSnapshot = VariableName(text: "ReadSnapshot")
+
+    public static let writeSnapshot = VariableName(text: "WriteSnapshot")
+
+    public static let checkTransition = VariableName(text: "CheckTransition")
+
+    public static let noOnEntry = VariableName(text: "NoOnEntry")
+
     /// The variable name.
     public let rawValue: String
 

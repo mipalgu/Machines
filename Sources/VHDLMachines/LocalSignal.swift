@@ -142,8 +142,8 @@ public extension LocalSignal {
     static func internalState(actionType: SignalType) -> LocalSignal {
         LocalSignal(
             type: actionType,
-            name: VariableName(text: "internalState"),
-            defaultValue: .variable(name: VariableName(text: "ReadSnapshot")),
+            name: .internalState,
+            defaultValue: .variable(name: .readSnapshot),
             comment: nil
         )
     }
@@ -174,19 +174,19 @@ public extension LocalSignal {
         return [
             LocalSignal(
                 type: stateType,
-                name: VariableName(text: "currentState"),
+                name: .currentState,
                 defaultValue: targetState,
                 comment: nil
             ),
             LocalSignal(
                 type: stateType,
-                name: VariableName(text: "targetState"),
+                name: .targetState,
                 defaultValue: targetState,
                 comment: nil
             ),
             LocalSignal(
                 type: stateType,
-                name: VariableName(text: "previousRinglet"),
+                name: .previousRinglet,
                 defaultValue: .literal(
                     value: .vector(
                         value: .logics(value: [LogicLiteral](repeating: .highImpedance, count: range.size))
@@ -196,7 +196,7 @@ public extension LocalSignal {
             ),
             LocalSignal(
                 type: stateType,
-                name: VariableName(text: "suspendedFrom"),
+                name: .suspendedFrom,
                 defaultValue: firstState,
                 comment: nil
             )

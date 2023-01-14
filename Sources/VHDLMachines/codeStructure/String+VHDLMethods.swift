@@ -59,12 +59,19 @@ import Foundation
 /// Add helper methods for VHDL parsing.
 extension String {
 
-    var tab: String {
+    static var nullBlock: String {
+        """
+        when others =>
+        \(String.tab)null;
+        """
+    }
+
+    static var tab: String {
         "    "
     }
 
     func indent(amount: Int) -> String {
-        let indentAmount = String(repeating: tab, count: amount)
+        let indentAmount = String(repeating: String.tab, count: amount)
         return self.components(separatedBy: .newlines).map { indentAmount + $0 }.joined(separator: "\n")
     }
 
