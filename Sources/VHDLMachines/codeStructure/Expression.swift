@@ -57,7 +57,8 @@
 import Foundation
 
 /// An `Expression` represents the RHS of a statement in VHDL.
-indirect public enum Expression: RawRepresentable, Equatable, Hashable, Codable, Sendable {
+indirect public enum Expression: RawRepresentable,
+    Equatable, Hashable, Codable, Sendable, CustomStringConvertible {
 
     /// A reference to a variable.
     case variable(name: VariableName)
@@ -111,6 +112,10 @@ indirect public enum Expression: RawRepresentable, Equatable, Hashable, Codable,
         case .expressionWithComment(let expression, let comment):
             return "\(expression.rawValue); \(comment)"
         }
+    }
+
+    public var description: String {
+        rawValue
     }
 
     // swiftlint:disable function_body_length

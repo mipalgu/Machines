@@ -30,7 +30,7 @@ public struct Parameter: ExternalType, Codable, Equatable, Hashable, Variable {
     public var name: VariableName
 
     /// The default value of the parameter.
-    public var defaultValue: SignalLiteral?
+    public var defaultValue: Expression?
 
     /// The comment of the parameter.
     public var comment: Comment?
@@ -43,7 +43,7 @@ public struct Parameter: ExternalType, Codable, Equatable, Hashable, Variable {
     ///   - comment: The comment of the parameter.
     @inlinable
     public init(
-        type: SignalType, name: VariableName, defaultValue: SignalLiteral? = nil, comment: Comment? = nil
+        type: SignalType, name: VariableName, defaultValue: Expression? = nil, comment: Comment? = nil
     ) {
         self.type = type
         self.name = name

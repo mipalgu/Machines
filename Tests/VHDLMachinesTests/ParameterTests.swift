@@ -64,7 +64,7 @@ final class ParameterTests: XCTestCase {
     var parameter = Parameter(
         type: .integer,
         name: VariableName(text: "x"),
-        defaultValue: .integer(value: 255),
+        defaultValue: .literal(value: .integer(value: 255)),
         comment: Comment(text: "The parameter x.")
     )
 
@@ -73,7 +73,7 @@ final class ParameterTests: XCTestCase {
         self.parameter = Parameter(
             type: .integer,
             name: VariableName(text: "x"),
-            defaultValue: .integer(value: 255),
+            defaultValue: .literal(value: .integer(value: 255)),
             comment: Comment(text: "The parameter x.")
         )
     }
@@ -82,7 +82,7 @@ final class ParameterTests: XCTestCase {
     func testInit() {
         XCTAssertEqual(self.parameter.type, .integer)
         XCTAssertEqual(self.parameter.name, VariableName(text: "x"))
-        XCTAssertEqual(self.parameter.defaultValue, .integer(value: 255))
+        XCTAssertEqual(self.parameter.defaultValue, .literal(value: .integer(value: 255)))
         XCTAssertEqual(self.parameter.comment, Comment(text: "The parameter x."))
         XCTAssertEqual(self.parameter.mode, .input)
     }
@@ -91,11 +91,11 @@ final class ParameterTests: XCTestCase {
     func testGettersAndSetters() {
         self.parameter.type = .boolean
         self.parameter.name = VariableName(text: "y")
-        self.parameter.defaultValue = .boolean(value: true)
+        self.parameter.defaultValue = .literal(value: .boolean(value: true))
         self.parameter.comment = Comment(text: "The parameter y.")
         XCTAssertEqual(self.parameter.type, .boolean)
         XCTAssertEqual(self.parameter.name, VariableName(text: "y"))
-        XCTAssertEqual(self.parameter.defaultValue, .boolean(value: true))
+        XCTAssertEqual(self.parameter.defaultValue, .literal(value: .boolean(value: true)))
         XCTAssertEqual(self.parameter.comment, Comment(text: "The parameter y."))
     }
 

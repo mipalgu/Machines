@@ -77,14 +77,14 @@ final class ArrangementTests: XCTestCase {
             type: .stdLogic,
             name: VariableName(text: "x"),
             mode: .input,
-            defaultValue: .logic(value: .high),
+            defaultValue: .literal(value: .logic(value: .high)),
             comment: Comment(text: "Signal x.")
         ),
         ExternalSignal(
             type: .stdLogic,
             name: VariableName(text: "y"),
             mode: .output,
-            defaultValue: .logic(value: .low),
+            defaultValue: .literal(value: .logic(value: .low)),
             comment: Comment(text: "Signal y.")
         )
     ]
@@ -94,7 +94,7 @@ final class ArrangementTests: XCTestCase {
         LocalSignal(
             type: .stdLogic,
             name: VariableName(text: "z"),
-            defaultValue: .logic(value: .low),
+            defaultValue: .literal(value: .logic(value: .low)),
             comment: Comment(text: "Signal z.")
         )
     ]
@@ -148,14 +148,14 @@ final class ArrangementTests: XCTestCase {
                 type: .stdLogic,
                 name: VariableName(text: "z"),
                 mode: .input,
-                defaultValue: .logic(value: .high),
+                defaultValue: .literal(value: .logic(value: .high)),
                 comment: Comment(text: "Signal z.")
             ),
             ExternalSignal(
                 type: .stdLogic,
                 name: VariableName(text: "w"),
                 mode: .output,
-                defaultValue: .logic(value: .low),
+                defaultValue: .literal(value: .logic(value: .low)),
                 comment: Comment(text: "Signal w.")
             )
         ]
@@ -164,7 +164,7 @@ final class ArrangementTests: XCTestCase {
             LocalSignal(
                 type: .stdLogic,
                 name: VariableName(text: "x2"),
-                defaultValue: .logic(value: .high),
+                defaultValue: .literal(value: .logic(value: .high)),
                 comment: Comment(text: "Signal x2.")
             )
         ]

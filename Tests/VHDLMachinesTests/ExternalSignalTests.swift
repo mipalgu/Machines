@@ -65,7 +65,7 @@ final class ExternalSignalTests: XCTestCase {
         type: .stdLogic,
         name: VariableName(text: "x"),
         mode: .output,
-        defaultValue: .logic(value: .high),
+        defaultValue: .literal(value: .logic(value: .high)),
         comment: Comment(text: "signal x")
     )
 
@@ -75,7 +75,7 @@ final class ExternalSignalTests: XCTestCase {
             type: .stdLogic,
             name: VariableName(text: "x"),
             mode: .output,
-            defaultValue: .logic(value: .high),
+            defaultValue: .literal(value: .logic(value: .high)),
             comment: Comment(text: "signal x")
         )
     }
@@ -89,7 +89,7 @@ final class ExternalSignalTests: XCTestCase {
         XCTAssertEqual(self.signal.type, .stdLogic)
         XCTAssertEqual(self.signal.name, VariableName(text: "x"))
         XCTAssertEqual(self.signal.mode, .output)
-        XCTAssertEqual(self.signal.defaultValue, .logic(value: .high))
+        XCTAssertEqual(self.signal.defaultValue, .literal(value: .logic(value: .high)))
         XCTAssertEqual(self.signal.comment, comment)
     }
 
@@ -102,12 +102,14 @@ final class ExternalSignalTests: XCTestCase {
         self.signal.type = .ranged(type: .stdLogicVector(size: .downto(upper: 7, lower: 0)))
         self.signal.name = VariableName(text: "y")
         self.signal.mode = .input
-        self.signal.defaultValue = .vector(value: .hexademical(value: [.ten, .ten]))
+        self.signal.defaultValue = .literal(value: .vector(value: .hexademical(value: [.ten, .ten])))
         self.signal.comment = comment
         XCTAssertEqual(self.signal.type, .ranged(type: .stdLogicVector(size: .downto(upper: 7, lower: 0))))
         XCTAssertEqual(self.signal.name, VariableName(text: "y"))
         XCTAssertEqual(self.signal.mode, .input)
-        XCTAssertEqual(self.signal.defaultValue, .vector(value: .hexademical(value: [.ten, .ten])))
+        XCTAssertEqual(
+            self.signal.defaultValue, .literal(value: .vector(value: .hexademical(value: [.ten, .ten])))
+        )
         XCTAssertEqual(self.signal.comment, comment)
     }
 

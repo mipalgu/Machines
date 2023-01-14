@@ -36,14 +36,14 @@ class VHDLMachinesCompilerTests: XCTestCase {
                     type: .stdLogic,
                     name: VariableName(text: "x"),
                     mode: .input,
-                    defaultValue: .logic(value: .high),
+                    defaultValue: .literal(value: .logic(value: .high)),
                     comment: Comment(text: "A std_logic variable.")
                 ),
                 ExternalSignal(
                     type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
                     name: VariableName(text: "xx"),
                     mode: .output,
-                    defaultValue: .vector(value: .bits(value: [.low, .low])),
+                    defaultValue: .literal(value: .vector(value: .bits(value: [.low, .low]))),
                     comment: Comment(text: "A variable called xx.")
                 )
             ],
@@ -51,13 +51,13 @@ class VHDLMachinesCompilerTests: XCTestCase {
                 LocalSignal(
                     type: SignalType.ranged(type: .integer(size: .to(lower: 0, upper: 65535))),
                     name: VariableName(text: "y"),
-                    defaultValue: .integer(value: 0),
+                    defaultValue: .literal(value: .integer(value: 0)),
                     comment: Comment(text: "A uint16 variable called y.")
                 ),
                 LocalSignal(
                     type: .boolean,
                     name: VariableName(text: "yy"),
-                    defaultValue: .boolean(value: false),
+                    defaultValue: .literal(value: .boolean(value: false)),
                     comment: Comment(text: "A variable called yy")
                 )
             ],
@@ -77,7 +77,7 @@ class VHDLMachinesCompilerTests: XCTestCase {
                 LocalSignal(
                     type: .ranged(type: .stdLogicVector(size: .downto(upper: 2, lower: 0))),
                     name: VariableName(text: "machineSignal2"),
-                    defaultValue: .vector(value: .bits(value: [.high, .high, .high])),
+                    defaultValue: .literal(value: .vector(value: .bits(value: [.high, .high, .high]))),
                     comment: Comment(text: "machine signal 2")
                 )
             ],
@@ -86,13 +86,13 @@ class VHDLMachinesCompilerTests: XCTestCase {
                 Parameter(
                     type: .stdLogic,
                     name: VariableName(text: "parX"),
-                    defaultValue: .logic(value: .high),
+                    defaultValue: .literal(value: .logic(value: .high)),
                     comment: Comment(text: "Parameter parX")
                 ),
                 Parameter(
                     type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
                     name: VariableName(text: "parXs"),
-                    defaultValue: .vector(value: .bits(value: [.low, .high])),
+                    defaultValue: .literal(value: .vector(value: .bits(value: [.low, .high]))),
                     comment: Comment(text: "Parameter parXs")
                 )
             ],

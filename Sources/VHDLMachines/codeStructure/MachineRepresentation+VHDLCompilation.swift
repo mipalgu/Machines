@@ -56,6 +56,24 @@
 
 extension MachineRepresentation {
 
+    var architecture: String {
+        """
+        architecture Behavioral of \(machine.name) is
+        \(architectureHead.indent(amount: 1))
+        begin
+        \(architectureBody.indent(amount: 1))
+        end Behavioral;
+        """
+    }
+
+    var architectureBody: String {
+        ""
+    }
+
+    var architectureHead: String {
+        ""
+    }
+
     var entity: String {
         guard let generics = generics else {
             return """
@@ -72,6 +90,36 @@ extension MachineRepresentation {
         """
     }
 
+    var generics: String? {
+        guard !machine.generics.isEmpty else {
+            return nil
+        }
+        var signals = machine.generics.map(\.rawValue).joined(separator: "\n")
+        signals.removeLast(character: ";")
+        return """
+        generic(
+        \(signals.indent(amount: 1))
+        );
+        """
+    }
+
+    // var internalState: LocalSignal {
+    //     LocalSignal(
+    //         type: actionType,
+    //         name: VariableName(text: "internalState"),
+    //         defaultValue: SignalLiteral?,
+    //         comment: Comment?
+    //     )
+    // }
+
+    var internalStateDefinition: String {
+        // let variables = 
+        return """
+        -- Internal State Representation Bits
+
+        """
+    }
+
     var includeStrings: String {
         machine.includes.map { $0.rawValue + ";" }.joined(separator: "\n")
     }
@@ -84,19 +132,6 @@ extension MachineRepresentation {
         return """
         port(
         \(externalSignals.indent(amount: 1))
-        );
-        """
-    }
-
-    var generics: String? {
-        guard !machine.generics.isEmpty else {
-            return nil
-        }
-        var signals = machine.generics.map(\.rawValue).joined(separator: "\n")
-        signals.removeLast(character: ";")
-        return """
-        generic(
-        \(signals.indent(amount: 1))
         );
         """
     }

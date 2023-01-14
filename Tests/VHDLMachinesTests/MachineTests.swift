@@ -85,7 +85,7 @@ final class MachineTests: XCTestCase {
                 type: .stdLogic,
                 name: VariableName(text: "A"),
                 mode: .input,
-                defaultValue: .logic(value: .low),
+                defaultValue: .literal(value: .logic(value: .low)),
                 comment: Comment(text: "A comment")
             )
         ]
@@ -97,7 +97,7 @@ final class MachineTests: XCTestCase {
             LocalSignal(
                 type: .ranged(type: .integer(size: .to(lower: 0, upper: 512))),
                 name: VariableName(text: "g"),
-                defaultValue: .integer(value: 0),
+                defaultValue: .literal(value: .integer(value: 0)),
                 comment: Comment(text: "Generic g")
             )
         ]
@@ -129,7 +129,7 @@ final class MachineTests: XCTestCase {
             LocalSignal(
                 type: .stdLogic,
                 name: VariableName(text: "s"),
-                defaultValue: .logic(value: .low),
+                defaultValue: .literal(value: .logic(value: .low)),
                 comment: Comment(text: "Signal s")
             )
         ]
@@ -141,7 +141,7 @@ final class MachineTests: XCTestCase {
             Parameter(
                 type: .stdLogic,
                 name: VariableName(text: "p"),
-                defaultValue: .logic(value: .low),
+                defaultValue: .literal(value: .logic(value: .low)),
                 comment: Comment(text: "Parameter p")
             )
         ]
@@ -284,7 +284,7 @@ final class MachineTests: XCTestCase {
                 type: .stdLogic,
                 name: VariableName(text: "B"),
                 mode: .input,
-                defaultValue: .logic(value: .low),
+                defaultValue: .literal(value: .logic(value: .low)),
                 comment: Comment(text: "A comment")
             )
         ]
@@ -292,7 +292,7 @@ final class MachineTests: XCTestCase {
             LocalSignal(
                 type: .ranged(type: .integer(size: .to(lower: 0, upper: 512))),
                 name: VariableName(text: "g2"),
-                defaultValue: .integer(value: 0),
+                defaultValue: .literal(value: .integer(value: 0)),
                 comment: Comment(text: "Generic g2")
             )
         ]
@@ -306,7 +306,7 @@ final class MachineTests: XCTestCase {
             LocalSignal(
                 type: .stdLogic,
                 name: VariableName(text: "s2"),
-                defaultValue: .logic(value: .low),
+                defaultValue: .literal(value: .logic(value: .low)),
                 comment: Comment(text: "Signal s2")
             )
         ]
@@ -314,7 +314,7 @@ final class MachineTests: XCTestCase {
             Parameter(
                 type: .stdLogic,
                 name: VariableName(text: "p2"),
-                defaultValue: .logic(value: .low),
+                defaultValue: .literal(value: .logic(value: .low)),
                 comment: Comment(text: "Parameter p2")
             )
         ]

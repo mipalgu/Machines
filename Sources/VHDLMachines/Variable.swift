@@ -17,7 +17,7 @@ public protocol Variable {
     var name: VariableName {get set}
 
     /// The default value of the variable.
-    var defaultValue: SignalLiteral? {get set}
+    var defaultValue: Expression? {get set}
 
     /// The range of the variable.
     var comment: Comment? {get set}

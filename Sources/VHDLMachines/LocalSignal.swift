@@ -18,7 +18,7 @@ public struct LocalSignal: RawRepresentable, Codable, Equatable, Hashable, Varia
     public var name: VariableName
 
     /// The default value of the signal.
-    public var defaultValue: SignalLiteral?
+    public var defaultValue: Expression?
 
     /// The comment of the signal.
     public var comment: Comment?
@@ -42,9 +42,9 @@ public struct LocalSignal: RawRepresentable, Codable, Equatable, Hashable, Varia
     /// - Warning: Make sure the `defaultValue` is valid for the given signal `type`. The program will crash
     /// if this is not the case.
     @inlinable
-    public init(type: SignalType, name: VariableName, defaultValue: SignalLiteral?, comment: Comment?) {
-        if let defaultValue = defaultValue {
-            guard defaultValue.isValid(for: type) else {
+    public init(type: SignalType, name: VariableName, defaultValue: Expression?, comment: Comment?) {
+        if let defaultValue = defaultValue, case .literal(let literal) = defaultValue {
+            guard literal.isValid(for: type) else {
                 fatalError("Invalid literal \(defaultValue) for signal type \(type).")
             }
         }
@@ -89,7 +89,7 @@ public struct LocalSignal: RawRepresentable, Codable, Equatable, Hashable, Varia
     ///   - comment: The comment that appears on the rhs of the `--` operator.
     private init?(declaration: String, defaultValue: String? = nil, comment: Comment? = nil) {
         let signalComponents = declaration.components(separatedBy: .whitespacesAndNewlines)
-        let value = SignalLiteral(rawValue: defaultValue ?? "")
+        let value = Expression(rawValue: defaultValue ?? "")
         guard signalComponents.count >= 2 else {
             return nil
         }
@@ -115,8 +115,8 @@ public struct LocalSignal: RawRepresentable, Codable, Equatable, Hashable, Varia
         guard let varName = VariableName(rawValue: name) else {
             return nil
         }
-        if let val = value {
-            guard val.isValid(for: type) else {
+        if let val = value, case .literal(let literal) = val {
+            guard literal.isValid(for: type) else {
                 return nil
             }
         }

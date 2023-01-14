@@ -85,6 +85,8 @@ public struct MachineRepresentation: RawRepresentable, Equatable, Hashable, Coda
         \(includeStrings)
 
         \(entity)
+
+        \(architecture)
         """
     }
 

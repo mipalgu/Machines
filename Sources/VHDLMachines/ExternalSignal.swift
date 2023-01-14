@@ -18,7 +18,7 @@ public struct ExternalSignal: ExternalType, RawRepresentable, Codable, Hashable,
     public var name: VariableName
 
     /// The default value of the signal.
-    public var defaultValue: SignalLiteral?
+    public var defaultValue: Expression?
 
     /// The comment of the signal.
     public var comment: Comment?
@@ -48,7 +48,7 @@ public struct ExternalSignal: ExternalType, RawRepresentable, Codable, Hashable,
         type: SignalType,
         name: VariableName,
         mode: Mode,
-        defaultValue: SignalLiteral? = nil,
+        defaultValue: Expression? = nil,
         comment: Comment? = nil
     ) {
         self.type = type
@@ -99,7 +99,7 @@ public struct ExternalSignal: ExternalType, RawRepresentable, Codable, Hashable,
         else {
             return nil
         }
-        let defaultValue = assignmentComponents.count == 2 ? SignalLiteral(rawValue: assignmentComponents[1])
+        let defaultValue = assignmentComponents.count == 2 ? Expression(rawValue: assignmentComponents[1])
             : nil
         self.name = name
         self.type = type

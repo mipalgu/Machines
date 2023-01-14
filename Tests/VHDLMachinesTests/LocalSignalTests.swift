@@ -64,7 +64,7 @@ final class LocalSignalTests: XCTestCase {
     var signal = LocalSignal(
         type: .stdLogic,
         name: VariableName(text: "x"),
-        defaultValue: .logic(value: .high),
+        defaultValue: .literal(value: .logic(value: .high)),
         comment: Comment(text: "The signal x.")
     )
 
@@ -73,7 +73,7 @@ final class LocalSignalTests: XCTestCase {
         self.signal = LocalSignal(
             type: .stdLogic,
             name: VariableName(text: "x"),
-            defaultValue: .logic(value: .high),
+            defaultValue: .literal(value: .logic(value: .high)),
             comment: Comment(text: "The signal x.")
         )
     }
@@ -82,7 +82,7 @@ final class LocalSignalTests: XCTestCase {
     func testInit() {
         XCTAssertEqual(self.signal.type, .stdLogic)
         XCTAssertEqual(self.signal.name, VariableName(text: "x"))
-        XCTAssertEqual(self.signal.defaultValue, .logic(value: .high))
+        XCTAssertEqual(self.signal.defaultValue, .literal(value: .logic(value: .high)))
         XCTAssertEqual(self.signal.comment, Comment(text: "The signal x."))
     }
 
@@ -90,11 +90,13 @@ final class LocalSignalTests: XCTestCase {
     func testGettersAndSetters() {
         self.signal.type = .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0)))
         self.signal.name = VariableName(text: "y")
-        self.signal.defaultValue = .vector(value: .bits(value: [.low, .low, .low, .low]))
+        self.signal.defaultValue = .literal(value: .vector(value: .bits(value: [.low, .low, .low, .low])))
         self.signal.comment = Comment(text: "The signal y.")
         XCTAssertEqual(self.signal.type, .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))))
         XCTAssertEqual(self.signal.name, VariableName(text: "y"))
-        XCTAssertEqual(self.signal.defaultValue, .vector(value: .bits(value: [.low, .low, .low, .low])))
+        XCTAssertEqual(
+            self.signal.defaultValue, .literal(value: .vector(value: .bits(value: [.low, .low, .low, .low])))
+        )
         XCTAssertEqual(self.signal.comment, Comment(text: "The signal y."))
     }
 
@@ -105,7 +107,7 @@ final class LocalSignalTests: XCTestCase {
         XCTAssertEqual(self.signal.rawValue, "signal x: std_logic; -- The signal x.")
         self.signal.comment = nil
         XCTAssertEqual(self.signal.rawValue, "signal x: std_logic;")
-        self.signal.defaultValue = .logic(value: .low)
+        self.signal.defaultValue = .literal(value: .logic(value: .low))
         XCTAssertEqual(self.signal.rawValue, "signal x: std_logic := '0';")
     }
 
@@ -121,7 +123,7 @@ final class LocalSignalTests: XCTestCase {
         XCTAssertEqual(LocalSignal(rawValue: "signal x: std_logic; -- The signal x."), self.signal)
         let name = VariableName(text: "x")
         var signal = LocalSignal(
-            type: .stdLogic, name: name, defaultValue: .logic(value: .high), comment: comment
+            type: .stdLogic, name: name, defaultValue: .literal(value: .logic(value: .high)), comment: comment
         )
         XCTAssertEqual(LocalSignal(rawValue: "signal x : std_logic := '1'; -- The signal x."), signal)
         signal.comment = nil
@@ -145,7 +147,7 @@ final class LocalSignalTests: XCTestCase {
             LocalSignal(
                 type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),
                 name: name,
-                defaultValue: .vector(value: .hexademical(value: [.four])),
+                defaultValue: .literal(value: .vector(value: .hexademical(value: [.four]))),
                 comment: comment
             )
         )
