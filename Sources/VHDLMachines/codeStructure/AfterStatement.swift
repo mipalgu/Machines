@@ -1,4 +1,4 @@
-// CharacterSet+VHDLSets.swift
+// AfterStatement.swift
 // Machines
 // 
 // Created by Morgan McColl.
@@ -54,45 +54,64 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import Foundation
+// public enum AfterStatement: RawRepresentable, Equatable, Hashable, Codable, Sendable {
 
-/// Add common VHDL character sets.
-extension CharacterSet {
+//     public enum Period: RawRepresentable, Equatable, Hashable, Codable, Sendable {
 
-    /// All VHDL operators.
-    @usableFromInline static var vhdlOperators: CharacterSet {
-        CharacterSet(charactersIn: "+-/*()")
-    }
+//         case ps
 
-    /// The VHDL binary operators.
-    @usableFromInline static var vhdlOperations: CharacterSet {
-        CharacterSet(charactersIn: "+-/*")
-    }
+//         case ns
 
-    /// The VHDL operators with additive precedence.
-    @usableFromInline static var vhdlAdditiveOperations: CharacterSet {
-        CharacterSet(charactersIn: "+-")
-    }
+//         case us
 
-    @usableFromInline static var vhdlComparisonOperations: CharacterSet {
-        CharacterSet(charactersIn: "=<>")
-    }
+//         case ms
 
-    /// The VHDL operators with multiplicative precedence.
-    @usableFromInline static var vhdlMultiplicativeOperations: CharacterSet {
-        CharacterSet(charactersIn: "*/")
-    }
+//         case s
 
-    @usableFromInline static var variableNames: CharacterSet {
-        CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "_"))
-    }
+//         public var rawValue: String {
+//             switch self {
+//             case .ps:
+//                 return VariableName.ringletPerPs.rawValue
+//             case .ns:
+//                 return VariableName.ringletPerNs.rawValue
+//             case .us:
+//                 return VariableName.ringletPerUs.rawValue
+//             case .ms:
+//                 return VariableName.ringletPerMs.rawValue
+//             case .s:
+//                 return VariableName.ringletPerS.rawValue
+//             }
+//         }
 
-    /// Whether a string contains characters in this character set.
-    /// - Parameter string: The string to check.
-    /// - Returns: Whether the string contains characters in this character set.
-    @usableFromInline
-    func within(string: String) -> Bool {
-        string.unicodeScalars.contains { self.contains($0) }
-    }
+//         public init?(rawValue: String) {
+//             let trimmedString = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
+//             guard trimmedString.count <= 32 else {
+//                 return nil
+//             }
+//             switch trimmedString.uppercased() {
+//             case VariableName.ringletPerPs.rawValue:
+//                 self = .ps
+//             case VariableName.ringletPerNs.rawValue:
+//                 self = .ns
+//             case VariableName.ringletPerUs.rawValue:
+//                 self = .us
+//             case VariableName.ringletPerMs.rawValue:
+//                 self = .ms
+//             case VariableName.ringletPerS.rawValue:
+//                 self = .s
+//             default:
+//                 return nil
+//             }
+//         }
 
-}
+//     }
+
+//     public let amount: Expression
+
+//     public period: Period
+
+//     public rawValue: Expression {
+        
+//     }
+
+// }

@@ -87,6 +87,8 @@ indirect public enum Expression: RawRepresentable,
     /// An expression with a comment.
     case expressionWithComment(expression: Expression, comment: Comment)
 
+    case greaterThanEqual(lhs: Expression, rhs: Expression)
+
     /// The raw value is a string.
     public typealias RawValue = String
 
@@ -111,6 +113,8 @@ indirect public enum Expression: RawRepresentable,
             return "\(comment)"
         case .expressionWithComment(let expression, let comment):
             return "\(expression.rawValue); \(comment)"
+        case .greaterThanEqual(let lhs, let rhs):
+            return "\(lhs.rawValue) >= \(rhs.rawValue)"
         }
     }
 
@@ -189,11 +193,15 @@ indirect public enum Expression: RawRepresentable,
             self.init(lhs: .precedence(value: expression), rhs: rhsExp, char: char)
             return
         }
-        guard let multiplicative = Expression(value: value, characters: .vhdlMultiplicativeOperations) else {
-            self.init(value: value, characters: .vhdlAdditiveOperations)
+        if let multiplicative = Expression(value: value, characters: .vhdlMultiplicativeOperations) {
+            self = multiplicative
             return
         }
-        self = multiplicative
+        if let additive = Expression(value: value, characters: .vhdlAdditiveOperations) {
+            self = additive
+            return
+        }
+        return nil
     }
 
     // swiftlint:enable function_body_length
