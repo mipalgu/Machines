@@ -165,7 +165,7 @@ public enum VectorLiteral: RawRepresentable, Equatable, Hashable, Codable, Senda
     }
 
     public static func representation(for states: [State]) -> [State: VectorLiteral]? {
-        guard let bitsRequired = BitLiteral.bitsRequired(for: states.count) else {
+        guard let bitsRequired = BitLiteral.bitsRequired(for: states.count - 1) else {
             return nil
         }
         return Dictionary(

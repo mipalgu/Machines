@@ -157,10 +157,14 @@ public extension LocalSignal {
         let range = vector.size
         let targetState: Expression?
         let firstState: Expression?
-        if let state = machine.states.first {
-            firstState = .variable(name: VariableName.name(for: state))
+        if machine.states.count > machine.initialState {
+            firstState = .variable(name: VariableName.name(for: machine.states[machine.initialState]))
         } else {
-            firstState = nil
+            if machine.suspendedState != 0, let state = machine.states.first {
+                firstState = .variable(name: VariableName.name(for: state))
+            } else {
+                firstState = nil
+            }
         }
         if let suspendedState = machine.suspendedState {
             targetState = .variable(name: VariableName.name(for: machine.states[suspendedState]))
