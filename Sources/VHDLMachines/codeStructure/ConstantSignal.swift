@@ -266,7 +266,8 @@ public struct ConstantSignal: RawRepresentable, Equatable, Hashable, Codable, Se
         guard let constant = ConstantSignal(
             name: VariableName.clockPeriod,
             type: .real,
-            value: .literal(value: .decimal(value: Double(period.picoseconds_d)))
+            value: .literal(value: .decimal(value: Double(period.picoseconds_d))),
+            comment: Comment(text: "ps")
         ) else {
             fatalError("Could not create clock period constant.")
         }

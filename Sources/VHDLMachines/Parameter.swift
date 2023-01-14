@@ -35,6 +35,18 @@ public struct Parameter: ExternalType, Codable, Equatable, Hashable, Variable {
     /// The comment of the parameter.
     public var comment: Comment?
 
+    public var parameterName: VariableName {
+        VariableName.name(for: self)
+    }
+
+    public var snapshot: LocalSignal {
+        LocalSignal(type: type, name: name, defaultValue: nil, comment: nil)
+    }
+
+    public var read: String {
+        "\(name.rawValue) <= \(parameterName.rawValue);"
+    }
+
     /// Initialises a new parameter with the given type, name, default value and comment.
     /// - Parameters:
     ///   - type: The type of the parameter.

@@ -54,7 +54,8 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-public struct MachineRepresentation: RawRepresentable, Equatable, Hashable, Codable {
+public struct MachineRepresentation: RawRepresentable,
+    Equatable, Hashable, Codable, MachineVHDLRepresentable {
 
     public let statesRepresentations: [State: VectorLiteral]
 

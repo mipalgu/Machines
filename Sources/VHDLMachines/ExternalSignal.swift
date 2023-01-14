@@ -36,6 +36,22 @@ public struct ExternalSignal: ExternalType, RawRepresentable, Codable, Hashable,
         return declaration + " := \(defaultValue.rawValue);\(comment)"
     }
 
+    var externalName: VariableName {
+        VariableName.name(for: self)
+    }
+
+    public var snapshot: LocalSignal {
+        LocalSignal(type: type, name: name, defaultValue: nil, comment: nil)
+    }
+
+    public var read: String {
+        "\(name.rawValue) <= \(externalName.rawValue);"
+    }
+
+    public var write: String {
+        "\(externalName.rawValue) <= \(name.rawValue);"
+    }
+
     /// Initialises a new external signal with the given type, name, mode, default value and comment.
     /// - Parameters:
     ///   - type: The type of the signal.

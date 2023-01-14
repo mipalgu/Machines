@@ -127,3 +127,76 @@ public struct LocalSignal: RawRepresentable, Codable, Equatable, Hashable, Varia
     }
 
 }
+
+public extension LocalSignal {
+
+    static var ringletCounter: LocalSignal {
+        LocalSignal(
+            type: .natural,
+            name: .ringletCounter,
+            defaultValue: .literal(value: .integer(value: 0)),
+            comment: nil
+        )
+    }
+
+    static func internalState(actionType: SignalType) -> LocalSignal {
+        LocalSignal(
+            type: actionType,
+            name: VariableName(text: "internalState"),
+            defaultValue: .variable(name: VariableName(text: "ReadSnapshot")),
+            comment: nil
+        )
+    }
+
+    static func stateTrackers<T>(representation: T) -> [LocalSignal] where T: MachineVHDLRepresentable {
+        let stateType = representation.stateType
+        let machine = representation.machine
+        guard case .ranged(let vector) = stateType else {
+            fatalError("Incorrect type for states.")
+        }
+        let range = vector.size
+        let targetState: Expression?
+        let firstState: Expression?
+        if let state = machine.states.first {
+            firstState = .variable(name: VariableName.name(for: state))
+        } else {
+            firstState = nil
+        }
+        if let suspendedState = machine.suspendedState {
+            targetState = .variable(name: VariableName.name(for: machine.states[suspendedState]))
+        } else {
+            targetState = firstState
+        }
+        return [
+            LocalSignal(
+                type: stateType,
+                name: VariableName(text: "currentState"),
+                defaultValue: targetState,
+                comment: nil
+            ),
+            LocalSignal(
+                type: stateType,
+                name: VariableName(text: "targetState"),
+                defaultValue: targetState,
+                comment: nil
+            ),
+            LocalSignal(
+                type: stateType,
+                name: VariableName(text: "previousRinglet"),
+                defaultValue: .literal(
+                    value: .vector(
+                        value: .logics(value: [LogicLiteral](repeating: .highImpedance, count: range.size))
+                    )
+                ),
+                comment: nil
+            ),
+            LocalSignal(
+                type: stateType,
+                name: VariableName(text: "suspendedFrom"),
+                defaultValue: firstState,
+                comment: nil
+            )
+        ]
+    }
+
+}

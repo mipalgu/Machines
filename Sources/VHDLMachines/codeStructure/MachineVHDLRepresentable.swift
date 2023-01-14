@@ -54,7 +54,39 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-extension MachineRepresentation {
+public protocol MachineVHDLRepresentable {
+
+    var actionRepresentation: [ActionName: ConstantSignal] { get }
+
+    var actionType: SignalType { get }
+
+    var clockPeriod: ConstantSignal { get }
+
+    var command: SignalType { get }
+
+    var machine: Machine { get }
+
+    var ringletConstants: [ConstantSignal] { get }
+
+    var statesRepresentations: [State: VectorLiteral] { get }
+
+    var stateType: SignalType { get }
+
+    var suspendedType: SignalType { get }
+
+}
+
+public extension MachineVHDLRepresentable {
+
+    var afterVariables: String {
+        let variables = (
+            [LocalSignal.ringletCounter.rawValue] + ([clockPeriod] + ringletConstants).map(\.rawValue)
+        ).joined(separator: "\n")
+        return """
+        -- After Variables
+        \(variables)
+        """
+    }
 
     var architecture: String {
         """
@@ -71,7 +103,36 @@ extension MachineRepresentation {
     }
 
     var architectureHead: String {
-        ""
+        guard let parameters = parameterSnapshots, let returnables = returnableSnapshots else {
+            return """
+            \(internalStateDefinition)
+            \(stateRepresentation)
+            \(suspensionString)
+            \(afterVariables)
+            \(snapshots)
+            \(machineSignals)
+            \(userHead)
+            """.components(separatedBy: .newlines)
+            .filter {
+                !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            }
+            .joined(separator: "\n")
+        }
+        return """
+        \(internalStateDefinition)
+        \(stateRepresentation)
+        \(suspensionString)
+        \(afterVariables)
+        \(snapshots)
+        \(parameters)
+        \(returnables)
+        \(machineSignals)
+        \(userHead)
+        """.components(separatedBy: .newlines)
+        .filter {
+            !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        }
+        .joined(separator: "\n")
     }
 
     var entity: String {
@@ -103,25 +164,40 @@ extension MachineRepresentation {
         """
     }
 
-    // var internalState: LocalSignal {
-    //     LocalSignal(
-    //         type: actionType,
-    //         name: VariableName(text: "internalState"),
-    //         defaultValue: SignalLiteral?,
-    //         comment: Comment?
-    //     )
-    // }
+    var internalState: LocalSignal {
+        LocalSignal.internalState(actionType: actionType)
+    }
 
     var internalStateDefinition: String {
-        // let variables = 
+        let actions = (actionRepresentation.values
+            .sorted { $0.name.rawValue < $1.name.rawValue }
+            .map(\.rawValue) + [internalState.rawValue])
+            .joined(separator: "\n")
         return """
         -- Internal State Representation Bits
-
+        \(actions)
         """
     }
 
     var includeStrings: String {
         machine.includes.map { $0.rawValue + ";" }.joined(separator: "\n")
+    }
+
+    var machineSignals: String {
+        """
+        -- Machine Signals
+        \(machine.machineSignals.map(\.rawValue).joined(separator: "\n"))
+        """
+    }
+
+    var parameterSnapshots: String? {
+        guard machine.isParameterised else {
+            return nil
+        }
+        return """
+        -- Snapshot of Parameters
+        \(machine.parameterSignals.map(\.snapshot.rawValue).joined(separator: "\n"))
+        """
     }
 
     var port: String {
@@ -133,6 +209,61 @@ extension MachineRepresentation {
         port(
         \(externalSignals.indent(amount: 1))
         );
+        """
+    }
+
+    var returnableSnapshots: String? {
+        guard machine.isParameterised else {
+            return nil
+        }
+        return """
+        -- Snapshot of Output Signals
+        \(machine.returnableSignals.map(\.snapshot.rawValue).joined(separator: "\n"))
+        """
+    }
+
+    var snapshots: String {
+        """
+        -- Snapshot of External Signals and Variables
+        \(machine.externalSignals.map(\.snapshot.rawValue).joined(separator: "\n"))
+        """
+    }
+
+    var stateRepresentation: String {
+        let states = statesRepresentations.compactMap {
+            ConstantSignal(
+                name: VariableName.name(for: $0),
+                type: stateType,
+                value: .literal(value: .vector(value: $1)),
+                comment: nil
+            )
+        }
+        guard states.count == statesRepresentations.count else {
+            fatalError("Failed to convert states to constants.")
+        }
+        let statesString = states.map(\.rawValue).joined(separator: "\n")
+        let trackers = LocalSignal.stateTrackers(representation: self).map(\.rawValue).joined(separator: "\n")
+        return """
+        -- State Representation Bits
+        \(statesString)
+        \(trackers)
+        """
+    }
+
+    var suspensionString: String {
+        """
+        -- Suspension Commands
+        \(SuspensionCommand.suspensionConstants.map(\.rawValue).joined(separator: "\n"))
+        """
+    }
+
+    var userHead: String {
+        guard let head = machine.architectureHead else {
+            return ""
+        }
+        return """
+        -- User-Specific Code for Architecture Head
+        \(head)
         """
     }
 

@@ -75,6 +75,8 @@ public struct VariableName: RawRepresentable,
 
     public static let ringletPerS = VariableName(text: "RINGLETS_PER_S")
 
+    public static let ringletCounter = VariableName(text: "ringletCounter")
+
     /// The variable name.
     public let rawValue: String
 
@@ -128,6 +130,22 @@ public struct VariableName: RawRepresentable,
     @inlinable
     public func hash(into hasher: inout Hasher) {
         hasher.combine(self.rawValue.lowercased())
+    }
+
+    public static func name(for state: State) -> VariableName {
+        VariableName(text: "STATE_\(state.name.rawValue)")
+    }
+
+    public static func name(for external: ExternalSignal) -> VariableName {
+        VariableName(text: "EXTERNAL_\(external.name.rawValue)")
+    }
+
+    public static func name(for parameter: Parameter) -> VariableName {
+        VariableName(text: "PARAMETER_\(parameter.name.rawValue)")
+    }
+
+    public static func name(for returnable: ReturnableVariable) -> VariableName {
+        VariableName(text: "OUTPUT_\(returnable.name.rawValue)")
     }
 
 }

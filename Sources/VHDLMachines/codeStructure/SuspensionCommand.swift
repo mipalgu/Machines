@@ -106,6 +106,21 @@ public enum SuspensionCommand: RawRepresentable, CaseIterable, Equatable, Hashab
         }
     }
 
+    public static var suspensionConstants: [ConstantSignal] {
+        guard let commands = SuspensionCommand.bitRepresentation, let type = SuspensionCommand.bitsType else {
+            fatalError("Failed to create suspension commands.")
+        }
+        let constants = commands.sorted { $0.key.rawValue < $1.key.rawValue }.compactMap {
+            ConstantSignal(
+                name: VariableName(text: $0.rawValue), type: type, value: .literal(value: .vector(value: $1))
+            )
+        }
+        guard constants.count == commands.count else {
+            fatalError("Failed to convert suspension commands to constants.")
+        }
+        return constants
+    }
+
     /// Initialise this command from it's label.
     /// - Parameter rawValue: The VHDL label for the command.
     @inlinable
