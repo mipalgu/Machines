@@ -132,4 +132,10 @@ public enum Statement: RawRepresentable, Equatable, Hashable, Codable {
         return nil
     }
 
+    public static func readSnapshots(machine: Machine) -> [Statement] {
+        machine.externalSignals.map {
+            .assignment(name: $0.name, value: .variable(name: .name(for: $0)))
+        }
+    }
+
 }
