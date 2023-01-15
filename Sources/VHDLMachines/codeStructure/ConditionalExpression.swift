@@ -66,6 +66,8 @@ public enum ConditionalExpression: RawRepresentable, Equatable, Hashable, Codabl
 
     case equality(lhs: Expression, rhs: Expression)
 
+    case after(value: AfterStatement)
+
     public var rawValue: String {
         switch self {
         case .lessThan(let lhs, let rhs):
@@ -78,6 +80,8 @@ public enum ConditionalExpression: RawRepresentable, Equatable, Hashable, Codabl
             return "\(lhs.rawValue) >= \(rhs.rawValue)"
         case .equality(let lhs, let rhs):
             return "\(lhs.rawValue) = \(rhs.rawValue)"
+        case .after(let value):
+            return value.rawValue
         }
     }
 
@@ -87,6 +91,14 @@ public enum ConditionalExpression: RawRepresentable, Equatable, Hashable, Codabl
             return nil
         }
         let value = trimmedString.uptoSemicolon
+        if let afterStatement = AfterStatement(after: value) {
+            self = .after(value: afterStatement)
+            return
+        }
+        if let afterStatement = AfterStatement(rawValue: value) {
+            self = .after(value: afterStatement)
+            return
+        }
         guard
             let (operation, components) = ["<=", ">=", "<", ">", "="].lazy.compactMap(
                 { (op: String) -> (String, [String])? in

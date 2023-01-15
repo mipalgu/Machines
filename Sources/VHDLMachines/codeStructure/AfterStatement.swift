@@ -54,64 +54,134 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-// public enum AfterStatement: RawRepresentable, Equatable, Hashable, Codable, Sendable {
+public struct AfterStatement: RawRepresentable, Equatable, Hashable, Codable, Sendable {
 
-//     public enum Period: RawRepresentable, Equatable, Hashable, Codable, Sendable {
+    public enum Period: RawRepresentable, Equatable, Hashable, Codable, Sendable {
 
-//         case ps
+        case ps
 
-//         case ns
+        case ns
 
-//         case us
+        case us
 
-//         case ms
+        case ms
 
-//         case s
+        case s
 
-//         public var rawValue: String {
-//             switch self {
-//             case .ps:
-//                 return VariableName.ringletPerPs.rawValue
-//             case .ns:
-//                 return VariableName.ringletPerNs.rawValue
-//             case .us:
-//                 return VariableName.ringletPerUs.rawValue
-//             case .ms:
-//                 return VariableName.ringletPerMs.rawValue
-//             case .s:
-//                 return VariableName.ringletPerS.rawValue
-//             }
-//         }
+        public var rawValue: VariableName {
+            switch self {
+            case .ps:
+                return VariableName.ringletPerPs
+            case .ns:
+                return VariableName.ringletPerNs
+            case .us:
+                return VariableName.ringletPerUs
+            case .ms:
+                return VariableName.ringletPerMs
+            case .s:
+                return VariableName.ringletPerS
+            }
+        }
 
-//         public init?(rawValue: String) {
-//             let trimmedString = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
-//             guard trimmedString.count <= 32 else {
-//                 return nil
-//             }
-//             switch trimmedString.uppercased() {
-//             case VariableName.ringletPerPs.rawValue:
-//                 self = .ps
-//             case VariableName.ringletPerNs.rawValue:
-//                 self = .ns
-//             case VariableName.ringletPerUs.rawValue:
-//                 self = .us
-//             case VariableName.ringletPerMs.rawValue:
-//                 self = .ms
-//             case VariableName.ringletPerS.rawValue:
-//                 self = .s
-//             default:
-//                 return nil
-//             }
-//         }
+        public var afterLength: Int {
+            switch self {
+            case .s:
+                return 5
+            default:
+                return 8
+            }
+        }
 
-//     }
+        public init?(rawValue: VariableName) {
+            switch rawValue {
+            case VariableName.ringletPerPs:
+                self = .ps
+            case VariableName.ringletPerNs:
+                self = .ns
+            case VariableName.ringletPerUs:
+                self = .us
+            case VariableName.ringletPerMs:
+                self = .ms
+            case VariableName.ringletPerS:
+                self = .s
+            default:
+                return nil
+            }
+        }
 
-//     public let amount: Expression
+        public init?(after: String) {
+            guard after.lowercased().hasPrefix("after"), after.count >= 6 else {
+                return nil
+            }
+            if after[String.Index(utf16Offset: 5, in: after)] != "_" {
+                self = .s
+                return
+            }
+            guard after.count >= 8 else {
+                return nil
+            }
+            let value = after[
+                String.Index(utf16Offset: 6, in: after)...String.Index(utf16Offset: 7, in: after)
+            ]
+            switch value.lowercased() {
+            case "ps":
+                self = .ps
+            case "ns":
+                self = .ns
+            case "us":
+                self = .us
+            case "ms":
+                self = .ms
+            default:
+                return nil
+            }
+        }
 
-//     public period: Period
+    }
 
-//     public rawValue: Expression {
-        
-//     }
+    public let amount: Expression
 
-// }
+    public let period: Period
+
+    public var rawValue: String {
+        ConditionalExpression.greaterThanOrEqual(
+            lhs: .variable(name: .ringletCounter),
+            rhs: .precedence(value: .multiplication(lhs: amount, rhs: .variable(name: period.rawValue)))
+        ).rawValue
+    }
+
+    public init?(rawValue: String) {
+        guard
+            let expression = ConditionalExpression(rawValue: rawValue),
+            case .greaterThanOrEqual(let lhs, let rhs) = expression,
+            case .variable(let name) = lhs,
+            name == .ringletCounter,
+            case .precedence(let value) = rhs,
+            case .multiplication(let lhs, let rhs) = value,
+            case .variable(let name) = rhs,
+            let period = Period(rawValue: name)
+        else {
+            return nil
+        }
+        self.amount = lhs
+        self.period = period
+    }
+
+    public init?(after: String) {
+        let value = after.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard value.count < 256, let period = Period(after: value) else {
+            return nil
+        }
+        let amount = value.dropFirst(period.afterLength)
+        guard
+            amount.hasPrefix("("),
+            amount.hasSuffix(")"),
+            let expression = Expression(rawValue: String(amount.dropFirst().dropLast()))
+        else {
+            return nil
+        }
+        self.amount = expression
+        self.period = period
+    }
+
+}
