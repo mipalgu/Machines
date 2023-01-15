@@ -91,13 +91,23 @@ public struct VariableName: RawRepresentable,
 
     public static let internalState = VariableName(text: "internalState")
 
-    public static let readSnapshot = VariableName(text: "ReadSnapshot")
+    public static let readSnapshot = VariableName(text: ReservedAction.readSnapshot.rawValue)
 
-    public static let writeSnapshot = VariableName(text: "WriteSnapshot")
+    public static let writeSnapshot = VariableName(text: ReservedAction.writeSnapshot.rawValue)
 
-    public static let checkTransition = VariableName(text: "CheckTransition")
+    public static let checkTransition = VariableName(text: ReservedAction.checkTransition.rawValue)
 
-    public static let noOnEntry = VariableName(text: "NoOnEntry")
+    public static let noOnEntry = VariableName(text: ReservedAction.noOnEntry.rawValue)
+
+    public static let onEntry = VariableName(text: "OnEntry")
+
+    public static let onExit = VariableName(text: "OnExit")
+
+    public static let onResume = VariableName(text: "OnResume")
+
+    public static let onSuspend = VariableName(text: "OnSuspend")
+
+    public static let `internal` = VariableName(text: "Internal")
 
     /// The variable name.
     public let rawValue: String
