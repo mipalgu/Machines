@@ -87,7 +87,7 @@ indirect public enum Expression: RawRepresentable,
     /// An expression with a comment.
     case expressionWithComment(expression: Expression, comment: Comment)
 
-    case greaterThanEqual(lhs: Expression, rhs: Expression)
+    case conditional(condition: ConditionalExpression)
 
     /// The raw value is a string.
     public typealias RawValue = String
@@ -113,8 +113,8 @@ indirect public enum Expression: RawRepresentable,
             return "\(comment)"
         case .expressionWithComment(let expression, let comment):
             return "\(expression.rawValue); \(comment)"
-        case .greaterThanEqual(let lhs, let rhs):
-            return "\(lhs.rawValue) >= \(rhs.rawValue)"
+        case .conditional(let condition):
+            return condition.rawValue
         }
     }
 
@@ -199,6 +199,10 @@ indirect public enum Expression: RawRepresentable,
         }
         if let additive = Expression(value: value, characters: .vhdlAdditiveOperations) {
             self = additive
+            return
+        }
+        if let conditional = ConditionalExpression(rawValue: value) {
+            self = .conditional(condition: conditional)
             return
         }
         return nil
