@@ -1,4 +1,4 @@
-// Block.swift
+// IfBlock.swift
 // Machines
 // 
 // Created by Morgan McColl.
@@ -54,34 +54,59 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-indirect public enum Block: RawRepresentable, Equatable, Hashable, Codable, Sendable {
+public enum IfBlock: RawRepresentable, Equatable, Hashable, Codable, Sendable {
 
-    case statements(lines: [Statement])
+    case ifStatement(condition: Expression, ifBlock: Block)
 
-    case process(block: ProcessBlock)
-
-    case ifStatement(block: IfBlock)
+    case ifElse(condition: Expression, ifBlock: Block, elseBlock: Block)
 
     public var rawValue: String {
         switch self {
-        case .process(let block):
-            return block.rawValue
-        case .ifStatement(let block):
-            return block.rawValue
-        case .statements(let lines):
-            return lines.map {
-                let raw = $0.rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
-                guard raw.contains(";") else {
-                    return raw + ";"
+        case .ifStatement(let condition, let code):
+            return """
+            if (\(condition.rawValue)) then
+            \(code.rawValue.indent(amount: 1))
+            end if;
+            """
+        case .ifElse(let condition, let thenBlock, let elseBlock):
+            if case .ifStatement(let block) = elseBlock {
+                if case .ifStatement(let condition2, let code) = block {
+                    return """
+                    if (\(condition.rawValue)) then
+                    \(thenBlock.rawValue.indent(amount: 1))
+                    elsif (\(condition2.rawValue)) then
+                    \(code.rawValue.indent(amount: 1))
+                    end if;
+                    """
+                } else if case .ifElse = block {
+                    return """
+                    if (\(condition.rawValue)) then
+                    \(thenBlock.rawValue.indent(amount: 1))
+                    els\(block.rawValue)
+                    """
+                } else {
+                    return """
+                    if (\(condition.rawValue)) then
+                    \(thenBlock.rawValue.indent(amount: 1))
+                    else
+                    \(elseBlock.rawValue.indent(amount: 1))
+                    end if;
+                    """
                 }
-                return raw
+            } else {
+                return """
+                if (\(condition.rawValue)) then
+                \(thenBlock.rawValue.indent(amount: 1))
+                else
+                \(elseBlock.rawValue.indent(amount: 1))
+                end if;
+                """
             }
-            .joined(separator: "\n")
         }
     }
 
     public init?(rawValue: String) {
-        nil
+        return nil
     }
 
 }

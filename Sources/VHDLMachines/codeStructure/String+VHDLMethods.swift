@@ -115,26 +115,7 @@ extension String {
     }
 
     var uptoBalancedBracket: String? {
-        var bracketCount = 0
-        var hasBrackets = false
-        for (i, c) in self.enumerated() {
-            if c == "(" {
-                bracketCount += 1
-                hasBrackets = true
-                continue
-            }
-            if c == ")" {
-                guard hasBrackets, bracketCount > 0 else {
-                    return nil
-                }
-                bracketCount -= 1
-                if bracketCount == 0 {
-                    return String(self[self.startIndex...self.index(self.startIndex, offsetBy: i)])
-                }
-                continue
-            }
-        }
-        return self
+        self.upToBalancedElements(startsWith: "(", endsWith: ")")
     }
 
     /// The string up to the first semicolon.
@@ -161,6 +142,56 @@ extension String {
             return nil
         }
         return ([components[0], components[1...].joined(separator: op)], char)
+    }
+
+    func startIndex(for value: String) -> String.Index? {
+        let size = value.count
+        guard self.count >= size else {
+            return nil
+        }
+        let startIndex = self.index(self.startIndex, offsetBy: size)
+        for i in self[startIndex...].indices {
+            let wordStart = self.index(i, offsetBy: -size)
+            guard self[wordStart...i] == value else {
+                continue
+            }
+            return wordStart
+        }
+        return nil
+    }
+
+    func upToBalancedElements(startsWith: String, endsWith: String) -> String? {
+        var startCount = 0
+        var hasStarted = false
+        let startIndex = self.index(self.startIndex, offsetBy: startsWith.count)
+        let str = self[startIndex...]
+        for i in str.indices {
+            let startIndex = self.index(i, offsetBy: -startsWith.count)
+            let beginWord = self[startIndex...i]
+            if beginWord == startsWith {
+                startCount += 1
+                hasStarted = true
+                continue
+            }
+            guard let endsIndex = self.index(i, offsetBy: -endsWith.count, limitedBy: self.startIndex) else {
+                continue
+            }
+            let endWord = self[endsIndex...i]
+            if endWord == endsWith {
+                guard hasStarted, startCount > 0 else {
+                    return nil
+                }
+                startCount -= 1
+                if startCount == 0 {
+                    return String(self[self.startIndex...i])
+                }
+                continue
+            }
+        }
+        guard !hasStarted else {
+            return nil
+        }
+        return self
     }
 
 }
