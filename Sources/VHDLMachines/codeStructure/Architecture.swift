@@ -102,4 +102,48 @@ public struct Architecture: RawRepresentable, Equatable, Hashable, Codable, Send
         self.name = name
     }
 
+    public init?<T>(representation: T) where T: MachineVHDLRepresentable {
+        guard let name = VariableName(rawValue: representation.machine.name) else {
+            return nil
+        }
+        let actions = representation.actionRepresentation.values.sorted {
+            $0.name.rawValue < $1.name.rawValue
+        }
+        let internalState = LocalSignal.internalState(actionType: representation.actionType)
+        let states = representation.statesRepresentations.compactMap {
+            ConstantSignal(
+                name: VariableName.name(for: $0),
+                type: representation.stateType,
+                value: .literal(value: .vector(value: $1)),
+                comment: nil
+            )
+        }
+        guard states.count == representation.statesRepresentations.count else {
+            return nil
+        }
+        let statements: [Statement] = [
+            .expression(value: .comment(comment: Comment(text: "Internal State Representation Bits")))
+        ] + actions.map { Statement.constant(value: $0) } + [.definition(signal: internalState)] +
+            [.expression(value: .comment(comment: Comment(text: "State Representation Bits")))] +
+            states.map { Statement.constant(value: $0) } +
+            LocalSignal.stateTrackers(representation: representation).map {
+                Statement.definition(signal: $0)
+            } + [Statement.expression(value: .comment(comment: Comment(text: "Suspension Commands")))] +
+            SuspensionCommand.suspensionConstants.map { Statement.constant(value: $0) } +
+            [Statement.expression(value: .comment(comment: Comment(text: "After Variables")))] +
+            [.definition(signal: LocalSignal.ringletCounter), .constant(value: representation.clockPeriod)] +
+            representation.ringletConstants.map { Statement.constant(value: $0) }
+        let head = Block.statements(lines: statements)
+        self.name = name
+        self.head = head
+        return nil
+    }
+
+    public init?(machine: Machine) {
+        guard let representation = MachineRepresentation(machine: machine) else {
+            return nil
+        }
+        self.init(representation: representation)
+    }
+
 }

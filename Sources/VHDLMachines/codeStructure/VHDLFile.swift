@@ -104,4 +104,13 @@ public struct VHDLFile: RawRepresentable, Equatable, Hashable, Codable, Sendable
         self.architecture = architecture
     }
 
+    public init?(machine: Machine) {
+        guard let entity = Entity(machine: machine), let architecture = Architecture(machine: machine) else {
+            return nil
+        }
+        self.includes = machine.includes
+        self.entity = entity
+        self.architecture = architecture
+    }
+
 }

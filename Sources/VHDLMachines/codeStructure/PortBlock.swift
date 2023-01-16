@@ -93,4 +93,13 @@ public struct PortBlock: RawRepresentable, Equatable, Hashable, Codable, Sendabl
         self.signals = externalSignals
     }
 
+    public init?(signals: [ExternalSignal]) {
+        let signalNames = signals.map(\.name)
+        let signalSet = Set(signalNames)
+        guard signalNames.count == signalSet.count else {
+            return nil
+        }
+        self.signals = signals
+    }
+
 }
