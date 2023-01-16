@@ -450,7 +450,7 @@ public struct VHDLCompiler {
         return codeForStatesStatement(
             names: machine.states.map(\.name),
             code: actionForStates(
-                machine: machine, actionName: ActionName(text: "OnEntry"), trailers: trailers
+                machine: machine, actionName: VariableName.onEntry, trailers: trailers
             ),
             indentation: indentation,
             trailer: "internalState <= CheckTransition;"
@@ -465,7 +465,7 @@ public struct VHDLCompiler {
     private func onExit(machine: Machine, indentation: Int) -> String {
         codeForStatesStatement(
             names: machine.states.map(\.name),
-            code: actionForStates(machine: machine, actionName: ActionName(text: "OnExit")),
+            code: actionForStates(machine: machine, actionName: VariableName.onExit),
             indentation: indentation,
             trailer: "internalState <= WriteSnapshot;"
         )
@@ -489,7 +489,7 @@ public struct VHDLCompiler {
         return codeForStatesStatement(
             names: machine.states.map(\.name),
             code: actionForStates(
-                machine: machine, actionName: ActionName(text: "Internal"), trailers: trailers
+                machine: machine, actionName: VariableName.internal, trailers: trailers
             ),
             indentation: indentation,
             trailer: "internalState <= WriteSnapshot;"
@@ -538,7 +538,7 @@ public struct VHDLCompiler {
             names: machine.states.map(\.name),
             code: actionsForStates(
                 machine: machine,
-                actionsNames: [ActionName(text: "OnResume"), ActionName(text: "OnEntry")],
+                actionsNames: [VariableName.onResume, VariableName.onEntry],
                 trailers: trailers
             ),
             indentation: indentation,
@@ -553,12 +553,12 @@ public struct VHDLCompiler {
     /// - Returns: The OnSuspend internal state.
     private func onSuspend(machine: Machine, indentation: Int) -> String {
         // swiftlint:disable:next force_unwrapping
-        let onEntry = (machine.states[machine.suspendedState!].actions[ActionName(text: "OnEntry")] ?? "")
+        let onEntry = (machine.states[machine.suspendedState!].actions[VariableName.onEntry] ?? "")
             .split(separator: "\n").map { String($0) }
 //        if onEntry.count > 0 {
 //            onEntry[0] = "    " + onEntry[0]
 //        }
-        let actions = actionForStates(machine: machine, actionName: ActionName(text: "OnSuspend"))
+        let actions = actionForStates(machine: machine, actionName: VariableName.onSuspend)
         return codeForStatesStatement(
             names: machine.states.map(\.name),
             code: actions,

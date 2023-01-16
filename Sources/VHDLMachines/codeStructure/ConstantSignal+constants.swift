@@ -152,7 +152,7 @@ public extension ConstantSignal {
             name: VariableName.clockPeriod,
             type: .real,
             value: .literal(value: .decimal(value: Double(period.picoseconds_d))),
-            comment: Comment(text: "ps")
+            comment: Comment(rawValue: "-- ps")
         ) else {
             fatalError("Could not create clock period constant.")
         }

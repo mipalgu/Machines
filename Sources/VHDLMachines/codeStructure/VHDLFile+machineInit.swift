@@ -62,9 +62,7 @@ public extension VHDLFile {
         guard let entity = Entity(machine: machine), let architecture = Architecture(machine: machine) else {
             return nil
         }
-        self.includes = machine.includes
-        self.entity = entity
-        self.architecture = architecture
+        self.init(includes: machine.includes, entity: entity, architecture: architecture)
     }
 
 }

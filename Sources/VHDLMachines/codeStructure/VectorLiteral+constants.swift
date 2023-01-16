@@ -58,7 +58,7 @@ import VHDLParsing
 
 public extension VectorLiteral {
 
-    public static func representation(for states: [State]) -> [State: VectorLiteral]? {
+    static func representation(for states: [State]) -> [State: VectorLiteral]? {
         guard let bitsRequired = BitLiteral.bitsRequired(for: states.count - 1) else {
             return nil
         }

@@ -139,16 +139,16 @@ public struct Machine: Codable, Equatable, Hashable {
     public static func initial(path: URL) -> Machine {
         let name = path.lastPathComponent.components(separatedBy: ".machine")[0]
         let defaultActions = [
-            ActionName(text: "OnEntry"): "",
-            ActionName(text: "OnExit"): "",
-            ActionName(text: "Internal"): "",
-            ActionName(text: "OnResume"): "",
-            ActionName(text: "OnSuspend"): ""
+            VariableName.onEntry: "",
+            VariableName.onExit: "",
+            VariableName.internal: "",
+            VariableName.onResume: "",
+            VariableName.onSuspend: ""
         ]
         let actionOrder = [
-            [ActionName(text: "OnResume"), ActionName(text: "OnSuspend")],
-            [ActionName(text: "OnEntry")],
-            [ActionName(text: "OnExit"), ActionName(text: "Internal")]
+            [VariableName.onResume, VariableName.onSuspend],
+            [VariableName.onEntry],
+            [VariableName.onExit, VariableName.internal]
         ]
         return Machine(
             name: name,
@@ -156,7 +156,7 @@ public struct Machine: Codable, Equatable, Hashable {
             includes: [.library(value: "IEEE"), .include(value: "IEEE.std_logic_1164.All")],
             externalSignals: [],
             generics: [],
-            clocks: [Clock(name: VariableName(text: "clk"), frequency: 50, unit: .MHz)],
+            clocks: [Clock(name: VariableName.clk, frequency: 50, unit: .MHz)],
             drivingClock: 0,
             dependentMachines: [:],
             machineSignals: [],
@@ -165,14 +165,14 @@ public struct Machine: Codable, Equatable, Hashable {
             returnableSignals: [],
             states: [
                 State(
-                    name: VariableName(text: "Initial"),
+                    name: VariableName.initial,
                     actions: defaultActions,
                     actionOrder: actionOrder,
                     signals: [],
                     externalVariables: []
                 ),
                 State(
-                    name: VariableName(text: "Suspended"),
+                    name: VariableName.suspendedState,
                     actions: defaultActions,
                     actionOrder: actionOrder,
                     signals: [],
