@@ -55,6 +55,7 @@
 // 
 
 @testable import VHDLMachines
+import VHDLParsing
 import XCTest
 
 /// Tests the ``State`` type.
@@ -62,12 +63,12 @@ final class StateTests: XCTestCase {
 
     /// The state actions.
     var actions: [ActionName: String] {
-        [ActionName(text: "onEntry"): "x := x + 1;", ActionName(text: "onExit"): "x := 0;"]
+        [VariableName.onEntry: "x := x + 1;", VariableName.onExit: "x := 0;"]
     }
 
     /// The order in which the actions should be executed.
     var actionOrder: [[ActionName]] {
-        [[ActionName(text: "onEntry"), ActionName(text: "onExit")]]
+        [[VariableName.onEntry, VariableName.onExit]]
     }
 
     /// The signals.
@@ -75,9 +76,9 @@ final class StateTests: XCTestCase {
         [
             LocalSignal(
                 type: .stdLogic,
-                name: VariableName(text: "y"),
+                name: VariableName.y,
                 defaultValue: .literal(value: .logic(value: .high)),
-                comment: Comment(text: "The signal y.")
+                comment: Comment.signalY
             )
         ]
     }
@@ -89,7 +90,7 @@ final class StateTests: XCTestCase {
 
     /// The state to test.
     lazy var state = State(
-        name: VariableName(text: "S0"),
+        name: VariableName.s0,
         actions: actions,
         actionOrder: actionOrder,
         signals: signals,
@@ -99,7 +100,7 @@ final class StateTests: XCTestCase {
     /// Initialises the state to test.
     override func setUp() {
         self.state = State(
-            name: VariableName(text: "S0"),
+            name: VariableName.s0,
             actions: actions,
             actionOrder: actionOrder,
             signals: signals,
@@ -109,7 +110,7 @@ final class StateTests: XCTestCase {
 
     /// Test init sets the properties correctly.
     func testInit() {
-        XCTAssertEqual(self.state.name, VariableName(text: "S0"))
+        XCTAssertEqual(self.state.name, VariableName.s0)
         XCTAssertEqual(self.state.actions, self.actions)
         XCTAssertEqual(self.state.actionOrder, self.actionOrder)
         XCTAssertEqual(self.state.signals, self.signals)
@@ -118,18 +119,18 @@ final class StateTests: XCTestCase {
 
     /// Test getters and setters work correctly.
     func testGettersAndSetters() {
-        self.state.name = VariableName(text: "S1")
-        XCTAssertEqual(self.state.name, VariableName(text: "S1"))
-        self.state.actions = [ActionName(text: "internal"): "x := 0;"]
-        XCTAssertEqual(self.state.actions, [ActionName(text: "internal"): "x := 0;"])
-        self.state.actionOrder = [[ActionName(text: "internal")]]
-        XCTAssertEqual(self.state.actionOrder, [[ActionName(text: "internal")]])
+        self.state.name = VariableName.s1
+        XCTAssertEqual(self.state.name, VariableName.s1)
+        self.state.actions = [VariableName.internal: "x := 0;"]
+        XCTAssertEqual(self.state.actions, [VariableName.internal: "x := 0;"])
+        self.state.actionOrder = [[VariableName.internal]]
+        XCTAssertEqual(self.state.actionOrder, [[VariableName.internal]])
         self.state.signals = [
             LocalSignal(
                 type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),
-                name: VariableName(text: "xs"),
+                name: VariableName.xs,
                 defaultValue: .literal(value: .vector(value: .hexademical(value: [.five]))),
-                comment: Comment(text: "The signal xs.")
+                comment: Comment.signalXs
             )
         ]
         XCTAssertEqual(
@@ -137,9 +138,9 @@ final class StateTests: XCTestCase {
             [
                 LocalSignal(
                     type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),
-                    name: VariableName(text: "xs"),
+                    name: VariableName.xs,
                     defaultValue: .literal(value: .vector(value: .hexademical(value: [.five]))),
-                    comment: Comment(text: "The signal xs.")
+                    comment: Comment.signalXs
                 )
             ]
         )

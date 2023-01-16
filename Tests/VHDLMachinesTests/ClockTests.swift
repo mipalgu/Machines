@@ -55,17 +55,18 @@
 // 
 
 @testable import VHDLMachines
+import VHDLParsing
 import XCTest
 
 /// Test class for ``Clock``.
 final class ClockTests: XCTestCase {
 
     /// The clock under test.
-    var clock = Clock(name: VariableName(text: "clk"), frequency: 100, unit: .Hz)
+    var clock = Clock(name: VariableName.clk, frequency: 100, unit: .Hz)
 
     /// Initialise the clock before every test.
     override func setUp() {
-        self.clock = Clock(name: VariableName(text: "clk"), frequency: 100, unit: .Hz)
+        self.clock = Clock(name: VariableName.clk, frequency: 100, unit: .Hz)
     }
 
     /// Test frequency unit raw values.
@@ -79,15 +80,15 @@ final class ClockTests: XCTestCase {
 
     /// Test init sets stored properties correctly.
     func testInit() {
-        XCTAssertEqual(self.clock.name, VariableName(text: "clk"))
+        XCTAssertEqual(self.clock.name, VariableName.clk)
         XCTAssertEqual(self.clock.frequency, 100)
         XCTAssertEqual(self.clock.unit, .Hz)
     }
 
     /// Test getters and setters work correctly.
     func testGettersAndSetters() {
-        self.clock.name = VariableName(text: "clk2")
-        XCTAssertEqual(self.clock.name, VariableName(text: "clk2"))
+        self.clock.name = VariableName.clk2
+        XCTAssertEqual(self.clock.name, VariableName.clk2)
         self.clock.frequency = 200
         XCTAssertEqual(self.clock.frequency, 200)
         self.clock.unit = .kHz

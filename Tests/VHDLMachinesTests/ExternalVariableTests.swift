@@ -55,6 +55,7 @@
 // 
 
 @testable import VHDLMachines
+import VHDLParsing
 import XCTest
 
 /// Tests the ``ExternalVariable`` type.
@@ -63,42 +64,42 @@ final class ExternalVariableTests: XCTestCase {
     /// The variable under test.
     var variable = ExternalVariable(
         type: "integer",
-        name: VariableName(text: "x"),
+        name: VariableName.x,
         mode: .input,
         range: (0, 255),
         defaultValue: "0x15",
-        comment: Comment(text: "external x")
+        comment: Comment.externalX
     )
 
     /// Initialise the variable under test.
     override func setUp() {
         self.variable = ExternalVariable(
             type: "integer",
-            name: VariableName(text: "x"),
+            name: VariableName.x,
             mode: .input,
             range: (0, 255),
             defaultValue: "0x15",
-            comment: Comment(text: "external x")
+            comment: Comment.externalX
         )
     }
 
     /// Test init sets stored properties correctly.
     func testInit() {
         XCTAssertEqual(self.variable.type, "integer")
-        XCTAssertEqual(self.variable.name, VariableName(text: "x"))
+        XCTAssertEqual(self.variable.name, VariableName.x)
         XCTAssertEqual(self.variable.mode, .input)
         XCTAssertEqual(self.variable.range?.0, 0)
         XCTAssertEqual(self.variable.range?.1, 255)
         XCTAssertEqual(self.variable.defaultValue, "0x15")
-        XCTAssertEqual(self.variable.comment, Comment(text: "external x"))
+        XCTAssertEqual(self.variable.comment, Comment.externalX)
     }
 
     /// Test getters and setters.
     func testGettersAndSetters() {
         self.variable.type = "unsigned"
         XCTAssertEqual(self.variable.type, "unsigned")
-        self.variable.name = VariableName(text: "y")
-        XCTAssertEqual(self.variable.name, VariableName(text: "y"))
+        self.variable.name = VariableName.y
+        XCTAssertEqual(self.variable.name, VariableName.y)
         self.variable.mode = .output
         XCTAssertEqual(self.variable.mode, .output)
         self.variable.range = (1024, 65535)
@@ -106,8 +107,8 @@ final class ExternalVariableTests: XCTestCase {
         XCTAssertEqual(self.variable.range?.1, 65535)
         self.variable.defaultValue = "0xABCD"
         XCTAssertEqual(self.variable.defaultValue, "0xABCD")
-        self.variable.comment = Comment(text: "external y")
-        XCTAssertEqual(self.variable.comment, Comment(text: "external y"))
+        self.variable.comment = Comment.externalY
+        XCTAssertEqual(self.variable.comment, Comment.externalY)
     }
 
 }

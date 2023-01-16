@@ -55,6 +55,7 @@
 // 
 
 @testable import VHDLMachines
+import VHDLParsing
 import XCTest
 
 /// Tests the ``ReturnableVariable`` type.
@@ -62,32 +63,32 @@ final class ReturnableVariableTests: XCTestCase {
 
     /// The variable to test.
     var variable = ReturnableVariable(
-        type: .integer, name: VariableName(text: "x"), comment: Comment(text: "The variable x.")
+        type: .integer, name: VariableName.x, comment: Comment.signalX
     )
 
     /// Initialises the variable to test.
     override func setUp() {
         self.variable = ReturnableVariable(
-            type: .integer, name: VariableName(text: "x"), comment: Comment(text: "The variable x.")
+            type: .integer, name: VariableName.x, comment: Comment.signalX
         )
     }
 
     /// Test the initialisation of the variable sets the correct values.
     func testInit() {
         XCTAssertEqual(self.variable.type, .integer)
-        XCTAssertEqual(self.variable.name, VariableName(text: "x"))
+        XCTAssertEqual(self.variable.name, VariableName.x)
         XCTAssertEqual(self.variable.mode, .output)
-        XCTAssertEqual(self.variable.comment, Comment(text: "The variable x."))
+        XCTAssertEqual(self.variable.comment, Comment.signalX)
     }
 
     /// Test the getters and setters of the variable work correctly.
     func testGettersAndSetters() {
         self.variable.type = .boolean
-        self.variable.name = VariableName(text: "y")
-        self.variable.comment = Comment(text: "The variable y.")
+        self.variable.name = VariableName.y
+        self.variable.comment = Comment.signalY
         XCTAssertEqual(self.variable.type, .boolean)
-        XCTAssertEqual(self.variable.name, VariableName(text: "y"))
-        XCTAssertEqual(self.variable.comment, Comment(text: "The variable y."))
+        XCTAssertEqual(self.variable.name, VariableName.y)
+        XCTAssertEqual(self.variable.comment, Comment.signalY)
     }
 
 }

@@ -1,8 +1,8 @@
-// ParameterTests.swift
+// Comment+testConstants.swift
 // Machines
 // 
 // Created by Morgan McColl.
-// Copyright © 2022 Morgan McColl. All rights reserved.
+// Copyright © 2023 Morgan McColl. All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -54,50 +54,32 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-@testable import VHDLMachines
 import VHDLParsing
-import XCTest
 
-/// Tests the ``Parameter`` type.
-final class ParameterTests: XCTestCase {
+extension Comment {
 
-    /// The parameter to test.
-    var parameter = Parameter(
-        type: .integer,
-        name: VariableName.x,
-        defaultValue: .literal(value: .integer(value: 255)),
-        comment: Comment.signalX
-    )
+    static var comment: Comment { Comment(rawValue: "-- A comment")! }
 
-    /// Initialise the parameter to test.
-    override func setUp() {
-        self.parameter = Parameter(
-            type: .integer,
-            name: VariableName.x,
-            defaultValue: .literal(value: .integer(value: 255)),
-            comment: Comment.signalX
-        )
-    }
+    static var externalX: Comment { Comment(rawValue: "-- external x")! }
 
-    /// Test the init sets the stored properties correctly.
-    func testInit() {
-        XCTAssertEqual(self.parameter.type, .integer)
-        XCTAssertEqual(self.parameter.name, VariableName.x)
-        XCTAssertEqual(self.parameter.defaultValue, .literal(value: .integer(value: 255)))
-        XCTAssertEqual(self.parameter.comment, Comment.signalX)
-        XCTAssertEqual(self.parameter.mode, .input)
-    }
+    static var externalY: Comment { Comment(rawValue: "-- external y")! }
 
-    /// Test Getters and Setters work correctly.
-    func testGettersAndSetters() {
-        self.parameter.type = .boolean
-        self.parameter.name = VariableName.y
-        self.parameter.defaultValue = .literal(value: .boolean(value: true))
-        self.parameter.comment = Comment.signalY
-        XCTAssertEqual(self.parameter.type, .boolean)
-        XCTAssertEqual(self.parameter.name, VariableName.y)
-        XCTAssertEqual(self.parameter.defaultValue, .literal(value: .boolean(value: true)))
-        XCTAssertEqual(self.parameter.comment, Comment.signalY)
-    }
+    static var externalZ: Comment { Comment(rawValue: "-- external z")! }
+
+    static var genericG: Comment { Comment(rawValue: "-- Generic g")! }
+
+    static var parameterP: Comment { Comment(rawValue: "-- Parameter p")! }
+
+    static var returnableR: Comment { Comment(rawValue: "-- Returnable r")! }
+
+    static var signalS: Comment { Comment(rawValue: "-- Signal s")! }
+
+    static var signalX: Comment { Comment(rawValue: "-- signal x")! }
+
+    static var signalXs: Comment { Comment(rawValue: "-- signal xs")! }
+
+    static var signalY: Comment { Comment(rawValue: "-- signal y")! }
+
+    static var signalZ: Comment { Comment(rawValue: "-- signal z")! }
 
 }

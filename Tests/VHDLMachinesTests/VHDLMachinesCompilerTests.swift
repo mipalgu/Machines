@@ -9,6 +9,7 @@ import Foundation
 import IO
 @testable import Machines
 @testable import VHDLMachines
+import VHDLParsing
 import XCTest
 
 // swiftlint:disable file_length
@@ -34,78 +35,78 @@ class VHDLMachinesCompilerTests: XCTestCase {
             externalSignals: [
                 PortSignal(
                     type: .stdLogic,
-                    name: VariableName(text: "x"),
+                    name: VariableName.x,
                     mode: .input,
                     defaultValue: .literal(value: .logic(value: .high)),
-                    comment: Comment(text: "A std_logic variable.")
+                    comment: Comment(rawValue: "-- A std_logic variable.")!
                 ),
                 PortSignal(
                     type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
-                    name: VariableName(text: "xx"),
+                    name: VariableName(rawValue: "xx")!,
                     mode: .output,
                     defaultValue: .literal(value: .vector(value: .bits(value: [.low, .low]))),
-                    comment: Comment(text: "A variable called xx.")
+                    comment: Comment(rawValue: "-- A variable called xx.")!
                 )
             ],
             generics: [
                 LocalSignal(
                     type: SignalType.ranged(type: .integer(size: .to(lower: 0, upper: 65535))),
-                    name: VariableName(text: "y"),
+                    name: VariableName.y,
                     defaultValue: .literal(value: .integer(value: 0)),
-                    comment: Comment(text: "A uint16 variable called y.")
+                    comment: Comment(rawValue: "-- A uint16 variable called y.")!
                 ),
                 LocalSignal(
                     type: .boolean,
-                    name: VariableName(text: "yy"),
+                    name: VariableName(rawValue: "yy")!,
                     defaultValue: .literal(value: .boolean(value: false)),
-                    comment: Comment(text: "A variable called yy")
+                    comment: Comment(rawValue: "-- A variable called yy")!
                 )
             ],
             clocks: [
-                Clock(name: VariableName(text: "clk"), frequency: 50, unit: .MHz),
-                Clock(name: VariableName(text: "clk2"), frequency: 20, unit: .kHz)
+                Clock(name: VariableName.clk, frequency: 50, unit: .MHz),
+                Clock(name: VariableName.clk2, frequency: 20, unit: .kHz)
             ],
             drivingClock: 0,
             dependentMachines: [:],
             machineSignals: [
                 LocalSignal(
                     type: .stdLogic,
-                    name: VariableName(text: "machineSignal1"),
+                    name: VariableName(rawValue: "machineSignal1")!,
                     defaultValue: nil,
                     comment: nil
                 ),
                 LocalSignal(
                     type: .ranged(type: .stdLogicVector(size: .downto(upper: 2, lower: 0))),
-                    name: VariableName(text: "machineSignal2"),
+                    name: VariableName(rawValue: "machineSignal2")!,
                     defaultValue: .literal(value: .vector(value: .bits(value: [.high, .high, .high]))),
-                    comment: Comment(text: "machine signal 2")
+                    comment: Comment(rawValue: "-- machine signal 2")!
                 )
             ],
             isParameterised: true,
             parameterSignals: [
                 Parameter(
                     type: .stdLogic,
-                    name: VariableName(text: "parX"),
+                    name: VariableName(rawValue: "parX")!,
                     defaultValue: .literal(value: .logic(value: .high)),
-                    comment: Comment(text: "Parameter parX")
+                    comment: Comment(rawValue: "-- Parameter parX")!
                 ),
                 Parameter(
                     type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
-                    name: VariableName(text: "parXs"),
+                    name: VariableName(rawValue: "parXs")!,
                     defaultValue: .literal(value: .vector(value: .bits(value: [.low, .high]))),
-                    comment: Comment(text: "Parameter parXs")
+                    comment: Comment(rawValue: "-- Parameter parXs")!
                 )
             ],
             returnableSignals: [
                 ReturnableVariable(
                     type: .stdLogic,
-                    name: VariableName(text: "retX"),
-                    comment: Comment(text: "Returnable retX")
+                    name: VariableName(rawValue: "retX")!,
+                    comment: Comment(rawValue: "-- Returnable retX")!
                 ),
                 ReturnableVariable(
                     type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
-                    name: VariableName(text: "retXs"),
-                    comment: Comment(text: "Returnable retXs")
+                    name: VariableName(rawValue: "retXs")!,
+                    comment: Comment(rawValue: "-- Returnable retXs")!
                 )
             ],
             states: [
@@ -168,18 +169,18 @@ class VHDLMachinesCompilerTests: XCTestCase {
     /// Default state creation.
     private func defaultState(name: String) -> VHDLMachines.State {
         VHDLMachines.State(
-            name: VariableName(text: name),
+            name: VariableName(rawValue: name)!,
             actions: [
-                ActionName(text: "OnEntry"): "x <= '1';\nxx <= '0'; -- \(name) onEntry",
-                ActionName(text: "OnExit"): "x <= '0'; -- \(name) OnExit",
-                ActionName(text: "OnResume"): "x <= '0'; -- \(name) OnResume",
-                ActionName(text: "OnSuspend"): "xx <= '1'; -- \(name) onSuspend",
-                ActionName(text: "Internal"): "x <= '1'; -- \(name) Internal"
+                VariableName.onEntry: "x <= '1';\nxx <= '0'; -- \(name) onEntry",
+                VariableName.onExit: "x <= '0'; -- \(name) OnExit",
+                VariableName.onResume: "x <= '0'; -- \(name) OnResume",
+                VariableName.onSuspend: "xx <= '1'; -- \(name) onSuspend",
+                VariableName.internal: "x <= '1'; -- \(name) Internal"
             ],
             actionOrder: [
-                [ActionName(text: "onresume"), ActionName(text: "onentry")],
-                [ActionName(text: "onexit"), ActionName(text: "internal")],
-                [ActionName(text: "onsuspend")]
+                [VariableName.onResume, VariableName.onEntry],
+                [VariableName.onExit, VariableName.internal],
+                [VariableName.onSuspend]
             ],
             signals: [],
             externalVariables: []

@@ -55,6 +55,7 @@
 // 
 
 @testable import VHDLMachines
+import VHDLParsing
 import XCTest
 
 /// Tests the ``Machine`` type.
@@ -83,10 +84,10 @@ final class MachineTests: XCTestCase {
         [
             PortSignal(
                 type: .stdLogic,
-                name: VariableName(text: "A"),
+                name: VariableName.a,
                 mode: .input,
                 defaultValue: .literal(value: .logic(value: .low)),
-                comment: Comment(text: "A comment")
+                comment: Comment.comment
             )
         ]
     }
@@ -96,9 +97,9 @@ final class MachineTests: XCTestCase {
         [
             LocalSignal(
                 type: .ranged(type: .integer(size: .to(lower: 0, upper: 512))),
-                name: VariableName(text: "g"),
+                name: VariableName.g,
                 defaultValue: .literal(value: .integer(value: 0)),
-                comment: Comment(text: "Generic g")
+                comment: Comment.genericG
             )
         ]
     }
@@ -106,7 +107,7 @@ final class MachineTests: XCTestCase {
     /// The clocks for the machine.
     var clocks: [Clock] {
         [
-            Clock(name: VariableName(text: "clk"), frequency: 50, unit: .MHz)
+            Clock(name: VariableName.clk, frequency: 50, unit: .MHz)
         ]
     }
 
@@ -128,9 +129,9 @@ final class MachineTests: XCTestCase {
         [
             LocalSignal(
                 type: .stdLogic,
-                name: VariableName(text: "s"),
+                name: VariableName.s,
                 defaultValue: .literal(value: .logic(value: .low)),
-                comment: Comment(text: "Signal s")
+                comment: Comment.signalS
             )
         ]
     }
@@ -140,9 +141,9 @@ final class MachineTests: XCTestCase {
         [
             Parameter(
                 type: .stdLogic,
-                name: VariableName(text: "p"),
+                name: VariableName.p,
                 defaultValue: .literal(value: .logic(value: .low)),
-                comment: Comment(text: "Parameter p")
+                comment: Comment.parameterP
             )
         ]
     }
@@ -151,7 +152,7 @@ final class MachineTests: XCTestCase {
     var returnableSignals: [ReturnableVariable] {
         [
             ReturnableVariable(
-                type: .stdLogic, name: VariableName(text: "r"), comment: Comment(text: "Returnable r")
+                type: .stdLogic, name: VariableName.r, comment: Comment.returnableR
             )
         ]
     }
@@ -160,14 +161,14 @@ final class MachineTests: XCTestCase {
     var states: [State] {
         [
             State(
-                name: VariableName(text: "S0"),
+                name: VariableName.s0,
                 actions: [:],
                 actionOrder: [],
                 signals: [],
                 externalVariables: []
             ),
             State(
-                name: VariableName(text: "S1"),
+                name: VariableName.s1,
                 actions: [:],
                 actionOrder: [],
                 signals: [],
@@ -282,50 +283,50 @@ final class MachineTests: XCTestCase {
         let newExternalSignals = [
             PortSignal(
                 type: .stdLogic,
-                name: VariableName(text: "B"),
+                name: VariableName(rawValue: "B")!,
                 mode: .input,
                 defaultValue: .literal(value: .logic(value: .low)),
-                comment: Comment(text: "A comment")
+                comment: Comment.comment
             )
         ]
         let newGenerics = [
             LocalSignal(
                 type: .ranged(type: .integer(size: .to(lower: 0, upper: 512))),
-                name: VariableName(text: "g2"),
+                name: VariableName(rawValue: "g2")!,
                 defaultValue: .literal(value: .integer(value: 0)),
-                comment: Comment(text: "Generic g2")
+                comment: Comment(rawValue: "-- Generic g2")!
             )
         ]
         let newClocks = [
-            Clock(name: VariableName(text: "clk"), frequency: 50, unit: .MHz),
-            Clock(name: VariableName(text: "clk2"), frequency: 100, unit: .MHz)
+            Clock(name: VariableName.clk, frequency: 50, unit: .MHz),
+            Clock(name: VariableName.clk2, frequency: 100, unit: .MHz)
         ]
         let newDrivingClock = 1
         let newDependentMachines = ["M1": URL(fileURLWithPath: "/path/to/M1")]
         let newMachineSignals = [
             LocalSignal(
                 type: .stdLogic,
-                name: VariableName(text: "s2"),
+                name: VariableName(rawValue: "s2")!,
                 defaultValue: .literal(value: .logic(value: .low)),
-                comment: Comment(text: "Signal s2")
+                comment: Comment(rawValue: "-- Signal s2")!
             )
         ]
         let newParameterSignals = [
             Parameter(
                 type: .stdLogic,
-                name: VariableName(text: "p2"),
+                name: VariableName(rawValue: "p2")!,
                 defaultValue: .literal(value: .logic(value: .low)),
-                comment: Comment(text: "Parameter p2")
+                comment: Comment(rawValue: "-- Parameter p2")!
             )
         ]
         let newReturnableSignals = [
             ReturnableVariable(
-                type: .stdLogic, name: VariableName(text: "r2"), comment: Comment(text: "Returnable r2")
+                type: .stdLogic, name: VariableName(rawValue: "r2")!, comment: Comment(rawValue: "-- Returnable r2")!
             )
         ]
         let newStates = [
             State(
-                name: VariableName(text: "S0"),
+                name: VariableName.s0,
                 actions: [:],
                 actionOrder: [],
                 signals: [],
@@ -377,16 +378,16 @@ final class MachineTests: XCTestCase {
     func testInitial() {
         let path = URL(fileURLWithPath: "NewMachine.machine", isDirectory: true)
         let defaultActions = [
-            ActionName(text: "OnEntry"): "",
-            ActionName(text: "OnExit"): "",
-            ActionName(text: "Internal"): "",
-            ActionName(text: "OnResume"): "",
-            ActionName(text: "OnSuspend"): ""
+            VariableName.onEntry: "",
+            VariableName.onExit: "",
+            VariableName.internal: "",
+            VariableName.onResume: "",
+            VariableName.onSuspend: ""
         ]
         let actionOrder = [
-            [ActionName(text: "OnResume"), ActionName(text: "OnSuspend")],
-            [ActionName(text: "OnEntry")],
-            [ActionName(text: "OnExit"), ActionName(text: "Internal")]
+            [VariableName.onResume, VariableName.onSuspend],
+            [VariableName.onEntry],
+            [VariableName.onExit, VariableName.internal]
         ]
         let machine = Machine.initial(path: path)
         let expected = Machine(
@@ -395,7 +396,7 @@ final class MachineTests: XCTestCase {
             includes: [.library(value: "IEEE"), .include(value: "IEEE.std_logic_1164.All")],
             externalSignals: [],
             generics: [],
-            clocks: [Clock(name: VariableName(text: "clk"), frequency: 50, unit: .MHz)],
+            clocks: [Clock(name: VariableName.clk, frequency: 50, unit: .MHz)],
             drivingClock: 0,
             dependentMachines: [:],
             machineSignals: [],
@@ -404,14 +405,14 @@ final class MachineTests: XCTestCase {
             returnableSignals: [],
             states: [
                 State(
-                    name: VariableName(text: "Initial"),
+                    name: VariableName.initial,
                     actions: defaultActions,
                     actionOrder: actionOrder,
                     signals: [],
                     externalVariables: []
                 ),
                 State(
-                    name: VariableName(text: "Suspended"),
+                    name: VariableName.suspendedState,
                     actions: defaultActions,
                     actionOrder: actionOrder,
                     signals: [],

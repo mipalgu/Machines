@@ -55,6 +55,7 @@
 // 
 
 @testable import VHDLMachines
+import VHDLParsing
 import XCTest
 
 /// Test class for ``ConstantSignal``.
@@ -65,55 +66,55 @@ final class ConstantSignalTests: XCTestCase {
     /// Test that the action bit representations are correct.
     func testActionConstants() {
         let actions: [ActionName: String] = [
-            ActionName(text: "OnEntry"): "",
-            ActionName(text: "OnExit"): "",
-            ActionName(text: "Internal"): "",
-            ActionName(text: "OnResume"): "",
-            ActionName(text: "OnSuspend"): ""
+            VariableName.onEntry: "",
+            VariableName.onExit: "",
+            VariableName.internal: "",
+            VariableName.onResume: "",
+            VariableName.onSuspend: ""
         ]
         let constants = [
             ConstantSignal(
-                name: ActionName(text: "CheckTransition"),
+                name: VariableName.checkTransition,
                 type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),
                 value: .literal(value: .vector(value: .logics(value: [.low, .low, .low, .low])))
             ),
             ConstantSignal(
-                name: ActionName(text: "Internal"),
+                name: VariableName.internal,
                 type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),
                 value: .literal(value: .vector(value: .logics(value: [.low, .low, .low, .high])))
             ),
             ConstantSignal(
-                name: ActionName(text: "NoOnEntry"),
+                name: VariableName.noOnEntry,
                 type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),
                 value: .literal(value: .vector(value: .logics(value: [.low, .low, .high, .low])))
             ),
             ConstantSignal(
-                name: ActionName(text: "OnEntry"),
+                name: VariableName.onEntry,
                 type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),
                 value: .literal(value: .vector(value: .logics(value: [.low, .low, .high, .high])))
             ),
             ConstantSignal(
-                name: ActionName(text: "OnExit"),
+                name: VariableName.onExit,
                 type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),
                 value: .literal(value: .vector(value: .logics(value: [.low, .high, .low, .low])))
             ),
             ConstantSignal(
-                name: ActionName(text: "OnResume"),
+                name: VariableName.onResume,
                 type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),
                 value: .literal(value: .vector(value: .logics(value: [.low, .high, .low, .high])))
             ),
             ConstantSignal(
-                name: ActionName(text: "OnSuspend"),
+                name: VariableName.onSuspend,
                 type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),
                 value: .literal(value: .vector(value: .logics(value: [.low, .high, .high, .low])))
             ),
             ConstantSignal(
-                name: ActionName(text: "ReadSnapshot"),
+                name: VariableName.readSnapshot,
                 type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),
                 value: .literal(value: .vector(value: .logics(value: [.low, .high, .high, .high])))
             ),
             ConstantSignal(
-                name: ActionName(text: "WriteSnapshot"),
+                name: VariableName.writeSnapshot,
                 type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),
                 value: .literal(value: .vector(value: .logics(value: [.high, .low, .low, .low])))
             )

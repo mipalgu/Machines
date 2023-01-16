@@ -56,6 +56,7 @@
 
 import Foundation
 @testable import VHDLMachines
+import VHDLParsing
 
 /// A factory for creating a PingPong arrangement.
 struct PingPongArrangement {
@@ -104,27 +105,27 @@ struct PingPongArrangement {
 
     /// The ping states actions.
     let pingActions: [ActionName: String] = [
-        ActionName(text: "onEntry"): "",
-        ActionName(text: "onExit"): "ping <= '1'",
-        ActionName(text: "internal"): ""
+        VariableName.onEntry: "",
+        VariableName.onExit: "ping <= '1'",
+        VariableName.internal: ""
     ]
 
     /// The pong states actions.
     let pongActions: [ActionName: String] = [
-        ActionName(text: "onEntry"): "",
-        ActionName(text: "onExit"): "pong <= '1'",
-        ActionName(text: "internal"): ""
+        VariableName.onEntry: "",
+        VariableName.onExit: "pong <= '1'",
+        VariableName.internal: ""
     ]
 
     /// The action order.
     let actionOrder: [[ActionName]] = [
-        [ActionName(text: "onEntry")], [ActionName(text: "internal"), ActionName(text: "onExit")]
+        [VariableName.onEntry], [VariableName.internal, VariableName.onExit]
     ]
 
     /// The Ping state.
     var pingState: State {
         State(
-            name: VariableName(text: "Ping"),
+            name: VariableName(rawValue: "Ping")!,
             actions: pingActions,
             actionOrder: actionOrder,
             signals: [],
@@ -135,7 +136,7 @@ struct PingPongArrangement {
     /// The Pong state.
     var pongState: State {
         State(
-            name: VariableName(text: "Pong"),
+            name: VariableName(rawValue: "Pong")!,
             actions: pongActions,
             actionOrder: actionOrder,
             signals: [],
@@ -145,18 +146,18 @@ struct PingPongArrangement {
 
     /// The ping Signals.
     let pingSignals = [
-        PortSignal(type: .stdLogic, name: VariableName(text: "ping"), mode: .output),
-        PortSignal(type: .stdLogic, name: VariableName(text: "pong"), mode: .input)
+        PortSignal(type: .stdLogic, name: VariableName(rawValue: "ping")!, mode: .output),
+        PortSignal(type: .stdLogic, name: VariableName(rawValue: "pong")!, mode: .input)
     ]
 
     /// The pong Signals.
     let pongSignals = [
-        PortSignal(type: .stdLogic, name: VariableName(text: "ping"), mode: .input),
-        PortSignal(type: .stdLogic, name: VariableName(text: "pong"), mode: .output)
+        PortSignal(type: .stdLogic, name: VariableName(rawValue: "ping")!, mode: .input),
+        PortSignal(type: .stdLogic, name: VariableName(rawValue: "pong")!, mode: .output)
     ]
 
     /// The clocks.
-    let clocks = [Clock(name: VariableName(text: "clk"), frequency: 50, unit: .MHz)]
+    let clocks = [Clock(name: VariableName.clk, frequency: 50, unit: .MHz)]
 
     /// The ping states transition.
     let pingTransition = Transition(condition: "true", source: 0, target: 1)
@@ -328,7 +329,7 @@ struct PingPongArrangement {
     /// - Returns: The check state.
     func checkState(externalVariables: [String], reset: String) -> State {
         State(
-            name: VariableName(text: "Check"),
+            name: VariableName(rawValue: "Check")!,
             actions: emptyActions(reset: reset),
             actionOrder: actionOrder,
             signals: [],
@@ -351,9 +352,9 @@ struct PingPongArrangement {
     /// - Returns: The actions.
     func emptyActions(reset: String) -> [ActionName: String] {
         [
-            ActionName(text: "onEntry"): "",
-            ActionName(text: "onExit"): "\(reset) <= '0';",
-            ActionName(text: "internal"): ""
+            VariableName.onEntry: "",
+            VariableName.onExit: "\(reset) <= '0';",
+            VariableName.internal: ""
         ]
     }
 

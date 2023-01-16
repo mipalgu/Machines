@@ -1,8 +1,8 @@
-// ParameterTests.swift
+// Variable+testConstants.swift
 // Machines
 // 
 // Created by Morgan McColl.
-// Copyright © 2022 Morgan McColl. All rights reserved.
+// Copyright © 2023 Morgan McColl. All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -54,50 +54,32 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-@testable import VHDLMachines
 import VHDLParsing
-import XCTest
 
-/// Tests the ``Parameter`` type.
-final class ParameterTests: XCTestCase {
+extension VariableName {
 
-    /// The parameter to test.
-    var parameter = Parameter(
-        type: .integer,
-        name: VariableName.x,
-        defaultValue: .literal(value: .integer(value: 255)),
-        comment: Comment.signalX
-    )
+    static var a: VariableName { VariableName(rawValue: "A")! }
 
-    /// Initialise the parameter to test.
-    override func setUp() {
-        self.parameter = Parameter(
-            type: .integer,
-            name: VariableName.x,
-            defaultValue: .literal(value: .integer(value: 255)),
-            comment: Comment.signalX
-        )
-    }
+    static var clk2: VariableName { VariableName(rawValue: "clk2")! }
 
-    /// Test the init sets the stored properties correctly.
-    func testInit() {
-        XCTAssertEqual(self.parameter.type, .integer)
-        XCTAssertEqual(self.parameter.name, VariableName.x)
-        XCTAssertEqual(self.parameter.defaultValue, .literal(value: .integer(value: 255)))
-        XCTAssertEqual(self.parameter.comment, Comment.signalX)
-        XCTAssertEqual(self.parameter.mode, .input)
-    }
+    static var g: VariableName { VariableName(rawValue: "g")! }
 
-    /// Test Getters and Setters work correctly.
-    func testGettersAndSetters() {
-        self.parameter.type = .boolean
-        self.parameter.name = VariableName.y
-        self.parameter.defaultValue = .literal(value: .boolean(value: true))
-        self.parameter.comment = Comment.signalY
-        XCTAssertEqual(self.parameter.type, .boolean)
-        XCTAssertEqual(self.parameter.name, VariableName.y)
-        XCTAssertEqual(self.parameter.defaultValue, .literal(value: .boolean(value: true)))
-        XCTAssertEqual(self.parameter.comment, Comment.signalY)
-    }
+    static var p: VariableName { VariableName(rawValue: "p")! }
+
+    static var r: VariableName { VariableName(rawValue: "r")! }
+
+    static var s: VariableName { VariableName(rawValue: "s")! }
+
+    static var x: VariableName { VariableName(rawValue: "x")! }
+
+    static var xs: VariableName { VariableName(rawValue: "xs")! }
+
+    static var y: VariableName { VariableName(rawValue: "y")! }
+
+    static var z: VariableName { VariableName(rawValue: "z")! }
+
+    static var s0: VariableName { VariableName(rawValue: "S0")! }
+
+    static var s1: VariableName { VariableName(rawValue: "S1")! }
 
 }
