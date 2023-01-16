@@ -79,9 +79,9 @@ final class MachineTests: XCTestCase {
     }
 
     /// The external signals for the machine.
-    var externalSignals: [ExternalSignal] {
+    var externalSignals: [PortSignal] {
         [
-            ExternalSignal(
+            PortSignal(
                 type: .stdLogic,
                 name: VariableName(text: "A"),
                 mode: .input,
@@ -280,7 +280,7 @@ final class MachineTests: XCTestCase {
         let newPath = URL(fileURLWithPath: "/path/to/M3")
         let newIncludes = [Include.include(value: "IEEE.STD_LOGIC_1164.ALL")]
         let newExternalSignals = [
-            ExternalSignal(
+            PortSignal(
                 type: .stdLogic,
                 name: VariableName(text: "B"),
                 mode: .input,

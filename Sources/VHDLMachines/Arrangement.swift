@@ -22,7 +22,7 @@ public struct Arrangement: Equatable, Hashable, Codable {
     public var machines: [MachineName: URL]
 
     /// The external signals in the arrangement that map to physical pins.
-    public var externalSignals: [ExternalSignal]
+    public var externalSignals: [PortSignal]
 
     /// The signals local to every machine in the arrangement, but do not map to external devices.
     public var signals: [LocalSignal]
@@ -48,7 +48,7 @@ public struct Arrangement: Equatable, Hashable, Codable {
     ///   - path: The file path to the arrangement.
     public init(
         machines: [MachineName: URL],
-        externalSignals: [ExternalSignal],
+        externalSignals: [PortSignal],
         signals: [LocalSignal],
         clocks: [Clock],
         parents: [MachineName],

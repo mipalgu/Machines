@@ -1067,7 +1067,7 @@ public struct VHDLCompiler {
     /// Create a port parameter for the entity declaration.
     /// - Parameter signal: The signal to create the parameter for.
     /// - Returns: The parameter.
-    private func signalToEntityDeclaration(signal: ExternalSignal) -> String {
+    private func signalToEntityDeclaration(signal: PortSignal) -> String {
         let name = toExternal(name: signal.name)
         let signalComment = signal.comment?.rawValue ?? ""
         guard let defaultValue = signal.defaultValue else {

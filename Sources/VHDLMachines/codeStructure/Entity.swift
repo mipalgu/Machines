@@ -96,7 +96,7 @@ public struct Entity: RawRepresentable, Equatable, Hashable, Codable, Sendable {
     }
 
     public init?(machine: Machine) {
-        let clocks = machine.clocks.map { ExternalSignal(clock: $0) }
+        let clocks = machine.clocks.map { PortSignal(clock: $0) }
         guard
             let name = VariableName(rawValue: machine.name),
             let port = PortBlock(signals: machine.externalSignals + clocks)

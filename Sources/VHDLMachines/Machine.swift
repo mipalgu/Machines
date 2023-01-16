@@ -20,7 +20,7 @@ public struct Machine: Codable, Equatable, Hashable {
     public var includes: [Include]
 
     /// The external signals for the machine.
-    public var externalSignals: [ExternalSignal]
+    public var externalSignals: [PortSignal]
 
     /// The generics for the machine.
     public var generics: [LocalSignal]
@@ -74,7 +74,7 @@ public struct Machine: Codable, Equatable, Hashable {
     ///   - name: The name of the machine.
     ///   - path: The location of the machine in the file system.
     ///   - includes: The includes for the machine.
-    ///   - externalSignals: The external signals for the machine.
+    ///   - PortSignals: The external signals for the machine.
     ///   - generics: The generics for the machine.
     ///   - clocks: The clocks for the machine.
     ///   - drivingClock: The index of the driving clock.
@@ -94,7 +94,7 @@ public struct Machine: Codable, Equatable, Hashable {
         name: MachineName,
         path: URL,
         includes: [Include],
-        externalSignals: [ExternalSignal],
+        externalSignals: [PortSignal],
         generics: [LocalSignal],
         clocks: [Clock],
         drivingClock: Int,

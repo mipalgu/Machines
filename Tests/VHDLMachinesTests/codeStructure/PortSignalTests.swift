@@ -1,4 +1,4 @@
-// ExternalSignalTests.swift
+// PortSignalTests.swift
 // Machines
 // 
 // Created by Morgan McColl.
@@ -57,11 +57,11 @@
 @testable import VHDLMachines
 import XCTest
 
-/// Tests for the ``ExternalSignal`` type.
-final class ExternalSignalTests: XCTestCase {
+/// Tests for the ``PortSignal`` type.
+final class PortSignalTests: XCTestCase {
 
     /// The signal under test.
-    var signal = ExternalSignal(
+    var signal = PortSignal(
         type: .stdLogic,
         name: VariableName(text: "x"),
         mode: .output,
@@ -71,7 +71,7 @@ final class ExternalSignalTests: XCTestCase {
 
     /// Initialises the signal under test.
     override func setUp() {
-        self.signal = ExternalSignal(
+        self.signal = PortSignal(
             type: .stdLogic,
             name: VariableName(text: "x"),
             mode: .output,
@@ -126,41 +126,41 @@ final class ExternalSignalTests: XCTestCase {
 
     /// Test rawValue init works for valid string.
     func testRawValueInit() {
-        XCTAssertEqual(ExternalSignal(rawValue: "x: out std_logic := '1'; -- signal x"), self.signal)
+        XCTAssertEqual(PortSignal(rawValue: "x: out std_logic := '1'; -- signal x"), self.signal)
         self.signal.comment = nil
-        XCTAssertEqual(ExternalSignal(rawValue: "x: out std_logic := '1';"), self.signal)
+        XCTAssertEqual(PortSignal(rawValue: "x: out std_logic := '1';"), self.signal)
         self.signal.defaultValue = nil
-        XCTAssertEqual(ExternalSignal(rawValue: "x: out std_logic;"), self.signal)
+        XCTAssertEqual(PortSignal(rawValue: "x: out std_logic;"), self.signal)
         self.signal.comment = Comment(text: "signal x")
-        XCTAssertEqual(ExternalSignal(rawValue: "x: out std_logic; -- signal x"), self.signal)
+        XCTAssertEqual(PortSignal(rawValue: "x: out std_logic; -- signal x"), self.signal)
     }
 
     /// Test rawValue init when the colon has spaces around it.
     func testRawValueInitWithSpace() {
-        XCTAssertEqual(ExternalSignal(rawValue: "x : out std_logic := '1'; -- signal x"), self.signal)
+        XCTAssertEqual(PortSignal(rawValue: "x : out std_logic := '1'; -- signal x"), self.signal)
         self.signal.comment = nil
-        XCTAssertEqual(ExternalSignal(rawValue: "x : out std_logic := '1';"), self.signal)
+        XCTAssertEqual(PortSignal(rawValue: "x : out std_logic := '1';"), self.signal)
         self.signal.defaultValue = nil
-        XCTAssertEqual(ExternalSignal(rawValue: "x : out std_logic;"), self.signal)
+        XCTAssertEqual(PortSignal(rawValue: "x : out std_logic;"), self.signal)
         self.signal.comment = Comment(text: "signal x")
-        XCTAssertEqual(ExternalSignal(rawValue: "x : out std_logic; -- signal x"), self.signal)
+        XCTAssertEqual(PortSignal(rawValue: "x : out std_logic; -- signal x"), self.signal)
     }
 
     /// Test rawValue init works for vector types.
     func testRawValueInitVectorType() {
         signal.type = .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0)))
         XCTAssertEqual(
-            ExternalSignal(rawValue: "x: out std_logic_vector(3 downto 0) := '1'; -- signal x"), signal
+            PortSignal(rawValue: "x: out std_logic_vector(3 downto 0) := '1'; -- signal x"), signal
         )
         signal.comment = nil
         XCTAssertEqual(
-            ExternalSignal(rawValue: "x: out std_logic_vector(3 downto 0) := '1';"), signal
+            PortSignal(rawValue: "x: out std_logic_vector(3 downto 0) := '1';"), signal
         )
         signal.defaultValue = nil
-        XCTAssertEqual(ExternalSignal(rawValue: "x: out std_logic_vector(3 downto 0);"), signal)
+        XCTAssertEqual(PortSignal(rawValue: "x: out std_logic_vector(3 downto 0);"), signal)
         signal.comment = Comment(text: "signal x")
         XCTAssertEqual(
-            ExternalSignal(rawValue: "x: out std_logic_vector(3 downto 0); -- signal x"), signal
+            PortSignal(rawValue: "x: out std_logic_vector(3 downto 0); -- signal x"), signal
         )
     }
 

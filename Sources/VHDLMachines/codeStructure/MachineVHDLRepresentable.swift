@@ -211,9 +211,9 @@ public extension MachineVHDLRepresentable {
     }
 
     var port: String {
-        let suspended = ExternalSignal.suspendedSignal(type: suspendedType)
-        let commandSignal = ExternalSignal.commandSignal(type: command)
-        let clocks = machine.clocks.map { ExternalSignal(clock: $0) }
+        let suspended = PortSignal.suspendedSignal(type: suspendedType)
+        let commandSignal = PortSignal.commandSignal(type: command)
+        let clocks = machine.clocks.map { PortSignal(clock: $0) }
         var externalSignals = (clocks + machine.externalSignals + [suspended, commandSignal])
             .map(\.rawValue)
             .joined(separator: "\n")

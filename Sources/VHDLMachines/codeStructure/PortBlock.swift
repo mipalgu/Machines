@@ -58,7 +58,7 @@ import Foundation
 
 public struct PortBlock: RawRepresentable, Equatable, Hashable, Codable, Sendable {
 
-    public let signals: [ExternalSignal]
+    public let signals: [PortSignal]
 
     public var rawValue: String {
         var signalsString = signals.map(\.rawValue).joined(separator: "\n").indent(amount: 1)
@@ -86,14 +86,14 @@ public struct PortBlock: RawRepresentable, Equatable, Hashable, Codable, Sendabl
         }
         let signalsWithoutComments = signalsString.withoutComments
         let signals = signalsWithoutComments.components(separatedBy: ";")
-        let externalSignals = signals.compactMap(ExternalSignal.init(rawValue: ))
+        let externalSignals = signals.compactMap(PortSignal.init(rawValue: ))
         guard signals.count == externalSignals.count else {
             return nil
         }
         self.signals = externalSignals
     }
 
-    public init?(signals: [ExternalSignal]) {
+    public init?(signals: [PortSignal]) {
         let signalNames = signals.map(\.name)
         let signalSet = Set(signalNames)
         guard signalNames.count == signalSet.count else {

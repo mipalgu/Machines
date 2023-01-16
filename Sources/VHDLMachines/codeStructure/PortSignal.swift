@@ -9,7 +9,7 @@ import Foundation
 
 /// An external signal is equivalent to an external variable (or parameter) in an LLFSM. The external signal
 /// is a signal that exists above a VHDL entities scope. It is a signal that is not defined within the entity.
-public struct ExternalSignal: ExternalType, RawRepresentable, Codable, Hashable, Variable, Sendable {
+public struct PortSignal: ExternalType, RawRepresentable, Codable, Hashable, Variable, Sendable {
 
     /// The type of the signal.
     public var type: SignalType
@@ -128,12 +128,12 @@ public struct ExternalSignal: ExternalType, RawRepresentable, Codable, Hashable,
         self.init(type: .stdLogic, name: clock.name, mode: .input, defaultValue: nil, comment: nil)
     }
 
-    public static func commandSignal(type: SignalType) -> ExternalSignal {
-        ExternalSignal(type: type, name: .command, mode: .input)
+    public static func commandSignal(type: SignalType) -> PortSignal {
+        PortSignal(type: type, name: .command, mode: .input)
     }
 
-    public static func suspendedSignal(type: SignalType) -> ExternalSignal {
-        ExternalSignal(type: type, name: .suspended, mode: .output)
+    public static func suspendedSignal(type: SignalType) -> PortSignal {
+        PortSignal(type: type, name: .suspended, mode: .output)
     }
 
 }

@@ -32,14 +32,14 @@ class VHDLMachinesCompilerTests: XCTestCase {
             path: testMachinePath,
             includes: [.library(value: "IEEE"), .include(value: "IEEE.std_logic_1164.ALL")],
             externalSignals: [
-                ExternalSignal(
+                PortSignal(
                     type: .stdLogic,
                     name: VariableName(text: "x"),
                     mode: .input,
                     defaultValue: .literal(value: .logic(value: .high)),
                     comment: Comment(text: "A std_logic variable.")
                 ),
-                ExternalSignal(
+                PortSignal(
                     type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
                     name: VariableName(text: "xx"),
                     mode: .output,

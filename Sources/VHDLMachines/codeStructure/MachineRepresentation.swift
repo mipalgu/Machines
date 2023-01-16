@@ -67,7 +67,7 @@ public struct MachineRepresentation: RawRepresentable,
 
     public let command: SignalType
 
-    public let externalSignals: [ExternalSignal]
+    public let externalSignals: [PortSignal]
 
     public let machine: Machine
 

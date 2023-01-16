@@ -73,14 +73,14 @@ final class ArrangementTests: XCTestCase {
 
     /// The external signals in the arrangement.
     let externalSignals = [
-        ExternalSignal(
+        PortSignal(
             type: .stdLogic,
             name: VariableName(text: "x"),
             mode: .input,
             defaultValue: .literal(value: .logic(value: .high)),
             comment: Comment(text: "Signal x.")
         ),
-        ExternalSignal(
+        PortSignal(
             type: .stdLogic,
             name: VariableName(text: "y"),
             mode: .output,
@@ -144,14 +144,14 @@ final class ArrangementTests: XCTestCase {
             "M4": URL(fileURLWithPath: "/path/to/M4")
         ]
         let newExternalSignals = [
-            ExternalSignal(
+            PortSignal(
                 type: .stdLogic,
                 name: VariableName(text: "z"),
                 mode: .input,
                 defaultValue: .literal(value: .logic(value: .high)),
                 comment: Comment(text: "Signal z.")
             ),
-            ExternalSignal(
+            PortSignal(
                 type: .stdLogic,
                 name: VariableName(text: "w"),
                 mode: .output,

@@ -176,7 +176,7 @@ public struct VariableName: RawRepresentable,
         VariableName(text: "STATE_\(state.name.rawValue)")
     }
 
-    public static func name(for external: ExternalSignal) -> VariableName {
+    public static func name(for external: PortSignal) -> VariableName {
         VariableName(text: "EXTERNAL_\(external.name.rawValue)")
     }
 

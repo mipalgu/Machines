@@ -64,7 +64,7 @@ public enum Statement: RawRepresentable, Equatable, Hashable, Codable, Sendable 
 
     case expression(value: Expression)
 
-    case externalDefinition(value: ExternalSignal)
+    case externalDefinition(value: PortSignal)
 
     public typealias RawValue = String
 
@@ -119,7 +119,7 @@ public enum Statement: RawRepresentable, Equatable, Hashable, Codable, Sendable 
         guard
             !value.components(separatedBy: .whitespacesAndNewlines).contains(where: { modes.contains($0) })
         else {
-            guard let external = ExternalSignal(rawValue: value) else {
+            guard let external = PortSignal(rawValue: value) else {
                 return nil
             }
             self = .externalDefinition(value: external)
