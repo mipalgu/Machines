@@ -66,8 +66,7 @@ public extension Entity {
         else {
             return nil
         }
-        self.name = name
-        self.port = port
+        self.init(name: name, port: port)
     }
 
 }

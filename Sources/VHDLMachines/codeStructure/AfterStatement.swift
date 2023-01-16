@@ -54,6 +54,8 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+import VHDLParsing
+
 public struct AfterStatement: RawRepresentable, Equatable, Hashable, Codable, Sendable {
 
     public enum Period: RawRepresentable, Equatable, Hashable, Codable, Sendable {

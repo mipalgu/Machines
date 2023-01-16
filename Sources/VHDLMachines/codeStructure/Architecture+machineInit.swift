@@ -58,7 +58,7 @@ import VHDLParsing
 
 public extension Architecture {
 
-    public init?<T>(representation: T) where T: MachineVHDLRepresentable {
+    init?<T>(representation: T) where T: MachineVHDLRepresentable {
         // guard let name = VariableName(rawValue: representation.machine.name) else {
         //     return nil
         // }
@@ -95,7 +95,7 @@ public extension Architecture {
         return nil
     }
 
-    public init?(machine: Machine) {
+    init?(machine: Machine) {
         guard let representation = MachineRepresentation(machine: machine) else {
             return nil
         }
