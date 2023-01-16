@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import VHDLParsing
 
 /// The type of a machine's name.
 public typealias MachineName = String

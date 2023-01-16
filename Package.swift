@@ -14,6 +14,7 @@ let package = Package(
         // .package(url: /* package url */, from: "1.0.0"),
         .package(name: "swift_helpers", url: "https://github.com/mipalgu/swift_helpers.git", from: "1.0.1"),
         .package(name: "MetaLanguage", url: "ssh://git@github.com/Morgan2010/MetaLanguage.git", .branch("main")),
+        .package(name: "VHDLParsing", url: "git@github.com:mipalgu/VHDLParsing", .branch("vhdlParsing")),
         .package(url: "git@github.com:mipalgu/GUUnits", from: "2.1.0")
     ],
     targets: [
@@ -29,7 +30,7 @@ let package = Package(
         ),
         .target(
             name: "VHDLMachines",
-            dependencies: [.product(name: "swift_helpers", package: "swift_helpers"), .product(name: "IO", package: "swift_helpers"), .product(name: "GUUnits", package: "GUUnits")]
+            dependencies: [.product(name: "swift_helpers", package: "swift_helpers"), .product(name: "IO", package: "swift_helpers"), .product(name: "GUUnits", package: "GUUnits"), "VHDLParsing"]
         ),
         .target(
             name: "CXXBase",
@@ -61,7 +62,7 @@ let package = Package(
         ),
         .testTarget(
             name: "VHDLMachinesTests",
-            dependencies: ["VHDLMachines", "Machines", .product(name: "swift_helpers", package: "swift_helpers"), .product(name: "IO", package: "swift_helpers"), .product(name: "Functional", package: "swift_helpers"), .product(name: "GUUnits", package: "GUUnits")]
+            dependencies: ["VHDLMachines", "Machines", .product(name: "swift_helpers", package: "swift_helpers"), .product(name: "IO", package: "swift_helpers"), .product(name: "Functional", package: "swift_helpers"), .product(name: "GUUnits", package: "GUUnits"), "VHDLParsing"]
         ),
         .testTarget(name: "MachinesTests",
             dependencies: ["Machines", .product(name: "swift_helpers", package: "swift_helpers"), .product(name: "IO", package: "swift_helpers"), .product(name: "Functional", package: "swift_helpers")]

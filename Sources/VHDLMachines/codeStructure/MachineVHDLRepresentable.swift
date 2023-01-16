@@ -54,6 +54,8 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+import VHDLParsing
+
 public protocol MachineVHDLRepresentable {
 
     var actionRepresentation: [ActionName: ConstantSignal] { get }

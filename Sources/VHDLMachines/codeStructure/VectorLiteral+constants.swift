@@ -1,4 +1,4 @@
-// OctalLiteralTests.swift
+// VectorLiteral.swift
 // Machines
 // 
 // Created by Morgan McColl.
@@ -54,54 +54,19 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-@testable import VHDLMachines
-import XCTest
+import VHDLParsing
 
-/// Test class for ``OctalLiteral``.
-final class OctalLiteralTests: XCTestCase {
+public extension VectorLiteral {
 
-    /// Test `bits` computed property creates bit representation correctly.
-    func testBits() {
-        XCTAssertEqual(OctalLiteral.zero.bits, [.low, .low, .low])
-        XCTAssertEqual(OctalLiteral.one.bits, [.low, .low, .high])
-        XCTAssertEqual(OctalLiteral.two.bits, [.low, .high, .low])
-        XCTAssertEqual(OctalLiteral.three.bits, [.low, .high, .high])
-        XCTAssertEqual(OctalLiteral.four.bits, [.high, .low, .low])
-        XCTAssertEqual(OctalLiteral.five.bits, [.high, .low, .high])
-        XCTAssertEqual(OctalLiteral.six.bits, [.high, .high, .low])
-        XCTAssertEqual(OctalLiteral.seven.bits, [.high, .high, .high])
-    }
-
-    /// Test bits init creates correct case.
-    func testBitsInit() {
-        XCTAssertEqual(OctalLiteral(bits: [.low, .low, .low]), OctalLiteral.zero)
-        XCTAssertEqual(OctalLiteral(bits: [.low, .low, .high]), OctalLiteral.one)
-        XCTAssertEqual(OctalLiteral(bits: [.low, .high, .low]), OctalLiteral.two)
-        XCTAssertEqual(OctalLiteral(bits: [.low, .high, .high]), OctalLiteral.three)
-        XCTAssertEqual(OctalLiteral(bits: [.high, .low, .low]), OctalLiteral.four)
-        XCTAssertEqual(OctalLiteral(bits: [.high, .low, .high]), OctalLiteral.five)
-        XCTAssertEqual(OctalLiteral(bits: [.high, .high, .low]), OctalLiteral.six)
-        XCTAssertEqual(OctalLiteral(bits: [.high, .high, .high]), OctalLiteral.seven)
-    }
-
-    /// Test bits init returns nil for incorrect number of bits.
-    func testBitsInitNil() {
-        XCTAssertNil(OctalLiteral(bits: []))
-        XCTAssertNil(OctalLiteral(bits: [.low]))
-        XCTAssertNil(OctalLiteral(bits: [.low, .low]))
-        XCTAssertNil(OctalLiteral(bits: [.low, .low, .low, .low]))
-    }
-
-    /// Test the raw values are correct.
-    func testRawValue() {
-        XCTAssertEqual(OctalLiteral.zero.rawValue, "0")
-        XCTAssertEqual(OctalLiteral.one.rawValue, "1")
-        XCTAssertEqual(OctalLiteral.two.rawValue, "2")
-        XCTAssertEqual(OctalLiteral.three.rawValue, "3")
-        XCTAssertEqual(OctalLiteral.four.rawValue, "4")
-        XCTAssertEqual(OctalLiteral.five.rawValue, "5")
-        XCTAssertEqual(OctalLiteral.six.rawValue, "6")
-        XCTAssertEqual(OctalLiteral.seven.rawValue, "7")
+    public static func representation(for states: [State]) -> [State: VectorLiteral]? {
+        guard let bitsRequired = BitLiteral.bitsRequired(for: states.count - 1) else {
+            return nil
+        }
+        return Dictionary(
+            uniqueKeysWithValues: states.sorted { $0.name < $1.name }.enumerated().map {
+                ($1, VectorLiteral.bits(value: BitLiteral.bitVersion(of: $0, bitsRequired: bitsRequired)))
+            }
+        )
     }
 
 }

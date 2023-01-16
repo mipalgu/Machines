@@ -1,8 +1,8 @@
-// ModeTests.swift
+// Entity.swift
 // Machines
 // 
 // Created by Morgan McColl.
-// Copyright © 2022 Morgan McColl. All rights reserved.
+// Copyright © 2023 Morgan McColl. All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -54,18 +54,20 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-@testable import VHDLMachines
-import XCTest
+import VHDLParsing
 
-/// Tests for the `Mode` enum.
-final class ModeTests: XCTestCase {
+public extension Entity {
 
-    /// Test raw values match VHDL keywords.
-    func testRawValues() {
-        XCTAssertEqual(Mode.input.rawValue, "in")
-        XCTAssertEqual(Mode.output.rawValue, "out")
-        XCTAssertEqual(Mode.inputoutput.rawValue, "inout")
-        XCTAssertEqual(Mode.buffer.rawValue, "buffer")
+    init?(machine: Machine) {
+        let clocks = machine.clocks.map { PortSignal(clock: $0) }
+        guard
+            let name = VariableName(rawValue: machine.name),
+            let port = PortBlock(signals: machine.externalSignals + clocks)
+        else {
+            return nil
+        }
+        self.name = name
+        self.port = port
     }
 
 }

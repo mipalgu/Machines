@@ -56,26 +56,11 @@
 
 import Foundation
 import GUUnits
+import VHDLParsing
 
-/// A type representing a valid constant declaration in `VHDL`.
-public struct ConstantSignal: RawRepresentable, Equatable, Hashable, Codable, Sendable {
+public extension ConstantSignal {
 
-    /// The rawValue is a string.
-    public typealias RawValue = String
-
-    /// The name of the constant.
-    public let name: VariableName
-
-    /// The type of the constant.
-    public let type: SignalType
-
-    /// The value of this constant.
-    public let value: Expression
-
-    /// The comment associated with this constant.
-    public let comment: Comment?
-
-    @inlinable public static var ringletConstants: [ConstantSignal] {
+    @inlinable static var ringletConstants: [ConstantSignal] {
         guard
             let ringletLength = ConstantSignal(
                 name: .ringletLength,
@@ -127,112 +112,12 @@ public struct ConstantSignal: RawRepresentable, Equatable, Hashable, Codable, Se
         return [ringletLength, ringletPerPs, ringletPerNs, ringletPerUs, ringletPerMs, ringletPerS]
     }
 
-    /// The `VHDL` code defining this constant.
-    @inlinable public var rawValue: String {
-        let declaration = "constant \(name): \(type.rawValue) := \(value.rawValue);"
-        guard let comment = comment else {
-            return declaration
-        }
-        return declaration + " \(comment)"
-    }
-
-    /// Initialise this constant with the given name, type, value and comment.
-    /// - Parameters:
-    ///   - name: The name of the constant.
-    ///   - type: The type of the constant.
-    ///   - value: The value of the constant.
-    ///   - comment: The comment associated with this constant.
-    /// - Note: This initialiser will verify that the value is valid for the type of this constant.
-    @inlinable
-    public init?(name: VariableName, type: SignalType, value: Expression, comment: Comment? = nil) {
-        if case Expression.literal(let literal) = value {
-            guard literal.isValid(for: type) else {
-                return nil
-            }
-        }
-        self.name = name
-        self.type = type
-        self.value = value
-        self.comment = comment
-    }
-
-    // swiftlint:disable function_body_length
-
-    /// Initialise this constant from the `VHDL` code that defines it.
-    /// - Parameter rawValue: The `VHDL` code defining this constant. This code should include the entire
-    /// declaration of the constant, including the `constant` keyword, the name, the type, the value,
-    /// semicolon and optionally the comment after the semicolon.
-    @inlinable
-    public init?(rawValue: String) {
-        let trimmedValue = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard trimmedValue.hasPrefix("constant ") else {
-            return nil
-        }
-        let components = trimmedValue.components(separatedBy: ";")
-        guard
-            components.count == 2, let declaration = components.first, let commentString = components.last
-        else {
-            return nil
-        }
-        let comment = Comment(rawValue: commentString)
-        let declComponents = declaration.components(separatedBy: ":=")
-        guard
-            declComponents.count == 2,
-            let valueString = declComponents.last,
-            let value = Expression(rawValue: valueString),
-            let declaration = declComponents.first?.trimmingCharacters(in: .whitespaces)
-        else {
-            return nil
-        }
-        let signalComponents = declaration.components(separatedBy: .whitespacesAndNewlines)
-        guard signalComponents.count >= 2 else {
-            return nil
-        }
-        let hasColonSuffix = signalComponents[1].hasSuffix(":")
-        let colonComponents = signalComponents.filter { $0.contains(":") }
-        guard
-            signalComponents.count >= 3,
-            hasColonSuffix || signalComponents[2] == ":",
-            colonComponents.count == 1,
-            colonComponents[0].filter({ $0 == ":" }).count == 1
-        else {
-            return nil
-        }
-        let typeIndex = hasColonSuffix ? 2 : 3
-        guard
-            signalComponents.first == "constant",
-            signalComponents.count >= typeIndex,
-            let type = SignalType(rawValue: signalComponents[typeIndex...].joined(separator: " "))
-        else {
-            return nil
-        }
-        let name = hasColonSuffix ? String(signalComponents[1].dropLast()) : signalComponents[1]
-        guard
-            !name.isEmpty,
-            !CharacterSet.whitespacesAndNewlines.within(string: name),
-            let varName = VariableName(rawValue: name)
-        else {
-            return nil
-        }
-        if case Expression.literal(let literal) = value {
-            guard literal.isValid(for: type) else {
-                return nil
-            }
-        }
-        self.name = varName
-        self.type = type
-        self.value = value
-        self.comment = comment
-    }
-
-    // swiftlint:enable function_body_length
-
     /// Create the constant declaration for the state actions within a machine.
     /// - Parameter actions: The actions to convert.
     /// - Returns: The constant declaration for the state actions.
     /// - Note: This method also includes the reserved actions `NoOnEntry`, `CheckTransition`, `ReadSnapshot`
     /// and `WriteSnapshot`.
-    public static func constants(for actions: [ActionName: String]) -> [ConstantSignal]? {
+    static func constants(for actions: [ActionName: String]) -> [ConstantSignal]? {
         let keys = actions.keys
         let actionNamesArray = [
             .noOnEntry, .checkTransition, VariableName.readSnapshot, .writeSnapshot
@@ -262,7 +147,7 @@ public struct ConstantSignal: RawRepresentable, Equatable, Hashable, Codable, Se
         return signals
     }
 
-    public static func clockPeriod(period: Time) -> ConstantSignal {
+    static func clockPeriod(period: Time) -> ConstantSignal {
         guard let constant = ConstantSignal(
             name: VariableName.clockPeriod,
             type: .real,

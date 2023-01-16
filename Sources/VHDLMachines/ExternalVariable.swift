@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import VHDLParsing
 
 /// An external variable is equivalent to a non-signal type top-level entity parameter. The external variable
 /// may be an LLFSM external variable or a parameter in a parameterised machine.

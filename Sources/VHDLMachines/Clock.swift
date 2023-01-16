@@ -7,6 +7,7 @@
 
 import Foundation
 import GUUnits
+import VHDLParsing
 
 /// A clock represents an oscillating signal with a constant frequency/period.
 public struct Clock: Codable, Equatable, Hashable, Sendable {

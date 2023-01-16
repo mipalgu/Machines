@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import VHDLParsing
 
 /// A variable that can be returned from a parameterised machine.
 public struct ReturnableVariable: ExternalType, Codable, Equatable, Hashable {

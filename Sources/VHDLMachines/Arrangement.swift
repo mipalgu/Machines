@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import VHDLParsing
 
 /// An arrangement represents a collection of machines that are executing together. An arrangment has a set of
 /// parent machines which act as entry points into the program. This structure does not infer any execution

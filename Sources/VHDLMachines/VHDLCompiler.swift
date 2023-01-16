@@ -7,6 +7,7 @@
 
 import Foundation
 import IO
+import VHDLParsing
 
 // swiftlint:disable file_length
 // swiftlint:disable type_body_length

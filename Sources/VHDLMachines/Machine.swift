@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import VHDLParsing
 
 /// The VHDL implementation of an LLFSM.
 public struct Machine: Codable, Equatable, Hashable {

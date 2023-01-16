@@ -1,4 +1,4 @@
-// Include.swift
+// VHDLFile.swift
 // Machines
 // 
 // Created by Morgan McColl.
@@ -54,55 +54,17 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-/// A type for representing VHDL include statements.
-public enum Include: RawRepresentable, Equatable, Hashable, Codable, Sendable {
+import VHDLParsing
 
-    /// Include a library.
-    case library(value: String)
+public extension VHDLFile {
 
-    /// Use a module from a library.
-    case include(value: String)
-
-    /// The raw value is a string.
-    public typealias RawValue = String
-
-    /// The VHDL code equivalent to this include.
-    public var rawValue: String {
-        switch self {
-        case .library(let value):
-            return "library \(value)"
-        case .include(let value):
-            return "use \(value)"
-        }
-    }
-
-    /// Create an include from the VHDL representation.
-    /// - Parameter rawValue: The VHDL code for the include.
-    public init?(rawValue: String) {
-        let trimmedString = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard trimmedString.count < 256 else {
+    init?(machine: Machine) {
+        guard let entity = Entity(machine: machine), let architecture = Architecture(machine: machine) else {
             return nil
         }
-        let value = trimmedString.lowercased()
-        if value.hasPrefix("library ") {
-            self = .library(value: String(value.dropFirst(8)).trimmingCharacters(in: .whitespaces))
-        } else if value.hasPrefix("use ") {
-            self = .include(value: String(value.dropFirst(4)).trimmingCharacters(in: .whitespaces))
-        } else {
-            return nil
-        }
-    }
-
-    /// Equality operation.
-    public static func == (lhs: Include, rhs: Include) -> Bool {
-        switch (lhs, rhs) {
-        case (.library(let lhs), .library(let rhs)):
-            return lhs.lowercased() == rhs.lowercased()
-        case (.include(let lhs), .include(let rhs)):
-            return lhs.lowercased() == rhs.lowercased()
-        default:
-            return false
-        }
+        self.includes = machine.includes
+        self.entity = entity
+        self.architecture = architecture
     }
 
 }

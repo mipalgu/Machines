@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import VHDLParsing
 
 /// A state in a machine.
 public struct State: Codable, Equatable, Hashable, Sendable {

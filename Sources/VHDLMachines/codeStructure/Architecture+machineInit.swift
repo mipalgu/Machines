@@ -1,4 +1,4 @@
-// VHDLFile.swift
+// Architecture.swift
 // Machines
 // 
 // Created by Morgan McColl.
@@ -54,63 +54,52 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-public struct VHDLFile: RawRepresentable, Equatable, Hashable, Codable, Sendable {
+import VHDLParsing
 
-    public let includes: [Include]
+public extension Architecture {
 
-    public let entity: Entity
-
-    public let architecture: Architecture
-
-    public var rawValue: String {
-        let includeString = includes.map { $0.rawValue + ";" }.joined(separator: "\n")
-        return """
-        \(includeString)
-
-        \(entity.rawValue)
-
-        \(architecture.rawValue)
-
-        """
-    }
-
-    public init?(rawValue: String) {
-        let trimmedString = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard let includeEndIndex = trimmedString.startIndex(for: "entity") else {
-            return nil
-        }
-        let includesData = trimmedString[trimmedString.startIndex..<includeEndIndex]
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-        let includesRaw = includesData.components(separatedBy: ";")
-        let includes = includesRaw.compactMap { Include(rawValue: $0) }
-        guard
-            includesRaw.count == includes.count,
-            let architectureIndex = trimmedString.startIndex(for: "architecture")
-        else {
-            return nil
-        }
-        let entityData = trimmedString[includeEndIndex..<architectureIndex]
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-        let architectureData = trimmedString[architectureIndex...]
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-        guard
-            let entity = Entity(rawValue: entityData),
-            let architecture = Architecture(rawValue: architectureData)
-        else {
-            return nil
-        }
-        self.includes = includes
-        self.entity = entity
-        self.architecture = architecture
+    public init?<T>(representation: T) where T: MachineVHDLRepresentable {
+        // guard let name = VariableName(rawValue: representation.machine.name) else {
+        //     return nil
+        // }
+        // let actions = representation.actionRepresentation.values.sorted {
+        //     $0.name.rawValue < $1.name.rawValue
+        // }
+        // let internalState = LocalSignal.internalState(actionType: representation.actionType)
+        // let states = representation.statesRepresentations.compactMap {
+        //     ConstantSignal(
+        //         name: VariableName.name(for: $0),
+        //         type: representation.stateType,
+        //         value: .literal(value: .vector(value: $1)),
+        //         comment: nil
+        //     )
+        // }
+        // guard states.count == representation.statesRepresentations.count else {
+        //     return nil
+        // }
+        // let statements: [Statement] = [
+        //     .expression(value: .comment(comment: Comment(text: "Internal State Representation Bits")))
+        // ] + actions.map { Statement.constant(value: $0) } + [.definition(signal: internalState)] +
+        //     [.expression(value: .comment(comment: Comment(text: "State Representation Bits")))] +
+        //     states.map { Statement.constant(value: $0) } +
+        //     LocalSignal.stateTrackers(representation: representation).map {
+        //         Statement.definition(signal: $0)
+        //     } + [Statement.expression(value: .comment(comment: Comment(text: "Suspension Commands")))] +
+        //     SuspensionCommand.suspensionConstants.map { Statement.constant(value: $0) } +
+        //     [Statement.expression(value: .comment(comment: Comment(text: "After Variables")))] +
+        //     [.definition(signal: LocalSignal.ringletCounter), .constant(value: representation.clockPeriod)] +
+        //     representation.ringletConstants.map { Statement.constant(value: $0) }
+        // let head = Block.statements(lines: statements)
+        // self.name = name
+        // self.head = head
+        return nil
     }
 
     public init?(machine: Machine) {
-        guard let entity = Entity(machine: machine), let architecture = Architecture(machine: machine) else {
+        guard let representation = MachineRepresentation(machine: machine) else {
             return nil
         }
-        self.includes = machine.includes
-        self.entity = entity
-        self.architecture = architecture
+        self.init(representation: representation)
     }
 
 }

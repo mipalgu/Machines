@@ -1,4 +1,4 @@
-// Entity.swift
+// SignalType.swift
 // Machines
 // 
 // Created by Morgan McColl.
@@ -54,57 +54,15 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-public struct Entity: RawRepresentable, Equatable, Hashable, Codable, Sendable {
+import VHDLParsing
 
-    public let name: VariableName
+public extension SignalType {
 
-    public let port: PortBlock
-
-    public var rawValue: String {
-        """
-        entity \(self.name.rawValue) is
-        \(port.rawValue.indent(amount: 1))
-        end \(self.name.rawValue);
-        """
-    }
-
-    public init?(rawValue: String) {
-        let trimmedString = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard trimmedString.lowercased().hasPrefix("entity ") else {
+    static func type(for states: [State]) -> SignalType? {
+        guard let bitsRequired = BitLiteral.bitsRequired(for: states.count - 1) else {
             return nil
         }
-        let nameAndPort = trimmedString.dropFirst(7)
-        let nameAndIs = nameAndPort.components(separatedBy: "is")
-        guard
-            let nameString = nameAndIs.first,
-            let name = VariableName(rawValue: nameString),
-            nameAndIs.count >= 2
-        else {
-            return nil
-        }
-        let remaining = nameAndIs[1...].joined(separator: "is")
-        let nameRaw = nameString.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard nameAndPort.hasSuffix("end \(nameRaw);") else {
-            return nil
-        }
-        let portRaw = remaining.dropLast(4 + nameRaw.count + 1)
-        guard let port = PortBlock(rawValue: String(portRaw)) else {
-            return nil
-        }
-        self.name = name
-        self.port = port
-    }
-
-    public init?(machine: Machine) {
-        let clocks = machine.clocks.map { PortSignal(clock: $0) }
-        guard
-            let name = VariableName(rawValue: machine.name),
-            let port = PortBlock(signals: machine.externalSignals + clocks)
-        else {
-            return nil
-        }
-        self.name = name
-        self.port = port
+        return .ranged(type: .stdLogicVector(size: .downto(upper: bitsRequired - 1, lower: 0)))
     }
 
 }

@@ -1,4 +1,4 @@
-// Set+VHDLReservedWords.swift
+// Statement.swift
 // Machines
 // 
 // Created by Morgan McColl.
@@ -54,50 +54,14 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-/// Add VHDL reserved words Sets.
-public extension Set where Element == String {
+import VHDLParsing
 
-    /// The `VHDL` signal types.
-    static var vhdlSignalTypes: Set<String> {
-        [
-            "std_logic",
-            "std_ulogic",
-            "signed",
-            "unsigned",
-            "std_logic_vector",
-            "std_ulogic_vector",
-            "bit",
-            "bit_vector",
-            "boolean",
-            "integer",
-            "natural",
-            "positive",
-            "real"
-        ]
-    }
+public extension Statement {
 
-    /// The `VHDL` reserved words not including the `VHDL` signal types. If you need both, then use
-    /// `Set<String>.vhdlAllReservedWords`.
-    static var vhdlReservedWords: Set<String> {
-        [
-            "abs", "access", "after", "alias", "all", "and", "architecture", "array",
-            "assert", "attribute", "begin", "block", "body", "buffer", "bus", "case",
-            "component", "configuration", "constant", "disconnect", "downto", "else",
-            "elsif", "end", "entity", "exit", "file", "for", "function", "generate",
-            "generic", "group", "guarded", "if", "impure", "in", "inertial", "inout",
-            "is", "label", "library", "linkage", "literal", "loop", "map", "mod", "nand",
-            "new", "next", "nor", "not", "null", "of", "on", "open", "or", "others",
-            "out", "package", "port", "postponed", "procedure", "process", "pure",
-            "range", "record", "register", "reject", "return", "rol", "ror", "select",
-            "severity", "signal", "shared", "sla", "sli", "sra", "srl", "subtype",
-            "then", "to", "transport", "type", "unaffected", "units", "until", "use",
-            "variable", "wait", "when", "while", "with", "xnor", "xor"
-        ]
-    }
-
-    /// All `VHDL` reserved words including the `VHDL` signal types.
-    static var vhdlAllReservedWords: Set<String> {
-        Self.vhdlSignalTypes.union(Self.vhdlReservedWords)
+    static func readSnapshots(machine: Machine) -> [Statement] {
+        machine.externalSignals.map {
+            .assignment(name: $0.name, value: .variable(name: .name(for: $0)))
+        }
     }
 
 }

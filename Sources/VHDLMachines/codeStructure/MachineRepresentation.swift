@@ -54,6 +54,8 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+import VHDLParsing
+
 public struct MachineRepresentation: RawRepresentable,
     Equatable, Hashable, Codable, MachineVHDLRepresentable {
 

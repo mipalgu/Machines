@@ -54,6 +54,8 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+import VHDLParsing
+
 public enum Action: RawRepresentable, Equatable, Hashable, Codable, Sendable {
 
     case reserved(action: ReservedAction)
