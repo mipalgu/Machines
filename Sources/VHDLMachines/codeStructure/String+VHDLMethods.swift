@@ -126,6 +126,31 @@ extension String {
         return String(self[self.startIndex..<semicolonIndex]).trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
+    mutating func dropLast(character: Character) {
+        guard let lastIndex = self.lastIndex(of: character) else {
+            return
+        }
+        self.remove(at: lastIndex)
+    }
+
+    mutating func indexes(startingWith: String, endingWith: String) -> [(String.Index, String.Index)] {
+        var indexes: [(String.Index, String.Index)] = []
+        var index = self.index(self.startIndex, offsetBy: startingWith.count)
+        while index < self.endIndex {
+            let startWord = self[self.index(index, offsetBy: -startingWith.count)..<index]
+            guard startWord == startingWith else {
+                index = self.index(after: index)
+                continue
+            }
+            guard let endIndex = self[index...].startIndex(for: endingWith) else {
+                return indexes
+            }
+            indexes.append((index, endIndex))
+            index = self.index(after: endIndex)
+        }
+        return indexes
+    }
+
     /// Split the string into 2 strings. The first string is the string up to the first character in the given
     /// character set.
     /// - Parameter characters: The characters to split on.
@@ -192,6 +217,26 @@ extension String {
             return nil
         }
         return self
+    }
+
+}
+
+extension Substring {
+
+    func startIndex(for value: String) -> String.Index? {
+        let size = value.count
+        guard self.count >= size else {
+            return nil
+        }
+        let startIndex = self.index(self.startIndex, offsetBy: size)
+        for i in self[startIndex...].indices {
+            let wordStart = self.index(i, offsetBy: -size)
+            guard self[wordStart...i] == value else {
+                continue
+            }
+            return wordStart
+        }
+        return nil
     }
 
 }
