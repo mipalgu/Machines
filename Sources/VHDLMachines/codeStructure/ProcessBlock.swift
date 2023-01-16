@@ -1,4 +1,4 @@
-// Statement.swift
+// ProcessBlock.swift
 // Machines
 // 
 // Created by Morgan McColl.
@@ -54,88 +54,55 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-public enum Statement: RawRepresentable, Equatable, Hashable, Codable, Sendable {
+public struct ProcessBlock: RawRepresentable, Equatable, Hashable, Codable, Sendable {
 
-    case constant(value: ConstantSignal)
+    public let sensitivityList: [VariableName]
 
-    case definition(signal: LocalSignal)
+    public let code: Block
 
-    case assignment(name: VariableName, value: Expression)
-
-    case expression(value: Expression)
-
-    case externalDefinition(value: ExternalSignal)
-
-    public typealias RawValue = String
-
-    @inlinable public var rawValue: String {
-        switch self {
-        case .constant(let value):
-            return value.rawValue
-        case .definition(let signal):
-            return signal.rawValue
-        case .assignment(let name, let value):
-            return "\(name) := \(value.rawValue)"
-        case .expression(let value):
-            return value.rawValue
-        case .externalDefinition(let value):
-            return value.rawValue
+    public var rawValue: String {
+        let blocksCode = code.rawValue.indent(amount: 1)
+        guard !sensitivityList.isEmpty else {
+            return """
+            process
+            \(blocksCode)
+            end process;
+            """
         }
+        return """
+        process (\(sensitivityList.map(\.rawValue).joined(separator: ", ")))
+        \(blocksCode)
+        end process;
+        """
     }
 
     public init?(rawValue: String) {
         let trimmedString = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard trimmedString.count < 256 else {
+        let lowercased = trimmedString.lowercased()
+        guard lowercased.hasPrefix("process"), lowercased.hasSuffix("end process;") else {
             return nil
         }
-        let value = trimmedString.lowercased()
-        guard !value.contains("<=") else {
-            let components = value.components(separatedBy: "<=")
-            guard
-                components.count == 2,
-                let name = VariableName(rawValue: components[0]),
-                let exp = Expression(rawValue: components[1].trimmingCharacters(in: .whitespacesAndNewlines))
-            else {
-                return nil
-            }
-            self = .assignment(name: name, value: exp)
-            return
-        }
-        guard !value.contains("constant ") else {
-            guard let constant = ConstantSignal(rawValue: value) else {
-                return nil
-            }
-            self = .constant(value: constant)
-            return
-        }
-        guard !value.contains("signal ") else {
-            guard let signal = LocalSignal(rawValue: value) else {
-                return nil
-            }
-            self = .definition(signal: signal)
-            return
-        }
-        let modes = Set(Mode.allCases.map(\.rawValue))
+        let value = String(trimmedString.dropFirst("process".count).dropLast("end process;".count))
         guard
-            !value.components(separatedBy: .whitespacesAndNewlines).contains(where: { modes.contains($0) })
+            let sensitivityList = value.uptoBalancedBracket,
+            sensitivityList.hasPrefix("("),
+            sensitivityList.hasSuffix(")")
         else {
-            guard let external = ExternalSignal(rawValue: value) else {
-                return nil
-            }
-            self = .externalDefinition(value: external)
-            return
+            return nil
         }
-        if let exp = Expression(rawValue: value) {
-            self = .expression(value: exp)
-            return
+        let list = String(sensitivityList.dropFirst().dropLast())
+        let names = list.components(separatedBy: ",").map {
+            $0.trimmingCharacters(in: .whitespacesAndNewlines)
         }
-        return nil
-    }
-
-    public static func readSnapshots(machine: Machine) -> [Statement] {
-        machine.externalSignals.map {
-            .assignment(name: $0.name, value: .variable(name: .name(for: $0)))
+        let variables = names.compactMap { VariableName(rawValue: $0) }
+        guard names.count == variables.count else {
+            return nil
         }
+        guard let block = Block(rawValue: String(value.dropFirst(sensitivityList.count))) else {
+            return nil
+        }
+        self.sensitivityList = variables
+        self.code = block
     }
 
 }

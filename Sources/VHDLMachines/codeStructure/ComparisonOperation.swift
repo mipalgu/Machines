@@ -1,4 +1,4 @@
-// SuspensionCommand.swift
+// ComparisonOperation.swift
 // Machines
 // 
 // Created by Morgan McColl.
@@ -54,94 +54,67 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-/// The suspension command bit representations.
-public enum SuspensionCommand: RawRepresentable, CaseIterable, Equatable, Hashable, Codable, Sendable {
+public enum ComparisonOperation: RawRepresentable, Equatable, Hashable, Codable, Sendable {
 
-    /// Null command.
-    case null
+    case lessThan(lhs: Expression, rhs: Expression)
 
-    /// Restart a machine.
-    case restart
+    case lessThanOrEqual(lhs: Expression, rhs: Expression)
 
-    /// Suspend a machine.
-    case suspend
+    case greaterThan(lhs: Expression, rhs: Expression)
 
-    /// Resume a machine.
-    case resume
+    case greaterThanOrEqual(lhs: Expression, rhs: Expression)
 
-    /// The raw value is a string.
-    public typealias RawValue = String
+    case equality(lhs: Expression, rhs: Expression)
 
-    /// The binary representations of these commands.
-    public static var bitRepresentation: [SuspensionCommand: VectorLiteral]? {
-        let all = SuspensionCommand.allCases.sorted { $0.rawValue < $1.rawValue }
-        guard let bitsRequired = BitLiteral.bitsRequired(for: all.count - 1) else {
-            return nil
-        }
-        let bits = all.enumerated().map {
-            ($1, VectorLiteral.bits(value: BitLiteral.bitVersion(of: $0, bitsRequired: bitsRequired)))
-        }
-        return Dictionary(uniqueKeysWithValues: bits)
-    }
-
-    /// The type of the signal that represents these commands.
-    @inlinable public static var bitsType: SignalType? {
-        guard let bitsRequired = BitLiteral.bitsRequired(for: SuspensionCommand.allCases.count - 1) else {
-            return nil
-        }
-        return .ranged(type: .stdLogicVector(size: .downto(upper: bitsRequired - 1, lower: 0)))
-    }
-
-    public static var suspensionConstants: [ConstantSignal] {
-        guard let commands = SuspensionCommand.bitRepresentation, let type = SuspensionCommand.bitsType else {
-            fatalError("Failed to create suspension commands.")
-        }
-        let constants = commands.sorted { $0.key.rawValue < $1.key.rawValue }.compactMap {
-            ConstantSignal(
-                name: VariableName(text: $0.rawValue), type: type, value: .literal(value: .vector(value: $1))
-            )
-        }
-        guard constants.count == commands.count else {
-            fatalError("Failed to convert suspension commands to constants.")
-        }
-        return constants
-    }
-
-    /// The VHDL constant labels for these commands.
-    @inlinable public var rawValue: String {
+    public var rawValue: String {
         switch self {
-        case .null:
-            return VariableName.nullCommand.rawValue
-        case .restart:
-            return VariableName.restartCommand.rawValue
-        case .suspend:
-            return VariableName.suspendCommand.rawValue
-        case .resume:
-            return VariableName.resumeCommand.rawValue
+        case .lessThan(let lhs, let rhs):
+            return "\(lhs.rawValue) < \(rhs.rawValue)"
+        case .lessThanOrEqual(let lhs, let rhs):
+            return "\(lhs.rawValue) <= \(rhs.rawValue)"
+        case .greaterThan(let lhs, let rhs):
+            return "\(lhs.rawValue) > \(rhs.rawValue)"
+        case .greaterThanOrEqual(let lhs, let rhs):
+            return "\(lhs.rawValue) >= \(rhs.rawValue)"
+        case .equality(let lhs, let rhs):
+            return "\(lhs.rawValue) = \(rhs.rawValue)"
         }
     }
 
-    /// Initialise this command from it's label.
-    /// - Parameter rawValue: The VHDL label for the command.
-    @inlinable
     public init?(rawValue: String) {
         let trimmedString = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmedString.count < 256 else {
+            return nil
+        }
+        let value = trimmedString.uptoSemicolon
         guard
-            let maxSize = Self.allCases.map({ $0.rawValue.count }).max(),
-            trimmedString.count <= maxSize,
-            let command = VariableName(rawValue: trimmedString)
+            let (operation, components) = ["<=", ">=", "<", ">", "="].lazy.compactMap(
+                { (op: String) -> (String, [String])? in
+                    let components = value.components(separatedBy: op)
+                        .map { $0.trimmingCharacters(in: .whitespaces) }
+                        .filter { !$0.isEmpty }
+                    guard components.count == 2 else {
+                        return nil
+                    }
+                    return (op, components)
+                }
+            ).first,
+            let lhs = Expression(rawValue: components[0]),
+            let rhs = Expression(rawValue: components[1])
         else {
             return nil
         }
-        switch command {
-        case .nullCommand:
-            self = .null
-        case .restartCommand:
-            self = .restart
-        case .suspendCommand:
-            self = .suspend
-        case .resumeCommand:
-            self = .resume
+        switch operation {
+        case "<":
+            self = .lessThan(lhs: lhs, rhs: rhs)
+        case "<=":
+            self = .lessThanOrEqual(lhs: lhs, rhs: rhs)
+        case ">":
+            self = .greaterThan(lhs: lhs, rhs: rhs)
+        case ">=":
+            self = .greaterThanOrEqual(lhs: lhs, rhs: rhs)
+        case "=":
+            self = .equality(lhs: lhs, rhs: rhs)
         default:
             return nil
         }

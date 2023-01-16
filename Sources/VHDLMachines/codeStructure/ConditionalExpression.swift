@@ -56,31 +56,19 @@
 
 public enum ConditionalExpression: RawRepresentable, Equatable, Hashable, Codable, Sendable {
 
-    case lessThan(lhs: Expression, rhs: Expression)
-
-    case lessThanOrEqual(lhs: Expression, rhs: Expression)
-
-    case greaterThan(lhs: Expression, rhs: Expression)
-
-    case greaterThanOrEqual(lhs: Expression, rhs: Expression)
-
-    case equality(lhs: Expression, rhs: Expression)
+    case comparison(value: ComparisonOperation)
 
     case after(value: AfterStatement)
 
+    case edge(value: EdgeCondition)
+
     public var rawValue: String {
         switch self {
-        case .lessThan(let lhs, let rhs):
-            return "\(lhs.rawValue) < \(rhs.rawValue)"
-        case .lessThanOrEqual(let lhs, let rhs):
-            return "\(lhs.rawValue) <= \(rhs.rawValue)"
-        case .greaterThan(let lhs, let rhs):
-            return "\(lhs.rawValue) > \(rhs.rawValue)"
-        case .greaterThanOrEqual(let lhs, let rhs):
-            return "\(lhs.rawValue) >= \(rhs.rawValue)"
-        case .equality(let lhs, let rhs):
-            return "\(lhs.rawValue) = \(rhs.rawValue)"
+        case .comparison(let value):
+            return value.rawValue
         case .after(let value):
+            return value.rawValue
+        case .edge(let value):
             return value.rawValue
         }
     }
@@ -99,37 +87,15 @@ public enum ConditionalExpression: RawRepresentable, Equatable, Hashable, Codabl
             self = .after(value: afterStatement)
             return
         }
-        guard
-            let (operation, components) = ["<=", ">=", "<", ">", "="].lazy.compactMap(
-                { (op: String) -> (String, [String])? in
-                    let components = value.components(separatedBy: op)
-                        .map { $0.trimmingCharacters(in: .whitespaces) }
-                        .filter { !$0.isEmpty }
-                    guard components.count == 2 else {
-                        return nil
-                    }
-                    return (op, components)
-                }
-            ).first,
-            let lhs = Expression(rawValue: components[0]),
-            let rhs = Expression(rawValue: components[1])
-        else {
-            return nil
+        if let edge = EdgeCondition(rawValue: value) {
+            self = .edge(value: edge)
+            return
         }
-        switch operation {
-        case "<":
-            self = .lessThan(lhs: lhs, rhs: rhs)
-        case "<=":
-            self = .lessThanOrEqual(lhs: lhs, rhs: rhs)
-        case ">":
-            self = .greaterThan(lhs: lhs, rhs: rhs)
-        case ">=":
-            self = .greaterThanOrEqual(lhs: lhs, rhs: rhs)
-        case "=":
-            self = .equality(lhs: lhs, rhs: rhs)
-        default:
-            return nil
+        if let comparison = ComparisonOperation(rawValue: value) {
+            self = .comparison(value: comparison)
+            return
         }
+        return nil
     }
 
 }

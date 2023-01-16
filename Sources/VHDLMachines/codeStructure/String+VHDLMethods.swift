@@ -114,6 +114,29 @@ extension String {
         return expressions
     }
 
+    var uptoBalancedBracket: String? {
+        var bracketCount = 0
+        var hasBrackets = false
+        for (i, c) in self.enumerated() {
+            if c == "(" {
+                bracketCount += 1
+                hasBrackets = true
+                continue
+            }
+            if c == ")" {
+                guard hasBrackets, bracketCount > 0 else {
+                    return nil
+                }
+                bracketCount -= 1
+                if bracketCount == 0 {
+                    return String(self[self.startIndex...self.index(self.startIndex, offsetBy: i)])
+                }
+                continue
+            }
+        }
+        return self
+    }
+
     /// The string up to the first semicolon.
     @usableFromInline var uptoSemicolon: String {
         guard let semicolonIndex = self.firstIndex(where: { $0 == ";" }) else {

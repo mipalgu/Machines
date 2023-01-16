@@ -109,6 +109,14 @@ public struct VariableName: RawRepresentable,
 
     public static let `internal` = VariableName(text: "Internal")
 
+    public static let nullCommand = VariableName(text: "COMMAND_NULL")
+
+    public static let restartCommand = VariableName(text: "COMMAND_RESTART")
+
+    public static let resumeCommand = VariableName(text: "COMMAND_RESUME")
+
+    public static let suspendCommand = VariableName(text: "COMMAND_SUSPEND")
+
     /// The variable name.
     public let rawValue: String
 

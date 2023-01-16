@@ -1,4 +1,4 @@
-// Statement.swift
+// EdgeCondition.swift
 // Machines
 // 
 // Created by Morgan McColl.
@@ -54,32 +54,27 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-public enum Statement: RawRepresentable, Equatable, Hashable, Codable, Sendable {
+public enum EdgeCondition: RawRepresentable, Equatable, Hashable, Codable, Sendable {
 
-    case constant(value: ConstantSignal)
+    case falling(expression: Expression)
 
-    case definition(signal: LocalSignal)
+    case rising(expression: Expression)
 
-    case assignment(name: VariableName, value: Expression)
-
-    case expression(value: Expression)
-
-    case externalDefinition(value: ExternalSignal)
-
-    public typealias RawValue = String
-
-    @inlinable public var rawValue: String {
+    public var expression: Expression {
         switch self {
-        case .constant(let value):
-            return value.rawValue
-        case .definition(let signal):
-            return signal.rawValue
-        case .assignment(let name, let value):
-            return "\(name) := \(value.rawValue)"
-        case .expression(let value):
-            return value.rawValue
-        case .externalDefinition(let value):
-            return value.rawValue
+        case .falling(let expression):
+            return expression
+        case .rising(let expression):
+            return expression
+        }
+    }
+
+    public var rawValue: String {
+        switch self {
+        case .falling(let expression):
+            return "falling_edge(\(expression.rawValue))"
+        case .rising(let expression):
+            return "rising_edge(\(expression.rawValue))"
         }
     }
 
@@ -89,52 +84,29 @@ public enum Statement: RawRepresentable, Equatable, Hashable, Codable, Sendable 
             return nil
         }
         let value = trimmedString.lowercased()
-        guard !value.contains("<=") else {
-            let components = value.components(separatedBy: "<=")
+        if value.lowercased().hasPrefix("rising_edge") {
+            let expression = trimmedString.dropFirst("rising_edge".count).trimmingCharacters(in: .whitespaces)
             guard
-                components.count == 2,
-                let name = VariableName(rawValue: components[0]),
-                let exp = Expression(rawValue: components[1].trimmingCharacters(in: .whitespacesAndNewlines))
+                expression.hasPrefix("("),
+                expression.hasSuffix(")"),
+                let expression = Expression(rawValue: String(expression.dropFirst().dropLast()))
             else {
                 return nil
             }
-            self = .assignment(name: name, value: exp)
-            return
-        }
-        guard !value.contains("constant ") else {
-            guard let constant = ConstantSignal(rawValue: value) else {
+            self = .rising(expression: expression)
+        } else if value.lowercased().hasPrefix("falling_edge") {
+            let expression = trimmedString.dropFirst("falling_edge".count)
+                .trimmingCharacters(in: .whitespaces)
+            guard
+                expression.hasPrefix("("),
+                expression.hasSuffix(")"),
+                let expression = Expression(rawValue: String(expression.dropFirst().dropLast()))
+            else {
                 return nil
             }
-            self = .constant(value: constant)
-            return
-        }
-        guard !value.contains("signal ") else {
-            guard let signal = LocalSignal(rawValue: value) else {
-                return nil
-            }
-            self = .definition(signal: signal)
-            return
-        }
-        let modes = Set(Mode.allCases.map(\.rawValue))
-        guard
-            !value.components(separatedBy: .whitespacesAndNewlines).contains(where: { modes.contains($0) })
-        else {
-            guard let external = ExternalSignal(rawValue: value) else {
-                return nil
-            }
-            self = .externalDefinition(value: external)
-            return
-        }
-        if let exp = Expression(rawValue: value) {
-            self = .expression(value: exp)
-            return
-        }
-        return nil
-    }
-
-    public static func readSnapshots(machine: Machine) -> [Statement] {
-        machine.externalSignals.map {
-            .assignment(name: $0.name, value: .variable(name: .name(for: $0)))
+            self = .falling(expression: expression)
+        } else {
+            return nil
         }
     }
 

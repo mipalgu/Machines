@@ -1,4 +1,4 @@
-// Statement.swift
+// Block.swift
 // Machines
 // 
 // Created by Morgan McColl.
@@ -54,88 +54,27 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-public enum Statement: RawRepresentable, Equatable, Hashable, Codable, Sendable {
+indirect public enum Block: RawRepresentable, Equatable, Hashable, Codable, Sendable {
 
-    case constant(value: ConstantSignal)
+    case statements(lines: [Statement])
 
-    case definition(signal: LocalSignal)
+    case process(block: ProcessBlock)
 
-    case assignment(name: VariableName, value: Expression)
+    case ifStatement(condition: Expression, ifBlock: Block)
 
-    case expression(value: Expression)
+    case ifElse(condition: Expression, ifBlock: Block, elseBlock: Block)
 
-    case externalDefinition(value: ExternalSignal)
-
-    public typealias RawValue = String
-
-    @inlinable public var rawValue: String {
+    public var rawValue: String {
         switch self {
-        case .constant(let value):
-            return value.rawValue
-        case .definition(let signal):
-            return signal.rawValue
-        case .assignment(let name, let value):
-            return "\(name) := \(value.rawValue)"
-        case .expression(let value):
-            return value.rawValue
-        case .externalDefinition(let value):
-            return value.rawValue
+        case .process(let block):
+            return block.rawValue
+        default:
+            return ""
         }
     }
 
     public init?(rawValue: String) {
-        let trimmedString = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard trimmedString.count < 256 else {
-            return nil
-        }
-        let value = trimmedString.lowercased()
-        guard !value.contains("<=") else {
-            let components = value.components(separatedBy: "<=")
-            guard
-                components.count == 2,
-                let name = VariableName(rawValue: components[0]),
-                let exp = Expression(rawValue: components[1].trimmingCharacters(in: .whitespacesAndNewlines))
-            else {
-                return nil
-            }
-            self = .assignment(name: name, value: exp)
-            return
-        }
-        guard !value.contains("constant ") else {
-            guard let constant = ConstantSignal(rawValue: value) else {
-                return nil
-            }
-            self = .constant(value: constant)
-            return
-        }
-        guard !value.contains("signal ") else {
-            guard let signal = LocalSignal(rawValue: value) else {
-                return nil
-            }
-            self = .definition(signal: signal)
-            return
-        }
-        let modes = Set(Mode.allCases.map(\.rawValue))
-        guard
-            !value.components(separatedBy: .whitespacesAndNewlines).contains(where: { modes.contains($0) })
-        else {
-            guard let external = ExternalSignal(rawValue: value) else {
-                return nil
-            }
-            self = .externalDefinition(value: external)
-            return
-        }
-        if let exp = Expression(rawValue: value) {
-            self = .expression(value: exp)
-            return
-        }
-        return nil
-    }
-
-    public static func readSnapshots(machine: Machine) -> [Statement] {
-        machine.externalSignals.map {
-            .assignment(name: $0.name, value: .variable(name: .name(for: $0)))
-        }
+        nil
     }
 
 }

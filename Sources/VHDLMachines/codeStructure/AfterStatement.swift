@@ -144,7 +144,7 @@ public struct AfterStatement: RawRepresentable, Equatable, Hashable, Codable, Se
     public let period: Period
 
     public var rawValue: String {
-        ConditionalExpression.greaterThanOrEqual(
+        ComparisonOperation.greaterThanOrEqual(
             lhs: .variable(name: .ringletCounter),
             rhs: .precedence(value: .multiplication(lhs: amount, rhs: .variable(name: period.rawValue)))
         ).rawValue
@@ -152,7 +152,7 @@ public struct AfterStatement: RawRepresentable, Equatable, Hashable, Codable, Se
 
     public init?(rawValue: String) {
         guard
-            let expression = ConditionalExpression(rawValue: rawValue),
+            let expression = ComparisonOperation(rawValue: rawValue),
             case .greaterThanOrEqual(let lhs, let rhs) = expression,
             case .variable(let name) = lhs,
             name == .ringletCounter,
