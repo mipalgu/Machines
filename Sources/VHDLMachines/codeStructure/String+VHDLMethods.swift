@@ -70,6 +70,15 @@ extension String {
         "    "
     }
 
+    var withoutComments: String {
+        var newString = self
+        let commentIndexes = newString.indexes(startingWith: "--", endingWith: "\n").reversed()
+        commentIndexes.forEach {
+            newString.removeSubrange($0...$1)
+        }
+        return newString
+    }
+
     func indent(amount: Int) -> String {
         let indentAmount = String(repeating: String.tab, count: amount)
         return self.components(separatedBy: .newlines).map { indentAmount + $0 }.joined(separator: "\n")

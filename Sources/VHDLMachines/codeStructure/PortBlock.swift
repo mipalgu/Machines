@@ -84,11 +84,8 @@ public struct PortBlock: RawRepresentable, Equatable, Hashable, Codable, Sendabl
             }
             signalsString = signalsString[nextIndex...].trimmingCharacters(in: .whitespacesAndNewlines)
         }
-        let commentIndexes = signalsString.indexes(startingWith: "--", endingWith: "\n").reversed()
-        commentIndexes.forEach {
-            signalsString.removeSubrange($0...$1)
-        }
-        let signals = signalsString.components(separatedBy: ";")
+        let signalsWithoutComments = signalsString.withoutComments
+        let signals = signalsWithoutComments.components(separatedBy: ";")
         let externalSignals = signals.compactMap(ExternalSignal.init(rawValue: ))
         guard signals.count == externalSignals.count else {
             return nil
