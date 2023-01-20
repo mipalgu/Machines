@@ -129,7 +129,9 @@ final class StateTests: XCTestCase {
             LocalSignal(
                 type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),
                 name: VariableName.xs,
-                defaultValue: .literal(value: .vector(value: .hexademical(value: [.five]))),
+                defaultValue: .literal(value: .vector(
+                    value: .hexademical(value: HexVector(values: [.five]))
+                )),
                 comment: Comment.signalXs
             )
         ]
@@ -139,7 +141,9 @@ final class StateTests: XCTestCase {
                 LocalSignal(
                     type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),
                     name: VariableName.xs,
-                    defaultValue: .literal(value: .vector(value: .hexademical(value: [.five]))),
+                    defaultValue: .literal(value: .vector(value: .hexademical(
+                        value: HexVector(values: [.five])
+                    ))),
                     comment: Comment.signalXs
                 )
             ]

@@ -76,47 +76,65 @@ final class ConstantSignalTests: XCTestCase {
             ConstantSignal(
                 name: VariableName.checkTransition,
                 type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),
-                value: .literal(value: .vector(value: .logics(value: [.low, .low, .low, .low])))
+                value: .literal(value: .vector(value: .logics(
+                    value: LogicVector(values: [.low, .low, .low, .low])
+                )))
             ),
             ConstantSignal(
                 name: VariableName.internal,
                 type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),
-                value: .literal(value: .vector(value: .logics(value: [.low, .low, .low, .high])))
+                value: .literal(value: .vector(value: .logics(
+                    value: LogicVector(values: [.low, .low, .low, .high])
+                )))
             ),
             ConstantSignal(
                 name: VariableName.noOnEntry,
                 type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),
-                value: .literal(value: .vector(value: .logics(value: [.low, .low, .high, .low])))
+                value: .literal(value: .vector(value: .logics(
+                    value: LogicVector(values: [.low, .low, .high, .low])
+                )))
             ),
             ConstantSignal(
                 name: VariableName.onEntry,
                 type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),
-                value: .literal(value: .vector(value: .logics(value: [.low, .low, .high, .high])))
+                value: .literal(value: .vector(value: .logics(
+                    value: LogicVector(values: [.low, .low, .high, .high])
+                )))
             ),
             ConstantSignal(
                 name: VariableName.onExit,
                 type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),
-                value: .literal(value: .vector(value: .logics(value: [.low, .high, .low, .low])))
+                value: .literal(value: .vector(value: .logics(
+                    value: LogicVector(values: [.low, .high, .low, .low])
+                )))
             ),
             ConstantSignal(
                 name: VariableName.onResume,
                 type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),
-                value: .literal(value: .vector(value: .logics(value: [.low, .high, .low, .high])))
+                value: .literal(value: .vector(value: .logics(
+                    value: LogicVector(values: [.low, .high, .low, .high])
+                )))
             ),
             ConstantSignal(
                 name: VariableName.onSuspend,
                 type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),
-                value: .literal(value: .vector(value: .logics(value: [.low, .high, .high, .low])))
+                value: .literal(value: .vector(value: .logics(
+                    value: LogicVector(values: [.low, .high, .high, .low])
+                )))
             ),
             ConstantSignal(
                 name: VariableName.readSnapshot,
                 type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),
-                value: .literal(value: .vector(value: .logics(value: [.low, .high, .high, .high])))
+                value: .literal(value: .vector(value: .logics(
+                    value: LogicVector(values: [.low, .high, .high, .high])
+                )))
             ),
             ConstantSignal(
                 name: VariableName.writeSnapshot,
                 type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),
-                value: .literal(value: .vector(value: .logics(value: [.high, .low, .low, .low])))
+                value: .literal(value: .vector(value: .logics(
+                    value: LogicVector(values: [.high, .low, .low, .low])
+                )))
             )
         ].compactMap { $0 }
         guard constants.count == 9 else {

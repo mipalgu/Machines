@@ -44,7 +44,9 @@ class VHDLMachinesCompilerTests: XCTestCase {
                     type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
                     name: VariableName(rawValue: "xx")!,
                     mode: .output,
-                    defaultValue: .literal(value: .vector(value: .bits(value: [.low, .low]))),
+                    defaultValue: .literal(value: .vector(value: .bits(
+                        value: BitVector(values: [.low, .low])
+                    ))),
                     comment: Comment(rawValue: "-- A variable called xx.")!
                 )
             ],
@@ -78,7 +80,9 @@ class VHDLMachinesCompilerTests: XCTestCase {
                 LocalSignal(
                     type: .ranged(type: .stdLogicVector(size: .downto(upper: 2, lower: 0))),
                     name: VariableName(rawValue: "machineSignal2")!,
-                    defaultValue: .literal(value: .vector(value: .bits(value: [.high, .high, .high]))),
+                    defaultValue: .literal(value: .vector(value: .bits(
+                        value: BitVector(values: [.high, .high, .high])
+                    ))),
                     comment: Comment(rawValue: "-- machine signal 2")!
                 )
             ],
@@ -93,7 +97,9 @@ class VHDLMachinesCompilerTests: XCTestCase {
                 Parameter(
                     type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
                     name: VariableName(rawValue: "parXs")!,
-                    defaultValue: .literal(value: .vector(value: .bits(value: [.low, .high]))),
+                    defaultValue: .literal(value: .vector(value: .bits(
+                        value: BitVector(values: [.low, .high])
+                    ))),
                     comment: Comment(rawValue: "-- Parameter parXs")!
                 )
             ],

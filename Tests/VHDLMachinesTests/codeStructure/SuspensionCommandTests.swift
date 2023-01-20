@@ -72,10 +72,10 @@ final class SuspensionCommandTests: XCTestCase {
     /// Test bit representation is correct.
     func testBitRepresentation() {
         let expected: [SuspensionCommand: VectorLiteral] = [
-            .null: .bits(value: [.low, .low]),
-            .restart: .bits(value: [.low, .high]),
-            .resume: .bits(value: [.high, .low]),
-            .suspend: .bits(value: [.high, .high])
+            .null: .bits(value: BitVector(values: [.low, .low])),
+            .restart: .bits(value: BitVector(values: [.low, .high])),
+            .resume: .bits(value: BitVector(values: [.high, .low])),
+            .suspend: .bits(value: BitVector(values: [.high, .high]))
         ]
         XCTAssertEqual(SuspensionCommand.bitRepresentation, expected)
     }
