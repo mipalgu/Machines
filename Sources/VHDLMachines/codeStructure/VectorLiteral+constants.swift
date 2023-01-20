@@ -64,7 +64,9 @@ public extension VectorLiteral {
         }
         return Dictionary(
             uniqueKeysWithValues: states.sorted { $0.name < $1.name }.enumerated().map {
-                ($1, VectorLiteral.bits(value: BitLiteral.bitVersion(of: $0, bitsRequired: bitsRequired)))
+                ($1, VectorLiteral.bits(value: BitVector(
+                    values: BitLiteral.bitVersion(of: $0, bitsRequired: bitsRequired)
+                )))
             }
         )
     }

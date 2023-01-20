@@ -148,7 +148,9 @@ public struct AfterStatement: RawRepresentable, Equatable, Hashable, Codable, Se
     public var rawValue: String {
         ComparisonOperation.greaterThanOrEqual(
             lhs: .variable(name: .ringletCounter),
-            rhs: .precedence(value: .multiplication(lhs: amount, rhs: .variable(name: period.rawValue)))
+            rhs: .precedence(value: .binary(
+                operation: .multiplication(lhs: amount, rhs: .variable(name: period.rawValue))
+            ))
         ).rawValue
     }
 
@@ -159,7 +161,8 @@ public struct AfterStatement: RawRepresentable, Equatable, Hashable, Codable, Se
             case .variable(let name) = lhs,
             name == .ringletCounter,
             case .precedence(let value) = rhs,
-            case .multiplication(let lhs, let rhs) = value,
+            case .binary(let operation) = value,
+            case .multiplication(let lhs, let rhs) = operation,
             case .variable(let name) = rhs,
             let period = Period(rawValue: name)
         else {

@@ -69,7 +69,9 @@ public extension LocalSignal {
                 name: .previousRinglet,
                 defaultValue: .literal(
                     value: .vector(
-                        value: .logics(value: [LogicLiteral](repeating: .highImpedance, count: range.size))
+                        value: .logics(value:  LogicVector(
+                            values: [LogicLiteral](repeating: .highImpedance, count: range.size)
+                        ))
                     )
                 ),
                 comment: nil

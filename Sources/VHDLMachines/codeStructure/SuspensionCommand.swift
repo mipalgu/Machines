@@ -81,7 +81,9 @@ public enum SuspensionCommand: RawRepresentable, CaseIterable, Equatable, Hashab
             return nil
         }
         let bits = all.enumerated().map {
-            ($1, VectorLiteral.bits(value: BitLiteral.bitVersion(of: $0, bitsRequired: bitsRequired)))
+            ($1, VectorLiteral.bits(value: BitVector(
+                values: BitLiteral.bitVersion(of: $0, bitsRequired: bitsRequired)
+            )))
         }
         return Dictionary(uniqueKeysWithValues: bits)
     }

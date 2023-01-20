@@ -65,46 +65,46 @@ public extension ConstantSignal {
             let ringletLength = ConstantSignal(
                 name: .ringletLength,
                 type: .real,
-                value: .multiplication(
+                value: .binary(operation: .multiplication(
                     lhs: .literal(value: .decimal(value: 5.0)), rhs: .variable(name: .clockPeriod)
-                )
+                ))
             ),
             let ringletPerPs = ConstantSignal(
                 name: .ringletPerPs,
                 type: .real,
-                value: .division(
+                value: .binary(operation: .division(
                     lhs: .literal(value: .decimal(value: 1.0)), rhs: .variable(name: .ringletLength)
-                )
+                ))
             ),
             let ringletPerNs = ConstantSignal(
                 name: .ringletPerNs,
                 type: .real,
-                value: .multiplication(
+                value: .binary(operation: .multiplication(
                     lhs: .literal(value: .decimal(value: 1000.0)), rhs: .variable(name: .ringletPerPs)
-                )
+                ))
             ),
             let ringletPerUs = ConstantSignal(
                 name: .ringletPerUs,
                 type: .real,
-                value: .multiplication(
+                value: .binary(operation: .multiplication(
                     lhs: .literal(value: .decimal(value: 1_000_000.0)), rhs: .variable(name: .ringletPerPs)
-                )
+                ))
             ),
             let ringletPerMs = ConstantSignal(
                 name: .ringletPerMs,
                 type: .real,
-                value: .multiplication(
+                value: .binary(operation: .multiplication(
                     lhs: .literal(value: .decimal(value: 1_000_000_000.0)),
                     rhs: .variable(name: .ringletPerPs)
-                )
+                ))
             ),
             let ringletPerS = ConstantSignal(
                 name: .ringletPerS,
                 type: .real,
-                value: .multiplication(
+                value: .binary(operation: .multiplication(
                     lhs: .literal(value: .decimal(value: 1_000_000_000_000.0)),
                     rhs: .variable(name: .ringletPerPs)
-                )
+                ))
             )
         else {
             fatalError("Could not create ringlet constants.")
@@ -138,7 +138,9 @@ public extension ConstantSignal {
             ConstantSignal(
                 name: actionNames[$0],
                 type: type,
-                value: .literal(value: .vector(value: .bits(value: bitRepresentations[$0])))
+                value: .literal(value: .vector(value: .bits(
+                    value: BitVector(values: bitRepresentations[$0])
+                )))
             )
         }
         guard signals.count == actionNames.count else {
