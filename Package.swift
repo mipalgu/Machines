@@ -1,4 +1,4 @@
-// swift-tools-version:5.2
+// swift-tools-version:5.7
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -12,9 +12,9 @@ let package = Package(
     dependencies: [
         // Dependencies declare other packages that this package depends on.
         // .package(url: /* package url */, from: "1.0.0"),
-        .package(name: "swift_helpers", url: "https://github.com/mipalgu/swift_helpers.git", from: "1.0.1"),
-        .package(name: "MetaLanguage", url: "ssh://git@github.com/Morgan2010/MetaLanguage.git", .branch("main")),
-        .package(name: "VHDLParsing", url: "git@github.com:mipalgu/VHDLParsing", .branch("vhdlParsing")),
+        .package(url: "https://github.com/mipalgu/swift_helpers.git", from: "1.0.1"),
+        .package(url: "ssh://git@github.com/Morgan2010/MetaLanguage.git", branch: "main"),
+        .package(url: "git@github.com:mipalgu/VHDLParsing", from: "0.1.0"),
         .package(url: "git@github.com:mipalgu/GUUnits", from: "2.1.0")
     ],
     targets: [
