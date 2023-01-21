@@ -855,7 +855,7 @@ public struct VHDLCompiler {
     /// - Parameter includes: The includes to create.
     /// - Returns: The include statements.
     private func createIncludes(includes: [Include]) -> String {
-        includes.map { $0.rawValue + ";" }.joined(separator: "\n")
+        includes.map { $0.rawValue }.joined(separator: "\n")
     }
 
     /// Create the entity statement for the machine.

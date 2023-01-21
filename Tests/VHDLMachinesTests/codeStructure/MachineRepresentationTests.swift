@@ -67,7 +67,7 @@ final class MachineRepresentationTests: XCTestCase {
 
     func testInit() {
         XCTAssertNotNil(machine)
-        print(machine?.rawValue ?? "nil")
+        // print(machine?.rawValue ?? "nil")
     }
 
 }
