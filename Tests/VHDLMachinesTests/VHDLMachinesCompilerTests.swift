@@ -126,15 +126,15 @@ class VHDLMachinesCompilerTests: XCTestCase {
                     // "after_ms(50) or after(2) or after_rt(20000) or after_ps(x * (5 + (2 - 3)))"
                     condition: .or(
                         lhs: .after(statement: AfterStatement(
-                            amount: .literal(value: .integer(value: 50)), period: .ms
+                            amount: .literal(value: .decimal(value: 50)), period: .ms
                         )),
                         rhs: .or(
                             lhs: .after(statement: AfterStatement(
-                                amount: .literal(value: .integer(value: 2)), period: .s
+                                amount: .literal(value: .decimal(value: 2)), period: .s
                             )),
                             rhs: .or(
                                 lhs: .after(statement: AfterStatement(
-                                    amount: .literal(value: .integer(value: 20000)), period: .ringlet
+                                    amount: .literal(value: .decimal(value: 20000)), period: .ringlet
                                 )),
                                 rhs: .after(statement: AfterStatement(
                                     amount: .binary(operation: .multiplication(
@@ -182,8 +182,8 @@ class VHDLMachinesCompilerTests: XCTestCase {
             ],
             initialState: 0,
             suspendedState: 1,
-            architectureHead: "some code\n    with indentation\nend;",
-            architectureBody: "some async code\n    with indentation\nend;"
+            architectureHead: "",
+            architectureBody: ""
         )
     }
 
@@ -227,10 +227,10 @@ class VHDLMachinesCompilerTests: XCTestCase {
         VHDLMachines.State(
             name: VariableName(rawValue: name)!,
             actions: [
-                VariableName.onEntry: "x <= '1';\nxx <= '0'; -- \(name) onEntry",
+                VariableName.onEntry: "x <= '1';\nxx <= \"00\"; -- \(name) onEntry",
                 VariableName.onExit: "x <= '0'; -- \(name) OnExit",
                 VariableName.onResume: "x <= '0'; -- \(name) OnResume",
-                VariableName.onSuspend: "xx <= '1'; -- \(name) onSuspend",
+                VariableName.onSuspend: "xx <= \"11\"; -- \(name) onSuspend",
                 VariableName.internal: "x <= '1'; -- \(name) Internal"
             ],
             actionOrder: [
@@ -366,7 +366,7 @@ class VHDLMachinesCompilerTests: XCTestCase {
             constant COMMAND_SUSPEND: std_logic_vector(1 downto 0) := "10";
             constant COMMAND_RESUME: std_logic_vector(1 downto 0) := "11";
             -- After Variables
-            shared variable ringlet_counter: natural := 0;
+            signal ringlet_counter: natural := 0;
             constant clockPeriod: real := 20000.00; -- ps
             constant ringletLength: real := 5.0 * clockPeriod;
             constant RINGLETS_PER_PS: real := 1.0 / ringletLength;
@@ -374,6 +374,7 @@ class VHDLMachinesCompilerTests: XCTestCase {
             constant RINGLETS_PER_US: real := 1000000.0 * RINGLETS_PER_PS;
             constant RINGLETS_PER_MS: real := 1000000000.0 * RINGLETS_PER_PS;
             constant RINGLETS_PER_S: real := 1000000000000.0 * RINGLETS_PER_PS;
+            constant ZERO: real := 0.0;
             -- Snapshot of External Signals and Variables
             signal x: std_logic;
             signal xx: std_logic_vector(1 downto 0);
@@ -386,15 +387,12 @@ class VHDLMachinesCompilerTests: XCTestCase {
             -- Machine Signals
             signal machineSignal1: std_logic;
             signal machineSignal2: std_logic_vector(2 downto 0) := "111"; -- machine signal 2
+            -- Transitions
+            signal STATE_Initial_Transition0: boolean := false;
             -- User-Specific Code for Architecture Head
-            some code
-                with indentation
-            end;
+
         begin
             -- User-Specific Code for Architecture Body
-            some async code
-                with indentation
-            end;
 
             process(clk)
             begin
@@ -514,10 +512,10 @@ class VHDLMachinesCompilerTests: XCTestCase {
                                     if (false) then
                                         targetState <= STATE_Suspended;
                                         internalState <= OnExit;
-                                    elsif (((ringlet_counter >= (50.0) * RINGLETS_PER_MS) or (ringlet_counter >= (2.0) * RINGLETS_PER_S) or (ringlet_counter >= (20000.0)) or (ringlet_counter >= (x * (5 + (2 - 3))) * RINGLETS_PER_PS)) and (not (false))) then
+                                    elsif ((((ringlet_counter >= (50.0) * RINGLETS_PER_MS) or (50.0) * RINGLETS_PER_MS < ZERO) or ((ringlet_counter >= (2.0) * RINGLETS_PER_S) or (2.0) * RINGLETS_PER_S < ZERO) or ((ringlet_counter >= (20000.0)) or (20000.0) < ZERO) or ((ringlet_counter >= (x * (5 + (2 - 3))) * RINGLETS_PER_PS)) or (x * (5 + (2 - 3))) * RINGLETS_PER_PS) < ZERO) and (not (false))) then
                                         targetState <= STATE_Suspended;
                                         internalState <= OnExit;
-                                    elsif ((true) and (not (((ringlet_counter >= (50.0) * RINGLETS_PER_MS) or (ringlet_counter >= (2.0) * RINGLETS_PER_S) or (ringlet_counter >= (20000.0)) or (ringlet_counter >= (x * (5 + (2 - 3))) * RINGLETS_PER_PS)) and (not (false))))) then
+                                    elsif ((true) and (not ((((ringlet_counter >= (50.0) * RINGLETS_PER_MS) or (50.0) * RINGLETS_PER_MS < ZERO) or ((ringlet_counter >= (2.0) * RINGLETS_PER_S) or (2.0) * RINGLETS_PER_S < ZERO) or ((ringlet_counter >= (20000.0)) or (20000.0) < ZERO) or ((ringlet_counter >= (x * (5 + (2 - 3))) * RINGLETS_PER_PS)) or (x * (5 + (2 - 3))) * RINGLETS_PER_PS) < ZERO) and (not (false))))) then
                                         targetState <= STATE_Suspended;
                                         internalState <= OnExit;
                                     else
@@ -569,7 +567,7 @@ class VHDLMachinesCompilerTests: XCTestCase {
                             internalState <= ReadSnapshot;
                             previousRinglet <= currentState;
                             currentState <= targetState;
-                            if (currentState = STATE_Suspended)
+                            if (currentState = STATE_Suspended) then
                                 OUTPUT_retX <= retX;
                                 OUTPUT_retXs <= retXs;
                             end if;

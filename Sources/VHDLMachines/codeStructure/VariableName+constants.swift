@@ -81,7 +81,7 @@ public extension VariableName {
 
     static var ringletPerS: VariableName { VariableName(rawValue: "RINGLETS_PER_S")! }
 
-    static var ringletCounter: VariableName { VariableName(rawValue: "ringletCounter")! }
+    static var ringletCounter: VariableName { VariableName(rawValue: "ringlet_counter")! }
 
     static var suspended: VariableName { VariableName(rawValue: "suspended")! }
 

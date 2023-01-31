@@ -722,11 +722,11 @@ public struct VHDLCompiler {
     ///   - transitionBefore: The previous transition.
     /// - Returns: The transition expression.
     private func transitionExpression(expression: String, transitionBefore: String?) -> String {
-        let transformedExpression = replaceAfters(condition: expression)
+        // let transformedExpression = replaceAfters(condition: expression)
         guard let before = transitionBefore else {
-            return transformedExpression
+            return expression
         }
-        return "(\(transformedExpression)) and (not (\(before)))"
+        return "(\(expression)) and (not (\(before)))"
     }
 
     /// Generate the transition VHDL code for an array of order transitions.
@@ -1405,10 +1405,27 @@ public struct VHDLCompiler {
     /// Check if a condition has an after statement.
     /// - Parameter condition: The condition to check.
     /// - Returns: Whether the condition has an after statement.
-    private func hasAfter(condition: String) -> Bool {
-        condition.contains("after(") || condition.contains("after_ps(") ||
-            condition.contains("after_ns(") || condition.contains("after_us(") ||
-            condition.contains("after_ms(") || condition.contains("after_rt(")
+    private func hasAfter(condition: TransitionCondition) -> Bool {
+        switch condition {
+        case .after:
+            return true
+        case .and(let lhs, let rhs):
+            return hasAfter(condition: lhs) || hasAfter(condition: rhs)
+        case .or(let lhs, let rhs):
+            return hasAfter(condition: lhs) || hasAfter(condition: rhs)
+        case .not(let condition):
+            return hasAfter(condition: condition)
+        case .nand(let lhs, let rhs):
+            return hasAfter(condition: lhs) || hasAfter(condition: rhs)
+        case .nor(let lhs, let rhs):
+            return hasAfter(condition: lhs) || hasAfter(condition: rhs)
+        case .xor(let lhs, let rhs):
+            return hasAfter(condition: lhs) || hasAfter(condition: rhs)
+        case .xnor(let lhs, let rhs):
+            return hasAfter(condition: lhs) || hasAfter(condition: rhs)
+        default:
+            return false
+        }
     }
 
     /// Check if a state has an after statement in its transitions.
@@ -1418,7 +1435,7 @@ public struct VHDLCompiler {
     /// - Returns: True if the state has an after statement in its transitions.
     private func hasAfterInTransition(state index: Int, machine: Machine) -> Bool {
         let transitions = machine.transitions.filter { $0.source == index }
-        return transitions.contains { hasAfter(condition: $0.condition.rawValue) }
+        return transitions.contains { hasAfter(condition: $0.condition) }
     }
 
 }

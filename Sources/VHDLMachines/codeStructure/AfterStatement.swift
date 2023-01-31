@@ -156,13 +156,15 @@ public struct AfterStatement: RawRepresentable, Equatable, Hashable, Codable, Se
     public var rawValue: String {
         if case .ringlet = period {
             return ComparisonOperation.greaterThanOrEqual(
-                lhs: .variable(name: .ringletCounter), rhs: amount
+                lhs: .variable(name: .ringletCounter), rhs: .precedence(value: amount)
             ).rawValue
         }
         return ComparisonOperation.greaterThanOrEqual(
             lhs: .variable(name: .ringletCounter),
             rhs: .precedence(value: .binary(
-                operation: .multiplication(lhs: amount, rhs: .variable(name: period.rawValue))
+                operation: .multiplication(
+                    lhs: .precedence(value: amount), rhs: .variable(name: period.rawValue)
+                )
             ))
         ).rawValue
     }
