@@ -387,14 +387,16 @@ class VHDLMachinesCompilerTests: XCTestCase {
             -- Machine Signals
             signal machineSignal1: std_logic;
             signal machineSignal2: std_logic_vector(2 downto 0) := "111"; -- machine signal 2
-            -- Transitions
-            signal STATE_Initial_Transition0: boolean := false;
             -- User-Specific Code for Architecture Head
-
         begin
             -- User-Specific Code for Architecture Body
-
             process(clk)
+                variable STATE_Initial_Transition0: boolean := false;
+                variable STATE_Initial_Transition1: boolean := false;
+                variable STATE_Initial_Transition2: boolean := false;
+                variable STATE_Suspended_Transition0: boolean := false;
+                variable STATE_Suspended_Transition1: boolean := false;
+                variable STATE_Suspended_Transition2: boolean := false;
             begin
                 if (rising_edge(clk)) then
                     case internalState is
@@ -460,16 +462,16 @@ class VHDLMachinesCompilerTests: XCTestCase {
                                 when STATE_Initial =>
                                     x <= '0'; -- Initial OnResume
                                     x <= '1';
-                                    xx <= '0'; -- Initial onEntry
-                                    ringlet_counter := 0;
+                                    xx <= "00"; -- Initial onEntry
+                                    ringlet_counter <= 0;
                                 when STATE_Suspended =>
                                     x <= '0'; -- Suspended OnResume
                                     x <= '1';
-                                    xx <= '0'; -- Suspended onEntry
+                                    xx <= "00"; -- Suspended onEntry
                                 when STATE_State0 =>
                                     x <= '0'; -- State0 OnResume
                                     x <= '1';
-                                    xx <= '0'; -- State0 onEntry
+                                    xx <= "00"; -- State0 onEntry
                                 when others =>
                                     null;
                             end case;
@@ -477,29 +479,29 @@ class VHDLMachinesCompilerTests: XCTestCase {
                         when OnSuspend =>
                             case suspendedFrom is
                                 when STATE_Initial =>
-                                    xx <= '1'; -- Initial onSuspend
+                                    xx <= "11"; -- Initial onSuspend
                                 when STATE_Suspended =>
-                                    xx <= '1'; -- Suspended onSuspend
+                                    xx <= "11"; -- Suspended onSuspend
                                 when STATE_State0 =>
-                                    xx <= '1'; -- State0 onSuspend
+                                    xx <= "11"; -- State0 onSuspend
                                 when others =>
                                     null;
                             end case;
                             x <= '1';
-                            xx <= '0'; -- Suspended onEntry
+                            xx <= "00"; -- Suspended onEntry
                             internalState <= CheckTransition;
                         when OnEntry =>
                             case currentState is
                                 when STATE_Initial =>
                                     x <= '1';
-                                    xx <= '0'; -- Initial onEntry
-                                    ringlet_counter := 0;
+                                    xx <= "00"; -- Initial onEntry
+                                    ringlet_counter <= 0;
                                 when STATE_Suspended =>
                                     x <= '1';
-                                    xx <= '0'; -- Suspended onEntry
+                                    xx <= "00"; -- Suspended onEntry
                                 when STATE_State0 =>
                                     x <= '1';
-                                    xx <= '0'; -- State0 onEntry
+                                    xx <= "00"; -- State0 onEntry
                                 when others =>
                                     null;
                             end case;
@@ -509,26 +511,32 @@ class VHDLMachinesCompilerTests: XCTestCase {
                         when CheckTransition =>
                             case currentState is
                                 when STATE_Initial =>
-                                    if (false) then
+                                    STATE_Initial_Transition0 := false;
+                                    STATE_Initial_Transition1 := (((ringlet_counter >= natural((50.0) * RINGLETS_PER_MS)) or ((50.0) * RINGLETS_PER_MS < ZERO)) or ((ringlet_counter >= natural((2.0) * RINGLETS_PER_S)) or ((2.0) * RINGLETS_PER_S < ZERO)) or ((ringlet_counter >= natural((20000.0))) or ((20000.0) < ZERO))) and (not (STATE_Initial_Transition0));
+                                    STATE_Initial_Transition2 := (true) and (not (STATE_Initial_Transition1));
+                                    if (STATE_Initial_Transition0) then
                                         targetState <= STATE_Suspended;
                                         internalState <= OnExit;
-                                    elsif ((((ringlet_counter >= (50.0) * RINGLETS_PER_MS) or (50.0) * RINGLETS_PER_MS < ZERO) or ((ringlet_counter >= (2.0) * RINGLETS_PER_S) or (2.0) * RINGLETS_PER_S < ZERO) or ((ringlet_counter >= (20000.0)) or (20000.0) < ZERO) or ((ringlet_counter >= (x * (5 + (2 - 3))) * RINGLETS_PER_PS)) or (x * (5 + (2 - 3))) * RINGLETS_PER_PS) < ZERO) and (not (false))) then
+                                    elsif (STATE_Initial_Transition1) then
                                         targetState <= STATE_Suspended;
                                         internalState <= OnExit;
-                                    elsif ((true) and (not ((((ringlet_counter >= (50.0) * RINGLETS_PER_MS) or (50.0) * RINGLETS_PER_MS < ZERO) or ((ringlet_counter >= (2.0) * RINGLETS_PER_S) or (2.0) * RINGLETS_PER_S < ZERO) or ((ringlet_counter >= (20000.0)) or (20000.0) < ZERO) or ((ringlet_counter >= (x * (5 + (2 - 3))) * RINGLETS_PER_PS)) or (x * (5 + (2 - 3))) * RINGLETS_PER_PS) < ZERO) and (not (false))))) then
+                                    elsif (STATE_Initial_Transition2) then
                                         targetState <= STATE_Suspended;
                                         internalState <= OnExit;
                                     else
                                         internalState <= Internal;
                                     end if;
                                 when STATE_Suspended =>
-                                    if (xx = '1') then
+                                    STATE_Suspended_Transition0 := xx = "11";
+                                    STATE_Suspended_Transition1 := (x = '1') and (not (STATE_Suspended_Transition0));
+                                    STATE_Suspended_Transition2 := (true) and (not (STATE_Suspended_Transition1));
+                                    if (STATE_Suspended_Transition0) then
                                         targetState <= STATE_State0;
                                         internalState <= OnExit;
-                                    elsif ((x = '1') and (not (xx = '1'))) then
+                                    elsif (STATE_Suspended_Transition1) then
                                         targetState <= STATE_State0;
                                         internalState <= OnExit;
-                                    elsif ((true) and (not ((x = '1') and (not (xx = '1'))))) then
+                                    elsif (STATE_Suspended_Transition2) then
                                         targetState <= STATE_Initial;
                                         internalState <= OnExit;
                                     else
@@ -553,7 +561,7 @@ class VHDLMachinesCompilerTests: XCTestCase {
                             case currentState is
                                 when STATE_Initial =>
                                     x <= '1'; -- Initial Internal
-                                    ringlet_counter := ringlet_counter + 1;
+                                    ringlet_counter <= ringlet_counter + 1;
                                 when STATE_Suspended =>
                                     x <= '1'; -- Suspended Internal
                                 when STATE_State0 =>
