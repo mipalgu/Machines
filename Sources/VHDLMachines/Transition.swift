@@ -13,7 +13,7 @@ public struct Transition: Codable, Equatable, Hashable, Sendable {
 
     /// The condition that must be met for the transition to occur. This condition must be a VHDL boolean
     /// expression.
-    public var condition: String
+    public var condition: TransitionCondition
 
     /// The index of the source state of the transition.
     public var source: Int
@@ -27,7 +27,7 @@ public struct Transition: Codable, Equatable, Hashable, Sendable {
     ///   - source: The index of the source state of the transition.
     ///   - target: The index of the target state of the transition.
     @inlinable
-    public init(condition: String, source: Int, target: Int) {
+    public init(condition: TransitionCondition, source: Int, target: Int) {
         self.condition = condition
         self.source = source
         self.target = target

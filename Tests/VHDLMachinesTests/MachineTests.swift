@@ -180,8 +180,8 @@ final class MachineTests: XCTestCase {
     /// The transitions in the machine.
     var transitions: [Transition] {
         [
-            Transition(condition: "true", source: 0, target: 1),
-            Transition(condition: "true", source: 1, target: 0)
+            Transition(condition: .conditional(condition: .literal(value: true)), source: 0, target: 1),
+            Transition(condition: .conditional(condition: .literal(value: true)), source: 1, target: 0)
         ]
     }
 
@@ -333,7 +333,9 @@ final class MachineTests: XCTestCase {
                 externalVariables: []
             )
         ]
-        let newTransitions = [Transition(condition: "true", source: 0, target: 1)]
+        let newTransitions = [
+            Transition(condition: .conditional(condition: .literal(value: true)), source: 0, target: 1)
+        ]
         let newInitialState = 1
         let newSuspendedState = 0
         let newArchitectureHead = "abcd3"

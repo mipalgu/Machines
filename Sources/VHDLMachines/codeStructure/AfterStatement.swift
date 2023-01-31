@@ -70,6 +70,8 @@ public struct AfterStatement: RawRepresentable, Equatable, Hashable, Codable, Se
 
         case s
 
+        case ringlet
+
         public var rawValue: VariableName {
             switch self {
             case .ps:
@@ -82,6 +84,8 @@ public struct AfterStatement: RawRepresentable, Equatable, Hashable, Codable, Se
                 return VariableName.ringletPerMs
             case .s:
                 return VariableName.ringletPerS
+            case .ringlet:
+                return VariableName.ringletCounter
             }
         }
 
@@ -106,16 +110,18 @@ public struct AfterStatement: RawRepresentable, Equatable, Hashable, Codable, Se
                 self = .ms
             case VariableName.ringletPerS:
                 self = .s
+            case VariableName.ringletCounter:
+                self = .ringlet
             default:
                 return nil
             }
         }
 
-        public init?(after: String) {
+        init?(after: String) {
             guard after.lowercased().hasPrefix("after"), after.count >= 6 else {
                 return nil
             }
-            if after[String.Index(utf16Offset: 5, in: after)] != "_" {
+            if after[after.index(after.startIndex, offsetBy: 5)] != "_" {
                 self = .s
                 return
             }
@@ -134,6 +140,8 @@ public struct AfterStatement: RawRepresentable, Equatable, Hashable, Codable, Se
                 self = .us
             case "ms":
                 self = .ms
+            case "rt":
+                self = .ringlet
             default:
                 return nil
             }
@@ -146,12 +154,22 @@ public struct AfterStatement: RawRepresentable, Equatable, Hashable, Codable, Se
     public let period: Period
 
     public var rawValue: String {
-        ComparisonOperation.greaterThanOrEqual(
+        if case .ringlet = period {
+            return ComparisonOperation.greaterThanOrEqual(
+                lhs: .variable(name: .ringletCounter), rhs: amount
+            ).rawValue
+        }
+        return ComparisonOperation.greaterThanOrEqual(
             lhs: .variable(name: .ringletCounter),
             rhs: .precedence(value: .binary(
                 operation: .multiplication(lhs: amount, rhs: .variable(name: period.rawValue))
             ))
         ).rawValue
+    }
+
+    public init(amount: Expression, period: Period) {
+        self.amount = amount
+        self.period = period
     }
 
     public init?(rawValue: String) {
@@ -168,8 +186,7 @@ public struct AfterStatement: RawRepresentable, Equatable, Hashable, Codable, Se
         else {
             return nil
         }
-        self.amount = lhs
-        self.period = period
+        self.init(amount: lhs, period: period)
     }
 
     public init?(after: String) {
@@ -185,8 +202,7 @@ public struct AfterStatement: RawRepresentable, Equatable, Hashable, Codable, Se
         else {
             return nil
         }
-        self.amount = expression
-        self.period = period
+        self.init(amount: expression, period: period)
     }
 
 }

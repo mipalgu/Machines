@@ -119,16 +119,66 @@ class VHDLMachinesCompilerTests: XCTestCase {
                 defaultState(name: "Initial"), defaultState(name: "Suspended"), defaultState(name: "State0")
             ],
             transitions: [
-                VHDLMachines.Transition(condition: "false", source: 0, target: 1),
                 VHDLMachines.Transition(
-                    condition: "after_ms(50) or after(2) or after_rt(20000) or after_ps(x * (5 + (2 - 3)))",
+                    condition: .conditional(condition: .literal(value: false)), source: 0, target: 1
+                ),
+                VHDLMachines.Transition(
+                    // "after_ms(50) or after(2) or after_rt(20000) or after_ps(x * (5 + (2 - 3)))"
+                    condition: .or(
+                        lhs: .after(statement: AfterStatement(
+                            amount: .literal(value: .integer(value: 50)), period: .ms
+                        )),
+                        rhs: .or(
+                            lhs: .after(statement: AfterStatement(
+                                amount: .literal(value: .integer(value: 2)), period: .s
+                            )),
+                            rhs: .or(
+                                lhs: .after(statement: AfterStatement(
+                                    amount: .literal(value: .integer(value: 20000)), period: .ringlet
+                                )),
+                                rhs: .after(statement: AfterStatement(
+                                    amount: .binary(operation: .multiplication(
+                                        lhs: .variable(name: VariableName.x),
+                                        rhs: .precedence(value: .binary(operation: .addition(
+                                            lhs: .literal(value: .integer(value: 5)),
+                                            rhs: .precedence(value: .binary(operation: .subtraction(
+                                                lhs: .literal(value: .integer(value: 2)),
+                                                rhs: .literal(value: .integer(value: 3))
+                                            )))
+                                        )))
+                                    )),
+                                    period: .ps
+                                ))
+                            )
+                        )
+                    ),
                     source: 0,
                     target: 1
                 ),
-                VHDLMachines.Transition(condition: "true", source: 0, target: 1),
-                VHDLMachines.Transition(condition: "xx = '1'", source: 1, target: 2),
-                VHDLMachines.Transition(condition: "x = '1'", source: 1, target: 2),
-                VHDLMachines.Transition(condition: "true", source: 1, target: 0)
+                VHDLMachines.Transition(
+                    condition: TransitionCondition.conditional(condition: .literal(value: true)),
+                    source: 0,
+                    target: 1
+                ),
+                VHDLMachines.Transition(
+                    // "xx = '1'"
+                    condition: .conditional(condition: .comparison(
+                        value: .equality(lhs: .variable(name: .xx), rhs: .literal(value: .bit(value: .high)))
+                    )),
+                    source: 1,
+                    target: 2
+                ),
+                VHDLMachines.Transition(
+                    // // "x = '1'"
+                    condition: .conditional(condition: .comparison(
+                        value: .equality(lhs: .variable(name: .x), rhs: .literal(value: .bit(value: .high)))
+                    )),
+                    source: 1,
+                    target: 2
+                ),
+                VHDLMachines.Transition(
+                    condition: .conditional(condition: .literal(value: true)), source: 1, target: 0
+                )
             ],
             initialState: 0,
             suspendedState: 1,

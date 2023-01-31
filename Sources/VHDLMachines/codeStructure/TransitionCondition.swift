@@ -1,8 +1,8 @@
-// TransitionTests.swift
+// TransitionCondition.swift
 // Machines
 // 
 // Created by Morgan McColl.
-// Copyright © 2022 Morgan McColl. All rights reserved.
+// Copyright © 2023 Morgan McColl. All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -54,39 +54,75 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-@testable import VHDLMachines
-import XCTest
+import VHDLParsing
 
-/// Tests the ``Transition`` type.
-final class TransitionTests: XCTestCase {
+public indirect enum TransitionCondition: RawRepresentable, Equatable, Codable, Hashable, Sendable {
 
-    /// The transition to test.
-    var transition = Transition(
-        condition: .conditional(condition: .literal(value: true)), source: 0, target: 1
-    )
+    case after(statement: AfterStatement)
 
-    /// Initialises a ``Transition`` before every test.
-    override func setUp() {
-        self.transition = Transition(
-            condition: .conditional(condition: .literal(value: true)), source: 0, target: 1
-        )
+    case conditional(condition: ConditionalExpression)
+
+    /// An `and` operation.
+    case and(lhs: TransitionCondition, rhs: TransitionCondition)
+
+    /// An `or` operation.
+    case or(lhs: TransitionCondition, rhs: TransitionCondition)
+
+    /// A `nand` operation.
+    case nand(lhs: TransitionCondition, rhs: TransitionCondition)
+
+    /// A `not` operation.
+    case not(value: TransitionCondition)
+
+    /// A `nor` operation.
+    case nor(lhs: TransitionCondition, rhs: TransitionCondition)
+
+    /// An `xor` operation.
+    case xor(lhs: TransitionCondition, rhs: TransitionCondition)
+
+    /// An `xnor` operation.
+    case xnor(lhs: TransitionCondition, rhs: TransitionCondition)
+
+    public var rawValue: String {
+        switch self {
+        case .after(let statement):
+            return statement.rawValue
+        case .conditional(let condition):
+            return condition.rawValue
+        case .and(let lhs, let rhs):
+            return "(\(lhs.rawValue) and \(rhs.rawValue))"
+        case .or(let lhs, let rhs):
+            return "(\(lhs.rawValue) or \(rhs.rawValue))"
+        case .nand(let lhs, let rhs):
+            return "(\(lhs.rawValue) nand \(rhs.rawValue))"
+        case .not(let value):
+            return "not \(value.rawValue)"
+        case .nor(let lhs, let rhs):
+            return "(\(lhs.rawValue) nor \(rhs.rawValue))"
+        case .xor(let lhs, let rhs):
+            return "(\(lhs.rawValue) xor \(rhs.rawValue))"
+        case .xnor(let lhs, let rhs):
+            return "(\(lhs.rawValue) xnor \(rhs.rawValue))"
+        }
     }
 
-    /// Test initialiser sets stored properties correctly.
-    func testInit() {
-        XCTAssertEqual(self.transition.condition, .conditional(condition: .literal(value: true)))
-        XCTAssertEqual(self.transition.source, 0)
-        XCTAssertEqual(self.transition.target, 1)
-    }
-
-    /// Test getters and setters work correctly.
-    func testGettersAndSetters() {
-        self.transition.condition = .conditional(condition: .literal(value: false))
-        self.transition.source = 1
-        self.transition.target = 0
-        XCTAssertEqual(self.transition.condition, .conditional(condition: .literal(value: false)))
-        XCTAssertEqual(self.transition.source, 1)
-        XCTAssertEqual(self.transition.target, 0)
+    public init?(rawValue: String) {
+        let trimmedString = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmedString.count < 1024 else {
+            return nil
+        }
+        if let statement = AfterStatement(rawValue: trimmedString) {
+            self = .after(statement: statement)
+            return
+        }
+        if let condition = ConditionalExpression(rawValue: trimmedString) {
+            self = .conditional(condition: condition)
+            return
+        }
+        guard trimmedString.lowercased().contains("after") else {
+            return nil
+        }
+        return nil
     }
 
 }

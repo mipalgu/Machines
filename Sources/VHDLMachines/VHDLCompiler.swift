@@ -47,7 +47,7 @@ public struct VHDLCompiler {
             self.init(
                 source: machine.states[transition.source].name,
                 target: machine.states[transition.target].name,
-                condition: transition.condition
+                condition: transition.condition.rawValue
             )
         }
 
@@ -1418,7 +1418,7 @@ public struct VHDLCompiler {
     /// - Returns: True if the state has an after statement in its transitions.
     private func hasAfterInTransition(state index: Int, machine: Machine) -> Bool {
         let transitions = machine.transitions.filter { $0.source == index }
-        return transitions.contains { hasAfter(condition: $0.condition) }
+        return transitions.contains { hasAfter(condition: $0.condition.rawValue) }
     }
 
 }

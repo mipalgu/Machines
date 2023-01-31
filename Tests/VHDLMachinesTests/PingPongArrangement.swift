@@ -160,16 +160,32 @@ struct PingPongArrangement {
     let clocks = [Clock(name: VariableName.clk, frequency: 50, unit: .MHz)]
 
     /// The ping states transition.
-    let pingTransition = Transition(condition: "true", source: 0, target: 1)
+    let pingTransition = Transition(
+        condition: .conditional(condition: .literal(value: true)), source: 0, target: 1
+    )
 
     /// The ping wait states transition.
-    let pingWaitTransition = Transition(condition: "pong = '1'", source: 1, target: 0)
+    let pingWaitTransition = Transition(
+        condition: .conditional(condition: .comparison(value: .equality(
+            lhs: .variable(name: VariableName(rawValue: "pong")!), rhs: .literal(value: .bit(value: .high))
+        ))),
+        source: 1,
+        target: 0
+    )
 
     /// The pong states transition.
-    let pongTransition = Transition(condition: "true", source: 1, target: 0)
+    let pongTransition = Transition(
+        condition: .conditional(condition: .literal(value: true)), source: 1, target: 0
+    )
 
     /// The pong wait states transition.
-    let pongWaitTransition = Transition(condition: "ping = '1'", source: 0, target: 1)
+    let pongWaitTransition = Transition(
+        condition: .conditional(condition: .comparison(value: .equality(
+            lhs: .variable(name: VariableName(rawValue: "ping")!), rhs: .literal(value: .bit(value: .high))
+        ))),
+        source: 0,
+        target: 1
+    )
 
     /// The includes.
     let includes: [Include] = [

@@ -72,6 +72,8 @@ extension VariableName {
 
     static var x: VariableName { VariableName(rawValue: "x")! }
 
+    static var xx: VariableName { VariableName(rawValue: "xx")! }
+
     static var xs: VariableName { VariableName(rawValue: "xs")! }
 
     static var y: VariableName { VariableName(rawValue: "y")! }
