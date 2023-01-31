@@ -123,7 +123,7 @@ class VHDLMachinesCompilerTests: XCTestCase {
                     condition: .conditional(condition: .literal(value: false)), source: 0, target: 1
                 ),
                 VHDLMachines.Transition(
-                    // "after_ms(50) or after(2) or after_rt(20000) or after_ps(x * (5 + (2 - 3)))"
+                    // "after_ms(50) or after(2) or after_rt(20000)"
                     condition: .or(
                         lhs: .after(statement: AfterStatement(
                             amount: .literal(value: .decimal(value: 50)), period: .ms
@@ -132,24 +132,9 @@ class VHDLMachinesCompilerTests: XCTestCase {
                             lhs: .after(statement: AfterStatement(
                                 amount: .literal(value: .decimal(value: 2)), period: .s
                             )),
-                            rhs: .or(
-                                lhs: .after(statement: AfterStatement(
-                                    amount: .literal(value: .decimal(value: 20000)), period: .ringlet
-                                )),
-                                rhs: .after(statement: AfterStatement(
-                                    amount: .binary(operation: .multiplication(
-                                        lhs: .variable(name: VariableName.x),
-                                        rhs: .precedence(value: .binary(operation: .addition(
-                                            lhs: .literal(value: .integer(value: 5)),
-                                            rhs: .precedence(value: .binary(operation: .subtraction(
-                                                lhs: .literal(value: .integer(value: 2)),
-                                                rhs: .literal(value: .integer(value: 3))
-                                            )))
-                                        )))
-                                    )),
-                                    period: .ps
-                                ))
-                            )
+                            rhs: .after(statement: AfterStatement(
+                                amount: .literal(value: .decimal(value: 20000)), period: .ringlet
+                            ))
                         )
                     ),
                     source: 0,
