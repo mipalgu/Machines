@@ -58,21 +58,31 @@ import VHDLParsing
 
 public struct AfterStatement: RawRepresentable, Equatable, Hashable, Codable, Sendable {
 
+    /// The period of the time in an ``AfterStatement``. This period represents the amount of time elapsed
+    /// during an after expression. The time may be a SI-prefixed time or the number of ringlets since the
+    /// start of a states execution.
     public enum Period: RawRepresentable, Equatable, Hashable, Codable, Sendable {
 
+        /// Picoseconds.
         case ps
 
+        /// Nanoseconds.
         case ns
 
+        /// Microseconds.
         case us
 
+        /// Milliseconds.
         case ms
 
+        /// Seconds.
         case s
 
+        /// The number of ringlets since the start of a states execution.
         case ringlet
 
-        public var rawValue: VariableName {
+        /// The name of the variable storing the number of ringlet for a unit period.
+        @inlinable public var rawValue: VariableName {
             switch self {
             case .ps:
                 return VariableName.ringletPerPs
@@ -89,7 +99,8 @@ public struct AfterStatement: RawRepresentable, Equatable, Hashable, Codable, Se
             }
         }
 
-        public var afterLength: Int {
+        /// The length of the `after` command for this period.
+        @inlinable public var afterLength: Int {
             switch self {
             case .s:
                 return 5
@@ -98,6 +109,10 @@ public struct AfterStatement: RawRepresentable, Equatable, Hashable, Codable, Se
             }
         }
 
+        /// Creates a new period from the name of the variable storing the number of ringlets for a unit
+        /// period.
+        /// - Parameter rawValue: The name of the variable storing the number of ringlets per unit period.
+        @inlinable
         public init?(rawValue: VariableName) {
             switch rawValue {
             case VariableName.ringletPerPs:
@@ -117,9 +132,17 @@ public struct AfterStatement: RawRepresentable, Equatable, Hashable, Codable, Se
             }
         }
 
+        /// Create a new period from the `after` command.
+        /// - Parameter after: The `after` command, e.g. `after`, `after_ps`, `after_ns`, `after_us`,
+        /// `after_ms`, `after_rt`.
+        @usableFromInline
         init?(after: String) {
-            guard after.lowercased().hasPrefix("after"), after.count >= 6 else {
+            guard after.lowercased().hasPrefix("after"), after.count >= 5 else {
                 return nil
+            }
+            if after.count == 5 {
+                self = .s
+                return
             }
             if after[after.index(after.startIndex, offsetBy: 5)] != "_" {
                 self = .s
