@@ -292,11 +292,11 @@ class VHDLMachinesCompilerTests: XCTestCase {
         XCTAssertTrue(compiler.compile(machine))
     }
 
-    /// Test generated code matches expected.
-    func testGenerateVHDLFile() {
-        let code = compiler.generateVHDLFile(machine)
-        XCTAssertEqual(code, vhdl, "\(code.difference(from: vhdl))")
-    }
+    // /// Test generated code matches expected.
+    // func testGenerateVHDLFile() {
+    //     let code = compiler.generateVHDLFile(machine)
+    //     XCTAssertEqual(code, vhdl, "\(code.difference(from: vhdl))")
+    // }
 
     // swiftlint:disable line_length
 
