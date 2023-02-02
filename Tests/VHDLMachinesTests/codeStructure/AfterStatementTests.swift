@@ -55,10 +55,16 @@
 // 
 
 @testable import VHDLMachines
+import VHDLParsing
 import XCTest
 
 /// Test class for ``AfterStatement``.
 final class AfterStatementTests: XCTestCase {
+
+    /// The statement under test.
+    let statement = AfterStatement(
+        amount: .literal(value: .integer(value: 10)), period: .us
+    )
 
     /// Test ``AfterStatement.Period`` `rawValue`.
     func testPeriodRawValue() {
@@ -104,6 +110,21 @@ final class AfterStatementTests: XCTestCase {
         XCTAssertNil(AfterStatement.Period(after: "_after"))
         XCTAssertNil(AfterStatement.Period(after: "after_"))
         XCTAssertNil(AfterStatement.Period(after: "after_fs"))
+    }
+
+    /// Test the stored properties are set correctly.
+    func testPropertyInit() {
+        XCTAssertEqual(statement.amount, .literal(value: .integer(value: 10)))
+        XCTAssertEqual(statement.period, .us)
+    }
+
+    /// Test `rawValue` generates the correct `VHDL` code.
+    func testRawValue() {
+        XCTAssertEqual(
+            statement.rawValue,
+            "(\(VariableName.ringletCounter) >= real(10.0) * \(VariableName.ringletPerUs)) or " +
+                "(real(10.0) * \(VariableName.ringletPerUs) < ZERO)"
+        )
     }
 
 }
