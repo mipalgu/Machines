@@ -122,8 +122,7 @@ final class AfterStatementTests: XCTestCase {
     func testRawValue() {
         XCTAssertEqual(
             statement.rawValue,
-            "(\(VariableName.ringletCounter) >= real(10.0) * \(VariableName.ringletPerUs)) or " +
-                "(real(10.0) * \(VariableName.ringletPerUs) < ZERO)"
+            "\(VariableName.ringletCounter) >= (real(10) * \(VariableName.ringletPerUs))"
         )
     }
 

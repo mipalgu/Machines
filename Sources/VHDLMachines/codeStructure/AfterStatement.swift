@@ -177,22 +177,20 @@ public struct AfterStatement: RawRepresentable, Equatable, Hashable, Codable, Se
     public let period: Period
 
     public var rawValue: String {
-        let comparison: Expression
         if case .ringlet = period {
-            comparison = Expression.conditional(condition: .comparison(value: .greaterThanOrEqual(
-                lhs: .variable(name: .ringletCounter), rhs: .precedence(value: amount)
-            )))
-        } else {
-            comparison = Expression.conditional(condition: .comparison(value: .greaterThanOrEqual(
-                lhs: .variable(name: .ringletCounter),
-                rhs: .precedence(value: .binary(
-                    operation: .multiplication(
-                        lhs: .precedence(value: amount), rhs: .variable(name: period.rawValue)
-                    )
-                ))
-            )))
+            return Expression.conditional(condition: .comparison(value: .greaterThanOrEqual(
+                lhs: .variable(name: .ringletCounter), rhs: .cast(operation: .real(expression: amount))
+            ))).rawValue
         }
-        return comparison.rawValue
+        return Expression.conditional(condition: .comparison(value: .greaterThanOrEqual(
+            lhs: .variable(name: .ringletCounter),
+            rhs: .precedence(value: .binary(
+                operation: .multiplication(
+                    lhs: .cast(operation: .real(expression: amount)),
+                    rhs: .variable(name: period.rawValue)
+                )
+            ))
+        ))).rawValue
     }
 
     public init(amount: Expression, period: Period) {
