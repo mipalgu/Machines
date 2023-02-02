@@ -83,6 +83,29 @@ public indirect enum TransitionCondition: RawRepresentable, Equatable, Codable, 
     /// An `xnor` operation.
     case xnor(lhs: TransitionCondition, rhs: TransitionCondition)
 
+    public var hasAfter: Bool {
+        switch self {
+        case .after:
+            return true
+        case .conditional:
+            return false
+        case .and(let lhs, let rhs):
+            return lhs.hasAfter || rhs.hasAfter
+        case .or(let lhs, let rhs):
+            return lhs.hasAfter || rhs.hasAfter
+        case .nand(let lhs, let rhs):
+            return lhs.hasAfter || rhs.hasAfter
+        case .not(let value):
+            return value.hasAfter
+        case .nor(let lhs, let rhs):
+            return lhs.hasAfter || rhs.hasAfter
+        case .xor(let lhs, let rhs):
+            return lhs.hasAfter || rhs.hasAfter
+        case .xnor(let lhs, let rhs):
+            return lhs.hasAfter || rhs.hasAfter
+        }
+    }
+
     public var rawValue: String {
         switch self {
         case .after(let statement):
