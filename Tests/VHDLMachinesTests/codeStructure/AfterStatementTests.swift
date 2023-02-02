@@ -144,4 +144,34 @@ final class AfterStatementTests: XCTestCase {
         )
     }
 
+    /// Test the after statements are parsed correctly.
+    func testAfterInit() {
+        XCTAssertEqual(
+            AfterStatement(after: "after_ps(10)"),
+            AfterStatement(amount: .literal(value: .integer(value: 10)), period: .ps)
+        )
+        XCTAssertEqual(
+            AfterStatement(after: "after_ns(10)"),
+            AfterStatement(amount: .literal(value: .integer(value: 10)), period: .ns)
+        )
+        XCTAssertEqual(AfterStatement(after: "after_us(10)"), statement)
+        XCTAssertEqual(
+            AfterStatement(after: "after_ms(10)"),
+            AfterStatement(amount: .literal(value: .integer(value: 10)), period: .ms)
+        )
+        XCTAssertEqual(
+            AfterStatement(after: "after(10)"),
+            AfterStatement(amount: .literal(value: .integer(value: 10)), period: .s)
+        )
+        XCTAssertEqual(
+            AfterStatement(after: "after((10))"),
+            AfterStatement(amount: .precedence(value: .literal(value: .integer(value: 10))), period: .s)
+        )
+        XCTAssertNil(AfterStatement(after: "after(10))"))
+        XCTAssertNil(AfterStatement(after: "after((10)"))
+        XCTAssertNil(AfterStatement(after: "after(1\(String(repeating: "0", count: 256)))"))
+        XCTAssertNil(AfterStatement(after: "after_fs(10)"))
+        XCTAssertNil(AfterStatement(after: "afterps(10)"))
+    }
+
 }
