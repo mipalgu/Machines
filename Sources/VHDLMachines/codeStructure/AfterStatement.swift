@@ -207,12 +207,13 @@ public struct AfterStatement: RawRepresentable, Equatable, Hashable, Codable, Se
             case .precedence(let value) = rhs,
             case .binary(let operation) = value,
             case .multiplication(let lhs, let rhs) = operation,
+            case .cast(let castOperation) = lhs,
             case .variable(let name) = rhs,
             let period = Period(rawValue: name)
         else {
             return nil
         }
-        self.init(amount: lhs, period: period)
+        self.init(amount: castOperation.expression, period: period)
     }
 
     public init?(after: String) {
