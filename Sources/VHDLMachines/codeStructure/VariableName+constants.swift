@@ -127,8 +127,6 @@ public extension VariableName {
 
     static var suspendCommand: VariableName { VariableName(rawValue: "COMMAND_SUSPEND")! }
 
-    static var zero: VariableName { VariableName(rawValue: "ZERO")! }
-
     static func name(for state: State) -> VariableName {
         VariableName(rawValue: "STATE_\(state.name.rawValue)")!
     }
