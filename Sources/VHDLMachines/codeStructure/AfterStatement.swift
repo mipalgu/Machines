@@ -56,6 +56,10 @@
 
 import VHDLParsing
 
+/// An after statement found commonly on `LLFSM` transitions. The after statements represents a boolean
+/// condition that evaluates to `true` when a specified amount of time has elapsed. The supported after
+/// statements for `VHDL` machines are: `after` (seconds), `after_ms` (milliseconds), `after_us`
+/// (microseconds), `after_ns` (nanoseconds), `after_ps` (picoseconds) and `after_rt` (ringlets).
 public struct AfterStatement: RawRepresentable, Equatable, Hashable, Codable, Sendable {
 
     /// The period of the time in an ``AfterStatement``. This period represents the amount of time elapsed
