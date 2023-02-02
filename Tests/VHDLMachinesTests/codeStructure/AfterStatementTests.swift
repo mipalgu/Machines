@@ -167,6 +167,10 @@ final class AfterStatementTests: XCTestCase {
             AfterStatement(after: "after((10))"),
             AfterStatement(amount: .precedence(value: .literal(value: .integer(value: 10))), period: .s)
         )
+        XCTAssertEqual(
+            AfterStatement(after: "after_rt(10)"),
+            AfterStatement(amount: .literal(value: .integer(value: 10)), period: .ringlet)
+        )
         XCTAssertNil(AfterStatement(after: "after(10))"))
         XCTAssertNil(AfterStatement(after: "after((10)"))
         XCTAssertNil(AfterStatement(after: "after(1\(String(repeating: "0", count: 256)))"))
