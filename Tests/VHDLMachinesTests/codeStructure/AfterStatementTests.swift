@@ -187,4 +187,30 @@ final class AfterStatementTests: XCTestCase {
         XCTAssertNil(AfterStatement(after: "afterps(10)"))
     }
 
+    /// Test the expression is correct.
+    func testExpression() {
+        XCTAssertEqual(
+            statement.expression,
+            .conditional(condition: .comparison(value: .greaterThanOrEqual(
+                lhs: .variable(name: .ringletCounter),
+                rhs: .cast(operation: .integer(expression: .functionCall(call: .mathReal(function: .ceil(
+                    expression: .binary(operation: .multiplication(
+                        lhs: .cast(operation: .real(expression: .literal(value: .integer(value: 10)))),
+                        rhs: .variable(name: .ringletPerUs)
+                    ))
+                )))))
+            )))
+        )
+        let ringletStatement = AfterStatement(amount: .literal(value: .integer(value: 5)), period: .ringlet)
+        XCTAssertEqual(
+            ringletStatement.expression,
+            .conditional(condition: .comparison(value: .greaterThanOrEqual(
+                lhs: .variable(name: .ringletCounter),
+                rhs: .cast(operation: .integer(expression: .functionCall(call: .mathReal(function: .ceil(
+                    expression: .cast(operation: .real(expression: .literal(value: .integer(value: 5))))
+                )))))
+            )))
+        )
+    }
+
 }
