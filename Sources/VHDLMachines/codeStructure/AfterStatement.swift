@@ -176,11 +176,14 @@ public struct AfterStatement: RawRepresentable, Equatable, Hashable, Codable, Se
 
     }
 
+    /// The amount of time to wait before the condition evaluates to `true`.
     public let amount: Expression
 
+    /// The period of the time to wait before the condition evaluates to `true`.
     public let period: Period
 
-    public var expression: Expression {
+    /// The equivalent `VHDL` expression for this after statement.
+    @inlinable public var expression: Expression {
         let castedAmount = Expression.cast(operation: .real(expression: amount))
         let calculation: Expression
         if case .ringlet = period {
@@ -198,15 +201,24 @@ public struct AfterStatement: RawRepresentable, Equatable, Hashable, Codable, Se
         )))
     }
 
-    public var rawValue: String {
+    /// The `VHDL` code enacting this statement.
+    @inlinable public var rawValue: String {
         expression.rawValue
     }
 
+    /// Creates a new after statement from the stored properties.
+    /// - Parameters:
+    ///   - amount: The amount of time to wait before the after statement evaluates to `true`.
+    ///   - period: The period of the amount.
+    @inlinable
     public init(amount: Expression, period: Period) {
         self.amount = amount
         self.period = period
     }
 
+    /// Creates a new after statement from the `VHDL` code.
+    /// - Parameter rawValue: The `VHDL` code enacting this statement.
+    @inlinable
     public init?(rawValue: String) {
         guard
             let expression = ComparisonOperation(rawValue: rawValue),
@@ -240,6 +252,9 @@ public struct AfterStatement: RawRepresentable, Equatable, Hashable, Codable, Se
         self.init(amount: realExpression, period: period)
     }
 
+    /// Creates a new after statement from the `after` command.
+    /// - Parameter after: The after command that enacts this statement.
+    @inlinable
     public init?(after: String) {
         let value = after.trimmingCharacters(in: .whitespacesAndNewlines)
         guard value.count < 256, let period = Period(after: value) else {
