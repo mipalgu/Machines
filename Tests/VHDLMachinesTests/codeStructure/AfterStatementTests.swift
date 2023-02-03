@@ -151,6 +151,13 @@ final class AfterStatementTests: XCTestCase {
             ),
             AfterStatement(amount: .literal(value: .integer(value: 10)), period: .ringlet)
         )
+        XCTAssertNil(AfterStatement(
+            rawValue: "\(VariableName.ringletCounter) >= integer(ceil(real(10) / " +
+                "\(VariableName.ringletPerUs)))"
+        ))
+        XCTAssertNil(AfterStatement(
+            rawValue: "\(VariableName.ringletCounter) >= integer(ceil(integer(10)))"
+        ))
     }
 
     /// Test the after statements are parsed correctly.
