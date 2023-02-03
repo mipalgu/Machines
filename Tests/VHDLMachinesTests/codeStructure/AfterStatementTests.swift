@@ -139,8 +139,17 @@ final class AfterStatementTests: XCTestCase {
     /// Test `init(rawValue:)` correctly creates the object.
     func testRawValueInit() {
         XCTAssertEqual(
-            AfterStatement(rawValue: "\(ringletCounter) >= (real(10) * \(VariableName.ringletPerUs))"),
+            AfterStatement(
+                rawValue: "\(VariableName.ringletCounter) >= integer(ceil(real(10) * " +
+                    "\(VariableName.ringletPerUs)))"
+            ),
             statement
+        )
+        XCTAssertEqual(
+            AfterStatement(
+                rawValue: "\(VariableName.ringletCounter) >= integer(ceil(real(10)))"
+            ),
+            AfterStatement(amount: .literal(value: .integer(value: 10)), period: .ringlet)
         )
     }
 

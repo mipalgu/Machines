@@ -180,21 +180,26 @@ public struct AfterStatement: RawRepresentable, Equatable, Hashable, Codable, Se
 
     public let period: Period
 
-    public var rawValue: String {
+    public var expression: Expression {
+        let castedAmount = Expression.cast(operation: .real(expression: amount))
+        let calculation: Expression
         if case .ringlet = period {
-            return Expression.conditional(condition: .comparison(value: .greaterThanOrEqual(
-                lhs: .variable(name: .ringletCounter), rhs: .cast(operation: .real(expression: amount))
-            ))).rawValue
+            calculation = castedAmount
+        } else {
+            calculation = .binary(
+                operation: .multiplication(lhs: castedAmount, rhs: .variable(name: period.rawValue))
+            )
         }
-        return Expression.conditional(condition: .comparison(value: .greaterThanOrEqual(
+        return .conditional(condition: .comparison(value: .greaterThanOrEqual(
             lhs: .variable(name: .ringletCounter),
-            rhs: .precedence(value: .binary(
-                operation: .multiplication(
-                    lhs: .cast(operation: .real(expression: amount)),
-                    rhs: .variable(name: period.rawValue)
-                )
+            rhs: .cast(operation: .integer(
+                expression: .functionCall(call: .mathReal(function: .ceil(expression: calculation)))
             ))
-        ))).rawValue
+        )))
+    }
+
+    public var rawValue: String {
+        expression.rawValue
     }
 
     public init(amount: Expression, period: Period) {
@@ -208,16 +213,31 @@ public struct AfterStatement: RawRepresentable, Equatable, Hashable, Codable, Se
             case .greaterThanOrEqual(let lhs, let rhs) = expression,
             case .variable(let name) = lhs,
             name == .ringletCounter,
-            case .precedence(let value) = rhs,
-            case .binary(let operation) = value,
-            case .multiplication(let lhs, let rhs) = operation,
-            case .cast(let castOperation) = lhs,
+            case .cast(let castOperation) = rhs,
+            case .integer(let castExpression) = castOperation,
+            case .functionCall(let functionCall) = castExpression,
+            case .mathReal(let mathReal) = functionCall,
+            case .ceil(let ceilExpression) = mathReal
+        else {
+            return nil
+        }
+        guard case .binary(let binaryOperation) = ceilExpression else {
+            guard case .cast(let realCast) = ceilExpression, case .real(let realExpression) = realCast else {
+                return nil
+            }
+            self.init(amount: realExpression, period: .ringlet)
+            return
+        }
+        guard
+            case .multiplication(let lhs, let rhs) = binaryOperation,
+            case .cast(let realCast) = lhs,
+            case .real(let realExpression) = realCast,
             case .variable(let name) = rhs,
             let period = Period(rawValue: name)
         else {
             return nil
         }
-        self.init(amount: castOperation.expression, period: period)
+        self.init(amount: realExpression, period: period)
     }
 
     public init?(after: String) {
