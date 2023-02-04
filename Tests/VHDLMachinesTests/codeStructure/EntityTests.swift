@@ -1,4 +1,4 @@
-// Entity.swift
+// EntityTests.swift
 // Machines
 // 
 // Created by Morgan McColl.
@@ -54,25 +54,33 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+import Foundation
+@testable import VHDLMachines
 import VHDLParsing
+import XCTest
 
-/// Add init from machine.
-public extension Entity {
+/// Test class for `Entity` extension.
+final class EntityTests: XCTestCase {
 
-    /// Create the entity declaration for a machine.
-    /// - Parameter machine: The machine to convert.
-    @inlinable
-    init?(machine: Machine) {
-        let clocks = machine.clocks.map { PortSignal(clock: $0) }
-        guard
-            let name = VariableName(rawValue: machine.name),
-            let port = PortBlock(signals: clocks + machine.externalSignals.map {
-                PortSignal(type: $0.type, name: $0.externalName, mode: $0.mode)
-            })
-        else {
-            return nil
+    /// Test machine init.
+    func testMachineInit() {
+        var machine = Machine.initial(path: URL(fileURLWithPath: "/tmp/New.machine", isDirectory: false))
+        let original = PortSignal(type: .stdLogic, name: .x, mode: .input)
+        let signal = PortSignal(type: .stdLogic, name: original.externalName, mode: .input)
+        machine.externalSignals = [original]
+        guard let entity = Entity(machine: machine) else {
+            XCTFail("Failed to create entity from machine.")
+            return
         }
-        self.init(name: name, port: port)
+        XCTAssertEqual(entity.name, VariableName(rawValue: "New"))
+        XCTAssertEqual(
+            entity.port, PortBlock(signals: [PortSignal(type: .stdLogic, name: .clk, mode: .input), signal])
+        )
+        XCTAssertNil(
+            Entity(
+                machine: Machine.initial(path: URL(fileURLWithPath: "/tmp/2New.machine", isDirectory: false))
+            )
+        )
     }
 
 }
