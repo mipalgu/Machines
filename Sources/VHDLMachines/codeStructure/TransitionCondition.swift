@@ -57,44 +57,53 @@
 import Foundation
 import VHDLParsing
 
+/// A condition that labels a transition between states in an LLFSM.
 public indirect enum TransitionCondition: RawRepresentable, Equatable, Codable, Hashable, Sendable {
 
+    /// An ``AfterStatement``. This condition evaluates to `true` after the specified time has elapsed.
     case after(statement: AfterStatement)
 
+    /// A `VHDL` `ConditionalExpression`.
     case conditional(condition: ConditionalExpression)
 
+    /// A `VHDL` `BooleanExpression`.
     case boolean(expression: BooleanExpression)
 
-    /// An `and` operation.
+    /// An `and` operation containing an `after` statement..
     case and(lhs: TransitionCondition, rhs: TransitionCondition)
 
-    /// An `or` operation.
+    /// An `or` operation containing an `after` statement..
     case or(lhs: TransitionCondition, rhs: TransitionCondition)
 
-    /// A `nand` operation.
+    /// A `nand` operation containing an `after` statement..
     case nand(lhs: TransitionCondition, rhs: TransitionCondition)
 
-    /// A `not` operation.
+    /// A `not` operation containing an `after` statement..
     case not(value: TransitionCondition)
 
-    /// A `nor` operation.
+    /// A `nor` operation containing an `after` statement..
     case nor(lhs: TransitionCondition, rhs: TransitionCondition)
 
-    /// An `xor` operation.
+    /// An `xor` operation containing an `after` statement..
     case xor(lhs: TransitionCondition, rhs: TransitionCondition)
 
-    /// An `xnor` operation.
+    /// An `xnor` operation containing an `after` statement..
     case xnor(lhs: TransitionCondition, rhs: TransitionCondition)
 
+    /// A `VHDL` equality operation containing an `after` statement.
     case equals(lhs: TransitionCondition, rhs: TransitionCondition)
 
+    /// A `VHDL` inequality operation containing an `after` statement.
     case notEquals(lhs: TransitionCondition, rhs: TransitionCondition)
 
+    /// A `VHDL` precedence operation containing an `after` statement.
     case precedence(condition: TransitionCondition)
 
+    /// A `VHDL` variable.
     case variable(name: VariableName)
 
-    public var hasAfter: Bool {
+    /// Whether this condition contains an ``AfterStatement``.
+    @inlinable public var hasAfter: Bool {
         switch self {
         case .after:
             return true
@@ -127,7 +136,8 @@ public indirect enum TransitionCondition: RawRepresentable, Equatable, Codable, 
         }
     }
 
-    public var rawValue: String {
+    /// The `VHDL` code enacting this condition.
+    @inlinable public var rawValue: String {
         switch self {
         case .after(let statement):
             return statement.rawValue
@@ -160,6 +170,9 @@ public indirect enum TransitionCondition: RawRepresentable, Equatable, Codable, 
         }
     }
 
+    /// Creates a new ``TransitionCondition`` from `VHDL` code that may also contain the `LLFSM` `after`
+    /// commands.
+    /// - Parameter rawValue: The code to parse.
     public init?(rawValue: String) {
         let trimmedString = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
         guard trimmedString.count < 1024 else {
@@ -203,7 +216,9 @@ public indirect enum TransitionCondition: RawRepresentable, Equatable, Codable, 
         return nil
     }
 
-    init?(hasAfter value: String) {
+    /// Initialise this condition when the code contains an `after` command.
+    /// - Parameter value: The code containing the `after` command.
+    private init?(hasAfter value: String) {
         if value.hasPrefix("(") {
             guard let lhs = value.uptoBalancedBracket else {
                 return nil
@@ -249,7 +264,12 @@ public indirect enum TransitionCondition: RawRepresentable, Equatable, Codable, 
         self.init(lhs: lhsCondition, rhs: rhsCondition, operation: operation)
     }
 
-    init?(lhs: TransitionCondition, rhs: TransitionCondition, operation: String) {
+    /// Creates a condition when the code can be separated into a operation with two arguments.
+    /// - Parameters:
+    ///   - lhs: The left-hand side of the `operator`.
+    ///   - rhs: The right-hand side of the `operator`.
+    ///   - operation: The operation symbol.
+    private init?(lhs: TransitionCondition, rhs: TransitionCondition, operation: String) {
         switch operation.lowercased() {
         case "and":
             self = .and(lhs: lhs, rhs: rhs)
