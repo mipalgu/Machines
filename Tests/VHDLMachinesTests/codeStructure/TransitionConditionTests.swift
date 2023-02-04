@@ -294,4 +294,45 @@ final class TransitionConditionTests: XCTestCase {
         )
     }
 
+    /// Test `hasAfter` computed property.
+    func testHasAfter() {
+        let after = TransitionCondition.after(statement: AfterStatement(amount: x, period: .ns))
+        XCTAssertFalse(TransitionCondition.conditional(condition: .literal(value: true)).hasAfter)
+        XCTAssertFalse(TransitionCondition.variable(name: .x).hasAfter)
+        XCTAssertFalse(
+            TransitionCondition.boolean(expression: .or(
+                lhs: .literal(value: .boolean(value: true)), rhs: .literal(value: .boolean(value: false))
+            )).hasAfter
+        )
+        XCTAssertTrue(after.hasAfter)
+        XCTAssertFalse(TransitionCondition.or(lhs: .variable(name: .x), rhs: .variable(name: .y)).hasAfter)
+        XCTAssertTrue(TransitionCondition.or(lhs: .variable(name: .x), rhs: after).hasAfter)
+        XCTAssertTrue(TransitionCondition.or(lhs: after, rhs: .variable(name: .y)).hasAfter)
+        XCTAssertTrue(TransitionCondition.or(lhs: after, rhs: after).hasAfter)
+        XCTAssertFalse(TransitionCondition.and(lhs: .variable(name: .x), rhs: .variable(name: .y)).hasAfter)
+        XCTAssertTrue(TransitionCondition.and(lhs: .variable(name: .x), rhs: after).hasAfter)
+        XCTAssertTrue(TransitionCondition.and(lhs: after, rhs: .variable(name: .y)).hasAfter)
+        XCTAssertTrue(TransitionCondition.and(lhs: after, rhs: after).hasAfter)
+        XCTAssertFalse(TransitionCondition.nand(lhs: .variable(name: .x), rhs: .variable(name: .y)).hasAfter)
+        XCTAssertTrue(TransitionCondition.nand(lhs: .variable(name: .x), rhs: after).hasAfter)
+        XCTAssertTrue(TransitionCondition.nand(lhs: after, rhs: .variable(name: .y)).hasAfter)
+        XCTAssertTrue(TransitionCondition.nand(lhs: after, rhs: after).hasAfter)
+        XCTAssertFalse(TransitionCondition.nor(lhs: .variable(name: .x), rhs: .variable(name: .y)).hasAfter)
+        XCTAssertTrue(TransitionCondition.nor(lhs: .variable(name: .x), rhs: after).hasAfter)
+        XCTAssertTrue(TransitionCondition.nor(lhs: after, rhs: .variable(name: .y)).hasAfter)
+        XCTAssertTrue(TransitionCondition.nor(lhs: after, rhs: after).hasAfter)
+        XCTAssertFalse(TransitionCondition.xor(lhs: .variable(name: .x), rhs: .variable(name: .y)).hasAfter)
+        XCTAssertTrue(TransitionCondition.xor(lhs: .variable(name: .x), rhs: after).hasAfter)
+        XCTAssertTrue(TransitionCondition.xor(lhs: after, rhs: .variable(name: .y)).hasAfter)
+        XCTAssertTrue(TransitionCondition.xor(lhs: after, rhs: after).hasAfter)
+        XCTAssertFalse(TransitionCondition.xnor(lhs: .variable(name: .x), rhs: .variable(name: .y)).hasAfter)
+        XCTAssertTrue(TransitionCondition.xnor(lhs: .variable(name: .x), rhs: after).hasAfter)
+        XCTAssertTrue(TransitionCondition.xnor(lhs: after, rhs: .variable(name: .y)).hasAfter)
+        XCTAssertTrue(TransitionCondition.xnor(lhs: after, rhs: after).hasAfter)
+        XCTAssertFalse(TransitionCondition.not(value: .variable(name: .x)).hasAfter)
+        XCTAssertTrue(TransitionCondition.not(value: after).hasAfter)
+        XCTAssertFalse(TransitionCondition.precedence(condition: .variable(name: .x)).hasAfter)
+        XCTAssertTrue(TransitionCondition.precedence(condition: after).hasAfter)
+    }
+
 }
