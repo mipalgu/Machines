@@ -196,13 +196,6 @@ public indirect enum TransitionCondition: RawRepresentable, Equatable, Codable, 
             guard let lhs = value.uptoBalancedBracket else {
                 return nil
             }
-            guard lhs.endIndex != value.endIndex else {
-                guard let condition = TransitionCondition(rawValue: String(lhs.dropFirst().dropLast())) else {
-                    return nil
-                }
-                self = .precedence(condition: condition)
-                return
-            }
             let remaining = value[lhs.endIndex...].trimmingCharacters(in: .whitespacesAndNewlines)
             guard
                 let operation = remaining.firstWord,

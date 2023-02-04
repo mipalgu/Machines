@@ -190,10 +190,6 @@ final class TransitionConditionTests: XCTestCase {
             .precedence(condition: .after(statement: AfterStatement(amount: x, period: .ns)))
         )
         XCTAssertEqual(
-            TransitionCondition(rawValue: "y or after_ns(x)"),
-            .or(lhs: .variable(name: .y), rhs: .after(statement: AfterStatement(amount: x, period: .ns)))
-        )
-        XCTAssertEqual(
             TransitionCondition(rawValue: "(y and z) or after_ns(x)"),
             .or(
                 lhs: .precedence(condition: .boolean(expression: .and(lhs: y, rhs: z))),
@@ -257,6 +253,44 @@ final class TransitionConditionTests: XCTestCase {
                     ))
                 ))
             )
+        )
+    }
+
+    /// Test nil cases for the raw value init.
+    func testFailingRawValueInit() {
+        XCTAssertNil(TransitionCondition(rawValue: "after_ms(x) or"))
+        XCTAssertNil(TransitionCondition(rawValue: "(x and)"))
+        XCTAssertNil(TransitionCondition(rawValue: "(after_ms(x)"))
+        XCTAssertNil(TransitionCondition(rawValue: "(after_ms(x)) ors true"))
+        XCTAssertNil(TransitionCondition(rawValue: "(after_ms(x)) or x y z"))
+        XCTAssertNil(TransitionCondition(rawValue: "after_ms(x) ors x"))
+    }
+
+    /// Test after boolean expressions.
+    func testAfterBooleanInit() {
+        XCTAssertEqual(
+            TransitionCondition(rawValue: "y or after_ns(x)"),
+            .or(lhs: .variable(name: .y), rhs: .after(statement: AfterStatement(amount: x, period: .ns)))
+        )
+        XCTAssertEqual(
+            TransitionCondition(rawValue: "y and after_ns(x)"),
+            .and(lhs: .variable(name: .y), rhs: .after(statement: AfterStatement(amount: x, period: .ns)))
+        )
+        XCTAssertEqual(
+            TransitionCondition(rawValue: "y nand after_ns(x)"),
+            .nand(lhs: .variable(name: .y), rhs: .after(statement: AfterStatement(amount: x, period: .ns)))
+        )
+        XCTAssertEqual(
+            TransitionCondition(rawValue: "y nor after_ns(x)"),
+            .nor(lhs: .variable(name: .y), rhs: .after(statement: AfterStatement(amount: x, period: .ns)))
+        )
+        XCTAssertEqual(
+            TransitionCondition(rawValue: "y xor after_ns(x)"),
+            .xor(lhs: .variable(name: .y), rhs: .after(statement: AfterStatement(amount: x, period: .ns)))
+        )
+        XCTAssertEqual(
+            TransitionCondition(rawValue: "y xnor after_ns(x)"),
+            .xnor(lhs: .variable(name: .y), rhs: .after(statement: AfterStatement(amount: x, period: .ns)))
         )
     }
 
