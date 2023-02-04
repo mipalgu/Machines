@@ -54,6 +54,7 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+import Foundation
 import VHDLParsing
 
 public indirect enum TransitionCondition: RawRepresentable, Equatable, Codable, Hashable, Sendable {
@@ -61,6 +62,8 @@ public indirect enum TransitionCondition: RawRepresentable, Equatable, Codable, 
     case after(statement: AfterStatement)
 
     case conditional(condition: ConditionalExpression)
+
+    case boolean(expression: BooleanExpression)
 
     /// An `and` operation.
     case and(lhs: TransitionCondition, rhs: TransitionCondition)
@@ -83,11 +86,17 @@ public indirect enum TransitionCondition: RawRepresentable, Equatable, Codable, 
     /// An `xnor` operation.
     case xnor(lhs: TransitionCondition, rhs: TransitionCondition)
 
+    case precedence(condition: TransitionCondition)
+
+    case variable(name: VariableName)
+
     public var hasAfter: Bool {
         switch self {
         case .after:
             return true
         case .conditional:
+            return false
+        case .boolean:
             return false
         case .and(let lhs, let rhs):
             return lhs.hasAfter || rhs.hasAfter
@@ -103,6 +112,10 @@ public indirect enum TransitionCondition: RawRepresentable, Equatable, Codable, 
             return lhs.hasAfter || rhs.hasAfter
         case .xnor(let lhs, let rhs):
             return lhs.hasAfter || rhs.hasAfter
+        case .precedence(let condition):
+            return condition.hasAfter
+        case .variable:
+            return false
         }
     }
 
@@ -112,20 +125,26 @@ public indirect enum TransitionCondition: RawRepresentable, Equatable, Codable, 
             return statement.rawValue
         case .conditional(let condition):
             return condition.rawValue
+        case .boolean(let expression):
+            return expression.rawValue
         case .and(let lhs, let rhs):
-            return "(\(lhs.rawValue) and \(rhs.rawValue))"
+            return "\(lhs.rawValue) and \(rhs.rawValue)"
         case .or(let lhs, let rhs):
-            return "(\(lhs.rawValue) or \(rhs.rawValue))"
+            return "\(lhs.rawValue) or \(rhs.rawValue)"
         case .nand(let lhs, let rhs):
-            return "(\(lhs.rawValue) nand \(rhs.rawValue))"
+            return "\(lhs.rawValue) nand \(rhs.rawValue)"
         case .not(let value):
             return "not \(value.rawValue)"
         case .nor(let lhs, let rhs):
-            return "(\(lhs.rawValue) nor \(rhs.rawValue))"
+            return "\(lhs.rawValue) nor \(rhs.rawValue)"
         case .xor(let lhs, let rhs):
-            return "(\(lhs.rawValue) xor \(rhs.rawValue))"
+            return "\(lhs.rawValue) xor \(rhs.rawValue)"
         case .xnor(let lhs, let rhs):
-            return "(\(lhs.rawValue) xnor \(rhs.rawValue))"
+            return "\(lhs.rawValue) xnor \(rhs.rawValue)"
+        case .precedence(let condition):
+            return "(\(condition.rawValue))"
+        case .variable(let name):
+            return name.rawValue
         }
     }
 
@@ -134,18 +153,103 @@ public indirect enum TransitionCondition: RawRepresentable, Equatable, Codable, 
         guard trimmedString.count < 1024 else {
             return nil
         }
-        if let statement = AfterStatement(rawValue: trimmedString) {
+        if let name = VariableName(rawValue: trimmedString) {
+            self = .variable(name: name)
+            return
+        }
+        if let statement = AfterStatement(after: trimmedString) {
             self = .after(statement: statement)
+            return
+        }
+        let words = trimmedString.components(
+            separatedBy: .whitespacesAndNewlines.union(.vhdlOperators.union(CharacterSet(charactersIn: ";")))
+        )
+        .map { $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() }
+        .filter { !$0.isEmpty }
+        guard !words.contains(where: { Set.afters.contains($0) }) else {
+            self.init(hasAfter: trimmedString)
             return
         }
         if let condition = ConditionalExpression(rawValue: trimmedString) {
             self = .conditional(condition: condition)
             return
         }
-        guard trimmedString.lowercased().contains("after") else {
-            return nil
+        if let boolean = BooleanExpression(rawValue: trimmedString) {
+            self = .boolean(expression: boolean)
+            return
         }
         return nil
+    }
+
+    init?(hasAfter value: String) {
+        if value.hasPrefix("(") {
+            guard let lhs = value.uptoBalancedBracket else {
+                return nil
+            }
+            guard lhs.endIndex != value.endIndex else {
+                guard let condition = TransitionCondition(rawValue: String(lhs.dropFirst().dropLast())) else {
+                    return nil
+                }
+                self = .precedence(condition: condition)
+                return
+            }
+            let remaining = value[lhs.endIndex...].trimmingCharacters(in: .whitespacesAndNewlines)
+            guard
+                let operation = remaining.firstWord,
+                Set.vhdlBooleanBinaryOperations.contains(operation.lowercased()),
+                let startIndex = remaining.startIndex(word: operation),
+                let rhs = remaining[remaining.index(startIndex, offsetBy: operation.count)...]
+                    .uptoBalancedBracket,
+                rhs.endIndex == remaining.endIndex,
+                let lhsCondition = TransitionCondition(rawValue: String(lhs)),
+                let rhsCondition = TransitionCondition(rawValue: String(rhs))
+            else {
+                return nil
+            }
+            self.init(lhs: lhsCondition, rhs: rhsCondition, operation: operation)
+            return
+        }
+        guard
+            let (startIndex, operation) = Set.vhdlBooleanBinaryOperations.compactMap(
+                { word -> (String.Index, String)? in
+                    guard let index = value.startIndex(word: word) else {
+                        return nil
+                    }
+                    return (index, word)
+                }
+            )
+            .min(by: { $0.0 < $1.0 })
+        else {
+            return nil
+        }
+        let lhs = value[value.startIndex..<startIndex]
+        let rhs = value[value.index(startIndex, offsetBy: operation.count)...]
+        guard
+            let lhsCondition = TransitionCondition(rawValue: String(lhs)),
+            let rhsCondition = TransitionCondition(rawValue: String(rhs))
+        else {
+            return nil
+        }
+        self.init(lhs: lhsCondition, rhs: rhsCondition, operation: operation)
+    }
+
+    init?(lhs: TransitionCondition, rhs: TransitionCondition, operation: String) {
+        switch operation.lowercased() {
+        case "and":
+            self = .and(lhs: lhs, rhs: rhs)
+        case "or":
+            self = .or(lhs: lhs, rhs: rhs)
+        case "nand":
+            self = .nand(lhs: lhs, rhs: rhs)
+        case "nor":
+            self = .nor(lhs: lhs, rhs: rhs)
+        case "xor":
+            self = .xor(lhs: lhs, rhs: rhs)
+        case "xnor":
+            self = .xnor(lhs: lhs, rhs: rhs)
+        default:
+            return nil
+        }
     }
 
 }
