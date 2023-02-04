@@ -30,7 +30,7 @@ let package = Package(
         ),
         .target(
             name: "VHDLMachines",
-            dependencies: [.product(name: "swift_helpers", package: "swift_helpers"), .product(name: "IO", package: "swift_helpers"), .product(name: "GUUnits", package: "GUUnits"), "VHDLParsing"]
+            dependencies: [.product(name: "swift_helpers", package: "swift_helpers"), .product(name: "IO", package: "swift_helpers"), .product(name: "GUUnits", package: "GUUnits"), .product(name: "VHDLParsing", package: "VHDLParsing"), .product(name: "StringHelpers", package: "VHDLParsing")]
         ),
         .target(
             name: "CXXBase",
