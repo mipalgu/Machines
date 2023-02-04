@@ -55,9 +55,40 @@
 // 
 
 @testable import VHDLMachines
+import VHDLParsing
 import XCTest
 
 /// Tests for the ``PortSignal`` type.
 final class PortSignalTests: XCTestCase {
+
+    /// The signal under test.
+    let signal = PortSignal(
+        type: .stdLogic,
+        name: .x,
+        mode: .input,
+        defaultValue: .literal(value: .bit(value: .low)),
+        comment: Comment(rawValue: "signal x.")
+    )
+
+    /// Test the computed properties function correctly.
+    func testComputedProperties() {
+        XCTAssertEqual(signal.externalName, VariableName(rawValue: "EXTERNAL_x"))
+        XCTAssertEqual(
+            signal.snapshot, LocalSignal(type: .stdLogic, name: .x, defaultValue: nil, comment: nil)
+        )
+        XCTAssertEqual(signal.read, .assignment(name: .x, value: .variable(name: signal.externalName)))
+        XCTAssertEqual(signal.write, .assignment(name: signal.externalName, value: .variable(name: .x)))
+    }
+
+    /// Test the ``PortSignal.init(clock:)`` function.
+    func testClockInit() {
+        let clock = Clock(name: .clk, frequency: 50, unit: .MHz)
+        let signal = PortSignal(clock: clock)
+        XCTAssertEqual(signal.name, .clk)
+        XCTAssertEqual(signal.mode, .input)
+        XCTAssertEqual(signal.type, .stdLogic)
+        XCTAssertNil(signal.defaultValue)
+        XCTAssertNil(signal.comment)
+    }
 
 }
