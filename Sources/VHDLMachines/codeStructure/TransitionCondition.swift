@@ -86,6 +86,10 @@ public indirect enum TransitionCondition: RawRepresentable, Equatable, Codable, 
     /// An `xnor` operation.
     case xnor(lhs: TransitionCondition, rhs: TransitionCondition)
 
+    case equals(lhs: TransitionCondition, rhs: TransitionCondition)
+
+    case notEquals(lhs: TransitionCondition, rhs: TransitionCondition)
+
     case precedence(condition: TransitionCondition)
 
     case variable(name: VariableName)
@@ -116,6 +120,10 @@ public indirect enum TransitionCondition: RawRepresentable, Equatable, Codable, 
             return condition.hasAfter
         case .variable:
             return false
+        case .equals(let lhs, let rhs):
+            return lhs.hasAfter || rhs.hasAfter
+        case .notEquals(let lhs, let rhs):
+            return lhs.hasAfter || rhs.hasAfter
         }
     }
 
@@ -145,6 +153,10 @@ public indirect enum TransitionCondition: RawRepresentable, Equatable, Codable, 
             return "(\(condition.rawValue))"
         case .variable(let name):
             return name.rawValue
+        case .equals(let lhs, let rhs):
+            return "\(lhs.rawValue) = \(rhs.rawValue)"
+        case .notEquals(let lhs, let rhs):
+            return "\(lhs.rawValue) /= \(rhs.rawValue)"
         }
     }
 
@@ -215,14 +227,13 @@ public indirect enum TransitionCondition: RawRepresentable, Equatable, Codable, 
             return
         }
         guard
-            let (startIndex, operation) = Set.vhdlBooleanBinaryOperations.compactMap(
-                { word -> (String.Index, String)? in
-                    guard let index = value.startIndex(word: word) else {
-                        return nil
-                    }
-                    return (index, word)
+            let (startIndex, operation) = Set.vhdlBooleanBinaryOperations.union(["=", "/="])
+            .compactMap({ word -> (String.Index, String)? in
+                guard let index = value.startIndex(word: word) else {
+                    return nil
                 }
-            )
+                return (index, word)
+            })
             .min(by: { $0.0 < $1.0 })
         else {
             return nil
@@ -252,6 +263,10 @@ public indirect enum TransitionCondition: RawRepresentable, Equatable, Codable, 
             self = .xor(lhs: lhs, rhs: rhs)
         case "xnor":
             self = .xnor(lhs: lhs, rhs: rhs)
+        case "=":
+            self = .equals(lhs: lhs, rhs: rhs)
+        case "/=":
+            self = .notEquals(lhs: lhs, rhs: rhs)
         default:
             return nil
         }

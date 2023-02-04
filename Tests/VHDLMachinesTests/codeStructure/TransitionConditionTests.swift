@@ -104,6 +104,13 @@ final class TransitionConditionTests: XCTestCase {
         XCTAssertEqual(
             TransitionCondition.not(value: .variable(name: .x)).rawValue, "not x"
         )
+        XCTAssertEqual(
+            TransitionCondition.equals(lhs: .variable(name: .x), rhs: .variable(name: .y)).rawValue, "x = y"
+        )
+        XCTAssertEqual(
+            TransitionCondition.notEquals(lhs: .variable(name: .x), rhs: .variable(name: .y)).rawValue,
+            "x /= y"
+        )
     }
 
     /// Test the raw value init for boolean expressions.
@@ -292,6 +299,25 @@ final class TransitionConditionTests: XCTestCase {
             TransitionCondition(rawValue: "y xnor after_ns(x)"),
             .xnor(lhs: .variable(name: .y), rhs: .after(statement: AfterStatement(amount: x, period: .ns)))
         )
+        XCTAssertEqual(
+            TransitionCondition(rawValue: "y = after_ns(x)"),
+            .equals(lhs: .variable(name: .y), rhs: .after(statement: AfterStatement(amount: x, period: .ns)))
+        )
+        XCTAssertEqual(
+            TransitionCondition(rawValue: "y /= after_ns(x)"),
+            .notEquals(
+                lhs: .variable(name: .y), rhs: .after(statement: AfterStatement(amount: x, period: .ns))
+            )
+        )
+        XCTAssertEqual(
+            TransitionCondition(rawValue: "(y /= after_ns(x)) or z"),
+            .or(
+                lhs: .precedence(condition: .notEquals(
+                    lhs: .variable(name: .y), rhs: .after(statement: AfterStatement(amount: x, period: .ns))
+                )),
+                rhs: .variable(name: .z)
+            )
+        )
     }
 
     /// Test `hasAfter` computed property.
@@ -333,6 +359,18 @@ final class TransitionConditionTests: XCTestCase {
         XCTAssertTrue(TransitionCondition.not(value: after).hasAfter)
         XCTAssertFalse(TransitionCondition.precedence(condition: .variable(name: .x)).hasAfter)
         XCTAssertTrue(TransitionCondition.precedence(condition: after).hasAfter)
+        XCTAssertFalse(
+            TransitionCondition.equals(lhs: .variable(name: .x), rhs: .variable(name: .y)).hasAfter
+        )
+        XCTAssertTrue(TransitionCondition.equals(lhs: .variable(name: .x), rhs: after).hasAfter)
+        XCTAssertTrue(TransitionCondition.equals(lhs: after, rhs: .variable(name: .y)).hasAfter)
+        XCTAssertTrue(TransitionCondition.equals(lhs: after, rhs: after).hasAfter)
+        XCTAssertFalse(
+            TransitionCondition.notEquals(lhs: .variable(name: .x), rhs: .variable(name: .y)).hasAfter
+        )
+        XCTAssertTrue(TransitionCondition.notEquals(lhs: .variable(name: .x), rhs: after).hasAfter)
+        XCTAssertTrue(TransitionCondition.notEquals(lhs: after, rhs: .variable(name: .y)).hasAfter)
+        XCTAssertTrue(TransitionCondition.notEquals(lhs: after, rhs: after).hasAfter)
     }
 
 }
