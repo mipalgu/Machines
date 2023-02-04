@@ -161,6 +161,16 @@ public indirect enum TransitionCondition: RawRepresentable, Equatable, Codable, 
             self = .after(statement: statement)
             return
         }
+        if trimmedString.hasPrefix("("), trimmedString.hasSuffix(")"),
+            let subString = trimmedString.uptoBalancedBracket, subString.endIndex == trimmedString.endIndex {
+            guard
+                let condition = TransitionCondition(rawValue: String(subString.dropFirst().dropLast()))
+            else {
+                return nil
+            }
+            self = .precedence(condition: condition)
+            return
+        }
         let words = trimmedString.components(
             separatedBy: .whitespacesAndNewlines.union(.vhdlOperators.union(CharacterSet(charactersIn: ";")))
         )
@@ -197,10 +207,12 @@ public indirect enum TransitionCondition: RawRepresentable, Equatable, Codable, 
             guard
                 let operation = remaining.firstWord,
                 Set.vhdlBooleanBinaryOperations.contains(operation.lowercased()),
-                let startIndex = remaining.startIndex(word: operation),
-                let rhs = remaining[remaining.index(startIndex, offsetBy: operation.count)...]
-                    .uptoBalancedBracket,
-                rhs.endIndex == remaining.endIndex,
+                let startIndex = remaining.startIndex(word: operation)
+            else {
+                return nil
+            }
+            let rhs = remaining[remaining.index(startIndex, offsetBy: operation.count)...]
+            guard
                 let lhsCondition = TransitionCondition(rawValue: String(lhs)),
                 let rhsCondition = TransitionCondition(rawValue: String(rhs))
             else {

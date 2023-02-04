@@ -192,6 +192,64 @@ final class TransitionConditionTests: XCTestCase {
                 rhs: .after(statement: AfterStatement(amount: x, period: .ns))
             )
         )
+        XCTAssertEqual(
+            TransitionCondition(rawValue: "y and (z or after_ns(x))"),
+            .and(
+                lhs: .variable(name: .y),
+                rhs: .precedence(condition: .or(
+                    lhs: .variable(name: .z), rhs: .after(statement: AfterStatement(amount: x, period: .ns))
+                ))
+            )
+        )
+        XCTAssertEqual(
+            TransitionCondition(rawValue: "(x or y) and (z or after_ns(10))"),
+            .and(
+                lhs: .precedence(condition: .boolean(expression: .or(lhs: x, rhs: y))),
+                rhs: .precedence(condition: .or(
+                    lhs: .variable(name: .z),
+                    rhs: .after(statement: AfterStatement(
+                        amount: .literal(value: .integer(value: 10)), period: .ns
+                    ))
+                ))
+            )
+        )
+    }
+
+    /// Test the raw value init for after stataments containing conditional operations.
+    func testAfterConditionalInit() {
+        XCTAssertEqual(
+            TransitionCondition(rawValue: "(x = y) and (z or after_ns(10))"),
+            .and(
+                lhs: .precedence(condition: .conditional(
+                    condition: .comparison(value: .equality(lhs: x, rhs: y))
+                )),
+                rhs: .precedence(condition: .or(
+                    lhs: .variable(name: .z),
+                    rhs: .after(statement: AfterStatement(
+                        amount: .literal(value: .integer(value: 10)), period: .ns
+                    ))
+                ))
+            )
+        )
+        XCTAssertEqual(
+            TransitionCondition(rawValue: "(x = y) and ((z or after_ns(10)) or after_ms(1))"),
+            .and(
+                lhs: .precedence(condition: .conditional(
+                    condition: .comparison(value: .equality(lhs: x, rhs: y))
+                )),
+                rhs: .precedence(condition: .or(
+                    lhs: .precedence(condition: .or(
+                        lhs: .variable(name: .z),
+                        rhs: .after(statement: AfterStatement(
+                            amount: .literal(value: .integer(value: 10)), period: .ns
+                        ))
+                    )),
+                    rhs: .after(statement: AfterStatement(
+                        amount: .literal(value: .integer(value: 1)), period: .ms
+                    ))
+                ))
+            )
+        )
     }
 
 }
