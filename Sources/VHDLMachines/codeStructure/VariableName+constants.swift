@@ -61,71 +61,67 @@ public extension VariableName {
 
     // swiftlint:disable force_unwrapping
 
-    static var clk: VariableName { VariableName(rawValue: "clk")! }
+    static let clk = VariableName(rawValue: "clk")!
 
-    static var clockPeriod: VariableName { VariableName(rawValue: "clockPeriod")! }
+    static let clockPeriod = VariableName(rawValue: "clockPeriod")!
 
-    static var initial: VariableName { VariableName(rawValue: "Intiial")! }
+    static let initial = VariableName(rawValue: "Intiial")!
 
-    static var suspendedState: VariableName { VariableName(rawValue: "Suspended")! }
+    static let suspendedState = VariableName(rawValue: "Suspended")!
 
-    static var ringletLength: VariableName { VariableName(rawValue: "ringletLength")! }
+    static let ringletLength = VariableName(rawValue: "ringletLength")!
 
-    static var ringletPerPs: VariableName { VariableName(rawValue: "RINGLETS_PER_PS")! }
+    static let ringletPerPs = VariableName(rawValue: "RINGLETS_PER_PS")!
 
-    static var ringletPerNs: VariableName { VariableName(rawValue: "RINGLETS_PER_NS")! }
+    static let ringletPerNs = VariableName(rawValue: "RINGLETS_PER_NS")!
 
-    static var ringletPerUs: VariableName { VariableName(rawValue: "RINGLETS_PER_US")! }
+    static let ringletPerUs = VariableName(rawValue: "RINGLETS_PER_US")!
 
-    static var ringletPerMs: VariableName { VariableName(rawValue: "RINGLETS_PER_MS")! }
+    static let ringletPerMs = VariableName(rawValue: "RINGLETS_PER_MS")!
 
-    static var ringletPerS: VariableName { VariableName(rawValue: "RINGLETS_PER_S")! }
+    static let ringletPerS = VariableName(rawValue: "RINGLETS_PER_S")!
 
-    static var ringletCounter: VariableName { VariableName(rawValue: "ringlet_counter")! }
+    static let ringletCounter = VariableName(rawValue: "ringlet_counter")!
 
-    static var suspended: VariableName { VariableName(rawValue: "suspended")! }
+    static let suspended = VariableName(rawValue: "suspended")!
 
-    static var command: VariableName { VariableName(rawValue: "command")! }
+    static let command = VariableName(rawValue: "command")!
 
-    static var currentState: VariableName { VariableName(rawValue: "currentState")! }
+    static let currentState = VariableName(rawValue: "currentState")!
 
-    static var targetState: VariableName { VariableName(rawValue: "targetState")! }
+    static let targetState = VariableName(rawValue: "targetState")!
 
-    static var previousRinglet: VariableName { VariableName(rawValue: "previousRinglet")! }
+    static let previousRinglet = VariableName(rawValue: "previousRinglet")!
 
-    static var suspendedFrom: VariableName { VariableName(rawValue: "suspendedFrom")! }
+    static let suspendedFrom = VariableName(rawValue: "suspendedFrom")!
 
-    static var internalState: VariableName { VariableName(rawValue: "internalState")! }
+    static let internalState = VariableName(rawValue: "internalState")!
 
-    static var readSnapshot: VariableName { VariableName(rawValue: ReservedAction.readSnapshot.rawValue)! }
+    static let readSnapshot = VariableName(rawValue: ReservedAction.readSnapshot.rawValue)!
 
-    static var writeSnapshot: VariableName {
-        VariableName(rawValue: ReservedAction.writeSnapshot.rawValue)!
-    }
+    static let writeSnapshot = VariableName(rawValue: ReservedAction.writeSnapshot.rawValue)!
 
-    static var checkTransition: VariableName {
-        VariableName(rawValue: ReservedAction.checkTransition.rawValue)!
-    }
+    static let checkTransition = VariableName(rawValue: ReservedAction.checkTransition.rawValue)!
 
-    static var noOnEntry: VariableName { VariableName(rawValue: ReservedAction.noOnEntry.rawValue)! }
+    static let noOnEntry = VariableName(rawValue: ReservedAction.noOnEntry.rawValue)!
 
-    static var onEntry: VariableName { VariableName(rawValue: "OnEntry")! }
+    static let onEntry = VariableName(rawValue: "OnEntry")!
 
-    static var onExit: VariableName { VariableName(rawValue: "OnExit")! }
+    static let onExit = VariableName(rawValue: "OnExit")!
 
-    static var onResume: VariableName { VariableName(rawValue: "OnResume")! }
+    static let onResume = VariableName(rawValue: "OnResume")!
 
-    static var onSuspend: VariableName { VariableName(rawValue: "OnSuspend")! }
+    static let onSuspend = VariableName(rawValue: "OnSuspend")!
 
-    static var `internal`: VariableName { VariableName(rawValue: "Internal")! }
+    static let `internal` = VariableName(rawValue: "Internal")!
 
-    static var nullCommand: VariableName { VariableName(rawValue: "COMMAND_NULL")! }
+    static let nullCommand = VariableName(rawValue: "COMMAND_NULL")!
 
-    static var restartCommand: VariableName { VariableName(rawValue: "COMMAND_RESTART")! }
+    static let restartCommand = VariableName(rawValue: "COMMAND_RESTART")!
 
-    static var resumeCommand: VariableName { VariableName(rawValue: "COMMAND_RESUME")! }
+    static let resumeCommand = VariableName(rawValue: "COMMAND_RESUME")!
 
-    static var suspendCommand: VariableName { VariableName(rawValue: "COMMAND_SUSPEND")! }
+    static let suspendCommand = VariableName(rawValue: "COMMAND_SUSPEND")!
 
     static func name(for state: State) -> VariableName {
         VariableName(rawValue: "STATE_\(state.name.rawValue)")!
