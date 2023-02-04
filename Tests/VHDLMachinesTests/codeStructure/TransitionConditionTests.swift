@@ -109,6 +109,10 @@ final class TransitionConditionTests: XCTestCase {
     /// Test the raw value init for boolean expressions.
     func testBooleanInit() {
         XCTAssertEqual(TransitionCondition(rawValue: "x and y"), .boolean(expression: .and(lhs: x, rhs: y)))
+        XCTAssertEqual(
+            TransitionCondition(rawValue: "(x and y)"),
+            .precedence(condition: .boolean(expression: .and(lhs: x, rhs: y)))
+        )
         XCTAssertEqual(TransitionCondition(rawValue: "x or y"), .boolean(expression: .or(lhs: x, rhs: y)))
         XCTAssertEqual(TransitionCondition(rawValue: "x nand y"), .boolean(expression: .nand(lhs: x, rhs: y)))
         XCTAssertEqual(TransitionCondition(rawValue: "x nor y"), .boolean(expression: .nor(lhs: x, rhs: y)))
@@ -141,6 +145,10 @@ final class TransitionConditionTests: XCTestCase {
         XCTAssertEqual(
             TransitionCondition(rawValue: "x > y"),
             .conditional(condition: .comparison(value: .greaterThan(lhs: x, rhs: y)))
+        )
+        XCTAssertEqual(
+            TransitionCondition(rawValue: "(x > y)"),
+            .precedence(condition: .conditional(condition: .comparison(value: .greaterThan(lhs: x, rhs: y))))
         )
         XCTAssertEqual(
             TransitionCondition(rawValue: "x >= y"),
