@@ -27,6 +27,12 @@ extension LocalSignal {
     //     )
     // }
 
+    /// Create a local snapshot for an external variable.
+    /// - Parameter signal: The signal to convert into a snapshot.
+    init(snapshot signal: PortSignal) {
+        self.init(type: signal.type, name: signal.name, defaultValue: nil, comment: nil)
+    }
+
     /// Create the signals that track the internal states of the machine.
     /// - Parameter machine: The machine to create the trackers for.
     /// - Returns: The signals that track which state is executing.

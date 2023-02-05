@@ -113,4 +113,11 @@ final class LocalSignalTests: XCTestCase {
         )
     }
 
+    /// Test snapshot is created correctly.
+    func testPortInit() {
+        let external = PortSignal(type: .stdLogic, name: .x, mode: .input)
+        let result = LocalSignal(snapshot: external)
+        XCTAssertEqual(result, LocalSignal(type: .stdLogic, name: .x, defaultValue: nil, comment: nil))
+    }
+
 }
