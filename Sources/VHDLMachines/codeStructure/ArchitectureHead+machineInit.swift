@@ -1,4 +1,4 @@
-// MachineRepresentationTests.swift
+// ArchitectureHead+machineInit.swift
 // Machines
 // 
 // Created by Morgan McColl.
@@ -54,20 +54,12 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-@testable import VHDLMachines
-import XCTest
+import VHDLParsing
 
-final class MachineRepresentationTests: XCTestCase {
+public extension ArchitectureHead {
 
-    var machine = MachineRepresentation(machine: Machine.initial(path: URL(fileURLWithPath: "/tmp")))
-
-    override func setUp() {
-        self.machine = MachineRepresentation(machine: Machine.initial(path: URL(fileURLWithPath: "/tmp")))
-    }
-
-    func testInit() {
-        XCTAssertNotNil(machine)
-        // print(machine?.rawValue ?? "nil")
+    init?(machine: Machine) {
+        nil
     }
 
 }

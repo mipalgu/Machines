@@ -1,4 +1,4 @@
-// Architecture.swift
+// AsynchronousBlock+machineInit.swift
 // Machines
 // 
 // Created by Morgan McColl.
@@ -56,22 +56,10 @@
 
 import VHDLParsing
 
-public extension Architecture {
-
-    init?<T>(representation: T) where T: MachineVHDLRepresentable {
-        self.init(
-            body: representation.architectureBody,
-            entity: representation.entityName,
-            head: representation.architectureHead,
-            name: representation.architectureName
-        )
-    }
+public extension AsynchronousBlock {
 
     init?(machine: Machine) {
-        guard let representation = MachineRepresentation(machine: machine) else {
-            return nil
-        }
-        self.init(representation: representation)
+        nil
     }
 
 }
