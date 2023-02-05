@@ -72,7 +72,6 @@ extension ArchitectureHead {
             let internalStateBits = BitLiteral.bitsRequired(for: actions.count),
             internalStateBits > 0,
             let stateRepresentationComment = Comment(rawValue: "-- State Representation Bits"),
-            let commandsComment = Comment(rawValue: "-- Suspension Commands"),
             let externalSnapshotComment = Comment(rawValue: "-- Snapshot of External Signals and Variables"),
             let machineSignalComment = Comment(rawValue: "-- Machine Signals"),
             let userCodeComment = Comment(rawValue: "-- User-Specific Code for Architecture Head"),
@@ -97,12 +96,17 @@ extension ArchitectureHead {
             return nil
         }
         let stateTrackerStatements = stateTrackers.map { Statement.definition(signal: $0) }
-        let commandStatements = ConstantSignal.commands.map { Statement.constant(value: $0) }
         var statements: [Statement] = [.comment(value: internalStateComment)] + actionStatements + [
             .definition(signal: internalState),
             .comment(value: stateRepresentationComment)
-        ] + stateRepresentation + stateTrackerStatements + [.comment(value: commandsComment)] +
-        commandStatements
+        ] + stateRepresentation + stateTrackerStatements
+        if machine.suspendedState != nil {
+            guard let commandsComment = Comment(rawValue: "-- Suspension Commands") else {
+                return nil
+            }
+            let commandStatements = ConstantSignal.commands.map { Statement.constant(value: $0) }
+            statements += [.comment(value: commandsComment)] + commandStatements
+        }
         if machine.transitions.contains(where: { $0.condition.hasAfter }) {
             guard
                 let afterComment = Comment(rawValue: "-- After Variables"),

@@ -58,42 +58,63 @@ extension LocalSignal {
             let bitsRequired = BitLiteral.bitsRequired(for: states.count),
             bitsRequired > 0,
             machine.initialState >= 0,
-            machine.initialState < states.count,
-            let suspendedStateIndex = machine.suspendedState,
-            suspendedStateIndex >= 0,
-            suspendedStateIndex < states.count
+            machine.initialState < states.count
         else {
             return nil
         }
         let range = VectorSize.downto(upper: bitsRequired - 1, lower: 0)
         let stateType = SignalType.ranged(type: .stdLogicVector(size: range))
-        let suspendedState = Expression.variable(name: VariableName.name(for: states[suspendedStateIndex]))
         let initialState = Expression.variable(name: VariableName.name(for: states[machine.initialState]))
+        let previousRinglet = LocalSignal(
+            type: stateType,
+            name: .previousRinglet,
+            defaultValue: .literal(
+                value: .vector(value: .logics(value: LogicVector(
+                    values: [LogicLiteral](repeating: .highImpedance, count: range.size)
+                )))
+            ),
+            comment: nil
+        )
+        guard
+            let suspendedStateIndex = machine.suspendedState,
+            suspendedStateIndex >= 0,
+            suspendedStateIndex < states.count
+        else {
+            guard !machine.isParameterised else {
+                return nil
+            }
+            return [
+                LocalSignal(
+                    type: stateType,
+                    name: .currentState,
+                    defaultValue: initialState,
+                    comment: nil
+                ),
+                LocalSignal(
+                    type: stateType,
+                    name: .targetState,
+                    defaultValue: initialState,
+                    comment: nil
+                ),
+                previousRinglet
+            ]
+        }
+        let suspendedState = Expression.variable(name: VariableName.name(for: states[suspendedStateIndex]))
+        let defaultState = machine.isParameterised ? suspendedState : initialState
         return [
             LocalSignal(
                 type: stateType,
                 name: .currentState,
-                defaultValue: suspendedState,
+                defaultValue: defaultState,
                 comment: nil
             ),
             LocalSignal(
                 type: stateType,
                 name: .targetState,
-                defaultValue: suspendedState,
+                defaultValue: defaultState,
                 comment: nil
             ),
-            LocalSignal(
-                type: stateType,
-                name: .previousRinglet,
-                defaultValue: .literal(
-                    value: .vector(
-                        value: .logics(value: LogicVector(
-                            values: [LogicLiteral](repeating: .highImpedance, count: range.size)
-                        ))
-                    )
-                ),
-                comment: nil
-            ),
+            previousRinglet,
             LocalSignal(
                 type: stateType,
                 name: .suspendedFrom,
