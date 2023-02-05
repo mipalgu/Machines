@@ -55,9 +55,22 @@
 // 
 
 @testable import VHDLMachines
+import VHDLParsing
 import XCTest
 
 /// Test class for ``VariableName``.
 final class VariableNameTests: XCTestCase {
+
+    /// Test name functions generate correct names.
+    func testNameFunctions() {
+        let state = State(name: .initial, actions: [:], actionOrder: [], signals: [], externalVariables: [])
+        XCTAssertEqual(VariableName.name(for: state).rawValue, "STATE_Initial")
+        let external = PortSignal(type: .stdLogic, name: .x, mode: .input)
+        XCTAssertEqual(VariableName.name(for: external).rawValue, "EXTERNAL_x")
+        let parameter = Parameter(type: .stdLogic, name: .x)
+        XCTAssertEqual(VariableName.name(for: parameter).rawValue, "PARAMETER_x")
+        let output = ReturnableVariable(type: .stdLogic, name: .x)
+        XCTAssertEqual(VariableName.name(for: output).rawValue, "OUTPUT_x")
+    }
 
 }
