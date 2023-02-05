@@ -161,7 +161,7 @@ final class EntityTests: XCTestCase {
                 PortSignal(
                     type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
                     name: .command,
-                    mode: .output,
+                    mode: .input,
                     defaultValue: nil,
                     comment: nil
                 )

@@ -65,7 +65,13 @@ public extension Entity {
     init?(machine: Machine) {
         let clocks = machine.clocks.map { PortSignal(clock: $0) }
         var signals: [PortSignal] = clocks + machine.externalSignals.map {
-            PortSignal(type: $0.type, name: $0.externalName, mode: $0.mode)
+            PortSignal(
+                type: $0.type,
+                name: $0.externalName,
+                mode: $0.mode,
+                defaultValue: $0.defaultValue,
+                comment: $0.comment
+            )
         }
         if machine.isParameterised {
             signals += machine.parameterSignals.map {
