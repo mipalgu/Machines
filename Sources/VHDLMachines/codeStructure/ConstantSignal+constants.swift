@@ -58,58 +58,108 @@ import Foundation
 import GUUnits
 import VHDLParsing
 
-public extension ConstantSignal {
+/// Helper getters for creating machine constants.
+extension ConstantSignal {
 
-    @inlinable static var ringletConstants: [ConstantSignal] {
-        guard
-            let ringletLength = ConstantSignal(
-                name: .ringletLength,
-                type: .real,
-                value: .binary(operation: .multiplication(
-                    lhs: .literal(value: .decimal(value: 5.0)), rhs: .variable(name: .clockPeriod)
-                ))
-            ),
-            let ringletPerPs = ConstantSignal(
-                name: .ringletPerPs,
-                type: .real,
-                value: .binary(operation: .division(
-                    lhs: .literal(value: .decimal(value: 1.0)), rhs: .variable(name: .ringletLength)
-                ))
-            ),
-            let ringletPerNs = ConstantSignal(
-                name: .ringletPerNs,
-                type: .real,
-                value: .binary(operation: .multiplication(
-                    lhs: .literal(value: .decimal(value: 1000.0)), rhs: .variable(name: .ringletPerPs)
-                ))
-            ),
-            let ringletPerUs = ConstantSignal(
-                name: .ringletPerUs,
-                type: .real,
-                value: .binary(operation: .multiplication(
-                    lhs: .literal(value: .decimal(value: 1_000_000.0)), rhs: .variable(name: .ringletPerPs)
-                ))
-            ),
-            let ringletPerMs = ConstantSignal(
-                name: .ringletPerMs,
-                type: .real,
-                value: .binary(operation: .multiplication(
-                    lhs: .literal(value: .decimal(value: 1_000_000_000.0)),
-                    rhs: .variable(name: .ringletPerPs)
-                ))
-            ),
-            let ringletPerS = ConstantSignal(
-                name: .ringletPerS,
-                type: .real,
-                value: .binary(operation: .multiplication(
-                    lhs: .literal(value: .decimal(value: 1_000_000_000_000.0)),
-                    rhs: .variable(name: .ringletPerPs)
-                ))
-            )
-        else {
-            fatalError("Could not create ringlet constants.")
+    // swiftlint:disable force_unwrapping
+
+    /// The suspension commands.
+    static let commands = [
+        ConstantSignal(
+            name: .nullCommand,
+            type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
+            value: .literal(value: .vector(value: .bits(value: BitVector(values: [.low, .low])))),
+            comment: nil
+        )!,
+        ConstantSignal(
+            name: .restartCommand,
+            type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
+            value: .literal(value: .vector(value: .bits(value: BitVector(values: [.low, .high])))),
+            comment: nil
+        )!,
+        ConstantSignal(
+            name: .suspendCommand,
+            type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
+            value: .literal(value: .vector(value: .bits(value: BitVector(values: [.high, .low])))),
+            comment: nil
+        )!,
+        ConstantSignal(
+            name: .resumeCommand,
+            type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
+            value: .literal(value: .vector(value: .bits(value: BitVector(values: [.high, .high])))),
+            comment: nil
+        )!
+    ]
+
+    /// The ringlet constants.
+    static let ringletConstants: [ConstantSignal] = [
+        ConstantSignal(
+            name: .ringletLength,
+            type: .real,
+            value: .binary(operation: .multiplication(
+                lhs: .literal(value: .decimal(value: 5.0)), rhs: .variable(name: .clockPeriod)
+            ))
+        )!,
+        ConstantSignal(
+            name: .ringletPerPs,
+            type: .real,
+            value: .binary(operation: .division(
+                lhs: .literal(value: .decimal(value: 1.0)), rhs: .variable(name: .ringletLength)
+            ))
+        )!,
+        ConstantSignal(
+            name: .ringletPerNs,
+            type: .real,
+            value: .binary(operation: .multiplication(
+                lhs: .literal(value: .decimal(value: 1000.0)), rhs: .variable(name: .ringletPerPs)
+            ))
+        )!,
+        ConstantSignal(
+            name: .ringletPerUs,
+            type: .real,
+            value: .binary(operation: .multiplication(
+                lhs: .literal(value: .decimal(value: 1_000_000.0)), rhs: .variable(name: .ringletPerPs)
+            ))
+        )!,
+        ConstantSignal(
+            name: .ringletPerMs,
+            type: .real,
+            value: .binary(operation: .multiplication(
+                lhs: .literal(value: .decimal(value: 1_000_000_000.0)),
+                rhs: .variable(name: .ringletPerPs)
+            ))
+        )!,
+        ConstantSignal(
+            name: .ringletPerS,
+            type: .real,
+            value: .binary(operation: .multiplication(
+                lhs: .literal(value: .decimal(value: 1_000_000_000_000.0)),
+                rhs: .variable(name: .ringletPerPs)
+            ))
+        )!
+    ]
+
+    // swiftlint:enable force_unwrapping
+
+    /// Create the constant declaration for the state.
+    /// - Parameters:
+    ///   - state: The state to convert.
+    ///   - bitsRequired: The bits required for all the states to be covered.
+    ///   - index: The index of this `state` in the states array of the machine.
+    init?(state: State, bitsRequired: Int, index: Int) {
+        guard bitsRequired > 0, index >= 0 else {
+            return nil
         }
-        return [ringletLength, ringletPerPs, ringletPerNs, ringletPerUs, ringletPerMs, ringletPerS]
+        let bits = BitLiteral.bitVersion(of: index, bitsRequired: bitsRequired)
+        let type = SignalType.ranged(type: .stdLogicVector(
+            size: .downto(upper: bitsRequired - 1, lower: 0)
+        ))
+        self.init(
+            name: VariableName.name(for: state),
+            type: type,
+            value: .literal(value: .vector(value: .bits(value: BitVector(values: bits)))),
+            comment: nil
+        )
     }
 
     /// Create the constant declaration for the state actions within a machine.
@@ -149,14 +199,20 @@ public extension ConstantSignal {
         return signals
     }
 
-    static func clockPeriod(period: Time) -> ConstantSignal {
-        guard let constant = ConstantSignal(
-            name: VariableName.clockPeriod,
-            type: .real,
-            value: .literal(value: .decimal(value: Double(period.picoseconds_d))),
-            comment: Comment(rawValue: "-- ps")
-        ) else {
-            fatalError("Could not create clock period constant.")
+    /// Create a constant `VHDL` literal that represents a clocks period as a `real` value in picoseconds.
+    /// - Parameter period: The period to convert.
+    /// - Returns: The constant signal.
+    static func clockPeriod(period: Time) -> ConstantSignal? {
+        guard
+            let comment = Comment(rawValue: "-- ps"),
+            let constant = ConstantSignal(
+                name: VariableName.clockPeriod,
+                type: .real,
+                value: .literal(value: .decimal(value: Double(period.picoseconds_d))),
+                comment: comment
+            )
+        else {
+            return nil
         }
         return constant
     }

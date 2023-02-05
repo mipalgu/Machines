@@ -146,4 +146,41 @@ final class ConstantSignalTests: XCTestCase {
 
     // swiftlint:enable function_body_length
 
+    /// Test clock period is generated correctly.
+    func testClockPeriod() {
+        let machine = Machine.testMachine()
+        guard machine.drivingClock >= 0, machine.drivingClock < machine.clocks.count else {
+            XCTFail("Could not get driving clock.")
+            return
+        }
+        let clock = machine.clocks[machine.drivingClock]
+        let result = ConstantSignal.clockPeriod(period: clock.period)
+        XCTAssertNotNil(result)
+        XCTAssertEqual(
+            result,
+            ConstantSignal(
+                name: .clockPeriod,
+                type: .real,
+                value: .literal(value: .decimal(value: Double(clock.period.picoseconds_d))),
+                // swiftlint:disable:next force_unwrapping
+                comment: Comment(rawValue: "-- ps")!
+            )
+        )
+    }
+
+    /// Test the state init creates the constant signal correctly.
+    func testStateInit() {
+        let state = State(name: .initial, actions: [:], actionOrder: [], signals: [], externalVariables: [])
+        let result = ConstantSignal(state: state, bitsRequired: 2, index: 1)
+        XCTAssertNotNil(result)
+        XCTAssertEqual(
+            result,
+            ConstantSignal(
+                name: .name(for: state),
+                type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
+                value: .literal(value: .vector(value: .bits(value: BitVector(values: [.low, .high]))))
+            )
+        )
+    }
+
 }
