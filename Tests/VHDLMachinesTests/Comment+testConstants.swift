@@ -56,6 +56,9 @@
 
 import VHDLParsing
 
+// swiftlint:disable force_unwrapping
+
+/// Test comments.
 extension Comment {
 
     static var comment: Comment { Comment(rawValue: "-- A comment")! }
@@ -83,3 +86,5 @@ extension Comment {
     static var signalZ: Comment { Comment(rawValue: "-- signal z")! }
 
 }
+
+// swiftlint:enable force_unwrapping

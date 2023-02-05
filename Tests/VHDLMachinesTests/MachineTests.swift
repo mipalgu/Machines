@@ -58,6 +58,8 @@
 import VHDLParsing
 import XCTest
 
+// swiftlint:disable type_body_length
+
 /// Tests the ``Machine`` type.
 final class MachineTests: XCTestCase {
 
@@ -274,6 +276,7 @@ final class MachineTests: XCTestCase {
     }
 
     // swiftlint:disable function_body_length
+    // swiftlint:disable force_unwrapping
 
     /// Test getters and setters work.
     func testGettersAndSetters() {
@@ -321,7 +324,9 @@ final class MachineTests: XCTestCase {
         ]
         let newReturnableSignals = [
             ReturnableVariable(
-                type: .stdLogic, name: VariableName(rawValue: "r2")!, comment: Comment(rawValue: "-- Returnable r2")!
+                type: .stdLogic,
+                name: VariableName(rawValue: "r2")!,
+                comment: Comment(rawValue: "-- Returnable r2")!
             )
         ]
         let newStates = [
@@ -428,6 +433,9 @@ final class MachineTests: XCTestCase {
         XCTAssertEqual(machine, expected)
     }
 
+    // swiftlint:enable force_unwrapping
     // swiftlint:enable function_body_length
 
 }
+
+// swiftlint:enable type_body_length

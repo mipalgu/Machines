@@ -122,6 +122,8 @@ struct PingPongArrangement {
         [VariableName.onEntry], [VariableName.internal, VariableName.onExit]
     ]
 
+    // swiftlint:disable force_unwrapping
+
     /// The Ping state.
     var pingState: State {
         State(
@@ -352,6 +354,8 @@ struct PingPongArrangement {
             externalVariables: externalVariables
         )
     }
+
+    // swiftlint:enable force_unwrapping
 
     /// Write a value to a path in JSON format.
     /// - Parameters:
