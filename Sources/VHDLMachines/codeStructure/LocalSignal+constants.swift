@@ -10,14 +10,13 @@ import VHDLParsing
 
 extension LocalSignal {
 
-    // static var ringletCounter: LocalSignal {
-    //     LocalSignal(
-    //         type: .natural,
-    //         name: .ringletCounter,
-    //         defaultValue: .literal(value: .integer(value: 0)),
-    //         comment: nil
-    //     )
-    // }
+    /// The ringlet counter variable.
+    static let ringletCounter = LocalSignal(
+        type: .natural,
+        name: .ringletCounter,
+        defaultValue: .literal(value: .integer(value: 0)),
+        comment: nil
+    )
 
     // static func internalState(actionType: SignalType) -> LocalSignal {
     //     LocalSignal(
@@ -28,6 +27,9 @@ extension LocalSignal {
     //     )
     // }
 
+    /// Create the signals that track the internal states of the machine.
+    /// - Parameter machine: The machine to create the trackers for.
+    /// - Returns: The signals that track which state is executing.
     static func stateTrackers(machine: Machine) -> [LocalSignal]? {
         let states = machine.states
         guard
