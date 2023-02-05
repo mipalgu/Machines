@@ -1,4 +1,4 @@
-// AsynchronousBlock+machineInit.swift
+// SynchronousBlock+machineInit.swift
 // Machines
 // 
 // Created by Morgan McColl.
@@ -56,31 +56,22 @@
 
 import VHDLParsing
 
-public extension AsynchronousBlock {
+extension SynchronousBlock {
 
     init?(machine: Machine) {
         guard
             machine.drivingClock >= 0,
             machine.drivingClock < machine.clocks.count,
-            let code = SynchronousBlock(machine: machine)
+            let caseStatement = CaseStatement(machine: machine)
         else {
             return nil
         }
-        var blocks: [AsynchronousBlock] = []
-        if let userCode = machine.architectureBody {
-            guard
-                let comment = Comment(rawValue: "-- User-Specific Code for Architecture Body"),
-                let code = AsynchronousBlock(rawValue: userCode)
-            else {
-                return nil
-            }
-            blocks += [.statement(statement: .comment(value: comment)), code]
-        }
         let clock = machine.clocks[machine.drivingClock].name
-        let process = ProcessBlock(sensitivityList: [clock], code: code)
-        self = .blocks(blocks: blocks + [
-            .process(block: process)
-        ])
+        let code = IfBlock.ifStatement(
+            condition: .conditional(condition: .edge(value: .rising(expression: .variable(name: clock)))),
+            ifBlock: .caseStatement(block: caseStatement)
+        )
+        self = .ifStatement(block: code)
     }
 
 }
