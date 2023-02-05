@@ -74,12 +74,98 @@ final class EntityTests: XCTestCase {
         }
         XCTAssertEqual(entity.name, VariableName(rawValue: "New"))
         XCTAssertEqual(
-            entity.port, PortBlock(signals: [PortSignal(type: .stdLogic, name: .clk, mode: .input), signal])
+            entity.port, PortBlock(signals: [
+                PortSignal(type: .stdLogic, name: .clk, mode: .input),
+                signal,
+                PortSignal(type: .stdLogic, name: .suspended, mode: .output),
+                PortSignal(
+                    type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
+                    name: .command,
+                    mode: .input
+                )
+            ])
         )
         XCTAssertNil(
             Entity(
                 machine: Machine.initial(path: URL(fileURLWithPath: "/tmp/2New.machine", isDirectory: false))
             )
+        )
+    }
+
+    /// Test machine init when machine is parameterised.
+    func testParameterisedMachine() {
+        let machine = Machine.testMachine()
+        guard let entity = Entity(machine: machine) else {
+            XCTFail("Failed to create entity from machine.")
+            return
+        }
+        XCTAssertEqual(entity.name, VariableName(rawValue: "TestMachine"))
+        XCTAssertEqual(
+            entity.port,
+            PortBlock(signals: [
+                PortSignal(type: .stdLogic, name: .clk, mode: .input),
+                PortSignal(type: .stdLogic, name: .clk2, mode: .input),
+                PortSignal(
+                    type: .stdLogic,
+                    name: VariableName(rawValue: "EXTERNAL_x")!,
+                    mode: .input,
+                    defaultValue: .literal(value: .bit(value: .high)),
+                    comment: Comment(rawValue: "-- A std_logic variable.")!
+                ),
+                PortSignal(
+                    type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
+                    name: VariableName(rawValue: "EXTERNAL_xx")!,
+                    mode: .output,
+                    defaultValue: .literal(value: .vector(
+                        value: .bits(value: BitVector(values: [.low, .low]))
+                    )),
+                    comment: Comment(rawValue: "-- A variable called xx.")!
+                ),
+                PortSignal(
+                    type: .stdLogic,
+                    name: VariableName(rawValue: "PARAMETER_parX")!,
+                    mode: .input,
+                    defaultValue: .literal(value: .bit(value: .high)),
+                    comment: Comment(rawValue: "-- Parameter parX")!
+                ),
+                PortSignal(
+                    type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
+                    name: VariableName(rawValue: "PARAMETER_parXs")!,
+                    mode: .input,
+                    defaultValue: .literal(value: .vector(
+                        value: .bits(value: BitVector(values: [.low, .high]))
+                    )),
+                    comment: Comment(rawValue: "-- Parameter parXs")!
+                ),
+                PortSignal(
+                    type: .stdLogic,
+                    name: VariableName(rawValue: "OUTPUT_retX")!,
+                    mode: .output,
+                    defaultValue: nil,
+                    comment: Comment(rawValue: "-- Returnable retX")!
+                ),
+                PortSignal(
+                    type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
+                    name: VariableName(rawValue: "OUTPUT_retXs")!,
+                    mode: .output,
+                    defaultValue: nil,
+                    comment: Comment(rawValue: "-- Returnable retXs")!
+                ),
+                PortSignal(
+                    type: .stdLogic,
+                    name: .suspended,
+                    mode: .output,
+                    defaultValue: nil,
+                    comment: nil
+                ),
+                PortSignal(
+                    type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
+                    name: .command,
+                    mode: .output,
+                    defaultValue: nil,
+                    comment: nil
+                )
+            ])
         )
     }
 

@@ -64,11 +64,40 @@ public extension Entity {
     @inlinable
     init?(machine: Machine) {
         let clocks = machine.clocks.map { PortSignal(clock: $0) }
+        var signals: [PortSignal] = clocks + machine.externalSignals.map {
+            PortSignal(type: $0.type, name: $0.externalName, mode: $0.mode)
+        }
+        if machine.isParameterised {
+            signals += machine.parameterSignals.map {
+                PortSignal(
+                    type: $0.type,
+                    name: .name(for: $0),
+                    mode: .input,
+                    defaultValue: $0.defaultValue,
+                    comment: $0.comment
+                )
+            } + machine.returnableSignals.map {
+                PortSignal(
+                    type: $0.type,
+                    name: .name(for: $0),
+                    mode: .output,
+                    comment: $0.comment
+                )
+            }
+        }
+        if machine.suspendedState != nil {
+            signals += [
+                PortSignal(type: .stdLogic, name: .suspended, mode: .output),
+                PortSignal(
+                    type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
+                    name: .command,
+                    mode: .input
+                )
+            ]
+        }
         guard
             let name = VariableName(rawValue: machine.name),
-            let port = PortBlock(signals: clocks + machine.externalSignals.map {
-                PortSignal(type: $0.type, name: $0.externalName, mode: $0.mode)
-            })
+            let port = PortBlock(signals: signals)
         else {
             return nil
         }
