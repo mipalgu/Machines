@@ -12,7 +12,6 @@ import IO
 import VHDLParsing
 import XCTest
 
-// swiftlint:disable file_length
 // swiftlint:disable type_body_length
 
 /// Test class for ``VHDLCompiler``.
@@ -28,148 +27,7 @@ class VHDLMachinesCompilerTests: XCTestCase {
 
     /// A test machine.
     var machine: VHDLMachines.Machine {
-        VHDLMachines.Machine(
-            name: "TestMachine",
-            path: testMachinePath,
-            includes: [.library(value: "IEEE"), .include(value: "IEEE.std_logic_1164.ALL")],
-            externalSignals: [
-                PortSignal(
-                    type: .stdLogic,
-                    name: VariableName.x,
-                    mode: .input,
-                    defaultValue: .literal(value: .logic(value: .high)),
-                    comment: Comment(rawValue: "-- A std_logic variable.")!
-                ),
-                PortSignal(
-                    type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
-                    name: VariableName(rawValue: "xx")!,
-                    mode: .output,
-                    defaultValue: .literal(value: .vector(value: .bits(
-                        value: BitVector(values: [.low, .low])
-                    ))),
-                    comment: Comment(rawValue: "-- A variable called xx.")!
-                )
-            ],
-            generics: [
-                LocalSignal(
-                    type: SignalType.ranged(type: .integer(size: .to(lower: 0, upper: 65535))),
-                    name: VariableName.y,
-                    defaultValue: .literal(value: .integer(value: 0)),
-                    comment: Comment(rawValue: "-- A uint16 variable called y.")!
-                ),
-                LocalSignal(
-                    type: .boolean,
-                    name: VariableName(rawValue: "yy")!,
-                    defaultValue: .literal(value: .boolean(value: false)),
-                    comment: Comment(rawValue: "-- A variable called yy")!
-                )
-            ],
-            clocks: [
-                Clock(name: VariableName.clk, frequency: 50, unit: .MHz),
-                Clock(name: VariableName.clk2, frequency: 20, unit: .kHz)
-            ],
-            drivingClock: 0,
-            dependentMachines: [:],
-            machineSignals: [
-                LocalSignal(
-                    type: .stdLogic,
-                    name: VariableName(rawValue: "machineSignal1")!,
-                    defaultValue: nil,
-                    comment: nil
-                ),
-                LocalSignal(
-                    type: .ranged(type: .stdLogicVector(size: .downto(upper: 2, lower: 0))),
-                    name: VariableName(rawValue: "machineSignal2")!,
-                    defaultValue: .literal(value: .vector(value: .bits(
-                        value: BitVector(values: [.high, .high, .high])
-                    ))),
-                    comment: Comment(rawValue: "-- machine signal 2")!
-                )
-            ],
-            isParameterised: true,
-            parameterSignals: [
-                Parameter(
-                    type: .stdLogic,
-                    name: VariableName(rawValue: "parX")!,
-                    defaultValue: .literal(value: .logic(value: .high)),
-                    comment: Comment(rawValue: "-- Parameter parX")!
-                ),
-                Parameter(
-                    type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
-                    name: VariableName(rawValue: "parXs")!,
-                    defaultValue: .literal(value: .vector(value: .bits(
-                        value: BitVector(values: [.low, .high])
-                    ))),
-                    comment: Comment(rawValue: "-- Parameter parXs")!
-                )
-            ],
-            returnableSignals: [
-                ReturnableVariable(
-                    type: .stdLogic,
-                    name: VariableName(rawValue: "retX")!,
-                    comment: Comment(rawValue: "-- Returnable retX")!
-                ),
-                ReturnableVariable(
-                    type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
-                    name: VariableName(rawValue: "retXs")!,
-                    comment: Comment(rawValue: "-- Returnable retXs")!
-                )
-            ],
-            states: [
-                defaultState(name: "Initial"), defaultState(name: "Suspended"), defaultState(name: "State0")
-            ],
-            transitions: [
-                VHDLMachines.Transition(
-                    condition: .conditional(condition: .literal(value: false)), source: 0, target: 1
-                ),
-                VHDLMachines.Transition(
-                    // "after_ms(50) or after(2) or after_rt(20000)"
-                    condition: .or(
-                        lhs: .after(statement: AfterStatement(
-                            amount: .literal(value: .decimal(value: 50)), period: .ms
-                        )),
-                        rhs: .or(
-                            lhs: .after(statement: AfterStatement(
-                                amount: .literal(value: .decimal(value: 2)), period: .s
-                            )),
-                            rhs: .after(statement: AfterStatement(
-                                amount: .literal(value: .decimal(value: 20000)), period: .ringlet
-                            ))
-                        )
-                    ),
-                    source: 0,
-                    target: 1
-                ),
-                VHDLMachines.Transition(
-                    condition: TransitionCondition.conditional(condition: .literal(value: true)),
-                    source: 0,
-                    target: 1
-                ),
-                VHDLMachines.Transition(
-                    // "xx = '1'"
-                    condition: .conditional(condition: .comparison(
-                        value: .equality(lhs: .variable(name: .xx), rhs: .literal(value: .bit(value: .high)))
-                    )),
-                    source: 1,
-                    target: 2
-                ),
-                VHDLMachines.Transition(
-                    // // "x = '1'"
-                    condition: .conditional(condition: .comparison(
-                        value: .equality(lhs: .variable(name: .x), rhs: .literal(value: .bit(value: .high)))
-                    )),
-                    source: 1,
-                    target: 2
-                ),
-                VHDLMachines.Transition(
-                    condition: .conditional(condition: .literal(value: true)), source: 1, target: 0
-                )
-            ],
-            initialState: 0,
-            suspendedState: 1,
-            architectureHead: "",
-            architectureBody: ""
-        )
+        Machine.testMachine(directory: testMachinePath)
     }
 
     /// Factory generating PingPong arrangements.
@@ -210,6 +68,7 @@ class VHDLMachinesCompilerTests: XCTestCase {
     /// Default state creation.
     private func defaultState(name: String) -> VHDLMachines.State {
         VHDLMachines.State(
+            // swiftlint:disable:next force_unwrapping
             name: VariableName(rawValue: name)!,
             actions: [
                 VariableName.onEntry: "x <= '1';\nxx <= \"00\"; -- \(name) onEntry",
@@ -578,4 +437,3 @@ class VHDLMachinesCompilerTests: XCTestCase {
 }
 
 // swiftlint:enable type_body_length
-// swiftlint:enable file_length
