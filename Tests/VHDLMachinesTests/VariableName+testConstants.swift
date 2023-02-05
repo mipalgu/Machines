@@ -86,4 +86,16 @@ extension VariableName {
 
     static var state0: VariableName { VariableName(rawValue: "State0")! }
 
+    static var parX: VariableName { VariableName(rawValue: "parX")! }
+
+    static var parXs: VariableName { VariableName(rawValue: "parXs")! }
+
+    static var retX: VariableName { VariableName(rawValue: "retX")! }
+
+    static var retXs: VariableName { VariableName(rawValue: "retXs")! }
+
+    static var machineSignal1: VariableName { VariableName(rawValue: "machineSignal1")! }
+
+    static var machineSignal2: VariableName { VariableName(rawValue: "machineSignal2")! }
+
 }
