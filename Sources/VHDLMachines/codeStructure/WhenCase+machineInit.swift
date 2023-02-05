@@ -59,7 +59,45 @@ import VHDLParsing
 extension WhenCase {
 
     init?(machine: Machine, action: VariableName) {
-        nil
+        switch action {
+        case .readSnapshot:
+            guard let me = WhenCase.readSnapshot(machine: machine) else {
+                return nil
+            }
+            self = me
+        default:
+            return nil
+        }
+    }
+
+    private static func readSnapshot(machine: Machine) -> WhenCase? {
+        guard machine.initialState >= 0, machine.initialState < machine.states.count else {
+            return nil
+        }
+        let initialState = machine.states[machine.initialState]
+        let snapshots = machine.externalSignals.map {
+            SynchronousBlock.statement(
+                statement: .assignment(name: $0.name, value: .variable(name: .name(for: $0)))
+            )
+        }
+        var blocks: [SynchronousBlock] = snapshots
+        if machine.isParameterised {
+            let parameterSnapshots = machine.parameterSignals.map {
+                SynchronousBlock.statement(
+                    statement: .assignment(name: $0.name, value: .variable(name: .name(for: $0)))
+                )
+            }
+            blocks.append(SynchronousBlock.ifStatement(block: .ifStatement(
+                condition: .conditional(condition: .comparison(value: .equality(
+                    lhs: .variable(name: .command),
+                    rhs: .variable(name: .restartCommand)
+                ))),
+                ifBlock: .blocks(blocks: parameterSnapshots)
+            )))
+        }
+        return WhenCase(
+            condition: .expression(expression: .variable(name: .readSnapshot)), code: .blocks(blocks: blocks)
+        )
     }
 
 }
