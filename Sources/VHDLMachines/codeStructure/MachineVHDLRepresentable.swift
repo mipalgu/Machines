@@ -56,14 +56,19 @@
 
 import VHDLParsing
 
+/// Provide abstract `VHDL` representation of a ``Machine``.
 public protocol MachineVHDLRepresentable {
 
+    /// The architecture body.
     var architectureBody: AsynchronousBlock { get }
 
+    /// The architecture head.
     var architectureHead: ArchitectureHead { get }
 
+    /// The architecture name (usually `Behavioral`).
     var architectureName: VariableName { get }
 
-    var entityName: VariableName { get }
+    /// The entity.
+    var entity: Entity { get }
 
 }

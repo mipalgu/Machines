@@ -61,7 +61,7 @@ public extension Architecture {
     init?<T>(representation: T) where T: MachineVHDLRepresentable {
         self.init(
             body: representation.architectureBody,
-            entity: representation.entityName,
+            entity: representation.entity.name,
             head: representation.architectureHead,
             name: representation.architectureName
         )

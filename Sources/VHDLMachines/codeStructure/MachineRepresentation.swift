@@ -64,13 +64,13 @@ public struct MachineRepresentation: MachineVHDLRepresentable {
 
     public let architectureName: VariableName
 
-    public let entityName: VariableName
+    public let entity: Entity
 
     public let machine: Machine
 
     public init?(machine: Machine) {
         guard
-            let entityName = VariableName(rawValue: machine.name),
+            let entity = Entity(machine: machine),
             let architectureName = VariableName(rawValue: "Behavioral"),
             let head = ArchitectureHead(machine: machine),
             let body = AsynchronousBlock(machine: machine)
@@ -78,7 +78,7 @@ public struct MachineRepresentation: MachineVHDLRepresentable {
             return nil
         }
         self.machine = machine
-        self.entityName = entityName
+        self.entity = entity
         self.architectureName = architectureName
         self.architectureHead = head
         self.architectureBody = body
