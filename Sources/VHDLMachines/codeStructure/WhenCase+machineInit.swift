@@ -74,13 +74,35 @@ extension WhenCase {
         guard machine.initialState >= 0, machine.initialState < machine.states.count else {
             return nil
         }
+        let whenCondition = WhenCondition.expression(expression: .variable(name: .readSnapshot))
         let initialState = machine.states[machine.initialState]
-        let snapshots = machine.externalSignals.map {
+        let snapshots = machine.externalSignals.filter { $0.mode != .output }.map {
             SynchronousBlock.statement(
                 statement: .assignment(name: $0.name, value: .variable(name: .name(for: $0)))
             )
         }
         var blocks: [SynchronousBlock] = snapshots
+        let onEntryBlock = IfBlock.ifElse(
+            condition: .conditional(condition: .comparison(
+                value: .notEquals(lhs: .variable(name: .previousRinglet), rhs: .variable(name: .currentState))
+            )),
+            ifBlock: .statement(statement: .assignment(
+                name: .internalState, value: .variable(name: .onEntry)
+            )),
+            elseBlock: .statement(statement: .assignment(
+                name: .internalState, value: .variable(name: .noOnEntry)
+            ))
+        )
+        guard
+            let suspendedIndex = machine.suspendedState,
+            suspendedIndex >= 0,
+            suspendedIndex < machine.states.count
+        else {
+            return WhenCase(
+                condition: whenCondition, code: .blocks(blocks: blocks + [.ifStatement(block: onEntryBlock)])
+            )
+        }
+        let suspendedState = machine.states[suspendedIndex]
         if machine.isParameterised {
             let parameterSnapshots = machine.parameterSignals.map {
                 SynchronousBlock.statement(
@@ -95,8 +117,184 @@ extension WhenCase {
                 ifBlock: .blocks(blocks: parameterSnapshots)
             )))
         }
+        blocks += [
+            .ifStatement(
+                block: .ifElse(
+                    condition: .logical(operation: .and(
+                        lhs: .precedence(value: .conditional(condition: .comparison(value: .equality(
+                            lhs: .variable(name: .command), rhs: .variable(name: .restartCommand)
+                        )))),
+                        rhs: .precedence(value: .conditional(condition: .comparison(value: .notEquals(
+                            lhs: .variable(name: .currentState),
+                            rhs: .variable(name: .name(for: initialState))
+                        ))))
+                    )),
+                    ifBlock: .blocks(blocks: [
+                        .statement(statement: .assignment(
+                            name: .currentState, value: .variable(name: .name(for: initialState))
+                        )),
+                        .statement(statement: .assignment(
+                            name: .suspended, value: .literal(value: .bit(value: .low))
+                        )),
+                        .statement(statement: .assignment(
+                            name: .suspendedFrom, value: .variable(name: .name(for: initialState))
+                        )),
+                        .statement(statement: .assignment(
+                            name: .targetState, value: .variable(name: .name(for: initialState))
+                        )),
+                        .ifStatement(block: .ifElse(
+                            condition: .conditional(condition: .comparison(value: .equality(
+                                lhs: .variable(name: .previousRinglet),
+                                rhs: .variable(name: .name(for: suspendedState))
+                            ))),
+                            ifBlock: .statement(statement: .assignment(
+                                name: .internalState, value: .variable(name: .onResume)
+                            )),
+                            elseBlock: .ifStatement(block: .ifElse(
+                                condition: .conditional(condition: .comparison(value: .equality(
+                                    lhs: .variable(name: .previousRinglet),
+                                    rhs: .variable(name: .name(for: initialState))
+                                ))),
+                                ifBlock: .statement(statement: .assignment(
+                                    name: .internalState, value: .variable(name: .noOnEntry)
+                                )),
+                                elseBlock: .statement(statement: .assignment(
+                                    name: .internalState, value: .variable(name: .onEntry)
+                                ))
+                            ))
+                        ))
+                    ]),
+                    elseBlock: .ifStatement(block: .ifElse(
+                        condition: .logical(operation: .and(
+                            lhs: .precedence(value: .conditional(condition: .comparison(value: .equality(
+                                lhs: .variable(name: .command), rhs: .variable(name: .resumeCommand)
+                            )))),
+                            rhs: .precedence(value: .logical(operation: .and(
+                                lhs: .precedence(value: .conditional(condition: .comparison(value: .equality(
+                                    lhs: .variable(name: .currentState),
+                                    rhs: .variable(name: .name(for: suspendedState))
+                                )))),
+                                rhs: .precedence(value: .conditional(condition: .comparison(value: .notEquals(
+                                    lhs: .variable(name: .suspendedFrom),
+                                    rhs: .variable(name: .name(for: suspendedState))
+                                ))))
+                            )))
+                        )),
+                        ifBlock: .blocks(blocks: [
+                            .statement(statement: .assignment(
+                                name: .suspended, value: .literal(value: .bit(value: .low))
+                            )),
+                            .statement(statement: .assignment(
+                                name: .currentState, value: .variable(name: .suspendedFrom)
+                            )),
+                            .statement(statement: .assignment(
+                                name: .targetState, value: .variable(name: .suspendedFrom)
+                            )),
+                            .ifStatement(block: .ifElse(
+                                condition: .conditional(condition: .comparison(value: .equality(
+                                    lhs: .variable(name: .previousRinglet),
+                                    rhs: .variable(name: .suspendedFrom)
+                                ))),
+                                ifBlock: .statement(statement: .assignment(
+                                    name: .internalState, value: .variable(name: .noOnEntry)
+                                )),
+                                elseBlock: .statement(statement: .assignment(
+                                    name: .internalState, value: .variable(name: .onResume)
+                                ))
+                            ))
+                        ]),
+                        elseBlock: .ifStatement(block: .ifElse(
+                            condition: .logical(operation: .and(
+                                lhs: .precedence(value: .conditional(condition: .comparison(value: .equality(
+                                    lhs: .variable(name: .command), rhs: .variable(name: .suspendCommand)
+                                )))),
+                                rhs: .precedence(value: .conditional(condition: .comparison(value: .notEquals(
+                                    lhs: .variable(name: .currentState),
+                                    rhs: .variable(name: .name(for: suspendedState))
+                                ))))
+                            )),
+                            ifBlock: .blocks(blocks: [
+                                .statement(statement: .assignment(
+                                    name: .suspendedFrom, value: .variable(name: .currentState)
+                                )),
+                                .statement(statement: .assignment(
+                                    name: .suspended, value: .literal(value: .bit(value: .high))
+                                )),
+                                .statement(statement: .assignment(
+                                    name: .currentState, value: .variable(name: .name(for: suspendedState))
+                                )),
+                                .statement(statement: .assignment(
+                                    name: .targetState, value: .variable(name: .name(for: suspendedState))
+                                )),
+                                .ifStatement(block: .ifElse(
+                                    condition: .conditional(condition: .comparison(value: .equality(
+                                        lhs: .variable(name: .previousRinglet),
+                                        rhs: .variable(name: .name(for: suspendedState))
+                                    ))),
+                                    ifBlock: .statement(statement: .assignment(
+                                        name: .internalState, value: .variable(name: .noOnEntry)
+                                    )),
+                                    elseBlock: .statement(statement: .assignment(
+                                        name: .internalState, value: .variable(name: .onSuspend)
+                                    ))
+                                ))
+                            ]),
+                            elseBlock: .ifStatement(block: .ifElse(
+                                condition: .conditional(condition: .comparison(value: .equality(
+                                    lhs: .variable(name: .currentState),
+                                    rhs: .variable(name: .name(for: suspendedState))
+                                ))),
+                                ifBlock: .blocks(blocks: [
+                                    .statement(statement: .assignment(
+                                        name: .suspended, value: .literal(value: .bit(value: .high))
+                                    )),
+                                    .ifStatement(block: .ifElse(
+                                        condition: .conditional(condition: .comparison(value: .notEquals(
+                                            lhs: .variable(name: .previousRinglet),
+                                            rhs: .variable(name: .name(for: suspendedState))
+                                        ))),
+                                        ifBlock: .statement(statement: .assignment(
+                                            name: .internalState, value: .variable(name: .onSuspend)
+                                        )),
+                                        elseBlock: .statement(statement: .assignment(
+                                            name: .internalState, value: .variable(name: .noOnEntry)
+                                        ))
+                                    ))
+                                ]),
+                                elseBlock: .ifStatement(block: .ifElse(
+                                    condition: .conditional(condition: .comparison(value: .equality(
+                                        lhs: .variable(name: .previousRinglet),
+                                        rhs: .variable(name: .name(for: suspendedState))
+                                    ))),
+                                    ifBlock: .blocks(blocks: [
+                                        .statement(statement: .assignment(
+                                            name: .internalState, value: .variable(name: .onResume)
+                                        )),
+                                        .statement(statement: .assignment(
+                                            name: .suspended, value: .literal(value: .bit(value: .low))
+                                        )),
+                                        .statement(statement: .assignment(
+                                            name: .suspendedFrom, value: .variable(name: .currentState)
+                                        ))
+                                    ]),
+                                    elseBlock: .blocks(blocks: [
+                                        .statement(statement: .assignment(
+                                            name: .suspended, value: .literal(value: .bit(value: .low))
+                                        )),
+                                        .statement(statement: .assignment(
+                                            name: .suspendedFrom, value: .variable(name: .currentState)
+                                        )),
+                                        .ifStatement(block: onEntryBlock)
+                                    ])
+                                ))
+                            ))
+                        ))
+                    ))
+                )
+            )
+        ]
         return WhenCase(
-            condition: .expression(expression: .variable(name: .readSnapshot)), code: .blocks(blocks: blocks)
+            condition: whenCondition, code: .blocks(blocks: blocks)
         )
     }
 
