@@ -76,7 +76,7 @@ extension ArchitectureHead {
             let externalSnapshotComment = Comment(rawValue: "-- Snapshot of External Signals and Variables"),
             let machineSignalComment = Comment(rawValue: "-- Machine Signals"),
             let userCodeComment = Comment(rawValue: "-- User-Specific Code for Architecture Head"),
-            let stateBitsRequired = BitLiteral.bitsRequired(for: machine.states.count),
+            let stateBitsRequired = BitLiteral.bitsRequired(for: machine.states.count - 1),
             let stateTrackers = LocalSignal.stateTrackers(machine: machine)
         else {
             return nil
