@@ -1,4 +1,4 @@
-// Variable+testConstants.swift
+// ArchitectureHeadTests.swift
 // Machines
 // 
 // Created by Morgan McColl.
@@ -54,36 +54,13 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+@testable import VHDLMachines
 import VHDLParsing
+import XCTest
 
-extension VariableName {
+/// Test class for `ArchitectureHead` extensions.
+final class ArchitectureHeadTests: XCTestCase {
 
-    static var a: VariableName { VariableName(rawValue: "A")! }
-
-    static var clk2: VariableName { VariableName(rawValue: "clk2")! }
-
-    static var g: VariableName { VariableName(rawValue: "g")! }
-
-    static var p: VariableName { VariableName(rawValue: "p")! }
-
-    static var r: VariableName { VariableName(rawValue: "r")! }
-
-    static var s: VariableName { VariableName(rawValue: "s")! }
-
-    static var x: VariableName { VariableName(rawValue: "x")! }
-
-    static var xx: VariableName { VariableName(rawValue: "xx")! }
-
-    static var xs: VariableName { VariableName(rawValue: "xs")! }
-
-    static var y: VariableName { VariableName(rawValue: "y")! }
-
-    static var z: VariableName { VariableName(rawValue: "z")! }
-
-    static var s0: VariableName { VariableName(rawValue: "S0")! }
-
-    static var s1: VariableName { VariableName(rawValue: "S1")! }
-
-    static var state0: VariableName { VariableName(rawValue: "State0")! }
+    
 
 }

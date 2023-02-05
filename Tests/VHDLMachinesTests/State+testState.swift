@@ -1,4 +1,4 @@
-// Variable+testConstants.swift
+// State+testState.swift
 // Machines
 // 
 // Created by Morgan McColl.
@@ -54,36 +54,31 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+import VHDLMachines
 import VHDLParsing
 
-extension VariableName {
+/// Add default state test data.
+extension State {
 
-    static var a: VariableName { VariableName(rawValue: "A")! }
-
-    static var clk2: VariableName { VariableName(rawValue: "clk2")! }
-
-    static var g: VariableName { VariableName(rawValue: "g")! }
-
-    static var p: VariableName { VariableName(rawValue: "p")! }
-
-    static var r: VariableName { VariableName(rawValue: "r")! }
-
-    static var s: VariableName { VariableName(rawValue: "s")! }
-
-    static var x: VariableName { VariableName(rawValue: "x")! }
-
-    static var xx: VariableName { VariableName(rawValue: "xx")! }
-
-    static var xs: VariableName { VariableName(rawValue: "xs")! }
-
-    static var y: VariableName { VariableName(rawValue: "y")! }
-
-    static var z: VariableName { VariableName(rawValue: "z")! }
-
-    static var s0: VariableName { VariableName(rawValue: "S0")! }
-
-    static var s1: VariableName { VariableName(rawValue: "S1")! }
-
-    static var state0: VariableName { VariableName(rawValue: "State0")! }
+    /// Test state.
+    static func defaultState(name: VariableName) -> State {
+        VHDLMachines.State(
+            name: name,
+            actions: [
+                VariableName.onEntry: "x <= '1';\nxx <= \"00\"; -- \(name) onEntry",
+                VariableName.onExit: "x <= '0'; -- \(name) OnExit",
+                VariableName.onResume: "x <= '0'; -- \(name) OnResume",
+                VariableName.onSuspend: "xx <= \"11\"; -- \(name) onSuspend",
+                VariableName.internal: "x <= '1'; -- \(name) Internal"
+            ],
+            actionOrder: [
+                [VariableName.onResume, VariableName.onEntry],
+                [VariableName.onExit, VariableName.internal],
+                [VariableName.onSuspend]
+            ],
+            signals: [],
+            externalVariables: []
+        )
+    }
 
 }

@@ -65,7 +65,7 @@ public extension VariableName {
 
     static let clockPeriod = VariableName(rawValue: "clockPeriod")!
 
-    static let initial = VariableName(rawValue: "Intiial")!
+    static let initial = VariableName(rawValue: "Initial")!
 
     static let suspendedState = VariableName(rawValue: "Suspended")!
 
