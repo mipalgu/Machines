@@ -57,11 +57,11 @@
 import VHDLParsing
 
 /// Add init from machine.
-public extension Entity {
+extension Entity {
 
     /// Create the entity declaration for a machine.
     /// - Parameter machine: The machine to convert.
-    @inlinable
+    @usableFromInline
     init?(machine: Machine) {
         let clocks = machine.clocks.map { PortSignal(clock: $0) }
         var signals: [PortSignal] = clocks + machine.externalSignals.map {
