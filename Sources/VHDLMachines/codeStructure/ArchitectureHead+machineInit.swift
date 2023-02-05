@@ -56,10 +56,91 @@
 
 import VHDLParsing
 
-public extension ArchitectureHead {
+/// Add init for default machine representation.
+extension ArchitectureHead {
 
+    // swiftlint:disable function_body_length
+
+    /// Create an architecture head for a machine.
+    /// - Parameter machine: The machine to create the head for.
+    @usableFromInline
     init?(machine: Machine) {
-        nil
+        guard
+            let firstState = machine.states.first,
+            let actions = ConstantSignal.constants(for: firstState.actions),
+            let internalStateComment = Comment(rawValue: "-- Internal State Representation Bits"),
+            let internalStateBits = BitLiteral.bitsRequired(for: actions.count),
+            internalStateBits > 0,
+            let stateRepresentationComment = Comment(rawValue: "-- State Representation Bits"),
+            let commandsComment = Comment(rawValue: "-- Suspension Commands"),
+            let externalSnapshotComment = Comment(rawValue: "-- Snapshot of External Signals and Variables"),
+            let machineSignalComment = Comment(rawValue: "-- Machine Signals"),
+            let userCodeComment = Comment(rawValue: "-- User-Specific Code for Architecture Head"),
+            let stateBitsRequired = BitLiteral.bitsRequired(for: machine.states.count),
+            let stateTrackers = LocalSignal.stateTrackers(machine: machine)
+        else {
+            return nil
+        }
+        let actionStatements = actions.map { Statement.constant(value: $0) }
+        let internalState = LocalSignal(
+            type: .ranged(type: .stdLogicVector(size: .downto(upper: internalStateBits - 1, lower: 0))),
+            name: .internalState,
+            defaultValue: .variable(name: .readSnapshot),
+            comment: nil
+        )
+        let stateRepresentation = machine.states.enumerated()
+        .compactMap {
+            ConstantSignal(state: $0.1, bitsRequired: stateBitsRequired, index: $0.0)
+        }
+        .map { Statement.constant(value: $0) }
+        guard stateRepresentation.count == machine.states.count else {
+            return nil
+        }
+        let stateTrackerStatements = stateTrackers.map { Statement.definition(signal: $0) }
+        let commandStatements = ConstantSignal.commands.map { Statement.constant(value: $0) }
+        var statements: [Statement] = [.comment(value: internalStateComment)] + actionStatements + [
+            .definition(signal: internalState),
+            .comment(value: stateRepresentationComment)
+        ] + stateRepresentation + stateTrackerStatements + [.comment(value: commandsComment)] +
+        commandStatements
+        if machine.transitions.contains(where: { $0.condition.hasAfter }) {
+            guard
+                let afterComment = Comment(rawValue: "-- After Variables"),
+                machine.drivingClock >= 0,
+                machine.drivingClock < machine.clocks.count,
+                let period = ConstantSignal.clockPeriod(period: machine.clocks[machine.drivingClock].period)
+            else {
+                return nil
+            }
+            let ringletConstants = ConstantSignal.ringletConstants.map { Statement.constant(value: $0) }
+            statements += [
+                .comment(value: afterComment), .definition(signal: .ringletCounter), .constant(value: period)
+            ] + ringletConstants
+        }
+        statements += [.comment(value: externalSnapshotComment)] + machine.externalSignals.map {
+            Statement.definition(signal: LocalSignal(snapshot: $0))
+        }
+        if machine.isParameterised {
+            guard
+                let parameterSnapshotComment = Comment(
+                    rawValue: "-- Snapshot of Parameter Signals and Variables"
+                ),
+                let outputSnapshotComment = Comment(rawValue: "-- Snapshot of Output Signals and Variables")
+            else {
+                return nil
+            }
+            statements += [.comment(value: parameterSnapshotComment)] + machine.parameterSignals.map {
+                Statement.definition(signal: LocalSignal(snapshot: $0))
+            } + [.comment(value: outputSnapshotComment)] + machine.returnableSignals.map {
+                Statement.definition(signal: LocalSignal(snapshot: $0))
+            }
+        }
+        let machineSignals = machine.machineSignals.map { Statement.definition(signal: $0) }
+        statements += [.comment(value: machineSignalComment)] + machineSignals +
+            [.comment(value: userCodeComment)]
+        self.init(statements: statements)
     }
+
+    // swiftlint:enable function_body_length
 
 }

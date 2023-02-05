@@ -70,6 +70,10 @@ final class ArchitectureHeadTests: XCTestCase {
         let machine = Machine.testMachine(
             directory: URL(fileURLWithPath: PingPongArrangement().machinesFolder, isDirectory: true)
         )
+        guard machine.states.count == 3 else {
+            XCTFail("Found incorrect number of states.")
+            return
+        }
         let result = ArchitectureHead(machine: machine)
         let internalStateType = SignalType.ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0)))
         let stateType = SignalType.ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0)))
@@ -77,7 +81,7 @@ final class ArchitectureHeadTests: XCTestCase {
         let expected = ArchitectureHead(statements: [
             .comment(value: Comment(rawValue: "-- Internal State Representation Bits")!),
             .constant(value: ConstantSignal(
-                name: .readSnapshot,
+                name: .checkTransition,
                 type: internalStateType,
                 value: .literal(value: .vector(value: .bits(
                     value: BitVector(values: [.low, .low, .low, .low])
@@ -85,7 +89,7 @@ final class ArchitectureHeadTests: XCTestCase {
                 comment: nil
             )!),
             .constant(value: ConstantSignal(
-                name: .onSuspend,
+                name: .internal,
                 type: internalStateType,
                 value: .literal(value: .vector(value: .bits(
                     value: BitVector(values: [.low, .low, .low, .high])
@@ -93,7 +97,7 @@ final class ArchitectureHeadTests: XCTestCase {
                 comment: nil
             )!),
             .constant(value: ConstantSignal(
-                name: .onResume,
+                name: .noOnEntry,
                 type: internalStateType,
                 value: .literal(value: .vector(value: .bits(
                     value: BitVector(values: [.low, .low, .high, .low])
@@ -109,7 +113,7 @@ final class ArchitectureHeadTests: XCTestCase {
                 comment: nil
             )!),
             .constant(value: ConstantSignal(
-                name: .noOnEntry,
+                name: .onExit,
                 type: internalStateType,
                 value: .literal(value: .vector(value: .bits(
                     value: BitVector(values: [.low, .high, .low, .low])
@@ -117,7 +121,7 @@ final class ArchitectureHeadTests: XCTestCase {
                 comment: nil
             )!),
             .constant(value: ConstantSignal(
-                name: .checkTransition,
+                name: .onResume,
                 type: internalStateType,
                 value: .literal(value: .vector(value: .bits(
                     value: BitVector(values: [.low, .high, .low, .high])
@@ -125,7 +129,7 @@ final class ArchitectureHeadTests: XCTestCase {
                 comment: nil
             )!),
             .constant(value: ConstantSignal(
-                name: .onExit,
+                name: .onSuspend,
                 type: internalStateType,
                 value: .literal(value: .vector(value: .bits(
                     value: BitVector(values: [.low, .high, .high, .low])
@@ -133,7 +137,7 @@ final class ArchitectureHeadTests: XCTestCase {
                 comment: nil
             )!),
             .constant(value: ConstantSignal(
-                name: .internal,
+                name: .readSnapshot,
                 type: internalStateType,
                 value: .literal(value: .vector(value: .bits(
                     value: BitVector(values: [.low, .high, .high, .high])
@@ -156,7 +160,7 @@ final class ArchitectureHeadTests: XCTestCase {
             )),
             .comment(value: Comment(rawValue: "-- State Representation Bits")!),
             .constant(value: ConstantSignal(
-                name: .initial,
+                name: VariableName.name(for: machine.states[0]),
                 type: stateType,
                 value: .literal(value: .vector(value: .bits(
                     value: BitVector(values: [.low, .low])
@@ -164,7 +168,7 @@ final class ArchitectureHeadTests: XCTestCase {
                 comment: nil
             )!),
             .constant(value: ConstantSignal(
-                name: .suspendedState,
+                name: VariableName.name(for: machine.states[1]),
                 type: stateType,
                 value: .literal(value: .vector(value: .bits(
                     value: BitVector(values: [.low, .high])
@@ -172,7 +176,7 @@ final class ArchitectureHeadTests: XCTestCase {
                 comment: nil
             )!),
             .constant(value: ConstantSignal(
-                name: .state0,
+                name: VariableName.name(for: machine.states[2]),
                 type: stateType,
                 value: .literal(value: .vector(value: .bits(
                     value: BitVector(values: [.high, .low])
@@ -251,62 +255,56 @@ final class ArchitectureHeadTests: XCTestCase {
                 defaultValue: .literal(value: .integer(value: 0)),
                 comment: nil
             )),
-            .definition(signal: LocalSignal(
-                type: .real,
+            .constant(value: ConstantSignal(
                 name: .clockPeriod,
-                defaultValue: .literal(value: .decimal(value: 20000.00)),
+                type: .real,
+                value: .literal(value: .decimal(value: 20000.00)),
                 comment: Comment(rawValue: "-- ps")!
-            )),
-            .definition(signal: LocalSignal(
-                type: .real,
+            )!),
+            .constant(value: ConstantSignal(
                 name: .ringletLength,
-                defaultValue: .binary(operation: .multiplication(
+                type: .real,
+                value: .binary(operation: .multiplication(
                     lhs: .literal(value: .decimal(value: 5.0)), rhs: .variable(name: .clockPeriod)
-                )),
-                comment: nil
-            )),
-            .definition(signal: LocalSignal(
-                type: .real,
+                ))
+            )!),
+            .constant(value: ConstantSignal(
                 name: .ringletPerPs,
-                defaultValue: .binary(operation: .division(
+                type: .real,
+                value: .binary(operation: .division(
                     lhs: .literal(value: .decimal(value: 1.0)), rhs: .variable(name: .ringletLength)
-                )),
-                comment: nil
-            )),
-            .definition(signal: LocalSignal(
-                type: .real,
+                ))
+            )!),
+            .constant(value: ConstantSignal(
                 name: .ringletPerNs,
-                defaultValue: .binary(operation: .multiplication(
+                type: .real,
+                value: .binary(operation: .multiplication(
                     lhs: .literal(value: .decimal(value: 1000.0)), rhs: .variable(name: .ringletPerPs)
-                )),
-                comment: nil
-            )),
-            .definition(signal: LocalSignal(
-                type: .real,
+                ))
+            )!),
+            .constant(value: ConstantSignal(
                 name: .ringletPerUs,
-                defaultValue: .binary(operation: .multiplication(
-                    lhs: .literal(value: .decimal(value: 1_000_000.0)), rhs: .variable(name: .ringletPerPs)
-                )),
-                comment: nil
-            )),
-            .definition(signal: LocalSignal(
                 type: .real,
+                value: .binary(operation: .multiplication(
+                    lhs: .literal(value: .decimal(value: 1_000_000.0)), rhs: .variable(name: .ringletPerPs)
+                ))
+            )!),
+            .constant(value: ConstantSignal(
                 name: .ringletPerMs,
-                defaultValue: .binary(operation: .multiplication(
+                type: .real,
+                value: .binary(operation: .multiplication(
                     lhs: .literal(value: .decimal(value: 1_000_000_000.0)),
                     rhs: .variable(name: .ringletPerPs)
-                )),
-                comment: nil
-            )),
-            .definition(signal: LocalSignal(
-                type: .real,
+                ))
+            )!),
+            .constant(value: ConstantSignal(
                 name: .ringletPerS,
-                defaultValue: .binary(operation: .multiplication(
+                type: .real,
+                value: .binary(operation: .multiplication(
                     lhs: .literal(value: .decimal(value: 1_000_000_000_000.0)),
                     rhs: .variable(name: .ringletPerPs)
-                )),
-                comment: nil
-            )),
+                ))
+            )!),
             .comment(value: Comment(rawValue: "-- Snapshot of External Signals and Variables")!),
             .definition(signal: LocalSignal(
                 type: .stdLogic,
