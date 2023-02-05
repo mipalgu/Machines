@@ -55,9 +55,51 @@
 // 
 
 @testable import VHDLMachines
+import VHDLParsing
 import XCTest
 
-/// Tests the ``LocalSignal`` type.
+/// Tests the `LocalSignal` extensions.
 final class LocalSignalTests: XCTestCase {
+
+    /// Test the state trackers are generated correctly for a machine.
+    func testStateTrackers() {
+        let machine = Machine.testMachine()
+        let trackers = LocalSignal.stateTrackers(machine: machine)
+        let type = SignalType.ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0)))
+        let states = machine.states
+        guard states.count == 3 else {
+            XCTFail("Expected 3 states, got \(states.count).")
+            return
+        }
+        XCTAssertEqual(
+            trackers,
+            [
+                LocalSignal(
+                    type: type,
+                    name: VariableName.name(for: states[0]),
+                    defaultValue: .literal(value: .vector(
+                        value: .bits(value: BitVector(values: [.low, .low]))
+                    )),
+                    comment: nil
+                ),
+                LocalSignal(
+                    type: type,
+                    name: VariableName.name(for: states[1]),
+                    defaultValue: .literal(value: .vector(
+                        value: .bits(value: BitVector(values: [.low, .high]))
+                    )),
+                    comment: nil
+                ),
+                LocalSignal(
+                    type: type,
+                    name: VariableName.name(for: states[2]),
+                    defaultValue: .literal(value: .vector(
+                        value: .bits(value: BitVector(values: [.high, .low]))
+                    )),
+                    comment: nil
+                )
+            ]
+        )
+    }
 
 }

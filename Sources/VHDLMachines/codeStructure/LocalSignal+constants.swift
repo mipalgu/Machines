@@ -8,7 +8,7 @@
 import Foundation
 import VHDLParsing
 
-public extension LocalSignal {
+extension LocalSignal {
 
     // static var ringletCounter: LocalSignal {
     //     LocalSignal(
@@ -28,61 +28,55 @@ public extension LocalSignal {
     //     )
     // }
 
-    // static func stateTrackers<T>(representation: T) -> [LocalSignal] where T: MachineVHDLRepresentable {
-    //     let stateType = representation.stateType
-    //     let machine = representation.machine
-    //     guard case .ranged(let vector) = stateType else {
-    //         fatalError("Incorrect type for states.")
-    //     }
-    //     let range = vector.size
-    //     let targetState: Expression?
-    //     let firstState: Expression?
-    //     if machine.states.count > machine.initialState {
-    //         firstState = .variable(name: VariableName.name(for: machine.states[machine.initialState]))
-    //     } else {
-    //         if machine.suspendedState != 0, let state = machine.states.first {
-    //             firstState = .variable(name: VariableName.name(for: state))
-    //         } else {
-    //             firstState = nil
-    //         }
-    //     }
-    //     if let suspendedState = machine.suspendedState {
-    //         targetState = .variable(name: VariableName.name(for: machine.states[suspendedState]))
-    //     } else {
-    //         targetState = firstState
-    //     }
-    //     return [
-    //         LocalSignal(
-    //             type: stateType,
-    //             name: .currentState,
-    //             defaultValue: targetState,
-    //             comment: nil
-    //         ),
-    //         LocalSignal(
-    //             type: stateType,
-    //             name: .targetState,
-    //             defaultValue: targetState,
-    //             comment: nil
-    //         ),
-    //         LocalSignal(
-    //             type: stateType,
-    //             name: .previousRinglet,
-    //             defaultValue: .literal(
-    //                 value: .vector(
-    //                     value: .logics(value:  LogicVector(
-    //                         values: [LogicLiteral](repeating: .highImpedance, count: range.size)
-    //                     ))
-    //                 )
-    //             ),
-    //             comment: nil
-    //         ),
-    //         LocalSignal(
-    //             type: stateType,
-    //             name: .suspendedFrom,
-    //             defaultValue: firstState,
-    //             comment: nil
-    //         )
-    //     ]
-    // }
+    static func stateTrackers(machine: Machine) -> [LocalSignal]? {
+        let states = machine.states
+        guard
+            let bitsRequired = BitLiteral.bitsRequired(for: states.count),
+            bitsRequired > 0,
+            machine.initialState > 0,
+            machine.initialState < states.count,
+            let suspendedStateIndex = machine.suspendedState,
+            suspendedStateIndex > 0,
+            suspendedStateIndex < states.count
+        else {
+            return nil
+        }
+        let range = VectorSize.downto(upper: bitsRequired - 1, lower: 0)
+        let stateType = SignalType.ranged(type: .stdLogicVector(size: range))
+        let suspendedState = Expression.variable(name: VariableName.name(for: states[suspendedStateIndex]))
+        let initialState = Expression.variable(name: VariableName.name(for: states[machine.initialState]))
+        return [
+            LocalSignal(
+                type: stateType,
+                name: .currentState,
+                defaultValue: suspendedState,
+                comment: nil
+            ),
+            LocalSignal(
+                type: stateType,
+                name: .targetState,
+                defaultValue: suspendedState,
+                comment: nil
+            ),
+            LocalSignal(
+                type: stateType,
+                name: .previousRinglet,
+                defaultValue: .literal(
+                    value: .vector(
+                        value: .logics(value: LogicVector(
+                            values: [LogicLiteral](repeating: .highImpedance, count: range.size)
+                        ))
+                    )
+                ),
+                comment: nil
+            ),
+            LocalSignal(
+                type: stateType,
+                name: .suspendedFrom,
+                defaultValue: initialState,
+                comment: nil
+            )
+        ]
+    }
 
 }
