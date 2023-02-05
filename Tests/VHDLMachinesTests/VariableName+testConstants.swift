@@ -56,6 +56,9 @@
 
 import VHDLParsing
 
+// swiftlint:disable force_unwrapping
+
+/// Add test constants.
 extension VariableName {
 
     static var a: VariableName { VariableName(rawValue: "A")! }
@@ -99,3 +102,5 @@ extension VariableName {
     static var machineSignal2: VariableName { VariableName(rawValue: "machineSignal2")! }
 
 }
+
+// swiftlint:enable force_unwrapping
