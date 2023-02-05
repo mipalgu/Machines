@@ -64,6 +64,9 @@ final class WhenCaseTests: XCTestCase {
     /// A test machine.
     let machine = Machine.testMachine()
 
+    // swiftlint:disable line_length
+
+    /// The expected `readSnapshot` code for the test machine.
     let readSnapshotExpected = """
     when ReadSnapshot =>
         x <= EXTERNAL_x;
@@ -124,6 +127,8 @@ final class WhenCaseTests: XCTestCase {
         end if;
     """
 
+    // swiftlint:enable line_length
+
     /// Test read snapshot generation is correct.
     func testReadSnapshotCode() {
         guard let readSnapshot = WhenCase(machine: machine, action: .readSnapshot) else {
@@ -131,6 +136,30 @@ final class WhenCaseTests: XCTestCase {
             return
         }
         XCTAssertEqual(readSnapshot.rawValue, readSnapshotExpected)
+    }
+
+    /// Test read snapshot for a machine that is not suspensible.
+    func testReadSnapshotNotSuspensible() {
+        var machine = machine
+        machine.suspendedState = nil
+        guard let readSnapshot = WhenCase(machine: machine, action: .readSnapshot) else {
+            XCTFail("Failed to create code block.")
+            return
+        }
+        XCTAssertEqual(
+            readSnapshot.rawValue,
+            """
+            when ReadSnapshot =>
+                x <= EXTERNAL_x;
+                if (previousRinglet /= currentState) then
+                    internalState <= OnEntry;
+                else
+                    internalState <= NoOnEntry;
+                end if;
+            """
+        )
+        machine.initialState = -1
+        XCTAssertNil(WhenCase(machine: machine, action: .readSnapshot))
     }
 
 }

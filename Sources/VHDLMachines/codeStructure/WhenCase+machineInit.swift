@@ -70,6 +70,11 @@ extension WhenCase {
         }
     }
 
+    // swiftlint:disable function_body_length
+
+    /// Create the `readSnapshot` case for the given machine.
+    /// - Parameter machine: The machine to create the case for.
+    /// - Returns: The `readSnapshot` case for the given machine.
     private static func readSnapshot(machine: Machine) -> WhenCase? {
         guard machine.initialState >= 0, machine.initialState < machine.states.count else {
             return nil
@@ -297,5 +302,7 @@ extension WhenCase {
             condition: whenCondition, code: .blocks(blocks: blocks)
         )
     }
+
+    // swiftlint:enable function_body_length
 
 }
