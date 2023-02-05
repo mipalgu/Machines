@@ -15,7 +15,7 @@ public struct State: Codable, Equatable, Hashable, Sendable {
     public var name: VariableName
 
     /// The actions in the state. This property includes the code in each action.
-    public var actions: [ActionName: String]
+    public var actions: [ActionName: SynchronousBlock]
 
     /// The order in which the actions should be executed.
     public var actionOrder: [[ActionName]]
@@ -41,7 +41,7 @@ public struct State: Codable, Equatable, Hashable, Sendable {
     @inlinable
     public init(
         name: VariableName,
-        actions: [ActionName: String],
+        actions: [ActionName: SynchronousBlock],
         actionOrder: [[ActionName]],
         signals: [LocalSignal],
         externalVariables: [String]

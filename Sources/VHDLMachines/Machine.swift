@@ -138,12 +138,12 @@ public struct Machine: Codable, Equatable, Hashable {
     /// - Returns: The new machine.
     public static func initial(path: URL) -> Machine {
         let name = path.lastPathComponent.components(separatedBy: ".machine")[0]
-        let defaultActions = [
-            VariableName.onEntry: "",
-            VariableName.onExit: "",
-            VariableName.internal: "",
-            VariableName.onResume: "",
-            VariableName.onSuspend: ""
+        let defaultActions: [VariableName: SynchronousBlock] = [
+            VariableName.onEntry: .statement(statement: .null),
+            VariableName.onExit: .statement(statement: .null),
+            VariableName.internal: .statement(statement: .null),
+            VariableName.onResume: .statement(statement: .null),
+            VariableName.onSuspend: .statement(statement: .null)
         ]
         let actionOrder = [
             [VariableName.onResume, VariableName.onSuspend],

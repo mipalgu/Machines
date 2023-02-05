@@ -61,10 +61,17 @@ import XCTest
 /// Tests the ``State`` type.
 final class StateTests: XCTestCase {
 
+    // swiftlint:disable force_unwrapping
+
     /// The state actions.
-    var actions: [ActionName: String] {
-        [VariableName.onEntry: "x := x + 1;", VariableName.onExit: "x := 0;"]
+    var actions: [ActionName: SynchronousBlock] {
+        [
+            VariableName.onEntry: SynchronousBlock(rawValue: "x := x + 1;")!,
+            VariableName.onExit: SynchronousBlock(rawValue: "x := 0;")!
+        ]
     }
+
+    // swiftlint:enable force_unwrapping
 
     /// The order in which the actions should be executed.
     var actionOrder: [[ActionName]] {
@@ -121,8 +128,12 @@ final class StateTests: XCTestCase {
     func testGettersAndSetters() {
         self.state.name = VariableName.s1
         XCTAssertEqual(self.state.name, VariableName.s1)
-        self.state.actions = [VariableName.internal: "x := 0;"]
-        XCTAssertEqual(self.state.actions, [VariableName.internal: "x := 0;"])
+        guard let newAssignment = SynchronousBlock(rawValue: "x := 0;") else {
+            XCTFail("Failed to create new assignment!")
+            return
+        }
+        self.state.actions = [VariableName.internal: newAssignment]
+        XCTAssertEqual(self.state.actions, [VariableName.internal: newAssignment])
         self.state.actionOrder = [[VariableName.internal]]
         XCTAssertEqual(self.state.actionOrder, [[VariableName.internal]])
         self.state.signals = [

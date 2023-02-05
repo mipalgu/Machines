@@ -169,7 +169,7 @@ extension ConstantSignal {
     /// - Note: This method also includes the reserved actions `NoOnEntry`, `CheckTransition`, `ReadSnapshot`
     /// and `WriteSnapshot`.
     @usableFromInline
-    static func constants(for actions: [ActionName: String]) -> [ConstantSignal]? {
+    static func constants(for actions: [ActionName: SynchronousBlock]) -> [ConstantSignal]? {
         let keys = actions.keys
         let actionNamesArray = [
             .noOnEntry, .checkTransition, VariableName.readSnapshot, .writeSnapshot

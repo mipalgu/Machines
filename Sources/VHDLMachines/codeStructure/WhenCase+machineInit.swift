@@ -70,6 +70,13 @@ extension WhenCase {
         }
     }
 
+    // private init?(state: State, action: VariableName, nextAction: VariableName) {
+    //     guard let code = state.actions[action] else {
+    //         return nil
+    //     }
+    //     return WhenC
+    // }
+
     // swiftlint:disable function_body_length
 
     /// Create the `readSnapshot` case for the given machine.

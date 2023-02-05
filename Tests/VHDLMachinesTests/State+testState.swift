@@ -60,16 +60,20 @@ import VHDLParsing
 /// Add default state test data.
 extension State {
 
+    // swiftlint:disable force_unwrapping
+
     /// Test state.
     static func defaultState(name: VariableName) -> State {
         VHDLMachines.State(
             name: name,
             actions: [
-                VariableName.onEntry: "x <= '1';\nxx <= \"00\"; -- \(name) onEntry",
-                VariableName.onExit: "x <= '0'; -- \(name) OnExit",
-                VariableName.onResume: "x <= '0'; -- \(name) OnResume",
-                VariableName.onSuspend: "xx <= \"11\"; -- \(name) onSuspend",
-                VariableName.internal: "x <= '1'; -- \(name) Internal"
+                VariableName.onEntry: SynchronousBlock(
+                    rawValue: "x <= '1';\nxx <= \"00\"; -- \(name) onEntry"
+                )!,
+                VariableName.onExit: SynchronousBlock(rawValue: "x <= '0'; -- \(name) OnExit")!,
+                VariableName.onResume: SynchronousBlock(rawValue: "x <= '0'; -- \(name) OnResume")!,
+                VariableName.onSuspend: SynchronousBlock(rawValue: "xx <= \"11\"; -- \(name) onSuspend")!,
+                VariableName.internal: SynchronousBlock(rawValue: "x <= '1'; -- \(name) Internal")!
             ],
             actionOrder: [
                 [VariableName.onResume, VariableName.onEntry],
@@ -80,5 +84,7 @@ extension State {
             externalVariables: []
         )
     }
+
+    // swiftlint:enable force_unwrapping
 
 }

@@ -424,10 +424,10 @@ public struct VHDLCompiler {
         machine: Machine, actionName: ActionName, trailers: [String]? = nil
     ) -> [String] {
         guard let unwrappedTrailers = trailers else {
-            return machine.states.map { $0.actions[actionName] ?? "" }
+            return machine.states.map { $0.actions[actionName]?.rawValue ?? "" }
         }
         return machine.states.indices.map { (i: Int) -> String in
-            let actionCode = machine.states[i].actions[actionName] ?? ""
+            let actionCode = machine.states[i].actions[actionName]?.rawValue ?? ""
             return foldWithNewLine(components: [actionCode, unwrappedTrailers[i]])
         }
     }
@@ -508,7 +508,7 @@ public struct VHDLCompiler {
         guard let unwrappedTrailers = trailers else {
             return machine.states.map { state in
                 let actions = actionsNames.map { name in
-                    state.actions[name] ?? ""
+                    state.actions[name]?.rawValue ?? ""
                 }
                 return foldWithNewLine(components: actions)
             }
@@ -516,7 +516,7 @@ public struct VHDLCompiler {
         return machine.states.indices.map { index in
             let state = machine.states[index]
             let actions = actionsNames.map { name in
-                state.actions[name] ?? ""
+                state.actions[name]?.rawValue ?? ""
             }
             return foldWithNewLine(components: actions + [unwrappedTrailers[index]])
         }
@@ -553,7 +553,7 @@ public struct VHDLCompiler {
     /// - Returns: The OnSuspend internal state.
     private func onSuspend(machine: Machine, indentation: Int) -> String {
         // swiftlint:disable:next force_unwrapping
-        let onEntry = (machine.states[machine.suspendedState!].actions[VariableName.onEntry] ?? "")
+        let onEntry = (machine.states[machine.suspendedState!].actions[VariableName.onEntry]?.rawValue ?? "")
             .split(separator: "\n").map { String($0) }
 //        if onEntry.count > 0 {
 //            onEntry[0] = "    " + onEntry[0]

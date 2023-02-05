@@ -65,12 +65,12 @@ final class ConstantSignalTests: XCTestCase {
 
     /// Test that the action bit representations are correct.
     func testActionConstants() {
-        let actions: [ActionName: String] = [
-            VariableName.onEntry: "",
-            VariableName.onExit: "",
-            VariableName.internal: "",
-            VariableName.onResume: "",
-            VariableName.onSuspend: ""
+        let actions: [ActionName: SynchronousBlock] = [
+            VariableName.onEntry: .statement(statement: .null),
+            VariableName.onExit: .statement(statement: .null),
+            VariableName.internal: .statement(statement: .null),
+            VariableName.onResume: .statement(statement: .null),
+            VariableName.onSuspend: .statement(statement: .null)
         ]
         let constants = [
             ConstantSignal(
