@@ -92,6 +92,9 @@ final class EntityTests: XCTestCase {
         )
     }
 
+    // swiftlint:disable function_body_length
+    // swiftlint:disable force_unwrapping
+
     /// Test machine init when machine is parameterised.
     func testParameterisedMachine() {
         let machine = Machine.testMachine()
@@ -168,5 +171,8 @@ final class EntityTests: XCTestCase {
             ])
         )
     }
+
+    // swiftlint:enable force_unwrapping
+    // swiftlint:enable function_body_length
 
 }
