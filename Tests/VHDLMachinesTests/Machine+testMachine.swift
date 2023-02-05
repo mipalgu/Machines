@@ -65,7 +65,7 @@ extension Machine {
     // swiftlint:disable force_unwrapping
 
     /// A default test machine.
-    static func testMachine(directory: URL) -> Machine {
+    static func testMachine(directory: URL = PingPongArrangement().machinePath) -> Machine {
         VHDLMachines.Machine(
             name: "TestMachine",
             path: directory.appendingPathComponent("TestMachine.machine", isDirectory: true),

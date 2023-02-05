@@ -65,37 +65,48 @@ final class LocalSignalTests: XCTestCase {
     func testStateTrackers() {
         let machine = Machine.testMachine()
         let trackers = LocalSignal.stateTrackers(machine: machine)
-        let type = SignalType.ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0)))
         let states = machine.states
-        guard states.count == 3 else {
-            XCTFail("Expected 3 states, got \(states.count).")
+        guard
+            states.count == 3,
+            let index = machine.suspendedState,
+            index >= 0,
+            index < 3,
+            machine.initialState >= 0,
+            machine.initialState < 3
+        else {
+            XCTFail("Failed to create trackers.")
             return
         }
+        let initialState = states[machine.initialState]
+        let suspendedState = states[index]
+        let type = SignalType.ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0)))
         XCTAssertEqual(
             trackers,
             [
                 LocalSignal(
                     type: type,
-                    name: VariableName.name(for: states[0]),
+                    name: .currentState,
+                    defaultValue: .variable(name: VariableName.name(for: suspendedState)),
+                    comment: nil
+                ),
+                LocalSignal(
+                    type: type,
+                    name: .targetState,
+                    defaultValue: .variable(name: VariableName.name(for: suspendedState)),
+                    comment: nil
+                ),
+                LocalSignal(
+                    type: type,
+                    name: .previousRinglet,
                     defaultValue: .literal(value: .vector(
-                        value: .bits(value: BitVector(values: [.low, .low]))
+                        value: .logics(value: LogicVector(values: [.highImpedance, .highImpedance]))
                     )),
                     comment: nil
                 ),
                 LocalSignal(
                     type: type,
-                    name: VariableName.name(for: states[1]),
-                    defaultValue: .literal(value: .vector(
-                        value: .bits(value: BitVector(values: [.low, .high]))
-                    )),
-                    comment: nil
-                ),
-                LocalSignal(
-                    type: type,
-                    name: VariableName.name(for: states[2]),
-                    defaultValue: .literal(value: .vector(
-                        value: .bits(value: BitVector(values: [.high, .low]))
-                    )),
+                    name: .suspendedFrom,
+                    defaultValue: .variable(name: VariableName.name(for: initialState)),
                     comment: nil
                 )
             ]

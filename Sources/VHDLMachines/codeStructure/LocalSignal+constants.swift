@@ -33,10 +33,10 @@ extension LocalSignal {
         guard
             let bitsRequired = BitLiteral.bitsRequired(for: states.count),
             bitsRequired > 0,
-            machine.initialState > 0,
+            machine.initialState >= 0,
             machine.initialState < states.count,
             let suspendedStateIndex = machine.suspendedState,
-            suspendedStateIndex > 0,
+            suspendedStateIndex >= 0,
             suspendedStateIndex < states.count
         else {
             return nil
