@@ -29,18 +29,21 @@ extension LocalSignal {
 
     /// Create a local snapshot for an external variable.
     /// - Parameter signal: The signal to convert into a snapshot.
+    @usableFromInline
     init(snapshot signal: PortSignal) {
         self.init(type: signal.type, name: signal.name, defaultValue: nil, comment: nil)
     }
 
     /// Create a local snapshot for a parameter.
     /// - Parameter parameter: The parameter to convert into a snapshot.
+    @usableFromInline
     init(snapshot parameter: Parameter) {
         self.init(type: parameter.type, name: parameter.name, defaultValue: nil, comment: nil)
     }
 
     /// Create a local snapshot for an output parameter.
     /// - Parameter output: The output parameter to convert into a snapshot.
+    @usableFromInline
     init(snapshot output: ReturnableVariable) {
         self.init(type: output.type, name: output.name, defaultValue: nil, comment: nil)
     }
@@ -48,6 +51,7 @@ extension LocalSignal {
     /// Create the signals that track the internal states of the machine.
     /// - Parameter machine: The machine to create the trackers for.
     /// - Returns: The signals that track which state is executing.
+    @usableFromInline
     static func stateTrackers(machine: Machine) -> [LocalSignal]? {
         let states = machine.states
         guard

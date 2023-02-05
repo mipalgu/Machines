@@ -146,6 +146,7 @@ extension ConstantSignal {
     ///   - state: The state to convert.
     ///   - bitsRequired: The bits required for all the states to be covered.
     ///   - index: The index of this `state` in the states array of the machine.
+    @usableFromInline
     init?(state: State, bitsRequired: Int, index: Int) {
         guard bitsRequired > 0, index >= 0 else {
             return nil
@@ -167,6 +168,7 @@ extension ConstantSignal {
     /// - Returns: The constant declaration for the state actions.
     /// - Note: This method also includes the reserved actions `NoOnEntry`, `CheckTransition`, `ReadSnapshot`
     /// and `WriteSnapshot`.
+    @usableFromInline
     static func constants(for actions: [ActionName: String]) -> [ConstantSignal]? {
         let keys = actions.keys
         let actionNamesArray = [
@@ -202,6 +204,7 @@ extension ConstantSignal {
     /// Create a constant `VHDL` literal that represents a clocks period as a `real` value in picoseconds.
     /// - Parameter period: The period to convert.
     /// - Returns: The constant signal.
+    @usableFromInline
     static func clockPeriod(period: Time) -> ConstantSignal? {
         guard
             let comment = Comment(rawValue: "-- ps"),
