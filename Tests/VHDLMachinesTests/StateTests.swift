@@ -61,15 +61,17 @@ import XCTest
 /// Tests the ``State`` type.
 final class StateTests: XCTestCase {
 
+    // swiftlint:disable force_unwrapping
+
     /// The state actions.
-    var actions: [ActionName: String] {
-        [VariableName.onEntry: "x := x + 1;", VariableName.onExit: "x := 0;"]
+    var actions: [ActionName: SynchronousBlock] {
+        [
+            VariableName.onEntry: SynchronousBlock(rawValue: "x <= x + 1;")!,
+            VariableName.onExit: SynchronousBlock(rawValue: "x <= 0;")!
+        ]
     }
 
-    /// The order in which the actions should be executed.
-    var actionOrder: [[ActionName]] {
-        [[VariableName.onEntry, VariableName.onExit]]
-    }
+    // swiftlint:enable force_unwrapping
 
     /// The signals.
     var signals: [LocalSignal] {
@@ -92,7 +94,6 @@ final class StateTests: XCTestCase {
     lazy var state = State(
         name: VariableName.s0,
         actions: actions,
-        actionOrder: actionOrder,
         signals: signals,
         externalVariables: externalVariables
     )
@@ -102,7 +103,6 @@ final class StateTests: XCTestCase {
         self.state = State(
             name: VariableName.s0,
             actions: actions,
-            actionOrder: actionOrder,
             signals: signals,
             externalVariables: externalVariables
         )
@@ -112,7 +112,6 @@ final class StateTests: XCTestCase {
     func testInit() {
         XCTAssertEqual(self.state.name, VariableName.s0)
         XCTAssertEqual(self.state.actions, self.actions)
-        XCTAssertEqual(self.state.actionOrder, self.actionOrder)
         XCTAssertEqual(self.state.signals, self.signals)
         XCTAssertEqual(self.state.externalVariables, self.externalVariables)
     }
@@ -121,10 +120,12 @@ final class StateTests: XCTestCase {
     func testGettersAndSetters() {
         self.state.name = VariableName.s1
         XCTAssertEqual(self.state.name, VariableName.s1)
-        self.state.actions = [VariableName.internal: "x := 0;"]
-        XCTAssertEqual(self.state.actions, [VariableName.internal: "x := 0;"])
-        self.state.actionOrder = [[VariableName.internal]]
-        XCTAssertEqual(self.state.actionOrder, [[VariableName.internal]])
+        guard let newAssignment = SynchronousBlock(rawValue: "x <= 0;") else {
+            XCTFail("Failed to create new assignment!")
+            return
+        }
+        self.state.actions = [VariableName.internal: newAssignment]
+        XCTAssertEqual(self.state.actions, [VariableName.internal: newAssignment])
         self.state.signals = [
             LocalSignal(
                 type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),

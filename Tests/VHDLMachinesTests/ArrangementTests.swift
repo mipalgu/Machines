@@ -61,10 +61,12 @@ import XCTest
 /// Tests the ``Arrangement`` type.
 final class ArrangementTests: XCTestCase {
 
+    // swiftlint:disable force_unwrapping
+
     /// The machines in the arrangement.
     let machines = [
-        "M1": URL(fileURLWithPath: "/path/to/M1"),
-        "M2": URL(fileURLWithPath: "/path/to/M2")
+        VariableName(rawValue: "M1")!: URL(fileURLWithPath: "/path/to/M1"),
+        VariableName(rawValue: "M2")!: URL(fileURLWithPath: "/path/to/M2")
     ]
 
     /// The clocks in the arrangement.
@@ -101,7 +103,7 @@ final class ArrangementTests: XCTestCase {
     ]
 
     /// The parent machines in the arrangement.
-    let parents = ["M1"]
+    let parents = [VariableName(rawValue: "M1")!]
 
     /// The path to the arrangement.
     let path = URL(fileURLWithPath: "/path/to/arrangement")
@@ -141,8 +143,8 @@ final class ArrangementTests: XCTestCase {
     /// Tests getters and setters update properties correctly.
     func testGettersAndSetters() {
         let newMachines = [
-            "M3": URL(fileURLWithPath: "/path/to/M3"),
-            "M4": URL(fileURLWithPath: "/path/to/M4")
+            VariableName(rawValue: "M3")!: URL(fileURLWithPath: "/path/to/M3"),
+            VariableName(rawValue: "M4")!: URL(fileURLWithPath: "/path/to/M4")
         ]
         let newExternalSignals = [
             PortSignal(
@@ -172,7 +174,7 @@ final class ArrangementTests: XCTestCase {
         let newClocks = [
             Clock(name: VariableName.clk2, frequency: 100, unit: .MHz)
         ]
-        let newParents = ["M2"]
+        let newParents = [VariableName(rawValue: "M2")!]
         let newPath = URL(fileURLWithPath: "/path/to/new/arrangement")
         self.arrangement.machines = newMachines
         self.arrangement.externalSignals = newExternalSignals
@@ -193,16 +195,21 @@ final class ArrangementTests: XCTestCase {
         let url = URL(fileURLWithPath: "Arrangement.arrangement", isDirectory: true)
         let arrangement = Arrangement.initial(url: url)
         let machineURL = URL(fileURLWithPath: "./Machine.machine", isDirectory: true)
-        let machine = Machine.initial(path: machineURL)
+        guard let machine = Machine.initial(path: machineURL) else {
+            XCTFail("Failed to create machine!")
+            return
+        }
         let expected = Arrangement(
-            machines: ["Machine": machineURL],
+            machines: [VariableName(rawValue: "Machine")!: machineURL],
             externalSignals: [],
             signals: [],
             clocks: machine.clocks,
-            parents: ["Machine"],
+            parents: [VariableName(rawValue: "Machine")!],
             path: url
         )
         XCTAssertEqual(arrangement, expected)
     }
+
+    // swiftlint:enable force_unwrapping
 
 }

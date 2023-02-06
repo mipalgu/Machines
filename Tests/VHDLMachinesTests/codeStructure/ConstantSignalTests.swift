@@ -65,13 +65,7 @@ final class ConstantSignalTests: XCTestCase {
 
     /// Test that the action bit representations are correct.
     func testActionConstants() {
-        let actions: [ActionName: String] = [
-            VariableName.onEntry: "",
-            VariableName.onExit: "",
-            VariableName.internal: "",
-            VariableName.onResume: "",
-            VariableName.onSuspend: ""
-        ]
+        let actions: [VariableName] = [.onEntry, .onExit, .internal, .onResume, .onSuspend]
         let constants = [
             ConstantSignal(
                 name: VariableName.checkTransition,
@@ -170,7 +164,7 @@ final class ConstantSignalTests: XCTestCase {
 
     /// Test the state init creates the constant signal correctly.
     func testStateInit() {
-        let state = State(name: .initial, actions: [:], actionOrder: [], signals: [], externalVariables: [])
+        let state = State(name: .initial, actions: [:], signals: [], externalVariables: [])
         let result = ConstantSignal(state: state, bitsRequired: 2, index: 1)
         XCTAssertNotNil(result)
         XCTAssertEqual(

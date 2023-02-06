@@ -66,8 +66,7 @@ extension ArchitectureHead {
     @usableFromInline
     init?(machine: Machine) {
         guard
-            let firstState = machine.states.first,
-            let actions = ConstantSignal.constants(for: firstState.actions),
+            let actions = ConstantSignal.constants(for: machine.actions),
             let internalStateComment = Comment(rawValue: "-- Internal State Representation Bits"),
             let internalStateBits = BitLiteral.bitsRequired(for: actions.count),
             internalStateBits > 0,

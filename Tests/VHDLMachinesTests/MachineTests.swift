@@ -63,10 +63,14 @@ import XCTest
 /// Tests the ``Machine`` type.
 final class MachineTests: XCTestCase {
 
+    // swiftlint:disable force_unwrapping
+
     /// The machines name.
-    var machineName: String {
-        "M0"
+    var machineName: VariableName {
+        VariableName(rawValue: "M0")!
     }
+
+    // swiftlint:enable force_unwrapping
 
     /// The path to the machine.
     var path: URL {
@@ -118,13 +122,17 @@ final class MachineTests: XCTestCase {
         0
     }
 
+    // swiftlint:disable force_unwrapping
+
     /// The paths to the dependent machines.
-    var dependentMachines: [MachineName: URL] {
+    var dependentMachines: [VariableName: URL] {
         [
-            "M1": URL(fileURLWithPath: "/path/to/M1"),
-            "M2": URL(fileURLWithPath: "/path/to/M2")
+            VariableName(rawValue: "M1")!: URL(fileURLWithPath: "/path/to/M1"),
+            VariableName(rawValue: "M2")!: URL(fileURLWithPath: "/path/to/M2")
         ]
     }
+
+    // swiftlint:enable force_unwrapping
 
     /// The signals for the machine.
     var machineSignals: [LocalSignal] {
@@ -165,14 +173,12 @@ final class MachineTests: XCTestCase {
             State(
                 name: VariableName.s0,
                 actions: [:],
-                actionOrder: [],
                 signals: [],
                 externalVariables: []
             ),
             State(
                 name: VariableName.s1,
                 actions: [:],
-                actionOrder: [],
                 signals: [],
                 externalVariables: []
             )
@@ -198,17 +204,23 @@ final class MachineTests: XCTestCase {
     }
 
     /// The architecture head for the machine.
-    var architectureHead: String {
-        "abcd"
+    var architectureHead: [Statement] {
+        [.definition(signal: LocalSignal(type: .stdLogic, name: .s, defaultValue: nil, comment: nil))]
     }
 
     /// The architecture body for the machine.
-    var architectureBody: String {
-        "efgh"
+    var architectureBody: AsynchronousBlock {
+        .statement(statement: .assignment(name: .s, value: .literal(value: .bit(value: .high))))
+    }
+
+    /// The default actions in a state.
+    var actions: [VariableName] {
+        [.onEntry, .onExit, .internal, .onResume, .onSuspend]
     }
 
     /// The machine to test.
     lazy var machine = Machine(
+        actions: actions,
         name: machineName,
         path: path,
         includes: includes,
@@ -232,6 +244,7 @@ final class MachineTests: XCTestCase {
     /// Initialises the test.
     override func setUp() {
         self.machine = Machine(
+            actions: actions,
             name: machineName,
             path: path,
             includes: includes,
@@ -280,7 +293,7 @@ final class MachineTests: XCTestCase {
 
     /// Test getters and setters work.
     func testGettersAndSetters() {
-        let newMachineName = "M3"
+        let newMachineName = VariableName(rawValue: "M3")!
         let newPath = URL(fileURLWithPath: "/path/to/M3")
         let newIncludes = [Include.include(value: "IEEE.STD_LOGIC_1164.ALL")]
         let newExternalSignals = [
@@ -305,7 +318,7 @@ final class MachineTests: XCTestCase {
             Clock(name: VariableName.clk2, frequency: 100, unit: .MHz)
         ]
         let newDrivingClock = 1
-        let newDependentMachines = ["M1": URL(fileURLWithPath: "/path/to/M1")]
+        let newDependentMachines = [VariableName(rawValue: "M1")!: URL(fileURLWithPath: "/path/to/M1")]
         let newMachineSignals = [
             LocalSignal(
                 type: .stdLogic,
@@ -333,7 +346,6 @@ final class MachineTests: XCTestCase {
             State(
                 name: VariableName.s0,
                 actions: [:],
-                actionOrder: [],
                 signals: [],
                 externalVariables: []
             )
@@ -343,8 +355,14 @@ final class MachineTests: XCTestCase {
         ]
         let newInitialState = 1
         let newSuspendedState = 0
-        let newArchitectureHead = "abcd3"
-        let newArchitectureBody = "fghi"
+        let newArchitectureHead = [
+            Statement.definition(
+                signal: LocalSignal(type: .stdLogic, name: .g, defaultValue: nil, comment: nil)
+            )
+        ]
+        let newArchitectureBody = AsynchronousBlock.statement(statement: .assignment(
+            name: .g, value: .literal(value: .bit(value: .low))
+        ))
         machine.name = newMachineName
         machine.path = newPath
         machine.includes = newIncludes
@@ -384,23 +402,16 @@ final class MachineTests: XCTestCase {
     /// Test initial machine is setup correctly.
     func testInitial() {
         let path = URL(fileURLWithPath: "NewMachine.machine", isDirectory: true)
-        let defaultActions = [
-            VariableName.onEntry: "",
-            VariableName.onExit: "",
-            VariableName.internal: "",
-            VariableName.onResume: "",
-            VariableName.onSuspend: ""
-        ]
-        let actionOrder = [
-            [VariableName.onResume, VariableName.onSuspend],
-            [VariableName.onEntry],
-            [VariableName.onExit, VariableName.internal]
-        ]
         let machine = Machine.initial(path: path)
         let expected = Machine(
-            name: "NewMachine",
+            actions: actions,
+            name: VariableName(rawValue: "NewMachine")!,
             path: path,
-            includes: [.library(value: "IEEE"), .include(value: "IEEE.std_logic_1164.All")],
+            includes: [
+                .library(value: "IEEE"),
+                .include(value: "IEEE.std_logic_1164.All"),
+                .include(value: "IEEE.math_real.All")
+            ],
             externalSignals: [],
             generics: [],
             clocks: [Clock(name: VariableName.clk, frequency: 50, unit: .MHz)],
@@ -413,15 +424,13 @@ final class MachineTests: XCTestCase {
             states: [
                 State(
                     name: VariableName.initial,
-                    actions: defaultActions,
-                    actionOrder: actionOrder,
+                    actions: [:],
                     signals: [],
                     externalVariables: []
                 ),
                 State(
                     name: VariableName.suspendedState,
-                    actions: defaultActions,
-                    actionOrder: actionOrder,
+                    actions: [:],
                     signals: [],
                     externalVariables: []
                 )

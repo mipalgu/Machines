@@ -101,13 +101,10 @@ extension Entity {
                 )
             ]
         }
-        guard
-            let name = VariableName(rawValue: machine.name),
-            let port = PortBlock(signals: signals)
-        else {
+        guard let port = PortBlock(signals: signals) else {
             return nil
         }
-        self.init(name: name, port: port)
+        self.init(name: machine.name, port: port)
     }
 
 }

@@ -169,16 +169,15 @@ extension ConstantSignal {
     /// - Note: This method also includes the reserved actions `NoOnEntry`, `CheckTransition`, `ReadSnapshot`
     /// and `WriteSnapshot`.
     @usableFromInline
-    static func constants(for actions: [ActionName: String]) -> [ConstantSignal]? {
-        let keys = actions.keys
+    static func constants(for actions: [VariableName]) -> [ConstantSignal]? {
         let actionNamesArray = [
             .noOnEntry, .checkTransition, VariableName.readSnapshot, .writeSnapshot
         ]
         let invalidKeys = Set(actionNamesArray)
-        guard !keys.contains(where: { invalidKeys.contains($0) }) else {
+        guard !actions.contains(where: { invalidKeys.contains($0) }) else {
             fatalError("Actions contain a reserved name.")
         }
-        let actionNames = (actionNamesArray + keys).sorted()
+        let actionNames = (actionNamesArray + actions).sorted()
         guard let bitsRequired = BitLiteral.bitsRequired(for: actionNames.count) else {
             return nil
         }

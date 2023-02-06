@@ -48,6 +48,8 @@ extension LocalSignal {
         self.init(type: output.type, name: output.name, defaultValue: nil, comment: nil)
     }
 
+    // swiftlint:disable function_body_length
+
     /// Create the signals that track the internal states of the machine.
     /// - Parameter machine: The machine to create the trackers for.
     /// - Returns: The signals that track which state is executing.
@@ -123,5 +125,7 @@ extension LocalSignal {
             )
         ]
     }
+
+    // swiftlint:enable function_body_length
 
 }

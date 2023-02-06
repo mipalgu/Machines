@@ -68,22 +68,20 @@ class VHDLMachinesCompilerTests: XCTestCase {
     /// Default state creation.
     private func defaultState(name: String) -> VHDLMachines.State {
         VHDLMachines.State(
-            // swiftlint:disable:next force_unwrapping
+            // swiftlint:disable force_unwrapping
             name: VariableName(rawValue: name)!,
             actions: [
-                VariableName.onEntry: "x <= '1';\nxx <= \"00\"; -- \(name) onEntry",
-                VariableName.onExit: "x <= '0'; -- \(name) OnExit",
-                VariableName.onResume: "x <= '0'; -- \(name) OnResume",
-                VariableName.onSuspend: "xx <= \"11\"; -- \(name) onSuspend",
-                VariableName.internal: "x <= '1'; -- \(name) Internal"
-            ],
-            actionOrder: [
-                [VariableName.onResume, VariableName.onEntry],
-                [VariableName.onExit, VariableName.internal],
-                [VariableName.onSuspend]
+                VariableName.onEntry: SynchronousBlock(
+                    rawValue: "x <= '1';\nxx <= \"00\"; -- \(name) onEntry"
+                )!,
+                VariableName.onExit: SynchronousBlock(rawValue: "x <= '0'; -- \(name) OnExit")!,
+                VariableName.onResume: SynchronousBlock(rawValue: "x <= '0'; -- \(name) OnResume")!,
+                VariableName.onSuspend: SynchronousBlock(rawValue: "xx <= \"11\"; -- \(name) onSuspend")!,
+                VariableName.internal: SynchronousBlock(rawValue: "x <= '1'; -- \(name) Internal")!
             ],
             signals: [],
             externalVariables: []
+            // swiftlint:enable force_unwrapping
         )
     }
 

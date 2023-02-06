@@ -103,18 +103,16 @@ struct PingPongArrangement {
         URL(fileURLWithPath: machinesFolder + "/PongMachine.machine/machine.json", isDirectory: false)
     }
 
+    // swiftlint:disable force_unwrapping
+
     /// The ping states actions.
-    let pingActions: [ActionName: String] = [
-        VariableName.onEntry: "",
-        VariableName.onExit: "ping <= '1'",
-        VariableName.internal: ""
+    let pingActions: [ActionName: SynchronousBlock] = [
+        VariableName.onExit: SynchronousBlock(rawValue: "ping <= '1';")!
     ]
 
     /// The pong states actions.
-    let pongActions: [ActionName: String] = [
-        VariableName.onEntry: "",
-        VariableName.onExit: "pong <= '1'",
-        VariableName.internal: ""
+    let pongActions: [ActionName: SynchronousBlock] = [
+        VariableName.onExit: SynchronousBlock(rawValue: "pong <= '1';")!
     ]
 
     /// The action order.
@@ -122,14 +120,11 @@ struct PingPongArrangement {
         [VariableName.onEntry], [VariableName.internal, VariableName.onExit]
     ]
 
-    // swiftlint:disable force_unwrapping
-
     /// The Ping state.
     var pingState: State {
         State(
             name: VariableName(rawValue: "Ping")!,
             actions: pingActions,
-            actionOrder: actionOrder,
             signals: [],
             externalVariables: ["ping", "pong"]
         )
@@ -140,7 +135,6 @@ struct PingPongArrangement {
         State(
             name: VariableName(rawValue: "Pong")!,
             actions: pongActions,
-            actionOrder: actionOrder,
             signals: [],
             externalVariables: ["ping", "pong"]
         )
@@ -197,7 +191,8 @@ struct PingPongArrangement {
     /// The ping machine.
     var pingMachine: Machine {
         Machine(
-            name: "PingMachine",
+            actions: [.onEntry, .onExit, .internal, .onResume, .onSuspend],
+            name: VariableName(rawValue: "PingMachine")!,
             path: pingMachinePath,
             includes: includes,
             externalSignals: pingSignals,
@@ -219,7 +214,8 @@ struct PingPongArrangement {
     /// The pong machine.
     var pongMachine: Machine {
         Machine(
-            name: "PongMachine",
+            actions: [.onEntry, .onExit, .internal, .onResume, .onSuspend],
+            name: VariableName(rawValue: "PongMachine")!,
             path: pongMachinePath,
             includes: includes,
             externalSignals: pongSignals,
@@ -241,11 +237,14 @@ struct PingPongArrangement {
     /// The arrangement.
     var arrangement: Arrangement {
         Arrangement(
-            machines: ["PingMachine": pingPath, "PongMachine": pongPath],
+            machines: [
+                VariableName(rawValue: "PingMachine")!: pingPath,
+                VariableName(rawValue: "PongMachine")!: pongPath
+            ],
             externalSignals: [],
             signals: [],
             clocks: clocks,
-            parents: ["PingMachine", "PongMachine"],
+            parents: [VariableName(rawValue: "PingMachine")!, VariableName(rawValue: "PongMachine")!],
             path: arrangementPath
         )
     }
@@ -318,7 +317,7 @@ struct PingPongArrangement {
                     when OnExit =>
                         case currentState is
                             when STATE_Ping =>
-                                ping <= '1'
+                                ping <= '1';
                             when STATE_Check =>
                                 ping <= '0';
                             when others =>
@@ -349,7 +348,6 @@ struct PingPongArrangement {
         State(
             name: VariableName(rawValue: "Check")!,
             actions: emptyActions(reset: reset),
-            actionOrder: actionOrder,
             signals: [],
             externalVariables: externalVariables
         )
@@ -370,11 +368,10 @@ struct PingPongArrangement {
     /// Actions with a reset in the onExit.
     /// - Parameter reset: The reset.
     /// - Returns: The actions.
-    func emptyActions(reset: String) -> [ActionName: String] {
+    func emptyActions(reset: String) -> [ActionName: SynchronousBlock] {
         [
-            VariableName.onEntry: "",
-            VariableName.onExit: "\(reset) <= '0';",
-            VariableName.internal: ""
+            // swiftlint:disable:next force_unwrapping
+            VariableName.onExit: SynchronousBlock(rawValue: "\(reset) <= '0';")!
         ]
     }
 
