@@ -163,6 +163,29 @@ final class WhenCaseTests: XCTestCase {
         internalState <= WriteSnapshot;
     """
 
+    /// The onResume code.
+    let onResumeCode = """
+    when OnResume =>
+        case currentState is
+            when STATE_Initial =>
+                x <= '0';
+                x <= '1';
+                xx <= "00";
+                ringlet_counter <= 0;
+            when STATE_Suspended =>
+                x <= '0';
+                x <= '1';
+                xx <= "00";
+            when STATE_State0 =>
+                x <= '0';
+                x <= '1';
+                xx <= "00";
+            when others =>
+                null;
+        end case;
+        internalState <= CheckTransition;
+    """
+
     /// The internal code.
     let internalCode = """
     when Internal =>
@@ -205,6 +228,12 @@ final class WhenCaseTests: XCTestCase {
     func testOnExitCode() {
         let onExit = WhenCase(machine: machine, action: .onExit)
         XCTAssertEqual(onExit?.rawValue, onExitCode)
+    }
+
+    /// Test onResume generation.
+    func testOnResumeCode() {
+        let onResume = WhenCase(machine: machine, action: .onResume)
+        XCTAssertEqual(onResume?.rawValue, onResumeCode)
     }
 
     /// Test internal code generation.

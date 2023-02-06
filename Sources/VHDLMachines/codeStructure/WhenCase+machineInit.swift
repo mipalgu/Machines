@@ -56,6 +56,8 @@
 
 import VHDLParsing
 
+// swiftlint:disable file_length
+
 extension WhenCase {
 
     init?(machine: Machine, action: VariableName) {
@@ -66,6 +68,8 @@ extension WhenCase {
             self.init(onEntryMachine: machine)
         case .onExit:
             self.init(normalAction: action, machine: machine, nextAction: .writeSnapshot)
+        case .onResume:
+            self.init(onResumeMachine: machine)
         case .internal:
             self.init(internalMachine: machine)
         case .writeSnapshot:
@@ -104,6 +108,46 @@ extension WhenCase {
             return WhenCase(condition: condition, code: .blocks(blocks: [code, trailer]))
         }
         let condition = WhenCondition.expression(expression: .variable(name: .onEntry))
+        let trailer = SynchronousBlock.statement(statement: .assignment(
+            name: .internalState, value: .variable(name: .checkTransition)
+        ))
+        guard !stateCases.isEmpty else {
+            self.init(condition: condition, code: trailer)
+            return
+        }
+        let statement = CaseStatement(
+            condition: .variable(name: .currentState), cases: stateCases + [WhenCase.othersNull]
+        )
+        self.init(condition: condition, code: .blocks(blocks: [.caseStatement(block: statement), trailer]))
+    }
+
+    /// Create the onResume action for a machine.
+    /// - Parameter machine: The machine to create the onResume action for.
+    private init(onResumeMachine machine: Machine) {
+        let stateCases = machine.states.compactMap { state -> WhenCase? in
+            let condition = WhenCondition.expression(expression: .variable(name: .name(for: state)))
+            var code: [SynchronousBlock] = []
+            if let onResume = state.actions[.onResume] {
+                code += [onResume]
+            }
+            if let onEntry = state.actions[.onEntry] {
+                code += [onEntry]
+            }
+            guard machine.hasAfter(state: state) else {
+                guard !code.isEmpty else {
+                    return nil
+                }
+                return WhenCase(condition: condition, code: .blocks(blocks: code))
+            }
+            let trailer = SynchronousBlock.statement(statement: .assignment(
+                name: .ringletCounter, value: .literal(value: .integer(value: 0))
+            ))
+            guard !code.isEmpty else {
+                return WhenCase(condition: condition, code: trailer)
+            }
+            return WhenCase(condition: condition, code: .blocks(blocks: code + [trailer]))
+        }
+        let condition = WhenCondition.expression(expression: .variable(name: .onResume))
         let trailer = SynchronousBlock.statement(statement: .assignment(
             name: .internalState, value: .variable(name: .checkTransition)
         ))
@@ -491,3 +535,5 @@ private extension Machine {
     }
 
 }
+
+// swiftlint:enable file_length
