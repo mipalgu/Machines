@@ -83,6 +83,8 @@ extension WhenCase {
             self.init(internalMachine: machine)
         case .writeSnapshot:
             self.init(writeSnapshotMachine: machine)
+        case .checkTransition:
+            self.init(checkTransitionMachine: machine)
         default:
             return nil
         }
@@ -98,6 +100,42 @@ extension WhenCase {
             return nil
         }
         self.init(condition: .expression(expression: .variable(name: .name(for: state))), code: code)
+    }
+
+    /// Create the transition logic for a particular state.
+    /// - Parameters:
+    ///   - state: The state to create the logic for.
+    ///   - transitions: The transitions to include in the when case.
+    ///   - machine: The machine containing the states these transitions are targetting.
+    private init?(state: State, transitions: [Transition], machine: Machine) {
+        guard let block = SynchronousBlock(transitions: transitions, machine: machine) else {
+            return nil
+        }
+        let condition = WhenCondition.expression(expression: .variable(name: .name(for: state)))
+        self.init(condition: condition, code: block)
+    }
+
+    /// Create the when case for the checkTransition action.
+    /// - Parameter machine: The machine to create the action code for.
+    private init(checkTransitionMachine machine: Machine) {
+        let stateCases = machine.states.enumerated().compactMap { index, state -> WhenCase? in
+            let transitions = machine.transitions.filter { $0.source == index }
+            return WhenCase(state: state, transitions: transitions, machine: machine)
+        }
+        let statement = CaseStatement(
+            condition: .variable(name: .currentState), cases: stateCases + [
+                WhenCase(
+                    condition: .others,
+                    code: .statement(statement: .assignment(
+                        name: .internalState, value: .variable(name: .internal)
+                    ))
+                )
+            ]
+        )
+        self.init(
+            condition: .expression(expression: .variable(name: .checkTransition)),
+            code: .caseStatement(block: statement)
+        )
     }
 
     /// Create an action that does nothing and moves to the next action.
@@ -590,6 +628,57 @@ private extension Machine {
         return self.transitions.lazy
             .filter { $0.source == index }
             .contains { $0.condition.hasAfter }
+    }
+
+}
+
+/// Add init for creating transition logic.
+private extension SynchronousBlock {
+
+    /// Create the transition logic for a state.
+    /// - Parameters:
+    ///   - transitions: The transition to create the logic for.
+    ///   - machine: The machine containing the transition targets.
+    init?(transitions: [Transition], machine: Machine) {
+        guard let transition = transitions.first else {
+            return nil
+        }
+        guard transitions.count > 1 else {
+            self = .ifStatement(block: .ifElse(
+                condition: Expression(condition: transition.condition),
+                ifBlock: .blocks(blocks: [
+                    .statement(statement: .assignment(
+                        name: .targetState,
+                        value: .variable(name: .name(for: machine.states[transition.target]))
+                    )),
+                    .statement(statement: .assignment(
+                        name: .internalState, value: .variable(name: .onExit)
+                    ))
+                ]),
+                elseBlock: .statement(statement: .assignment(
+                    name: .internalState, value: .variable(name: .internal)
+                ))
+            ))
+            return
+        }
+        guard let remainingTransitions = SynchronousBlock(
+            transitions: Array(transitions.dropFirst()), machine: machine
+        ) else {
+            return nil
+        }
+        self = .ifStatement(block: .ifElse(
+            condition: Expression(condition: transition.condition),
+            ifBlock: .blocks(blocks: [
+                .statement(statement: .assignment(
+                    name: .targetState,
+                    value: .variable(name: .name(for: machine.states[transition.target]))
+                )),
+                .statement(statement: .assignment(
+                    name: .internalState, value: .variable(name: .onExit)
+                ))
+            ]),
+            elseBlock: remainingTransitions
+        ))
     }
 
 }

@@ -66,6 +66,41 @@ final class WhenCaseTests: XCTestCase {
 
     // swiftlint:disable line_length
 
+    /// The checkTransition code.
+    let checkTransitionCode = """
+    when CheckTransition =>
+        case currentState is
+            when STATE_Initial =>
+                if (false) then
+                    targetState <= STATE_Suspended;
+                    internalState <= OnExit;
+                elsif (ringlet_counter >= integer(ceil(real(50.0) * RINGLETS_PER_MS)) or ringlet_counter >= integer(ceil(real(2.0) * RINGLETS_PER_S)) or ringlet_counter >= integer(ceil(real(20000.0)))) then
+                    targetState <= STATE_Suspended;
+                    internalState <= OnExit;
+                elsif (true) then
+                    targetState <= STATE_Suspended;
+                    internalState <= OnExit;
+                else
+                    internalState <= Internal;
+                end if;
+            when STATE_Suspended =>
+                if (xx = '1') then
+                    targetState <= STATE_State0;
+                    internalState <= OnExit;
+                elsif (x = '1') then
+                    targetState <= STATE_State0;
+                    internalState <= OnExit;
+                elsif (true) then
+                    targetState <= STATE_Initial;
+                    internalState <= OnExit;
+                else
+                    internalState <= Internal;
+                end if;
+            when others =>
+                internalState <= Internal;
+        end case;
+    """
+
     /// The expected `readSnapshot` code for the test machine.
     let readSnapshotExpected = """
     when ReadSnapshot =>
@@ -241,6 +276,12 @@ final class WhenCaseTests: XCTestCase {
     """
 
     // swiftlint:enable line_length
+
+    /// Test the checkTransition generation.
+    func testCheckTransitionCode() {
+        let checkTransition = WhenCase(machine: machine, action: .checkTransition)
+        XCTAssertEqual(checkTransition?.rawValue, checkTransitionCode)
+    }
 
     /// Test the noOnEntry generation.
     func testNoOnEntryCode() {
