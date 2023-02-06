@@ -79,6 +79,7 @@ final class MachineRepresentationTests: XCTestCase {
         XCTAssertEqual(representation?.architectureHead, head)
         XCTAssertEqual(representation?.architectureBody, body)
         XCTAssertEqual(representation?.machine, machine)
+        XCTAssertEqual(representation?.includes, machine.includes)
     }
 
 }

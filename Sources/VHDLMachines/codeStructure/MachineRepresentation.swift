@@ -78,6 +78,11 @@ public struct MachineRepresentation: MachineVHDLRepresentable {
     /// The machine this representation is for.
     public let machine: Machine
 
+    /// The includes for this representation
+    public var includes: [Include] {
+        machine.includes
+    }
+
     /// Create the machine representation for the given machine.
     /// - Parameter machine: The machine to convert into a `VHDL` file.
     public init?(machine: Machine) {

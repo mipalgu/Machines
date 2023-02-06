@@ -71,4 +71,7 @@ public protocol MachineVHDLRepresentable {
     /// The entity.
     var entity: Entity { get }
 
+    /// The includes required by the ``Machine``.
+    var includes: [Include] { get }
+
 }
