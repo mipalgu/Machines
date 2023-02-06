@@ -180,18 +180,34 @@ final class WhenCaseTests: XCTestCase {
         internalState <= WriteSnapshot;
     """
 
+    /// The writeSnapshot code.
+    let writeSnapshotCode = """
+    when WriteSnapshot =>
+        EXTERNAL_xx <= xx;
+        internalState <= ReadSnapshot;
+        previousRinglet <= currentState;
+        currentState <= targetState;
+        if (currentState = STATE_Suspended) then
+            OUTPUT_retX <= retX;
+            OUTPUT_retXs <= retXs;
+        end if;
+    """
+
     // swiftlint:enable line_length
 
+    /// Test onEntry generation.
     func testOnEntryCode() {
         let onEntry = WhenCase(machine: machine, action: .onEntry)
         XCTAssertEqual(onEntry?.rawValue, onEntryCode)
     }
 
+    /// Test onExit generation.
     func testOnExitCode() {
         let onExit = WhenCase(machine: machine, action: .onExit)
         XCTAssertEqual(onExit?.rawValue, onExitCode)
     }
 
+    /// Test internal code generation.
     func testInternalCode() {
         let internalCase = WhenCase(machine: machine, action: .internal)
         XCTAssertEqual(internalCase?.rawValue, internalCode)
@@ -225,6 +241,12 @@ final class WhenCaseTests: XCTestCase {
         )
         machine.initialState = -1
         XCTAssertNil(WhenCase(machine: machine, action: .readSnapshot))
+    }
+
+    /// Test write snapshot generation is correct.
+    func testWriteSnapshotCode() {
+        let writeSnapshot = WhenCase(machine: machine, action: .writeSnapshot)
+        XCTAssertEqual(writeSnapshot?.rawValue, writeSnapshotCode)
     }
 
 }

@@ -68,11 +68,18 @@ extension WhenCase {
             self.init(normalAction: action, machine: machine, nextAction: .writeSnapshot)
         case .internal:
             self.init(internalMachine: machine)
+        case .writeSnapshot:
+            self.init(writeSnapshotMachine: machine)
         default:
             return nil
         }
     }
 
+    /// Create the when case for a single state.
+    /// - Parameters:
+    ///   - state: The state to create the when case for.
+    ///   - action: The action to create the when case for.
+    ///   - nextAction: The next action to perform.
     private init?(state: State, action: VariableName, nextAction: VariableName) {
         guard let code = state.actions[action] else {
             return nil
@@ -80,6 +87,8 @@ extension WhenCase {
         self.init(condition: .expression(expression: .variable(name: .name(for: state))), code: code)
     }
 
+    /// Create the onEntry action.
+    /// - Parameter machine: The machine to create the onEntry action for.
     private init(onEntryMachine machine: Machine) {
         let stateCases = machine.states.compactMap {
             guard machine.hasAfter(state: $0) else {
@@ -108,6 +117,8 @@ extension WhenCase {
         self.init(condition: condition, code: .blocks(blocks: [.caseStatement(block: statement), trailer]))
     }
 
+    /// Create the internal action.
+    /// - Parameter machine: The machine to create the internal action for.
     private init(internalMachine machine: Machine) {
         let stateCases = machine.states.compactMap {
             guard machine.hasAfter(state: $0) else {
@@ -139,6 +150,11 @@ extension WhenCase {
         self.init(condition: condition, code: .blocks(blocks: [.caseStatement(block: statement), trailer]))
     }
 
+    /// Create the WhenCase for an action without any special semantics.
+    /// - Parameters:
+    ///   - normalAction: The action to create the `WhenCase` for.
+    ///   - machine: The machine containing the states that perform this action.
+    ///   - nextAction: The next action to perform after this `normalAction`.
     private init(normalAction: VariableName, machine: Machine, nextAction: VariableName) {
         let stateCases = machine.states.compactMap {
             WhenCase(state: $0, action: normalAction, nextAction: nextAction)
@@ -410,6 +426,52 @@ extension WhenCase {
     }
 
     // swiftlint:enable function_body_length
+
+    /// Create the `writeSnapshot` case for a machine.
+    /// - Parameter machine: The machine to create the case for.
+    private init?(writeSnapshotMachine machine: Machine) {
+        let snapshots = machine.externalSignals.filter { $0.mode != .input }.map {
+            SynchronousBlock.statement(statement: .assignment(
+                name: .name(for: $0), value: .variable(name: $0.name)
+            ))
+        }
+        var blocks = snapshots + [
+            .statement(statement: .assignment(
+                name: .internalState, value: .variable(name: .readSnapshot)
+            )),
+            .statement(statement: .assignment(
+                name: .previousRinglet, value: .variable(name: .currentState)
+            )),
+            .statement(statement: .assignment(
+                name: .currentState, value: .variable(name: .targetState)
+            ))
+        ]
+        let condition = WhenCondition.expression(expression: .variable(name: .writeSnapshot))
+        if machine.isParameterised {
+            let outputs = machine.returnableSignals.map {
+                SynchronousBlock.statement(statement: .assignment(
+                    name: .name(for: $0), value: .variable(name: $0.name)
+                ))
+            }
+            guard !outputs.isEmpty else {
+                self.init(condition: condition, code: .blocks(blocks: blocks))
+                return
+            }
+            guard let index = machine.suspendedState, index >= 0, index < machine.states.count else {
+                return nil
+            }
+            let suspendedState = machine.states[index]
+            blocks += [
+                .ifStatement(block: .ifStatement(
+                    condition: .conditional(condition: .comparison(value: .equality(
+                        lhs: .variable(name: .currentState), rhs: .variable(name: .name(for: suspendedState))
+                    ))),
+                    ifBlock: .blocks(blocks: outputs)
+                ))
+            ]
+        }
+        self.init(condition: condition, code: .blocks(blocks: blocks))
+    }
 
 }
 
