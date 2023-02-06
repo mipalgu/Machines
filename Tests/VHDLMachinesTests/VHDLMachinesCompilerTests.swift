@@ -136,7 +136,10 @@ class VHDLMachinesCompilerTests: XCTestCase {
     /// Test the VHDL code generation is correct for the Ping Machine.
     func testPingMachineCodeGeneration() {
         let machine = factory.pingMachine
-        let code = compiler.generateVHDLFile(machine)
+        guard let code = compiler.generateVHDLFile(machine) else {
+            XCTFail("Failed to generate code.")
+            return
+        }
         XCTAssertEqual(code, factory.pingCode, "\(code.difference(from: factory.pingCode))")
     }
 
