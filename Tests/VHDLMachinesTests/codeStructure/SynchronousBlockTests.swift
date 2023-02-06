@@ -1,4 +1,4 @@
-// SynchronousBlock+machineInit.swift
+// SynchronousBlockTests.swift
 // Machines
 // 
 // Created by Morgan McColl.
@@ -54,28 +54,28 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+@testable import VHDLMachines
 import VHDLParsing
+import XCTest
 
-/// Add init for top-level if-statement in process block.
-extension SynchronousBlock {
+/// Test class for `SynchronousBlock` extensions.
+final class SynchronousBlockTests: XCTestCase {
 
-    /// Create the top-level if-statement for the rising edge of the driving clock in the machine. This
-    /// block contains all of the logic of the machine.
-    /// - Parameter machine: The machine to create the if-statement for.
-    init?(machine: Machine) {
-        guard
-            machine.drivingClock >= 0,
-            machine.drivingClock < machine.clocks.count,
-            let caseStatement = CaseStatement(machine: machine)
-        else {
-            return nil
+    /// Test machiine initialiser.
+    func testMachineInit() {
+        let machine = Machine.testMachine()
+        let result = SynchronousBlock(machine: machine)
+        guard let statement = CaseStatement(machine: machine) else {
+            XCTFail("Failed to get statement")
+            return
         }
-        let clock = machine.clocks[machine.drivingClock].name
-        let code = IfBlock.ifStatement(
-            condition: .conditional(condition: .edge(value: .rising(expression: .variable(name: clock)))),
-            ifBlock: .caseStatement(block: caseStatement)
+        XCTAssertEqual(
+            result,
+            .ifStatement(block: .ifStatement(
+                condition: .conditional(condition: .edge(value: .rising(expression: .variable(name: .clk)))),
+                ifBlock: .caseStatement(block: statement)
+            ))
         )
-        self = .ifStatement(block: code)
     }
 
 }
