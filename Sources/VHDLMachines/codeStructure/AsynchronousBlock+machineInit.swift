@@ -67,10 +67,9 @@ public extension AsynchronousBlock {
             return nil
         }
         var blocks: [AsynchronousBlock] = []
-        if let userCode = machine.architectureBody {
+        if let code = machine.architectureBody {
             guard
-                let comment = Comment(rawValue: "-- User-Specific Code for Architecture Body"),
-                let code = AsynchronousBlock(rawValue: userCode)
+                let comment = Comment(rawValue: "-- User-Specific Code for Architecture Body")
             else {
                 return nil
             }

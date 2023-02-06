@@ -1360,7 +1360,7 @@ public struct VHDLCompiler {
                 returns
             ] + [
                 machineVariables(signals: machine.machineSignals),
-                architectureHead(head: machine.architectureHead)
+                architectureHead(head: machine.architectureHead?.map(\.rawValue).joined(separator: "\n"))
             ],
             initial: "architecture Behavioral of \(machine.name) is",
             indentation: 1
@@ -1373,7 +1373,7 @@ public struct VHDLCompiler {
             ],
             initial: foldWithNewLine(
                 components: [
-                    architectureBody(body: machine.architectureBody)
+                    architectureBody(body: machine.architectureBody?.rawValue)
                 ],
                 initial: "",
                 indentation: 1

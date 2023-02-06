@@ -59,11 +59,8 @@ import VHDLParsing
 extension CaseStatement {
 
     init?(machine: Machine) {
-        guard let firstState = machine.states.first else {
-            return nil
-        }
         let actions = (
-            firstState.actions.keys + [
+            machine.actions + [
                 VariableName.noOnEntry,
                 VariableName.readSnapshot,
                 VariableName.writeSnapshot,
