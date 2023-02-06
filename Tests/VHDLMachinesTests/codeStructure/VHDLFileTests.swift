@@ -1,4 +1,4 @@
-// VHDLFile.swift
+// VHDLFileTests.swift
 // Machines
 // 
 // Created by Morgan McColl.
@@ -54,26 +54,33 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+@testable import VHDLMachines
 import VHDLParsing
+import XCTest
 
-/// Add init from `VHDL` representations.
-public extension VHDLFile {
+/// Test class for `VHDLFile` extensions.
+final class VHDLFileTests: XCTestCase {
 
-    /// Create the file from a ``MachineVHDLRepresentable``.
-    /// - Parameter representation: The representation to use for this file.
-    init<T>(representation: T) where T: MachineVHDLRepresentable {
-        self.init(
-            architectures: [
+    /// Test representation initialiser.
+    func testRepresentationInit() {
+        guard let representation = MachineRepresentation(machine: Machine.testMachine()) else {
+            XCTFail("Invalid data!")
+            return
+        }
+        let result = VHDLFile(representation: representation)
+        XCTAssertEqual(
+            result.architectures,
+            [
                 Architecture(
                     body: representation.architectureBody,
                     entity: representation.entity.name,
                     head: representation.architectureHead,
                     name: representation.architectureName
                 )
-            ],
-            entities: [representation.entity],
-            includes: representation.includes
+            ]
         )
+        XCTAssertEqual(result.entities, [representation.entity])
+        XCTAssertEqual(result.includes, representation.includes)
     }
 
 }
