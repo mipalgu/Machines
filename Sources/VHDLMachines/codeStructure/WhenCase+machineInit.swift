@@ -58,8 +58,13 @@ import VHDLParsing
 
 // swiftlint:disable file_length
 
+/// Add action initialisers.
 extension WhenCase {
 
+    /// Create the when case for a single action within a machine.
+    /// - Parameters:
+    ///   - machine: The machine to create the actions for.
+    ///   - action: The name of the action to generate.
     init?(machine: Machine, action: VariableName) {
         switch action {
         case .readSnapshot:
@@ -70,6 +75,8 @@ extension WhenCase {
             self.init(normalAction: action, machine: machine, nextAction: .writeSnapshot)
         case .onResume:
             self.init(onResumeMachine: machine)
+        case .onSuspend:
+            self.init(onSuspendMachine: machine)
         case .internal:
             self.init(internalMachine: machine)
         case .writeSnapshot:
@@ -159,6 +166,42 @@ extension WhenCase {
             condition: .variable(name: .currentState), cases: stateCases + [WhenCase.othersNull]
         )
         self.init(condition: condition, code: .blocks(blocks: [.caseStatement(block: statement), trailer]))
+    }
+
+    /// Create the onSuspend action for a machine.
+    /// - Parameter machine: The machine to create the onSuspend action for.
+    private init?(onSuspendMachine machine: Machine) {
+        guard let index = machine.suspendedState, index >= 0, index < machine.states.count else {
+            return nil
+        }
+        let suspendedState = machine.states[index]
+        let stateCases: [WhenCase] = machine.states.compactMap {
+            guard let onSuspend = $0.actions[.onSuspend] else {
+                return nil
+            }
+            return WhenCase(
+                condition: .expression(expression: .variable(name: .name(for: $0))), code: onSuspend
+            )
+        }
+        let condition = WhenCondition.expression(expression: .variable(name: .onSuspend))
+        var trailer: [SynchronousBlock] = []
+        if let onEntry = suspendedState.actions[.onEntry] {
+            trailer += [onEntry]
+        }
+        trailer += [
+            .statement(statement: .assignment(name: .internalState, value: .variable(name: .checkTransition)))
+        ]
+        guard !stateCases.isEmpty else {
+            self.init(condition: condition, code: .blocks(blocks: trailer))
+            return
+        }
+        let statement = CaseStatement(
+            condition: .variable(name: .suspendedFrom), cases: stateCases + [.othersNull]
+        )
+        self.init(condition: condition, code: .blocks(blocks: [
+            .caseStatement(block: statement),
+            .blocks(blocks: trailer)
+        ]))
     }
 
     /// Create the internal action.

@@ -186,6 +186,24 @@ final class WhenCaseTests: XCTestCase {
         internalState <= CheckTransition;
     """
 
+    /// The onSuspend code.
+    let onSuspendCode = """
+    when OnSuspend =>
+        case suspendedFrom is
+            when STATE_Initial =>
+                xx <= "11";
+            when STATE_Suspended =>
+                xx <= "11";
+            when STATE_State0 =>
+                xx <= "11";
+            when others =>
+                null;
+        end case;
+        x <= '1';
+        xx <= "00";
+        internalState <= CheckTransition;
+    """
+
     /// The internal code.
     let internalCode = """
     when Internal =>
@@ -234,6 +252,12 @@ final class WhenCaseTests: XCTestCase {
     func testOnResumeCode() {
         let onResume = WhenCase(machine: machine, action: .onResume)
         XCTAssertEqual(onResume?.rawValue, onResumeCode)
+    }
+
+    /// Test onSuspend generation.
+    func testOnSuspendCode() {
+        let onSuspend = WhenCase(machine: machine, action: .onSuspend)
+        XCTAssertEqual(onSuspend?.rawValue, onSuspendCode)
     }
 
     /// Test internal code generation.
