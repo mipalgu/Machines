@@ -67,7 +67,8 @@ extension Machine {
     /// A default test machine.
     static func testMachine(directory: URL = PingPongArrangement().machinePath) -> Machine {
         VHDLMachines.Machine(
-            name: "TestMachine",
+            actions: [.onEntry, .internal, .onExit, .onResume, .onSuspend],
+            name: VariableName(rawValue: "TestMachine")!,
             path: directory.appendingPathComponent("TestMachine.machine", isDirectory: true),
             includes: [.library(value: "IEEE"), .include(value: "IEEE.std_logic_1164.ALL")],
             externalSignals: [
@@ -207,8 +208,8 @@ extension Machine {
             ],
             initialState: 0,
             suspendedState: 1,
-            architectureHead: "",
-            architectureBody: ""
+            architectureHead: nil,
+            architectureBody: nil
         )
     }
 

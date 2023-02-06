@@ -63,7 +63,7 @@ final class VariableNameTests: XCTestCase {
 
     /// Test name functions generate correct names.
     func testNameFunctions() {
-        let state = State(name: .initial, actions: [:], actionOrder: [], signals: [], externalVariables: [])
+        let state = State(name: .initial, actions: [:], signals: [], externalVariables: [])
         XCTAssertEqual(VariableName.name(for: state).rawValue, "STATE_Initial")
         let external = PortSignal(type: .stdLogic, name: .x, mode: .input)
         XCTAssertEqual(VariableName.name(for: external).rawValue, "EXTERNAL_x")

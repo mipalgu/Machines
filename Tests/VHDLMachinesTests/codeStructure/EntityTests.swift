@@ -64,7 +64,12 @@ final class EntityTests: XCTestCase {
 
     /// Test machine init.
     func testMachineInit() {
-        var machine = Machine.initial(path: URL(fileURLWithPath: "/tmp/New.machine", isDirectory: false))
+        guard
+            var machine = Machine.initial(path: URL(fileURLWithPath: "/tmp/New.machine", isDirectory: false))
+        else {
+            XCTFail("Failed to create machine.")
+            return
+        }
         let original = PortSignal(type: .stdLogic, name: .x, mode: .input)
         let signal = PortSignal(type: .stdLogic, name: original.externalName, mode: .input)
         machine.externalSignals = [original]
@@ -84,11 +89,6 @@ final class EntityTests: XCTestCase {
                     mode: .input
                 )
             ])
-        )
-        XCTAssertNil(
-            Entity(
-                machine: Machine.initial(path: URL(fileURLWithPath: "/tmp/2New.machine", isDirectory: false))
-            )
         )
     }
 

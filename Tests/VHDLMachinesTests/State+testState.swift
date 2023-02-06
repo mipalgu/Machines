@@ -75,11 +75,6 @@ extension State {
                 VariableName.onSuspend: SynchronousBlock(rawValue: "xx <= \"11\"; -- \(name) onSuspend")!,
                 VariableName.internal: SynchronousBlock(rawValue: "x <= '1'; -- \(name) Internal")!
             ],
-            actionOrder: [
-                [VariableName.onResume, VariableName.onEntry],
-                [VariableName.onExit, VariableName.internal],
-                [VariableName.onSuspend]
-            ],
             signals: [],
             externalVariables: []
         )
