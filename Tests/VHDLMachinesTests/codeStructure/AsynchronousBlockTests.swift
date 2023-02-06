@@ -1,4 +1,4 @@
-// AsynchronousBlock+machineInit.swift
+// AsynchronousBlockTests.swift
 // Machines
 // 
 // Created by Morgan McColl.
@@ -54,36 +54,52 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+@testable import VHDLMachines
 import VHDLParsing
+import XCTest
 
-/// Add init for top-level architecture body asynchronous block.
-public extension AsynchronousBlock {
+/// Test class for `AsynchronousBlock` extensions.
+final class AsynchronousBlockTests: XCTestCase {
 
-    /// Create the top-level asynchronous block that will represent the entire architecture body of a machine.
-    /// This block represents all of the logic of the machine.
-    /// - Parameter machine: The machine to generate the block from.
-    init?(machine: Machine) {
-        guard
-            machine.drivingClock >= 0,
-            machine.drivingClock < machine.clocks.count,
-            let code = SynchronousBlock(machine: machine)
-        else {
-            return nil
-        }
-        let clock = machine.clocks[machine.drivingClock].name
-        let process = ProcessBlock(sensitivityList: [clock], code: code)
-        guard
-            let userBody = machine.architectureBody,
-            let comment = Comment(rawValue: "-- User-Specific Code for Architecture Body")
-        else {
-            self = .process(block: process)
+    /// Test machine initialiser.
+    func testMachineInit() {
+        let machine = Machine.testMachine()
+        let result = AsynchronousBlock(machine: machine)
+        guard let code = SynchronousBlock(machine: machine) else {
+            XCTFail("invalid data.")
             return
         }
-        self = .blocks(blocks: [
-            .statement(statement: .comment(value: comment)),
-            userBody,
-            .process(block: process)
-        ])
+        XCTAssertEqual(
+            result,
+            .process(block: ProcessBlock(sensitivityList: [.clk], code: code))
+        )
+    }
+
+    /// Test format with user code.
+    func testMachineInitWithUserCode() {
+        var machine = Machine.testMachine()
+        let xAssignment = AsynchronousBlock.statement(statement: .assignment(
+            name: .x, value: .literal(value: .bit(value: .high))
+        ))
+        machine.architectureBody = xAssignment
+        let result = AsynchronousBlock(machine: machine)
+        guard
+            let code = SynchronousBlock(machine: machine),
+            let comment = Comment(rawValue: "-- User-Specific Code for Architecture Body")
+        else {
+            XCTFail("invalid data.")
+            return
+        }
+        XCTAssertEqual(
+            result,
+            .blocks(blocks: [
+                .statement(statement: .comment(value: comment)),
+                xAssignment,
+                .process(block: ProcessBlock(sensitivityList: [.clk], code: code))
+            ])
+        )
+        machine.drivingClock = -1
+        XCTAssertNil(AsynchronousBlock(machine: machine))
     }
 
 }
