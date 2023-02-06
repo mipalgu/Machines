@@ -127,15 +127,80 @@ final class WhenCaseTests: XCTestCase {
         end if;
     """
 
+    /// The OnEntry code.
+    let onEntryCode = """
+    when OnEntry =>
+        case currentState is
+            when STATE_Initial =>
+                x <= '1';
+                xx <= "00";
+                ringlet_counter <= 0;
+            when STATE_Suspended =>
+                x <= '1';
+                xx <= "00";
+            when STATE_State0 =>
+                x <= '1';
+                xx <= "00";
+            when others =>
+                null;
+        end case;
+        internalState <= CheckTransition;
+    """
+
+    /// The onExit code.
+    let onExitCode = """
+    when OnExit =>
+        case currentState is
+            when STATE_Initial =>
+                x <= '0';
+            when STATE_Suspended =>
+                x <= '0';
+            when STATE_State0 =>
+                x <= '0';
+            when others =>
+                null;
+        end case;
+        internalState <= WriteSnapshot;
+    """
+
+    /// The internal code.
+    let internalCode = """
+    when Internal =>
+        case currentState is
+            when STATE_Initial =>
+                x <= '1';
+                ringlet_counter <= ringlet_counter + 1;
+            when STATE_Suspended =>
+                x <= '1';
+            when STATE_State0 =>
+                x <= '1';
+            when others =>
+                null;
+        end case;
+        internalState <= WriteSnapshot;
+    """
+
     // swiftlint:enable line_length
+
+    func testOnEntryCode() {
+        let onEntry = WhenCase(machine: machine, action: .onEntry)
+        XCTAssertEqual(onEntry?.rawValue, onEntryCode)
+    }
+
+    func testOnExitCode() {
+        let onExit = WhenCase(machine: machine, action: .onExit)
+        XCTAssertEqual(onExit?.rawValue, onExitCode)
+    }
+
+    func testInternalCode() {
+        let internalCase = WhenCase(machine: machine, action: .internal)
+        XCTAssertEqual(internalCase?.rawValue, internalCode)
+    }
 
     /// Test read snapshot generation is correct.
     func testReadSnapshotCode() {
-        guard let readSnapshot = WhenCase(machine: machine, action: .readSnapshot) else {
-            XCTFail("Failed to create code block.")
-            return
-        }
-        XCTAssertEqual(readSnapshot.rawValue, readSnapshotExpected)
+        let readSnapshot = WhenCase(machine: machine, action: .readSnapshot)
+        XCTAssertEqual(readSnapshot?.rawValue, readSnapshotExpected)
     }
 
     /// Test read snapshot for a machine that is not suspensible.

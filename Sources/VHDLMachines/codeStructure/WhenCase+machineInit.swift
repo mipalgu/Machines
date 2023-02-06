@@ -66,6 +66,8 @@ extension WhenCase {
             self.init(onEntryMachine: machine)
         case .onExit:
             self.init(normalAction: action, machine: machine, nextAction: .writeSnapshot)
+        case .internal:
+            self.init(internalMachine: machine)
         default:
             return nil
         }
@@ -95,6 +97,37 @@ extension WhenCase {
         let condition = WhenCondition.expression(expression: .variable(name: .onEntry))
         let trailer = SynchronousBlock.statement(statement: .assignment(
             name: .internalState, value: .variable(name: .checkTransition)
+        ))
+        guard !stateCases.isEmpty else {
+            self.init(condition: condition, code: trailer)
+            return
+        }
+        let statement = CaseStatement(
+            condition: .variable(name: .currentState), cases: stateCases + [WhenCase.othersNull]
+        )
+        self.init(condition: condition, code: .blocks(blocks: [.caseStatement(block: statement), trailer]))
+    }
+
+    private init(internalMachine machine: Machine) {
+        let stateCases = machine.states.compactMap {
+            guard machine.hasAfter(state: $0) else {
+                return WhenCase(state: $0, action: .internal, nextAction: .writeSnapshot)
+            }
+            let condition = WhenCondition.expression(expression: .variable(name: .name(for: $0)))
+            let trailer = SynchronousBlock.statement(statement: .assignment(
+                name: .ringletCounter,
+                value: .binary(operation: .addition(
+                    lhs: .variable(name: .ringletCounter), rhs: .literal(value: .integer(value: 1))
+                ))
+            ))
+            guard let code = $0.actions[.internal] else {
+                return WhenCase(condition: condition, code: trailer)
+            }
+            return WhenCase(condition: condition, code: .blocks(blocks: [code, trailer]))
+        }
+        let condition = WhenCondition.expression(expression: .variable(name: .internal))
+        let trailer = SynchronousBlock.statement(statement: .assignment(
+            name: .internalState, value: .variable(name: .writeSnapshot)
         ))
         guard !stateCases.isEmpty else {
             self.init(condition: condition, code: trailer)
@@ -208,7 +241,7 @@ extension WhenCase {
                         .statement(statement: .assignment(
                             name: .targetState, value: .variable(name: .name(for: initialState))
                         )),
-                        // If suspended perform OnResume, else perform OnEntry.
+                        // If previously suspended perform OnResume, else perform OnEntry.
                         .ifStatement(block: .ifElse(
                             condition: .conditional(condition: .comparison(value: .equality(
                                 lhs: .variable(name: .previousRinglet),
