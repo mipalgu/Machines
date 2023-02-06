@@ -117,16 +117,16 @@ public extension VariableName {
     static let internalState = VariableName(rawValue: "internalState")!
 
     /// The read snapshot constant.
-    static let readSnapshot = VariableName(rawValue: ReservedAction.readSnapshot.rawValue)!
+    static let readSnapshot = VariableName(rawValue: "ReadSnapshot")!
 
     /// The write snapshot constant.
-    static let writeSnapshot = VariableName(rawValue: ReservedAction.writeSnapshot.rawValue)!
+    static let writeSnapshot = VariableName(rawValue: "WriteSnapshot")!
 
     /// The check transition constant.
-    static let checkTransition = VariableName(rawValue: ReservedAction.checkTransition.rawValue)!
+    static let checkTransition = VariableName(rawValue: "CheckTransition")!
 
     /// The no on entry constant.
-    static let noOnEntry = VariableName(rawValue: ReservedAction.noOnEntry.rawValue)!
+    static let noOnEntry = VariableName(rawValue: "NoOnEntry")!
 
     /// The on entry constant.
     static let onEntry = VariableName(rawValue: "OnEntry")!
