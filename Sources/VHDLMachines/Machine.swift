@@ -143,7 +143,8 @@ public struct Machine: Codable, Equatable, Hashable {
     /// - Returns: The new machine.
     public static func initial(path: URL) -> Machine? {
         guard
-            let name = VariableName(rawValue: path.lastPathComponent.components(separatedBy: ".machine")[0])
+            let nameComponent = path.lastPathComponent.components(separatedBy: ".machine").first,
+            let name = VariableName(rawValue: nameComponent)
         else {
             return nil
         }
