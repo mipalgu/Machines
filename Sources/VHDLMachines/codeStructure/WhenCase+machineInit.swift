@@ -69,6 +69,8 @@ extension WhenCase {
         switch action {
         case .readSnapshot:
             self.init(readSnapshotMachine: machine)
+        case .noOnEntry:
+            self.init(nullCurrentAction: .noOnEntry, nextAction: .checkTransition)
         case .onEntry:
             self.init(onEntryMachine: machine)
         case .onExit:
@@ -96,6 +98,19 @@ extension WhenCase {
             return nil
         }
         self.init(condition: .expression(expression: .variable(name: .name(for: state))), code: code)
+    }
+
+    /// Create an action that does nothing and moves to the next action.
+    /// - Parameters:
+    ///   - action: The name of the action to generate.
+    ///   - next: The next action.
+    private init(nullCurrentAction action: VariableName, nextAction next: VariableName) {
+        self.init(
+            condition: .expression(expression: .variable(name: action)),
+            code: .statement(statement: .assignment(
+                name: .internalState, value: .variable(name: next)
+            ))
+        )
     }
 
     /// Create the onEntry action.

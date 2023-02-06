@@ -127,6 +127,12 @@ final class WhenCaseTests: XCTestCase {
         end if;
     """
 
+    /// The NoOnEntry code.
+    let noOnEntryCode = """
+    when NoOnEntry =>
+        internalState <= CheckTransition;
+    """
+
     /// The OnEntry code.
     let onEntryCode = """
     when OnEntry =>
@@ -235,6 +241,12 @@ final class WhenCaseTests: XCTestCase {
     """
 
     // swiftlint:enable line_length
+
+    /// Test the noOnEntry generation.
+    func testNoOnEntryCode() {
+        let noOnEntry = WhenCase(machine: machine, action: .noOnEntry)
+        XCTAssertEqual(noOnEntry?.rawValue, noOnEntryCode)
+    }
 
     /// Test onEntry generation.
     func testOnEntryCode() {
