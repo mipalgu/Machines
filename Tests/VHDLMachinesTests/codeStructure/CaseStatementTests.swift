@@ -1,4 +1,4 @@
-// CaseStatement+machineInit.swift
+// CaseStatementTests.swift
 // Machines
 // 
 // Created by Morgan McColl.
@@ -54,27 +54,48 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+@testable import VHDLMachines
 import VHDLParsing
+import XCTest
 
-/// Add init for default machine format.
-extension CaseStatement {
+/// Test class for `CaseStatement` extensions.
+final class CaseStatementTests: XCTestCase {
 
-    /// Create the case statement for the actions in a machine.
-    /// - Parameter machine: The machine to create the case statement from.
-    init?(machine: Machine) {
-        let actions = (
-            machine.actions + [
-                VariableName.noOnEntry,
-                VariableName.readSnapshot,
-                VariableName.writeSnapshot,
-                VariableName.checkTransition
-            ]
-        ).sorted()
-        let cases = actions.compactMap { WhenCase(machine: machine, action: $0) }
-        guard cases.count == actions.count else {
-            return nil
+    /// Test machine initialiser.
+    func testMachineInit() {
+        let machine = Machine.testMachine()
+        let statement = CaseStatement(machine: machine)
+        guard
+            let checkTransition = WhenCase(machine: machine, action: .checkTransition),
+            let `internal` = WhenCase(machine: machine, action: .internal),
+            let noOnEntry = WhenCase(machine: machine, action: .noOnEntry),
+            let onEntry = WhenCase(machine: machine, action: .onEntry),
+            let onExit = WhenCase(machine: machine, action: .onExit),
+            let onResume = WhenCase(machine: machine, action: .onResume),
+            let onSuspend = WhenCase(machine: machine, action: .onSuspend),
+            let readSnapshot = WhenCase(machine: machine, action: .readSnapshot),
+            let writeSnapshot = WhenCase(machine: machine, action: .writeSnapshot)
+        else {
+            XCTFail("Could not create when cases.")
+            return
         }
-        self.init(condition: .variable(name: .internalState), cases: cases)
+        XCTAssertEqual(
+            statement,
+            CaseStatement(
+                condition: .variable(name: .internalState),
+                cases: [
+                    checkTransition,
+                    `internal`,
+                    noOnEntry,
+                    onEntry,
+                    onExit,
+                    onResume,
+                    onSuspend,
+                    readSnapshot,
+                    writeSnapshot
+                ]
+            )
+        )
     }
 
 }
