@@ -38,12 +38,4 @@ public extension PortSignal {
         self.init(type: .stdLogic, name: clock.name, mode: .input, defaultValue: nil, comment: nil)
     }
 
-    static func commandSignal(type: SignalType) -> PortSignal {
-        PortSignal(type: type, name: .command, mode: .input)
-    }
-
-    static func suspendedSignal(type: SignalType) -> PortSignal {
-        PortSignal(type: type, name: .suspended, mode: .output)
-    }
-
 }
