@@ -61,6 +61,8 @@ import XCTest
 /// Tests the ``Arrangement`` type.
 final class ArrangementTests: XCTestCase {
 
+    // swiftlint:disable force_unwrapping
+
     /// The machines in the arrangement.
     let machines = [
         VariableName(rawValue: "M1")!: URL(fileURLWithPath: "/path/to/M1"),
@@ -207,5 +209,7 @@ final class ArrangementTests: XCTestCase {
         )
         XCTAssertEqual(arrangement, expected)
     }
+
+    // swiftlint:enable force_unwrapping
 
 }

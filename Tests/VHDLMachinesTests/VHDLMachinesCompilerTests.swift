@@ -68,7 +68,7 @@ class VHDLMachinesCompilerTests: XCTestCase {
     /// Default state creation.
     private func defaultState(name: String) -> VHDLMachines.State {
         VHDLMachines.State(
-            // swiftlint:disable:next force_unwrapping
+            // swiftlint:disable force_unwrapping
             name: VariableName(rawValue: name)!,
             actions: [
                 VariableName.onEntry: SynchronousBlock(
@@ -81,6 +81,7 @@ class VHDLMachinesCompilerTests: XCTestCase {
             ],
             signals: [],
             externalVariables: []
+            // swiftlint:enable force_unwrapping
         )
     }
 
