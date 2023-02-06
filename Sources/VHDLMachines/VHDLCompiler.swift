@@ -389,7 +389,7 @@ public struct VHDLCompiler {
             return "    " + trailer
         }
         var data = names.indices.flatMap { (i: Int) -> [String] in
-            guard code[i] != "" else {
+            guard !code[i].isEmpty else {
                 return [""]
             }
             return [
