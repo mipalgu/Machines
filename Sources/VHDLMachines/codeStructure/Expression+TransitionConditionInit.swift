@@ -56,8 +56,11 @@
 
 import VHDLParsing
 
+/// Add conversion init.
 extension Expression {
 
+    /// Convert a ``TransitionCondition`` into an `Expression`.
+    /// - Parameter condition: The ``TransitionCondition`` to convert.
     init(condition: TransitionCondition) {
         switch condition {
         case .after(let statement):

@@ -23,18 +23,6 @@ public struct ReturnableVariable: ExternalType, Codable, Equatable, Hashable {
     /// The comment for the variable.
     public var comment: Comment?
 
-    public var outputName: VariableName {
-        VariableName.name(for: self)
-    }
-
-    public var snapshot: LocalSignal {
-        LocalSignal(type: type, name: name, defaultValue: nil, comment: nil)
-    }
-
-    public var write: String {
-        "\(outputName) <= \(name);"
-    }
-
     /// Initialises a returnable variable with the given type, name and comment.
     /// - Parameters:
     ///   - type: The type of the variable.

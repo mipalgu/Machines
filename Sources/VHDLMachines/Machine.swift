@@ -75,6 +75,7 @@ public struct Machine: Codable, Equatable, Hashable {
 
     /// Initialise a machine
     /// - Parameters:
+    ///   - actions: The actions in the machine.
     ///   - name: The name of the machine.
     ///   - path: The location of the machine in the file system.
     ///   - includes: The includes for the machine.
