@@ -1,4 +1,4 @@
-// MachineRepresentation.swift
+// MachineRepresentationTests.swift
 // Machines
 // 
 // Created by Morgan McColl.
@@ -54,46 +54,31 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
+@testable import VHDLMachines
 import VHDLParsing
+import XCTest
 
-/// A struct defining the simplest type of `VHDL` representation. This structure is similar to the `VHDL`
-/// representation from my honours paper *High-level Executable Models of Reactive Real-Time Systems with
-/// Logic-Labelled Finite-State Machines and FPGAs* published at ReConfig2018. This format does not contain
-/// any inherent fault tolerance, but does provide mechanisms for after statements, suspension and
-/// parameterisation. Snapshot semantics are present for both external variables and parameters.
-public struct MachineRepresentation: MachineVHDLRepresentable {
+/// Test class for ``MachineRepresentation``.
+final class MachineRepresentationTests: XCTestCase {
 
-    /// The body of the architecture.
-    public let architectureBody: AsynchronousBlock
-
-    /// The head of the architecture.
-    public let architectureHead: ArchitectureHead
-
-    /// The name of the architecture.
-    public let architectureName: VariableName
-
-    /// The entity of the architecture.
-    public let entity: Entity
-
-    /// The machine this representation is for.
-    public let machine: Machine
-
-    /// Create the machine representation for the given machine.
-    /// - Parameter machine: The machine to convert into a `VHDL` file.
-    public init?(machine: Machine) {
+    /// Test the machine initialiser creates the stored properties correctly.
+    func testMachineInit() {
+        let machine = Machine.testMachine()
+        let representation = MachineRepresentation(machine: machine)
         guard
             let entity = Entity(machine: machine),
-            let architectureName = VariableName(rawValue: "Behavioral"),
+            let name = VariableName(rawValue: "Behavioral"),
             let head = ArchitectureHead(machine: machine),
             let body = AsynchronousBlock(machine: machine)
         else {
-            return nil
+            XCTFail("Invalid data.")
+            return
         }
-        self.machine = machine
-        self.entity = entity
-        self.architectureName = architectureName
-        self.architectureHead = head
-        self.architectureBody = body
+        XCTAssertEqual(representation?.entity, entity)
+        XCTAssertEqual(representation?.architectureName, name)
+        XCTAssertEqual(representation?.architectureHead, head)
+        XCTAssertEqual(representation?.architectureBody, body)
+        XCTAssertEqual(representation?.machine, machine)
     }
 
 }
