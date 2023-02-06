@@ -61,10 +61,7 @@ extension WhenCase {
     init?(machine: Machine, action: VariableName) {
         switch action {
         case .readSnapshot:
-            guard let me = WhenCase.readSnapshot(machine: machine) else {
-                return nil
-            }
-            self = me
+            self.init(readSnapshotMachine: machine)
         default:
             return nil
         }
@@ -81,8 +78,7 @@ extension WhenCase {
 
     /// Create the `readSnapshot` case for the given machine.
     /// - Parameter machine: The machine to create the case for.
-    /// - Returns: The `readSnapshot` case for the given machine.
-    private static func readSnapshot(machine: Machine) -> WhenCase? {
+    private init?(readSnapshotMachine machine: Machine) {
         guard machine.initialState >= 0, machine.initialState < machine.states.count else {
             return nil
         }
@@ -110,9 +106,10 @@ extension WhenCase {
             suspendedIndex >= 0,
             suspendedIndex < machine.states.count
         else {
-            return WhenCase(
+            self.init(
                 condition: whenCondition, code: .blocks(blocks: blocks + [.ifStatement(block: onEntryBlock)])
             )
+            return
         }
         let suspendedState = machine.states[suspendedIndex]
         if machine.isParameterised {
@@ -305,9 +302,7 @@ extension WhenCase {
                 )
             )
         ]
-        return WhenCase(
-            condition: whenCondition, code: .blocks(blocks: blocks)
-        )
+        self.init(condition: whenCondition, code: .blocks(blocks: blocks))
     }
 
     // swiftlint:enable function_body_length
