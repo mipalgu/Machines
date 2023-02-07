@@ -92,7 +92,8 @@ final class CaseStatementTests: XCTestCase {
                     onResume,
                     onSuspend,
                     readSnapshot,
-                    writeSnapshot
+                    writeSnapshot,
+                    .othersNull
                 ]
             )
         )
