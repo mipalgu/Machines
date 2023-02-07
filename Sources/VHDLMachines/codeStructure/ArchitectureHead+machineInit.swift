@@ -156,9 +156,13 @@ extension ArchitectureHead {
                 Statement.definition(signal: LocalSignal(snapshot: $0))
             }
         }
-        let machineSignals = machine.machineSignals.map { Statement.definition(signal: $0) }
-        statements += [.comment(value: machineSignalComment)] + machineSignals +
-            [.comment(value: userCodeComment)]
+        if !machine.machineSignals.isEmpty {
+            let machineSignals = machine.machineSignals.map { Statement.definition(signal: $0) }
+            statements += [.comment(value: machineSignalComment)] + machineSignals
+        }
+        if let head = machine.architectureHead {
+            statements += [.comment(value: userCodeComment)] + head
+        }
         self.init(statements: statements)
     }
 
