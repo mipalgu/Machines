@@ -177,9 +177,14 @@ extension Machine {
                     target: 1
                 ),
                 VHDLMachines.Transition(
-                    // "xx = '1'"
+                    // "xx = \"11\""
                     condition: .conditional(condition: .comparison(
-                        value: .equality(lhs: .variable(name: .xx), rhs: .literal(value: .bit(value: .high)))
+                        value: .equality(
+                            lhs: .variable(name: .xx),
+                            rhs: .literal(value: .vector(
+                                value: .bits(value: BitVector(values: [.high, .high]))
+                            ))
+                        )
                     )),
                     source: 1,
                     target: 2

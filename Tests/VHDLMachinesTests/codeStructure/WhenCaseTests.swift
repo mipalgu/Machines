@@ -84,7 +84,7 @@ final class WhenCaseTests: XCTestCase {
                     internalState <= Internal;
                 end if;
             when STATE_Suspended =>
-                if (xx = '1') then
+                if (xx = "11") then
                     targetState <= STATE_State0;
                     internalState <= OnExit;
                 elsif (x = '1') then
