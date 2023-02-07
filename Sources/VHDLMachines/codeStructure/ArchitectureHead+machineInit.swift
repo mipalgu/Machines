@@ -60,13 +60,31 @@ import VHDLParsing
 extension ArchitectureHead {
 
     // swiftlint:disable function_body_length
+    // swiftlint:disable cyclomatic_complexity
 
     /// Create an architecture head for a machine.
     /// - Parameter machine: The machine to create the head for.
     @usableFromInline
     init?(machine: Machine) {
+        var actionNames = machine.actions
+        if !machine.isSuspensible {
+            actionNames.removeAll { $0 == .onResume || $0 == .onSuspend }
+        } else {
+            if !machine.actions.contains(.onSuspend) {
+                guard machine.states.allSatisfy({ $0.actions[.onSuspend] == nil }) else {
+                    return nil
+                }
+                actionNames.append(.onSuspend)
+            }
+            if !machine.actions.contains(.onResume) {
+                guard machine.states.allSatisfy({ $0.actions[.onResume] == nil }) else {
+                    return nil
+                }
+                actionNames.append(.onResume)
+            }
+        }
         guard
-            let actions = ConstantSignal.constants(for: machine.actions),
+            let actions = ConstantSignal.constants(for: actionNames),
             let internalStateComment = Comment(rawValue: "-- Internal State Representation Bits"),
             let internalStateBits = BitLiteral.bitsRequired(for: actions.count),
             internalStateBits > 0,
@@ -144,6 +162,7 @@ extension ArchitectureHead {
         self.init(statements: statements)
     }
 
+    // swiftlint:enable cyclomatic_complexity
     // swiftlint:enable function_body_length
 
 }

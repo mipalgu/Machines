@@ -191,7 +191,7 @@ struct PingPongArrangement {
     /// The ping machine.
     var pingMachine: Machine {
         Machine(
-            actions: [.onEntry, .onExit, .internal, .onResume, .onSuspend],
+            actions: [.onEntry, .onExit, .internal],
             name: VariableName(rawValue: "PingMachine")!,
             path: pingMachinePath,
             includes: includes,
@@ -214,7 +214,7 @@ struct PingPongArrangement {
     /// The pong machine.
     var pongMachine: Machine {
         Machine(
-            actions: [.onEntry, .onExit, .internal, .onResume, .onSuspend],
+            actions: [.onEntry, .onExit, .internal],
             name: VariableName(rawValue: "PongMachine")!,
             path: pongMachinePath,
             includes: includes,
@@ -290,7 +290,7 @@ struct PingPongArrangement {
                 case internalState is
                     when ReadSnapshot =>
                         pong <= EXTERNAL_pong;
-                    if (previousRinglet /= currentState) then
+                        if (previousRinglet /= currentState) then
                             internalState <= onEntry;
                         else
                             internalState <= NoOnEntry;
