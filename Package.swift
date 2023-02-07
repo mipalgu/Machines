@@ -15,7 +15,7 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.1.0"),
         .package(url: "https://github.com/mipalgu/swift_helpers.git", from: "1.0.1"),
         .package(url: "ssh://git@github.com/Morgan2010/MetaLanguage.git", branch: "main"),
-        .package(url: "git@github.com:mipalgu/VHDLParsing", branch: "main"),
+        .package(url: "git@github.com:mipalgu/VHDLParsing", from: "0.3.0"),
         .package(url: "git@github.com:mipalgu/GUUnits", from: "2.1.0")
     ],
     targets: [
