@@ -27,6 +27,7 @@ public struct VHDLParser {
         guard
             let files = wrapper.fileWrappers,
             let machineWrapper = files["machine.json"],
+            machineWrapper.isRegularFile,
             let data = machineWrapper.regularFileContents,
             let machine = try? decoder.decode(Machine.self, from: data)
         else {
