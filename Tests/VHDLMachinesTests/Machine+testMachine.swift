@@ -73,7 +73,7 @@ extension Machine {
             includes: [
                 .library(value: "IEEE"),
                 .include(value: "IEEE.std_logic_1164.ALL"),
-                .include(value: "IEEE.math_real.ALL;")
+                .include(value: "IEEE.math_real.ALL")
             ],
             externalSignals: [
                 PortSignal(
