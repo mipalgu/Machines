@@ -358,8 +358,7 @@ final class ArchitectureHeadTests: XCTestCase {
                     value: .bits(value: BitVector(values: [.high, .high, .high]))
                 )),
                 comment: Comment(rawValue: "-- machine signal 2")!
-            )),
-            .comment(value: Comment(rawValue: "-- User-Specific Code for Architecture Head")!)
+            ))
         ])
         XCTAssertEqual(result, expected)
     }
