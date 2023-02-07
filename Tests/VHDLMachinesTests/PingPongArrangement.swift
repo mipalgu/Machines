@@ -258,13 +258,12 @@ struct PingPongArrangement {
     use IEEE.NUMERIC_STD.ALL;
 
     entity PingMachine is
-        port (
+        port(
             clk: in std_logic;
             EXTERNAL_ping: out std_logic;
             EXTERNAL_pong: in std_logic
         );
     end PingMachine;
-
 
     architecture Behavioral of PingMachine is
         -- Internal State Representation Bits
@@ -324,7 +323,7 @@ struct PingPongArrangement {
                     when ReadSnapshot =>
                         pong <= EXTERNAL_pong;
                         if (previousRinglet /= currentState) then
-                            internalState <= onEntry;
+                            internalState <= OnEntry;
                         else
                             internalState <= NoOnEntry;
                         end if;
@@ -339,6 +338,7 @@ struct PingPongArrangement {
             end if;
         end process;
     end Behavioral;
+
     """
 
     /// Create a check state.
