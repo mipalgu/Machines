@@ -25,6 +25,7 @@ public struct VHDLParser {
     public func parse(wrapper: FileWrapper) -> Machine? {
         let decoder = JSONDecoder()
         guard
+            wrapper.isDirectory,
             let files = wrapper.fileWrappers,
             let machineWrapper = files["machine.json"],
             machineWrapper.isRegularFile,
