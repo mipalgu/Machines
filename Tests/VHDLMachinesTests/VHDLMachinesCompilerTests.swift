@@ -241,7 +241,7 @@ class VHDLMachinesCompilerTests: XCTestCase {
                                     if (false) then
                                         targetState <= STATE_Suspended;
                                         internalState <= OnExit;
-                                    elsif (ringlet_counter >= integer(ceil(real(50.0) * RINGLETS_PER_MS)) or ringlet_counter >= integer(ceil(real(2.0) * RINGLETS_PER_S)) or ringlet_counter >= integer(ceil(real(20000.0)))) then
+                                    elsif ((ringlet_counter >= integer(ceil(real(50.0) * RINGLETS_PER_MS))) or (ringlet_counter >= integer(ceil(real(2.0) * RINGLETS_PER_S))) or (ringlet_counter >= integer(ceil(real(20000.0))))) then
                                         targetState <= STATE_Suspended;
                                         internalState <= OnExit;
                                     elsif (true) then

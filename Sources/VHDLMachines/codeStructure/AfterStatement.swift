@@ -193,12 +193,12 @@ public struct AfterStatement: RawRepresentable, Equatable, Hashable, Codable, Se
                 operation: .multiplication(lhs: castedAmount, rhs: .variable(name: period.rawValue))
             )
         }
-        return .conditional(condition: .comparison(value: .greaterThanOrEqual(
+        return .precedence(value: .conditional(condition: .comparison(value: .greaterThanOrEqual(
             lhs: .variable(name: .ringletCounter),
             rhs: .cast(operation: .integer(
                 expression: .functionCall(call: .mathReal(function: .ceil(expression: calculation)))
             ))
-        )))
+        ))))
     }
 
     /// The `VHDL` code enacting this statement.
@@ -221,7 +221,10 @@ public struct AfterStatement: RawRepresentable, Equatable, Hashable, Codable, Se
     @inlinable
     public init?(rawValue: String) {
         guard
-            let expression = ComparisonOperation(rawValue: rawValue),
+            let topExpression = Expression(rawValue: rawValue),
+            case .precedence(let precedence) = topExpression,
+            case .conditional(condition: let conditional) = precedence,
+            case .comparison(let expression) = conditional,
             case .greaterThanOrEqual(let lhs, let rhs) = expression,
             case .variable(let name) = lhs,
             name == .ringletCounter,
