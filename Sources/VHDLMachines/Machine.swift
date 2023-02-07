@@ -26,9 +26,6 @@ public struct Machine: Codable, Equatable, Hashable {
     /// The external signals for the machine.
     public var externalSignals: [PortSignal]
 
-    /// The generics for the machine.
-    public var generics: [LocalSignal]
-
     /// The clocks for the machine.
     public var clocks: [Clock]
 
@@ -73,6 +70,11 @@ public struct Machine: Codable, Equatable, Hashable {
         _isParameterised && suspendedState != nil
     }
 
+    /// Whether the machine can be suspended.
+    public var isSuspensible: Bool {
+        suspendedState != nil
+    }
+
     /// Initialise a machine
     /// - Parameters:
     ///   - actions: The actions in the machine.
@@ -80,7 +82,6 @@ public struct Machine: Codable, Equatable, Hashable {
     ///   - path: The location of the machine in the file system.
     ///   - includes: The includes for the machine.
     ///   - PortSignals: The external signals for the machine.
-    ///   - generics: The generics for the machine.
     ///   - clocks: The clocks for the machine.
     ///   - drivingClock: The index of the driving clock.
     ///   - dependentMachines: The machines this machine depends on.
@@ -101,7 +102,6 @@ public struct Machine: Codable, Equatable, Hashable {
         path: URL,
         includes: [Include],
         externalSignals: [PortSignal],
-        generics: [LocalSignal],
         clocks: [Clock],
         drivingClock: Int,
         dependentMachines: [VariableName: URL],
@@ -121,7 +121,6 @@ public struct Machine: Codable, Equatable, Hashable {
         self.path = path
         self.includes = includes
         self.externalSignals = externalSignals
-        self.generics = generics
         self.clocks = clocks
         self.drivingClock = drivingClock
         self.dependentMachines = dependentMachines
@@ -166,7 +165,6 @@ public struct Machine: Codable, Equatable, Hashable {
                 .include(value: "IEEE.math_real.All")
             ],
             externalSignals: [],
-            generics: [],
             clocks: [Clock(name: VariableName.clk, frequency: 50, unit: .MHz)],
             drivingClock: 0,
             dependentMachines: [:],

@@ -58,8 +58,6 @@
 import VHDLParsing
 import XCTest
 
-// swiftlint:disable type_body_length
-
 /// Tests the ``Machine`` type.
 final class MachineTests: XCTestCase {
 
@@ -94,18 +92,6 @@ final class MachineTests: XCTestCase {
                 mode: .input,
                 defaultValue: .literal(value: .logic(value: .low)),
                 comment: Comment.comment
-            )
-        ]
-    }
-
-    /// The generics for the machine.
-    var generics: [LocalSignal] {
-        [
-            LocalSignal(
-                type: .ranged(type: .integer(size: .to(lower: 0, upper: 512))),
-                name: VariableName.g,
-                defaultValue: .literal(value: .integer(value: 0)),
-                comment: Comment.genericG
             )
         ]
     }
@@ -225,7 +211,6 @@ final class MachineTests: XCTestCase {
         path: path,
         includes: includes,
         externalSignals: externalSignals,
-        generics: generics,
         clocks: clocks,
         drivingClock: drivingClock,
         dependentMachines: dependentMachines,
@@ -249,7 +234,6 @@ final class MachineTests: XCTestCase {
             path: path,
             includes: includes,
             externalSignals: externalSignals,
-            generics: generics,
             clocks: clocks,
             drivingClock: drivingClock,
             dependentMachines: dependentMachines,
@@ -272,12 +256,12 @@ final class MachineTests: XCTestCase {
         XCTAssertEqual(machine.path, path)
         XCTAssertEqual(machine.includes, includes)
         XCTAssertEqual(machine.externalSignals, externalSignals)
-        XCTAssertEqual(machine.generics, generics)
         XCTAssertEqual(machine.clocks, clocks)
         XCTAssertEqual(machine.drivingClock, drivingClock)
         XCTAssertEqual(machine.dependentMachines, dependentMachines)
         XCTAssertEqual(machine.machineSignals, machineSignals)
         XCTAssertTrue(machine.isParameterised)
+        XCTAssertTrue(machine.isSuspensible)
         XCTAssertEqual(machine.parameterSignals, parameterSignals)
         XCTAssertEqual(machine.returnableSignals, returnableSignals)
         XCTAssertEqual(machine.states, states)
@@ -303,14 +287,6 @@ final class MachineTests: XCTestCase {
                 mode: .input,
                 defaultValue: .literal(value: .logic(value: .low)),
                 comment: Comment.comment
-            )
-        ]
-        let newGenerics = [
-            LocalSignal(
-                type: .ranged(type: .integer(size: .to(lower: 0, upper: 512))),
-                name: VariableName(rawValue: "g2")!,
-                defaultValue: .literal(value: .integer(value: 0)),
-                comment: Comment(rawValue: "-- Generic g2")!
             )
         ]
         let newClocks = [
@@ -367,7 +343,6 @@ final class MachineTests: XCTestCase {
         machine.path = newPath
         machine.includes = newIncludes
         machine.externalSignals = newExternalSignals
-        machine.generics = newGenerics
         machine.clocks = newClocks
         machine.drivingClock = newDrivingClock
         machine.dependentMachines = newDependentMachines
@@ -384,7 +359,6 @@ final class MachineTests: XCTestCase {
         XCTAssertEqual(machine.path, newPath)
         XCTAssertEqual(machine.includes, newIncludes)
         XCTAssertEqual(machine.externalSignals, newExternalSignals)
-        XCTAssertEqual(machine.generics, newGenerics)
         XCTAssertEqual(machine.clocks, newClocks)
         XCTAssertEqual(machine.drivingClock, newDrivingClock)
         XCTAssertEqual(machine.dependentMachines, newDependentMachines)
@@ -413,7 +387,6 @@ final class MachineTests: XCTestCase {
                 .include(value: "IEEE.math_real.All")
             ],
             externalSignals: [],
-            generics: [],
             clocks: [Clock(name: VariableName.clk, frequency: 50, unit: .MHz)],
             drivingClock: 0,
             dependentMachines: [:],
@@ -446,5 +419,3 @@ final class MachineTests: XCTestCase {
     // swiftlint:enable function_body_length
 
 }
-
-// swiftlint:enable type_body_length

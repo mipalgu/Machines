@@ -185,18 +185,19 @@ struct PingPongArrangement {
 
     /// The includes.
     let includes: [Include] = [
-        .include(value: "IEEE.STD_LOGIC_1164.ALL"), .include(value: "IEEE.NUMERIC_STD.ALL")
+        .library(value: "IEEE"),
+        .include(value: "IEEE.STD_LOGIC_1164.ALL"),
+        .include(value: "IEEE.NUMERIC_STD.ALL")
     ]
 
     /// The ping machine.
     var pingMachine: Machine {
         Machine(
-            actions: [.onEntry, .onExit, .internal, .onResume, .onSuspend],
+            actions: [.onEntry, .onExit, .internal],
             name: VariableName(rawValue: "PingMachine")!,
             path: pingMachinePath,
             includes: includes,
             externalSignals: pingSignals,
-            generics: [],
             clocks: clocks,
             drivingClock: 0,
             dependentMachines: [:],
@@ -214,12 +215,11 @@ struct PingPongArrangement {
     /// The pong machine.
     var pongMachine: Machine {
         Machine(
-            actions: [.onEntry, .onExit, .internal, .onResume, .onSuspend],
+            actions: [.onEntry, .onExit, .internal],
             name: VariableName(rawValue: "PongMachine")!,
             path: pongMachinePath,
             includes: includes,
             externalSignals: pongSignals,
-            generics: [],
             clocks: clocks,
             drivingClock: 0,
             dependentMachines: [:],
@@ -251,56 +251,47 @@ struct PingPongArrangement {
 
     /// The VHDL code for the Ping machine.
     let pingCode = """
+    library IEEE;
     use IEEE.STD_LOGIC_1164.ALL;
     use IEEE.NUMERIC_STD.ALL;
 
     entity PingMachine is
-        port (
+        port(
             clk: in std_logic;
             EXTERNAL_ping: out std_logic;
             EXTERNAL_pong: in std_logic
         );
     end PingMachine;
 
-
     architecture Behavioral of PingMachine is
         -- Internal State Representation Bits
-        constant ReadSnapshot: std_logic_vector(2 downto 0) := "000";
-        constant OnEntry: std_logic_vector(2 downto 0) := "001";
+        constant CheckTransition: std_logic_vector(2 downto 0) := "000";
+        constant Internal: std_logic_vector(2 downto 0) := "001";
         constant NoOnEntry: std_logic_vector(2 downto 0) := "010";
-        constant CheckTransition: std_logic_vector(2 downto 0) := "011";
+        constant OnEntry: std_logic_vector(2 downto 0) := "011";
         constant OnExit: std_logic_vector(2 downto 0) := "100";
-        constant Internal: std_logic_vector(2 downto 0) := "101";
+        constant ReadSnapshot: std_logic_vector(2 downto 0) := "101";
         constant WriteSnapshot: std_logic_vector(2 downto 0) := "110";
         signal internalState: std_logic_vector(2 downto 0) := ReadSnapshot;
         -- State Representation Bits
-        constant STATE_Ping: std_logic_vector(1 downto 0) := "00";
-        constant STATE_Check: std_logic_vector(1 downto 0) := "01";
-        signal currentState: std_logic_vector(1 downto 0) := STATE_Ping;
-        signal targetState: std_logic_vector(1 downto 0) := STATE_Ping;
-        signal previousRinglet: std_logic_vector(1 downto 0) := "ZZ";
+        constant STATE_Ping: std_logic_vector(0 downto 0) := "0";
+        constant STATE_Check: std_logic_vector(0 downto 0) := "1";
+        signal currentState: std_logic_vector(0 downto 0) := STATE_Ping;
+        signal targetState: std_logic_vector(0 downto 0) := STATE_Ping;
+        signal previousRinglet: std_logic_vector(0 downto 0) := "Z";
         -- Snapshot of External Signals and Variables
         signal ping: std_logic;
         signal pong: std_logic;
-        -- Machine Signals
     begin
         process(clk)
         begin
             if (rising_edge(clk)) then
                 case internalState is
-                    when ReadSnapshot =>
-                        pong <= EXTERNAL_pong;
-                    if (previousRinglet /= currentState) then
-                            internalState <= onEntry;
-                        else
-                            internalState <= NoOnEntry;
-                        end if;
-                    when OnEntry =>
-                        internalState <= CheckTransition;
-                    when NoOnEntry =>
-                        internalState <= CheckTransition;
                     when CheckTransition =>
                         case currentState is
+                            when STATE_Ping =>
+                                targetState <= STATE_Check;
+                                internalState <= OnExit;
                             when STATE_Check =>
                                 if (pong = '1') then
                                     targetState <= STATE_Ping;
@@ -308,12 +299,15 @@ struct PingPongArrangement {
                                 else
                                     internalState <= Internal;
                                 end if;
-                            when STATE_Ping =>
-                                targetState <= STATE_Check;
-                                internalState <= OnExit;
                             when others =>
                                 internalState <= Internal;
                         end case;
+                    when Internal =>
+                        internalState <= WriteSnapshot;
+                    when NoOnEntry =>
+                        internalState <= CheckTransition;
+                    when OnEntry =>
+                        internalState <= CheckTransition;
                     when OnExit =>
                         case currentState is
                             when STATE_Ping =>
@@ -324,8 +318,13 @@ struct PingPongArrangement {
                                 null;
                         end case;
                         internalState <= WriteSnapshot;
-                    when Internal =>
-                        internalState <= WriteSnapshot;
+                    when ReadSnapshot =>
+                        pong <= EXTERNAL_pong;
+                        if (previousRinglet /= currentState) then
+                            internalState <= OnEntry;
+                        else
+                            internalState <= NoOnEntry;
+                        end if;
                     when WriteSnapshot =>
                         EXTERNAL_ping <= ping;
                         internalState <= ReadSnapshot;
@@ -337,6 +336,7 @@ struct PingPongArrangement {
             end if;
         end process;
     end Behavioral;
+
     """
 
     /// Create a check state.

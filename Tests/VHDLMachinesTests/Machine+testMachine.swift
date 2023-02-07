@@ -70,7 +70,11 @@ extension Machine {
             actions: [.onEntry, .internal, .onExit, .onResume, .onSuspend],
             name: VariableName(rawValue: "TestMachine")!,
             path: directory.appendingPathComponent("TestMachine.machine", isDirectory: true),
-            includes: [.library(value: "IEEE"), .include(value: "IEEE.std_logic_1164.ALL")],
+            includes: [
+                .library(value: "IEEE"),
+                .include(value: "IEEE.std_logic_1164.ALL"),
+                .include(value: "IEEE.math_real.ALL")
+            ],
             externalSignals: [
                 PortSignal(
                     type: .stdLogic,
@@ -87,20 +91,6 @@ extension Machine {
                         value: BitVector(values: [.low, .low])
                     ))),
                     comment: Comment(rawValue: "-- A variable called xx.")!
-                )
-            ],
-            generics: [
-                LocalSignal(
-                    type: SignalType.ranged(type: .integer(size: .to(lower: 0, upper: 65535))),
-                    name: VariableName.y,
-                    defaultValue: .literal(value: .integer(value: 0)),
-                    comment: Comment(rawValue: "-- A uint16 variable called y.")!
-                ),
-                LocalSignal(
-                    type: .boolean,
-                    name: VariableName(rawValue: "yy")!,
-                    defaultValue: .literal(value: .boolean(value: false)),
-                    comment: Comment(rawValue: "-- A variable called yy")!
                 )
             ],
             clocks: [
@@ -187,9 +177,14 @@ extension Machine {
                     target: 1
                 ),
                 VHDLMachines.Transition(
-                    // "xx = '1'"
+                    // "xx = \"11\""
                     condition: .conditional(condition: .comparison(
-                        value: .equality(lhs: .variable(name: .xx), rhs: .literal(value: .bit(value: .high)))
+                        value: .equality(
+                            lhs: .variable(name: .xx),
+                            rhs: .literal(value: .vector(
+                                value: .bits(value: BitVector(values: [.high, .high]))
+                            ))
+                        )
                     )),
                     source: 1,
                     target: 2

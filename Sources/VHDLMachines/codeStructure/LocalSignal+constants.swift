@@ -57,7 +57,7 @@ extension LocalSignal {
     static func stateTrackers(machine: Machine) -> [LocalSignal]? {
         let states = machine.states
         guard
-            let bitsRequired = BitLiteral.bitsRequired(for: states.count),
+            let bitsRequired = BitLiteral.bitsRequired(for: states.count - 1),
             bitsRequired > 0,
             machine.initialState >= 0,
             machine.initialState < states.count

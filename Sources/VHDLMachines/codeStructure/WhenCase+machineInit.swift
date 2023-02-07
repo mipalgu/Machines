@@ -120,6 +120,32 @@ extension WhenCase {
     private init(checkTransitionMachine machine: Machine) {
         let stateCases = machine.states.enumerated().compactMap { index, state -> WhenCase? in
             let transitions = machine.transitions.filter { $0.source == index }
+            if
+                transitions.count == 1,
+                case .conditional(let condition) = transitions[0].condition,
+                case .literal(let isTransitioning) = condition
+            {
+                guard isTransitioning else {
+                    return WhenCase(
+                        condition: .expression(expression: .variable(name: .name(for: state))),
+                        code: .statement(statement: .assignment(
+                            name: .internalState, value: .variable(name: .internal)
+                        ))
+                    )
+                }
+                return WhenCase(
+                    condition: .expression(expression: .variable(name: .name(for: state))),
+                    code: .blocks(blocks: [
+                        .statement(statement: .assignment(
+                            name: .targetState,
+                            value: .variable(name: .name(for: machine.states[transitions[0].target]))
+                        )),
+                        .statement(statement: .assignment(
+                            name: .internalState, value: .variable(name: .onExit)
+                        ))
+                    ])
+                )
+            }
             return WhenCase(state: state, transitions: transitions, machine: machine)
         }
         let statement = CaseStatement(

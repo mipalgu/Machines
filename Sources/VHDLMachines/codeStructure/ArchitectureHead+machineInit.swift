@@ -60,20 +60,36 @@ import VHDLParsing
 extension ArchitectureHead {
 
     // swiftlint:disable function_body_length
+    // swiftlint:disable cyclomatic_complexity
 
     /// Create an architecture head for a machine.
     /// - Parameter machine: The machine to create the head for.
     @usableFromInline
     init?(machine: Machine) {
+        var actionNames = machine.actions
+        if !machine.isSuspensible {
+            actionNames.removeAll { $0 == .onResume || $0 == .onSuspend }
+        } else {
+            if !machine.actions.contains(.onSuspend) {
+                guard machine.states.allSatisfy({ $0.actions[.onSuspend] == nil }) else {
+                    return nil
+                }
+                actionNames.append(.onSuspend)
+            }
+            if !machine.actions.contains(.onResume) {
+                guard machine.states.allSatisfy({ $0.actions[.onResume] == nil }) else {
+                    return nil
+                }
+                actionNames.append(.onResume)
+            }
+        }
         guard
-            let actions = ConstantSignal.constants(for: machine.actions),
+            !actionNames.isEmpty,
+            let actions = ConstantSignal.constants(for: actionNames),
             let internalStateComment = Comment(rawValue: "-- Internal State Representation Bits"),
-            let internalStateBits = BitLiteral.bitsRequired(for: actions.count),
+            let internalStateBits = BitLiteral.bitsRequired(for: actions.count - 1),
             internalStateBits > 0,
             let stateRepresentationComment = Comment(rawValue: "-- State Representation Bits"),
-            let externalSnapshotComment = Comment(rawValue: "-- Snapshot of External Signals and Variables"),
-            let machineSignalComment = Comment(rawValue: "-- Machine Signals"),
-            let userCodeComment = Comment(rawValue: "-- User-Specific Code for Architecture Head"),
             let stateBitsRequired = BitLiteral.bitsRequired(for: machine.states.count - 1),
             let stateTrackers = LocalSignal.stateTrackers(machine: machine)
         else {
@@ -99,7 +115,7 @@ extension ArchitectureHead {
             .definition(signal: internalState),
             .comment(value: stateRepresentationComment)
         ] + stateRepresentation + stateTrackerStatements
-        if machine.suspendedState != nil {
+        if machine.isSuspensible {
             guard let commandsComment = Comment(rawValue: "-- Suspension Commands") else {
                 return nil
             }
@@ -120,30 +136,57 @@ extension ArchitectureHead {
                 .comment(value: afterComment), .definition(signal: .ringletCounter), .constant(value: period)
             ] + ringletConstants
         }
-        statements += [.comment(value: externalSnapshotComment)] + machine.externalSignals.map {
-            Statement.definition(signal: LocalSignal(snapshot: $0))
-        }
-        if machine.isParameterised {
-            guard
-                let parameterSnapshotComment = Comment(
-                    rawValue: "-- Snapshot of Parameter Signals and Variables"
-                ),
-                let outputSnapshotComment = Comment(rawValue: "-- Snapshot of Output Signals and Variables")
-            else {
+        if !machine.externalSignals.isEmpty {
+            guard let externalSnapshotComment = Comment(
+                rawValue: "-- Snapshot of External Signals and Variables"
+            ) else {
                 return nil
             }
-            statements += [.comment(value: parameterSnapshotComment)] + machine.parameterSignals.map {
-                Statement.definition(signal: LocalSignal(snapshot: $0))
-            } + [.comment(value: outputSnapshotComment)] + machine.returnableSignals.map {
+            statements += [.comment(value: externalSnapshotComment)] + machine.externalSignals.map {
                 Statement.definition(signal: LocalSignal(snapshot: $0))
             }
         }
-        let machineSignals = machine.machineSignals.map { Statement.definition(signal: $0) }
-        statements += [.comment(value: machineSignalComment)] + machineSignals +
-            [.comment(value: userCodeComment)]
+        if machine.isParameterised {
+            if !machine.parameterSignals.isEmpty {
+                guard let parameterSnapshotComment = Comment(
+                    rawValue: "-- Snapshot of Parameter Signals and Variables"
+                ) else {
+                    return nil
+                }
+                statements += [.comment(value: parameterSnapshotComment)] + machine.parameterSignals.map {
+                    Statement.definition(signal: LocalSignal(snapshot: $0))
+                }
+            }
+            if !machine.returnableSignals.isEmpty {
+                guard let outputSnapshotComment = Comment(
+                        rawValue: "-- Snapshot of Output Signals and Variables"
+                ) else {
+                    return nil
+                }
+                statements += [.comment(value: outputSnapshotComment)] + machine.returnableSignals.map {
+                    Statement.definition(signal: LocalSignal(snapshot: $0))
+                }
+            }
+        }
+        if !machine.machineSignals.isEmpty {
+            guard let machineSignalComment = Comment(rawValue: "-- Machine Signals") else {
+                return nil
+            }
+            let machineSignals = machine.machineSignals.map { Statement.definition(signal: $0) }
+            statements += [.comment(value: machineSignalComment)] + machineSignals
+        }
+        if let head = machine.architectureHead {
+            guard let userCodeComment = Comment(
+                rawValue: "-- User-Specific Code for Architecture Head"
+            ) else {
+                return nil
+            }
+            statements += [.comment(value: userCodeComment)] + head
+        }
         self.init(statements: statements)
     }
 
+    // swiftlint:enable cyclomatic_complexity
     // swiftlint:enable function_body_length
 
 }

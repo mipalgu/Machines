@@ -74,7 +74,7 @@ extension CaseStatement {
         guard cases.count == actions.count else {
             return nil
         }
-        self.init(condition: .variable(name: .internalState), cases: cases)
+        self.init(condition: .variable(name: .internalState), cases: cases + [.othersNull])
     }
 
 }

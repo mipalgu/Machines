@@ -128,11 +128,11 @@ final class AfterStatementTests: XCTestCase {
     func testRawValue() {
         XCTAssertEqual(
             statement.rawValue,
-            "\(VariableName.ringletCounter) >= integer(ceil(real(10) * \(VariableName.ringletPerUs)))"
+            "(\(VariableName.ringletCounter) >= integer(ceil(real(10) * \(VariableName.ringletPerUs))))"
         )
         XCTAssertEqual(
             AfterStatement(amount: x, period: .ringlet).rawValue,
-            "\(VariableName.ringletCounter) >= integer(ceil(real(\(x.rawValue))))"
+            "(\(VariableName.ringletCounter) >= integer(ceil(real(\(x.rawValue)))))"
         )
     }
 
@@ -140,23 +140,23 @@ final class AfterStatementTests: XCTestCase {
     func testRawValueInit() {
         XCTAssertEqual(
             AfterStatement(
-                rawValue: "\(VariableName.ringletCounter) >= integer(ceil(real(10) * " +
-                    "\(VariableName.ringletPerUs)))"
+                rawValue: "(\(VariableName.ringletCounter) >= integer(ceil(real(10) * " +
+                    "\(VariableName.ringletPerUs))))"
             ),
             statement
         )
         XCTAssertEqual(
             AfterStatement(
-                rawValue: "\(VariableName.ringletCounter) >= integer(ceil(real(10)))"
+                rawValue: "(\(VariableName.ringletCounter) >= integer(ceil(real(10))))"
             ),
             AfterStatement(amount: .literal(value: .integer(value: 10)), period: .ringlet)
         )
         XCTAssertNil(AfterStatement(
-            rawValue: "\(VariableName.ringletCounter) >= integer(ceil(real(10) / " +
-                "\(VariableName.ringletPerUs)))"
+            rawValue: "(\(VariableName.ringletCounter) >= integer(ceil(real(10) / " +
+                "\(VariableName.ringletPerUs))))"
         ))
         XCTAssertNil(AfterStatement(
-            rawValue: "\(VariableName.ringletCounter) >= integer(ceil(integer(10)))"
+            rawValue: "(\(VariableName.ringletCounter) >= integer(ceil(integer(10))))"
         ))
     }
 
@@ -198,7 +198,7 @@ final class AfterStatementTests: XCTestCase {
     func testExpression() {
         XCTAssertEqual(
             statement.expression,
-            .conditional(condition: .comparison(value: .greaterThanOrEqual(
+            .precedence(value: .conditional(condition: .comparison(value: .greaterThanOrEqual(
                 lhs: .variable(name: .ringletCounter),
                 rhs: .cast(operation: .integer(expression: .functionCall(call: .mathReal(function: .ceil(
                     expression: .binary(operation: .multiplication(
@@ -206,17 +206,17 @@ final class AfterStatementTests: XCTestCase {
                         rhs: .variable(name: .ringletPerUs)
                     ))
                 )))))
-            )))
+            ))))
         )
         let ringletStatement = AfterStatement(amount: .literal(value: .integer(value: 5)), period: .ringlet)
         XCTAssertEqual(
             ringletStatement.expression,
-            .conditional(condition: .comparison(value: .greaterThanOrEqual(
+            .precedence(value: .conditional(condition: .comparison(value: .greaterThanOrEqual(
                 lhs: .variable(name: .ringletCounter),
                 rhs: .cast(operation: .integer(expression: .functionCall(call: .mathReal(function: .ceil(
                     expression: .cast(operation: .real(expression: .literal(value: .integer(value: 5))))
                 )))))
-            )))
+            ))))
         )
     }
 
