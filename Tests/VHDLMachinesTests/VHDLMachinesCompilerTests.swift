@@ -197,6 +197,7 @@ class VHDLMachinesCompilerTests: XCTestCase {
 
     /// Test compilation overwrites existing file.
     func testCompileWorksWhenFileIsPresent() {
+        print(testMachinePath.path)
         if !helper.directoryExists(testMachinePath.path) {
             guard helper.createDirectory(atPath: testMachinePath) else {
                 XCTFail("Failed to create directory!")

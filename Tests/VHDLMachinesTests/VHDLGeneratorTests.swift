@@ -102,9 +102,13 @@ final class VHDLGeneratorTests: XCTestCase {
 
     /// Test write creates correct file structure.
     func testWrite() throws {
-        guard let wrapper = generator.generate(machine: factory.pingMachine) else {
+        let machine = factory.pingMachine
+        guard let wrapper = generator.generate(machine: machine) else {
             XCTFail("Failed to create wrapper!")
             return
+        }
+        if helper.directoryExists(machine.path.path) {
+            _ = helper.deleteItem(atPath: machine.path)
         }
         try wrapper.write(to: factory.machinePath, originalContentsURL: nil)
         defer {
