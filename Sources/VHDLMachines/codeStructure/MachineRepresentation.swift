@@ -79,12 +79,13 @@ public struct MachineRepresentation: MachineVHDLRepresentable {
     public let machine: Machine
 
     /// The includes for this representation
-    public var includes: [Include] {
+    @inlinable public var includes: [Include] {
         machine.includes
     }
 
     /// Create the machine representation for the given machine.
     /// - Parameter machine: The machine to convert into a `VHDL` file.
+    @inlinable
     public init?(machine: Machine) {
         guard
             let entity = Entity(machine: machine),

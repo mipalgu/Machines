@@ -58,42 +58,42 @@ import Foundation
 import VHDLParsing
 
 /// Add common names from machine generation.
-public extension VariableName {
+extension VariableName {
 
     // swiftlint:disable force_unwrapping
 
     /// The `clk` variable.
-    static let clk = VariableName(rawValue: "clk")!
+    @usableFromInline static let clk = VariableName(rawValue: "clk")!
 
     /// The clock period.
     static let clockPeriod = VariableName(rawValue: "clockPeriod")!
 
     /// The initial state name.
-    static let initial = VariableName(rawValue: "Initial")!
+    @usableFromInline static let initial = VariableName(rawValue: "Initial")!
 
     /// The suspended state name.
-    static let suspendedState = VariableName(rawValue: "Suspended")!
+    @usableFromInline static let suspendedState = VariableName(rawValue: "Suspended")!
 
     /// The ringlet length variable.
     static let ringletLength = VariableName(rawValue: "ringletLength")!
 
     /// The ringlets per ps constant.
-    static let ringletPerPs = VariableName(rawValue: "RINGLETS_PER_PS")!
+    @usableFromInline static let ringletPerPs = VariableName(rawValue: "RINGLETS_PER_PS")!
 
     /// The ringlets per ns constant.
-    static let ringletPerNs = VariableName(rawValue: "RINGLETS_PER_NS")!
+    @usableFromInline static let ringletPerNs = VariableName(rawValue: "RINGLETS_PER_NS")!
 
     /// The ringlets per us constant.
-    static let ringletPerUs = VariableName(rawValue: "RINGLETS_PER_US")!
+    @usableFromInline static let ringletPerUs = VariableName(rawValue: "RINGLETS_PER_US")!
 
     /// The ringlets per ms constant.
-    static let ringletPerMs = VariableName(rawValue: "RINGLETS_PER_MS")!
+    @usableFromInline static let ringletPerMs = VariableName(rawValue: "RINGLETS_PER_MS")!
 
     /// The ringlets per s constant.
-    static let ringletPerS = VariableName(rawValue: "RINGLETS_PER_S")!
+    @usableFromInline static let ringletPerS = VariableName(rawValue: "RINGLETS_PER_S")!
 
     /// The ringlet counter variable.
-    static let ringletCounter = VariableName(rawValue: "ringlet_counter")!
+    @usableFromInline static let ringletCounter = VariableName(rawValue: "ringlet_counter")!
 
     /// The suspended flag.
     static let suspended = VariableName(rawValue: "suspended")!
@@ -117,31 +117,31 @@ public extension VariableName {
     static let internalState = VariableName(rawValue: "internalState")!
 
     /// The read snapshot constant.
-    static let readSnapshot = VariableName(rawValue: "ReadSnapshot")!
+    @usableFromInline static let readSnapshot = VariableName(rawValue: "ReadSnapshot")!
 
     /// The write snapshot constant.
-    static let writeSnapshot = VariableName(rawValue: "WriteSnapshot")!
+    @usableFromInline static let writeSnapshot = VariableName(rawValue: "WriteSnapshot")!
 
     /// The check transition constant.
-    static let checkTransition = VariableName(rawValue: "CheckTransition")!
+    @usableFromInline static let checkTransition = VariableName(rawValue: "CheckTransition")!
 
     /// The no on entry constant.
-    static let noOnEntry = VariableName(rawValue: "NoOnEntry")!
+    @usableFromInline static let noOnEntry = VariableName(rawValue: "NoOnEntry")!
 
     /// The on entry constant.
-    static let onEntry = VariableName(rawValue: "OnEntry")!
+    @usableFromInline static let onEntry = VariableName(rawValue: "OnEntry")!
 
     /// The on exit constant.
-    static let onExit = VariableName(rawValue: "OnExit")!
+    @usableFromInline static let onExit = VariableName(rawValue: "OnExit")!
 
     /// The on resume constant.
-    static let onResume = VariableName(rawValue: "OnResume")!
+    @usableFromInline static let onResume = VariableName(rawValue: "OnResume")!
 
     /// The on suspend constant.
-    static let onSuspend = VariableName(rawValue: "OnSuspend")!
+    @usableFromInline static let onSuspend = VariableName(rawValue: "OnSuspend")!
 
     /// The internal constant.
-    static let `internal` = VariableName(rawValue: "Internal")!
+    @usableFromInline static let `internal` = VariableName(rawValue: "Internal")!
 
     /// The null command constant.
     static let nullCommand = VariableName(rawValue: "COMMAND_NULL")!
@@ -159,7 +159,7 @@ public extension VariableName {
     /// - Parameter state: The state to get the name for.
     /// - Returns: The name of the constant bit representation for this state.
     @inlinable
-    static func name(for state: State) -> VariableName {
+    public static func name(for state: State) -> VariableName {
         VariableName(rawValue: "STATE_\(state.name.rawValue)")!
     }
 
@@ -167,7 +167,7 @@ public extension VariableName {
     /// - Parameter external: The port signal to convert to an external variable.
     /// - Returns: The external variables name.
     @inlinable
-    static func name(for external: PortSignal) -> VariableName {
+    public static func name(for external: PortSignal) -> VariableName {
         VariableName(rawValue: "EXTERNAL_\(external.name.rawValue)")!
     }
 
@@ -175,7 +175,7 @@ public extension VariableName {
     /// - Parameter parameter: The parameter to get the name for.
     /// - Returns: The name of the parameter.
     @inlinable
-    static func name(for parameter: Parameter) -> VariableName {
+    public static func name(for parameter: Parameter) -> VariableName {
         VariableName(rawValue: "PARAMETER_\(parameter.name.rawValue)")!
     }
 
@@ -183,7 +183,7 @@ public extension VariableName {
     /// - Parameter returnable: The returnable variable to get the name for.
     /// - Returns: The name of the returnable variable.
     @inlinable
-    static func name(for returnable: ReturnableVariable) -> VariableName {
+    public static func name(for returnable: ReturnableVariable) -> VariableName {
         VariableName(rawValue: "OUTPUT_\(returnable.name.rawValue)")!
     }
 

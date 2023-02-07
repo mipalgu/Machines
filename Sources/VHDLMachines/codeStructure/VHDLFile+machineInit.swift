@@ -61,6 +61,7 @@ public extension VHDLFile {
 
     /// Create the file from a ``MachineVHDLRepresentable``.
     /// - Parameter representation: The representation to use for this file.
+    @inlinable
     init<T>(representation: T) where T: MachineVHDLRepresentable {
         self.init(
             architectures: [

@@ -58,7 +58,7 @@
 extension Set where Element == String {
 
     /// The `after` commands supported by `LLFSMs`.
-    @usableFromInline static let afters = Set<String>(
+    static let afters = Set<String>(
         ["after", "after_ps", "after_ns", "after_us", "after_ms", "after_rt"]
     )
 

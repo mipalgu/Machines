@@ -54,7 +54,7 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import VHDLMachines
+@testable import VHDLMachines
 import VHDLParsing
 
 /// Add default state test data.

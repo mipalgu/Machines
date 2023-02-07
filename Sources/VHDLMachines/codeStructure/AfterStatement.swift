@@ -184,21 +184,7 @@ public struct AfterStatement: RawRepresentable, Equatable, Hashable, Codable, Se
 
     /// The equivalent `VHDL` expression for this after statement.
     @inlinable public var expression: Expression {
-        let castedAmount = Expression.cast(operation: .real(expression: amount))
-        let calculation: Expression
-        if case .ringlet = period {
-            calculation = castedAmount
-        } else {
-            calculation = .binary(
-                operation: .multiplication(lhs: castedAmount, rhs: .variable(name: period.rawValue))
-            )
-        }
-        return .precedence(value: .conditional(condition: .comparison(value: .greaterThanOrEqual(
-            lhs: .variable(name: .ringletCounter),
-            rhs: .cast(operation: .integer(
-                expression: .functionCall(call: .mathReal(function: .ceil(expression: calculation)))
-            ))
-        ))))
+        Expression(after: self)
     }
 
     /// The `VHDL` code enacting this statement.

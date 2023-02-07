@@ -71,7 +71,7 @@ public struct Machine: Codable, Equatable, Hashable {
     }
 
     /// Whether the machine can be suspended.
-    public var isSuspensible: Bool {
+    @inlinable public var isSuspensible: Bool {
         suspendedState != nil
     }
 
@@ -141,6 +141,7 @@ public struct Machine: Codable, Equatable, Hashable {
     /// machine is not parameterised, but does include the suspension semantics.
     /// - Parameter path: The path the new machine will be located at.
     /// - Returns: The new machine.
+    @inlinable
     public static func initial(path: URL) -> Machine? {
         guard
             let nameComponent = path.lastPathComponent.components(separatedBy: ".machine").first,

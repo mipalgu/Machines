@@ -55,7 +55,7 @@
 // 
 
 import Foundation
-import VHDLMachines
+@testable import VHDLMachines
 import VHDLParsing
 
 /// Add test machine.

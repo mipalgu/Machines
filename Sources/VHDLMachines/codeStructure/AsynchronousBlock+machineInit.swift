@@ -57,11 +57,12 @@
 import VHDLParsing
 
 /// Add init for top-level architecture body asynchronous block.
-public extension AsynchronousBlock {
+extension AsynchronousBlock {
 
     /// Create the top-level asynchronous block that will represent the entire architecture body of a machine.
     /// This block represents all of the logic of the machine.
     /// - Parameter machine: The machine to generate the block from.
+    @usableFromInline
     init?(machine: Machine) {
         guard
             machine.drivingClock >= 0,

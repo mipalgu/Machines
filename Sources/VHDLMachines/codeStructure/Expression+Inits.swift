@@ -61,7 +61,8 @@ extension Expression {
 
     /// Convert a ``TransitionCondition`` into an `Expression`.
     /// - Parameter condition: The ``TransitionCondition`` to convert.
-    init(condition: TransitionCondition) {
+    @inlinable
+    public init(condition: TransitionCondition) {
         switch condition {
         case .after(let statement):
             self = statement.expression
@@ -104,6 +105,29 @@ extension Expression {
         case .variable(let name):
             self = .variable(name: name)
         }
+    }
+
+    /// Convert an ``AfterStatement`` into an `Expression`.
+    /// - Parameter after: The statement to convert.
+    @inlinable
+    public init(after: AfterStatement) {
+        let amount = after.amount
+        let period = after.period
+        let castedAmount = Expression.cast(operation: .real(expression: amount))
+        let calculation: Expression
+        if case .ringlet = period {
+            calculation = castedAmount
+        } else {
+            calculation = .binary(
+                operation: .multiplication(lhs: castedAmount, rhs: .variable(name: period.rawValue))
+            )
+        }
+        self = .precedence(value: .conditional(condition: .comparison(value: .greaterThanOrEqual(
+            lhs: .variable(name: .ringletCounter),
+            rhs: .cast(operation: .integer(
+                expression: .functionCall(call: .mathReal(function: .ceil(expression: calculation)))
+            ))
+        ))))
     }
 
 }

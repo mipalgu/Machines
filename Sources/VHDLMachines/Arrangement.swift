@@ -47,6 +47,7 @@ public struct Arrangement: Equatable, Hashable, Codable {
     ///   - clocks: The clocks in the arrangement.
     ///   - parents: The parent machines in the arrangement.
     ///   - path: The file path to the arrangement.
+    @inlinable
     public init(
         machines: [VariableName: URL],
         externalSignals: [PortSignal],

@@ -13,7 +13,7 @@ import VHDLParsing
 public struct Parameter: ExternalType, Codable, Equatable, Hashable, Variable {
 
     /// The mode of the parameter.
-    public var mode: Mode {
+    @inlinable public var mode: Mode {
         get {
             .input
         }

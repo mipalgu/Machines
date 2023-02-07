@@ -14,14 +14,16 @@ import VHDLParsing
 public struct VHDLCompiler {
 
     /// A file helper.
-    private let helper = FileHelpers()
+    @usableFromInline let helper = FileHelpers()
 
     /// Create a VHDL compiler.
+    @inlinable
     public init() {}
 
     /// Compile a machine into a VHDL source file within the machine folder specified by the machines path.
     /// - Parameter machine: The machine to compile.
     /// - Returns: Whether the compilation was successful.
+    @inlinable
     public func compile(_ machine: Machine) -> Bool {
         guard let format = generateVHDLFile(machine) else {
             return false
@@ -41,6 +43,7 @@ public struct VHDLCompiler {
     /// Generate the VHDL source code for a machine.
     /// - Parameter machine: The machine to compile.
     /// - Returns: The VHDL source code.
+    @usableFromInline
     func generateVHDLFile(_ machine: Machine) -> String? {
         guard let representation = MachineRepresentation(machine: machine) else {
             return nil
