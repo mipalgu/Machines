@@ -152,14 +152,14 @@ class VHDLMachinesCompilerTests: XCTestCase {
         XCTAssertTrue(compiler.compile(machine))
     }
 
-    // /// Test generated code matches expected.
-    // func testGenerateVHDLFile() {
-    //     guard let code = compiler.generateVHDLFile(machine) else {
-    //         XCTFail("Failed to generate vhdl file.")
-    //         return
-    //     }
-    //     XCTAssertEqual(code, vhdl)
-    // }
+    /// Test generated code matches expected.
+    func testGenerateVHDLFile() {
+        guard let code = compiler.generateVHDLFile(machine) else {
+            XCTFail("Failed to generate vhdl file.")
+            return
+        }
+        XCTAssertEqual(code, vhdl, "\(code.difference(from: vhdl))")
+    }
 
     // swiftlint:disable line_length
 
@@ -170,31 +170,30 @@ class VHDLMachinesCompilerTests: XCTestCase {
         use IEEE.math_real.ALL;
 
         entity TestMachine is
-            port (
+            port(
                 clk: in std_logic;
                 clk2: in std_logic;
                 EXTERNAL_x: in std_logic := '1'; -- A std_logic variable.
                 EXTERNAL_xx: out std_logic_vector(1 downto 0) := "00"; -- A variable called xx.
-                suspended: out std_logic;
                 PARAMETER_parX: in std_logic := '1'; -- Parameter parX
                 PARAMETER_parXs: in std_logic_vector(1 downto 0) := "01"; -- Parameter parXs
                 OUTPUT_retX: out std_logic; -- Returnable retX
                 OUTPUT_retXs: out std_logic_vector(1 downto 0); -- Returnable retXs
+                suspended: out std_logic;
                 command: in std_logic_vector(1 downto 0)
             );
         end TestMachine;
 
-
         architecture Behavioral of TestMachine is
             -- Internal State Representation Bits
-            constant ReadSnapshot: std_logic_vector(3 downto 0) := "0000";
-            constant OnSuspend: std_logic_vector(3 downto 0) := "0001";
-            constant OnResume: std_logic_vector(3 downto 0) := "0010";
+            constant CheckTransition: std_logic_vector(3 downto 0) := "0000";
+            constant Internal: std_logic_vector(3 downto 0) := "0001";
+            constant NoOnEntry: std_logic_vector(3 downto 0) := "0010";
             constant OnEntry: std_logic_vector(3 downto 0) := "0011";
-            constant NoOnEntry: std_logic_vector(3 downto 0) := "0100";
-            constant CheckTransition: std_logic_vector(3 downto 0) := "0101";
-            constant OnExit: std_logic_vector(3 downto 0) := "0110";
-            constant Internal: std_logic_vector(3 downto 0) := "0111";
+            constant OnExit: std_logic_vector(3 downto 0) := "0100";
+            constant OnResume: std_logic_vector(3 downto 0) := "0101";
+            constant OnSuspend: std_logic_vector(3 downto 0) := "0110";
+            constant ReadSnapshot: std_logic_vector(3 downto 0) := "0111";
             constant WriteSnapshot: std_logic_vector(3 downto 0) := "1000";
             signal internalState: std_logic_vector(3 downto 0) := ReadSnapshot;
             -- State Representation Bits
@@ -212,14 +211,13 @@ class VHDLMachinesCompilerTests: XCTestCase {
             constant COMMAND_RESUME: std_logic_vector(1 downto 0) := "11";
             -- After Variables
             signal ringlet_counter: natural := 0;
-            constant clockPeriod: real := 20000.00; -- ps
+            constant clockPeriod: real := 20000.0; -- ps
             constant ringletLength: real := 5.0 * clockPeriod;
             constant RINGLETS_PER_PS: real := 1.0 / ringletLength;
             constant RINGLETS_PER_NS: real := 1000.0 * RINGLETS_PER_PS;
             constant RINGLETS_PER_US: real := 1000000.0 * RINGLETS_PER_PS;
             constant RINGLETS_PER_MS: real := 1000000000.0 * RINGLETS_PER_PS;
             constant RINGLETS_PER_S: real := 1000000000000.0 * RINGLETS_PER_PS;
-            constant ZERO: real := 0.0;
             -- Snapshot of External Signals and Variables
             signal x: std_logic;
             signal xx: std_logic_vector(1 downto 0);
@@ -232,47 +230,146 @@ class VHDLMachinesCompilerTests: XCTestCase {
             -- Machine Signals
             signal machineSignal1: std_logic;
             signal machineSignal2: std_logic_vector(2 downto 0) := "111"; -- machine signal 2
-            -- User-Specific Code for Architecture Head
         begin
-            -- User-Specific Code for Architecture Body
             process(clk)
-                variable STATE_Initial_Transition0: boolean := false;
-                variable STATE_Initial_Transition1: boolean := false;
-                variable STATE_Initial_Transition2: boolean := false;
-                variable STATE_Suspended_Transition0: boolean := false;
-                variable STATE_Suspended_Transition1: boolean := false;
-                variable STATE_Suspended_Transition2: boolean := false;
             begin
                 if (rising_edge(clk)) then
                     case internalState is
+                        when CheckTransition =>
+                            case currentState is
+                                when STATE_Initial =>
+                                    if (false) then
+                                        targetState <= STATE_Suspended;
+                                        internalState <= OnExit;
+                                    elsif (ringlet_counter >= integer(ceil(real(50.0) * RINGLETS_PER_MS)) or ringlet_counter >= integer(ceil(real(2.0) * RINGLETS_PER_S)) or ringlet_counter >= integer(ceil(real(20000.0)))) then
+                                        targetState <= STATE_Suspended;
+                                        internalState <= OnExit;
+                                    elsif (true) then
+                                        targetState <= STATE_Suspended;
+                                        internalState <= OnExit;
+                                    else
+                                        internalState <= Internal;
+                                    end if;
+                                when STATE_Suspended =>
+                                    if (xx = '1') then
+                                        targetState <= STATE_State0;
+                                        internalState <= OnExit;
+                                    elsif (x = '1') then
+                                        targetState <= STATE_State0;
+                                        internalState <= OnExit;
+                                    elsif (true) then
+                                        targetState <= STATE_Initial;
+                                        internalState <= OnExit;
+                                    else
+                                        internalState <= Internal;
+                                    end if;
+                                when others =>
+                                    internalState <= Internal;
+                            end case;
+                        when Internal =>
+                            case currentState is
+                                when STATE_Initial =>
+                                    x <= '1';
+                                    ringlet_counter <= ringlet_counter + 1;
+                                when STATE_Suspended =>
+                                    x <= '1';
+                                when STATE_State0 =>
+                                    x <= '1';
+                                when others =>
+                                    null;
+                            end case;
+                            internalState <= WriteSnapshot;
+                        when NoOnEntry =>
+                            internalState <= CheckTransition;
+                        when OnEntry =>
+                            case currentState is
+                                when STATE_Initial =>
+                                    x <= '1';
+                                    xx <= "00";
+                                    ringlet_counter <= 0;
+                                when STATE_Suspended =>
+                                    x <= '1';
+                                    xx <= "00";
+                                when STATE_State0 =>
+                                    x <= '1';
+                                    xx <= "00";
+                                when others =>
+                                    null;
+                            end case;
+                            internalState <= CheckTransition;
+                        when OnExit =>
+                            case currentState is
+                                when STATE_Initial =>
+                                    x <= '0';
+                                when STATE_Suspended =>
+                                    x <= '0';
+                                when STATE_State0 =>
+                                    x <= '0';
+                                when others =>
+                                    null;
+                            end case;
+                            internalState <= WriteSnapshot;
+                        when OnResume =>
+                            case currentState is
+                                when STATE_Initial =>
+                                    x <= '0';
+                                    x <= '1';
+                                    xx <= "00";
+                                    ringlet_counter <= 0;
+                                when STATE_Suspended =>
+                                    x <= '0';
+                                    x <= '1';
+                                    xx <= "00";
+                                when STATE_State0 =>
+                                    x <= '0';
+                                    x <= '1';
+                                    xx <= "00";
+                                when others =>
+                                    null;
+                            end case;
+                            internalState <= CheckTransition;
+                        when OnSuspend =>
+                            case suspendedFrom is
+                                when STATE_Initial =>
+                                    xx <= "11";
+                                when STATE_Suspended =>
+                                    xx <= "11";
+                                when STATE_State0 =>
+                                    xx <= "11";
+                                when others =>
+                                    null;
+                            end case;
+                            x <= '1';
+                            xx <= "00";
+                            internalState <= CheckTransition;
                         when ReadSnapshot =>
                             x <= EXTERNAL_x;
                             if (command = COMMAND_RESTART) then
                                 parX <= PARAMETER_parX;
                                 parXs <= PARAMETER_parXs;
                             end if;
-                            if (command = COMMAND_RESTART and currentState /= STATE_Initial) then
+                            if ((command = COMMAND_RESTART) and (currentState /= STATE_Initial)) then
                                 currentState <= STATE_Initial;
                                 suspended <= '0';
                                 suspendedFrom <= STATE_Initial;
                                 targetState <= STATE_Initial;
                                 if (previousRinglet = STATE_Suspended) then
-                                    internalState <= onResume;
+                                    internalState <= OnResume;
                                 elsif (previousRinglet = STATE_Initial) then
                                     internalState <= NoOnEntry;
                                 else
-                                    internalState <= onEntry;
+                                    internalState <= OnEntry;
                                 end if;
-                            elsif (command = COMMAND_RESUME and currentState = STATE_Suspended and suspendedFrom /= STATE_Suspended) then
+                            elsif ((command = COMMAND_RESUME) and ((currentState = STATE_Suspended) and (suspendedFrom /= STATE_Suspended))) then
                                 suspended <= '0';
                                 currentState <= suspendedFrom;
                                 targetState <= suspendedFrom;
                                 if (previousRinglet = suspendedFrom) then
                                     internalState <= NoOnEntry;
                                 else
-                                    internalState <= onResume;
+                                    internalState <= OnResume;
                                 end if;
-                            elsif (command = COMMAND_SUSPEND and currentState /= STATE_Suspended) then
+                            elsif ((command = COMMAND_SUSPEND) and (currentState /= STATE_Suspended)) then
                                 suspendedFrom <= currentState;
                                 suspended <= '1';
                                 currentState <= STATE_Suspended;
@@ -280,12 +377,12 @@ class VHDLMachinesCompilerTests: XCTestCase {
                                 if (previousRinglet = STATE_Suspended) then
                                     internalState <= NoOnEntry;
                                 else
-                                    internalState <= onSuspend;
+                                    internalState <= OnSuspend;
                                 end if;
                             elsif (currentState = STATE_Suspended) then
                                 suspended <= '1';
                                 if (previousRinglet /= STATE_Suspended) then
-                                    internalState <= onSuspend;
+                                    internalState <= OnSuspend;
                                 else
                                     internalState <= NoOnEntry;
                                 end if;
@@ -297,124 +394,11 @@ class VHDLMachinesCompilerTests: XCTestCase {
                                 suspended <= '0';
                                 suspendedFrom <= currentState;
                                 if (previousRinglet /= currentState) then
-                                    internalState <= onEntry;
+                                    internalState <= OnEntry;
                                 else
                                     internalState <= NoOnEntry;
                                 end if;
                             end if;
-                        when OnResume =>
-                            case currentState is
-                                when STATE_Initial =>
-                                    x <= '0'; -- Initial OnResume
-                                    x <= '1';
-                                    xx <= "00"; -- Initial onEntry
-                                    ringlet_counter <= 0;
-                                when STATE_Suspended =>
-                                    x <= '0'; -- Suspended OnResume
-                                    x <= '1';
-                                    xx <= "00"; -- Suspended onEntry
-                                when STATE_State0 =>
-                                    x <= '0'; -- State0 OnResume
-                                    x <= '1';
-                                    xx <= "00"; -- State0 onEntry
-                                when others =>
-                                    null;
-                            end case;
-                            internalState <= CheckTransition;
-                        when OnSuspend =>
-                            case suspendedFrom is
-                                when STATE_Initial =>
-                                    xx <= "11"; -- Initial onSuspend
-                                when STATE_Suspended =>
-                                    xx <= "11"; -- Suspended onSuspend
-                                when STATE_State0 =>
-                                    xx <= "11"; -- State0 onSuspend
-                                when others =>
-                                    null;
-                            end case;
-                            x <= '1';
-                            xx <= "00"; -- Suspended onEntry
-                            internalState <= CheckTransition;
-                        when OnEntry =>
-                            case currentState is
-                                when STATE_Initial =>
-                                    x <= '1';
-                                    xx <= "00"; -- Initial onEntry
-                                    ringlet_counter <= 0;
-                                when STATE_Suspended =>
-                                    x <= '1';
-                                    xx <= "00"; -- Suspended onEntry
-                                when STATE_State0 =>
-                                    x <= '1';
-                                    xx <= "00"; -- State0 onEntry
-                                when others =>
-                                    null;
-                            end case;
-                            internalState <= CheckTransition;
-                        when NoOnEntry =>
-                            internalState <= CheckTransition;
-                        when CheckTransition =>
-                            case currentState is
-                                when STATE_Initial =>
-                                    STATE_Initial_Transition0 := false;
-                                    STATE_Initial_Transition1 := (((ringlet_counter >= natural((50.0) * RINGLETS_PER_MS)) or ((50.0) * RINGLETS_PER_MS < ZERO)) or ((ringlet_counter >= natural((2.0) * RINGLETS_PER_S)) or ((2.0) * RINGLETS_PER_S < ZERO)) or ((ringlet_counter >= natural((20000.0))) or ((20000.0) < ZERO))) and (not (STATE_Initial_Transition0));
-                                    STATE_Initial_Transition2 := (true) and (not (STATE_Initial_Transition1));
-                                    if (STATE_Initial_Transition0) then
-                                        targetState <= STATE_Suspended;
-                                        internalState <= OnExit;
-                                    elsif (STATE_Initial_Transition1) then
-                                        targetState <= STATE_Suspended;
-                                        internalState <= OnExit;
-                                    elsif (STATE_Initial_Transition2) then
-                                        targetState <= STATE_Suspended;
-                                        internalState <= OnExit;
-                                    else
-                                        internalState <= Internal;
-                                    end if;
-                                when STATE_Suspended =>
-                                    STATE_Suspended_Transition0 := xx = "11";
-                                    STATE_Suspended_Transition1 := (x = '1') and (not (STATE_Suspended_Transition0));
-                                    STATE_Suspended_Transition2 := (true) and (not (STATE_Suspended_Transition1));
-                                    if (STATE_Suspended_Transition0) then
-                                        targetState <= STATE_State0;
-                                        internalState <= OnExit;
-                                    elsif (STATE_Suspended_Transition1) then
-                                        targetState <= STATE_State0;
-                                        internalState <= OnExit;
-                                    elsif (STATE_Suspended_Transition2) then
-                                        targetState <= STATE_Initial;
-                                        internalState <= OnExit;
-                                    else
-                                        internalState <= Internal;
-                                    end if;
-                                when others =>
-                                    internalState <= Internal;
-                            end case;
-                        when OnExit =>
-                            case currentState is
-                                when STATE_Initial =>
-                                    x <= '0'; -- Initial OnExit
-                                when STATE_Suspended =>
-                                    x <= '0'; -- Suspended OnExit
-                                when STATE_State0 =>
-                                    x <= '0'; -- State0 OnExit
-                                when others =>
-                                    null;
-                            end case;
-                            internalState <= WriteSnapshot;
-                        when Internal =>
-                            case currentState is
-                                when STATE_Initial =>
-                                    x <= '1'; -- Initial Internal
-                                    ringlet_counter <= ringlet_counter + 1;
-                                when STATE_Suspended =>
-                                    x <= '1'; -- Suspended Internal
-                                when STATE_State0 =>
-                                    x <= '1'; -- State0 Internal
-                                when others =>
-                                    null;
-                            end case;
-                            internalState <= WriteSnapshot;
                         when WriteSnapshot =>
                             EXTERNAL_xx <= xx;
                             internalState <= ReadSnapshot;
@@ -430,6 +414,7 @@ class VHDLMachinesCompilerTests: XCTestCase {
                 end if;
             end process;
         end Behavioral;
+
         """
 
     // swiftlint:enable line_length
