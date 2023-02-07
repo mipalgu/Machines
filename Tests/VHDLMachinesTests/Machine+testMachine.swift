@@ -93,20 +93,6 @@ extension Machine {
                     comment: Comment(rawValue: "-- A variable called xx.")!
                 )
             ],
-            generics: [
-                LocalSignal(
-                    type: SignalType.ranged(type: .integer(size: .to(lower: 0, upper: 65535))),
-                    name: VariableName.y,
-                    defaultValue: .literal(value: .integer(value: 0)),
-                    comment: Comment(rawValue: "-- A uint16 variable called y.")!
-                ),
-                LocalSignal(
-                    type: .boolean,
-                    name: VariableName(rawValue: "yy")!,
-                    defaultValue: .literal(value: .boolean(value: false)),
-                    comment: Comment(rawValue: "-- A variable called yy")!
-                )
-            ],
             clocks: [
                 Clock(name: VariableName.clk, frequency: 50, unit: .MHz),
                 Clock(name: VariableName.clk2, frequency: 20, unit: .kHz)
