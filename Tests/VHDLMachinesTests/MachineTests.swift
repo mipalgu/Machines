@@ -278,6 +278,7 @@ final class MachineTests: XCTestCase {
         XCTAssertEqual(machine.dependentMachines, dependentMachines)
         XCTAssertEqual(machine.machineSignals, machineSignals)
         XCTAssertTrue(machine.isParameterised)
+        XCTAssertTrue(machine.isSuspensible)
         XCTAssertEqual(machine.parameterSignals, parameterSignals)
         XCTAssertEqual(machine.returnableSignals, returnableSignals)
         XCTAssertEqual(machine.states, states)

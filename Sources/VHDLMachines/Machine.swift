@@ -73,6 +73,11 @@ public struct Machine: Codable, Equatable, Hashable {
         _isParameterised && suspendedState != nil
     }
 
+    /// Whether the machine can be suspended.
+    public var isSuspensible: Bool {
+        suspendedState != nil
+    }
+
     /// Initialise a machine
     /// - Parameters:
     ///   - actions: The actions in the machine.
