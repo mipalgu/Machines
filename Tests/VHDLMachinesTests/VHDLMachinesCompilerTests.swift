@@ -154,8 +154,11 @@ class VHDLMachinesCompilerTests: XCTestCase {
 
     // /// Test generated code matches expected.
     // func testGenerateVHDLFile() {
-    //     let code = compiler.generateVHDLFile(machine)
-    //     XCTAssertEqual(code, vhdl, "\(code.difference(from: vhdl))")
+    //     guard let code = compiler.generateVHDLFile(machine) else {
+    //         XCTFail("Failed to generate vhdl file.")
+    //         return
+    //     }
+    //     XCTAssertEqual(code, vhdl)
     // }
 
     // swiftlint:disable line_length
@@ -164,12 +167,9 @@ class VHDLMachinesCompilerTests: XCTestCase {
     private let vhdl = """
         library IEEE;
         use IEEE.std_logic_1164.ALL;
+        use IEEE.math_real.ALL;
 
         entity TestMachine is
-            generic (
-                y: integer range 0 to 65535 := 0; -- A uint16 variable called y.
-                yy: boolean := false -- A variable called yy
-            );
             port (
                 clk: in std_logic;
                 clk2: in std_logic;

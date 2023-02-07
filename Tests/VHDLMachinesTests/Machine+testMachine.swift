@@ -70,7 +70,11 @@ extension Machine {
             actions: [.onEntry, .internal, .onExit, .onResume, .onSuspend],
             name: VariableName(rawValue: "TestMachine")!,
             path: directory.appendingPathComponent("TestMachine.machine", isDirectory: true),
-            includes: [.library(value: "IEEE"), .include(value: "IEEE.std_logic_1164.ALL")],
+            includes: [
+                .library(value: "IEEE"),
+                .include(value: "IEEE.std_logic_1164.ALL"),
+                .include(value: "IEEE.math_real.ALL;")
+            ],
             externalSignals: [
                 PortSignal(
                     type: .stdLogic,
