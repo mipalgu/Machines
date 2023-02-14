@@ -72,7 +72,8 @@ final class VHDLGeneratorTests: XCTestCase {
 
     /// IO helper.
     let helper = FileHelpers()
-    
+
+    /// Remove ping machine after every test.
     override func tearDown() {
         if helper.directoryExists(factory.pingMachinePath.path) {
             _ = helper.deleteItem(atPath: factory.pingMachinePath)
