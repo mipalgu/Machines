@@ -110,13 +110,14 @@ final class VHDLGeneratorTests: XCTestCase {
         if helper.directoryExists(machine.path.path) {
             _ = helper.deleteItem(atPath: machine.path)
         }
-        try wrapper.write(to: factory.machinePath, originalContentsURL: nil)
+        let path = factory.machinePath.appendingPathComponent("PingMachine.machine", isDirectory: true)
+        try wrapper.write(to: path, originalContentsURL: nil)
         defer {
-            if helper.directoryExists(factory.pingMachinePath.path) {
-                XCTAssertTrue(helper.deleteItem(atPath: factory.pingMachinePath))
+            if helper.directoryExists(path.path) {
+                XCTAssertTrue(helper.deleteItem(atPath: path))
             }
         }
-        XCTAssertTrue(helper.directoryExists(factory.pingMachinePath.path))
+        XCTAssertTrue(helper.directoryExists(path.path))
         let data = try Data(contentsOf: factory.pingPath)
         let newMachine = try decoder.decode(Machine.self, from: data)
         XCTAssertEqual(factory.pingMachine, newMachine)
