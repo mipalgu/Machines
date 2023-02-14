@@ -6,25 +6,19 @@
 //
 
 import Foundation
+import VHDLParsing
 
 /// A state in a machine.
 public struct State: Codable, Equatable, Hashable, Sendable {
 
     /// The name of the state.
-    public var name: String
+    public var name: VariableName
 
     /// The actions in the state. This property includes the code in each action.
-    public var actions: [ActionName: String]
-
-    /// The order in which the actions should be executed.
-    public var actionOrder: [[ActionName]]
+    public var actions: [ActionName: SynchronousBlock]
 
     /// The machine signals in the state.
     public var signals: [LocalSignal]
-
-    /// The machine variables in the state. These variable are not signals and cannot be used to
-    /// represent real signals in the hardware.
-    public var variables: [VHDLVariable]
 
     /// The name of the external variables accessed in the state. These variables are defined
     /// in the arrangement.
@@ -43,18 +37,14 @@ public struct State: Codable, Equatable, Hashable, Sendable {
     /// defined in the arrangement.
     @inlinable
     public init(
-        name: String,
-        actions: [ActionName: String],
-        actionOrder: [[ActionName]],
+        name: VariableName,
+        actions: [ActionName: SynchronousBlock],
         signals: [LocalSignal],
-        variables: [VHDLVariable],
         externalVariables: [String]
     ) {
         self.name = name
         self.actions = actions
-        self.actionOrder = actionOrder
         self.signals = signals
-        self.variables = variables
         self.externalVariables = externalVariables
     }
 

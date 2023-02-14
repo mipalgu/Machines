@@ -1,8 +1,8 @@
-// ParameterTests.swift
+// Entity.swift
 // Machines
 // 
 // Created by Morgan McColl.
-// Copyright © 2022 Morgan McColl. All rights reserved.
+// Copyright © 2023 Morgan McColl. All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -54,50 +54,57 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-@testable import VHDLMachines
 import VHDLParsing
-import XCTest
 
-/// Tests the ``Parameter`` type.
-final class ParameterTests: XCTestCase {
+/// Add init from machine.
+extension Entity {
 
-    /// The parameter to test.
-    var parameter = Parameter(
-        type: .integer,
-        name: VariableName.x,
-        defaultValue: .literal(value: .integer(value: 255)),
-        comment: Comment.signalX
-    )
-
-    /// Initialise the parameter to test.
-    override func setUp() {
-        self.parameter = Parameter(
-            type: .integer,
-            name: VariableName.x,
-            defaultValue: .literal(value: .integer(value: 255)),
-            comment: Comment.signalX
-        )
-    }
-
-    /// Test the init sets the stored properties correctly.
-    func testInit() {
-        XCTAssertEqual(self.parameter.type, .integer)
-        XCTAssertEqual(self.parameter.name, VariableName.x)
-        XCTAssertEqual(self.parameter.defaultValue, .literal(value: .integer(value: 255)))
-        XCTAssertEqual(self.parameter.comment, Comment.signalX)
-        XCTAssertEqual(self.parameter.mode, .input)
-    }
-
-    /// Test Getters and Setters work correctly.
-    func testGettersAndSetters() {
-        self.parameter.type = .boolean
-        self.parameter.name = VariableName.y
-        self.parameter.defaultValue = .literal(value: .boolean(value: true))
-        self.parameter.comment = Comment.signalY
-        XCTAssertEqual(self.parameter.type, .boolean)
-        XCTAssertEqual(self.parameter.name, VariableName.y)
-        XCTAssertEqual(self.parameter.defaultValue, .literal(value: .boolean(value: true)))
-        XCTAssertEqual(self.parameter.comment, Comment.signalY)
+    /// Create the entity declaration for a machine.
+    /// - Parameter machine: The machine to convert.
+    @usableFromInline
+    init?(machine: Machine) {
+        let clocks = machine.clocks.map { PortSignal(clock: $0) }
+        var signals: [PortSignal] = clocks + machine.externalSignals.map {
+            PortSignal(
+                type: $0.type,
+                name: $0.externalName,
+                mode: $0.mode,
+                defaultValue: $0.defaultValue,
+                comment: $0.comment
+            )
+        }
+        if machine.isParameterised {
+            signals += machine.parameterSignals.map {
+                PortSignal(
+                    type: $0.type,
+                    name: .name(for: $0),
+                    mode: .input,
+                    defaultValue: $0.defaultValue,
+                    comment: $0.comment
+                )
+            } + machine.returnableSignals.map {
+                PortSignal(
+                    type: $0.type,
+                    name: .name(for: $0),
+                    mode: .output,
+                    comment: $0.comment
+                )
+            }
+        }
+        if machine.suspendedState != nil {
+            signals += [
+                PortSignal(type: .stdLogic, name: .suspended, mode: .output),
+                PortSignal(
+                    type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
+                    name: .command,
+                    mode: .input
+                )
+            ]
+        }
+        guard let port = PortBlock(signals: signals) else {
+            return nil
+        }
+        self.init(name: machine.name, port: port)
     }
 
 }

@@ -1,8 +1,8 @@
-// VHDLVariableTests.swift
+// AsynchronousBlock+machineInit.swift
 // Machines
 // 
 // Created by Morgan McColl.
-// Copyright © 2022 Morgan McColl. All rights reserved.
+// Copyright © 2023 Morgan McColl. All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -54,72 +54,37 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-@testable import VHDLMachines
-import XCTest
+import VHDLParsing
 
-/// Tests the ``VHDLVariable`` type.
-final class VHDLVariableTests: XCTestCase {
+/// Add init for top-level architecture body asynchronous block.
+extension AsynchronousBlock {
 
-    /// The variable to test.
-    var variable = VHDLVariable(
-        type: "integer", name: "x", defaultValue: "0xFF", range: (0, 512), comment: "This is a comment."
-    )
-
-    /// Initialises the variable to test.
-    override func setUp() {
-        self.variable = VHDLVariable(
-            type: "integer", name: "x", defaultValue: "0xFF", range: (0, 512), comment: "This is a comment."
-        )
-    }
-
-    /// Test init sets stored properties correctly.
-    func testInit() {
-        XCTAssertEqual(self.variable.type, "integer")
-        XCTAssertEqual(self.variable.name, "x")
-        XCTAssertEqual(self.variable.defaultValue, "0xFF")
-        XCTAssertEqual(self.variable.range?.0, 0)
-        XCTAssertEqual(self.variable.range?.1, 512)
-        XCTAssertEqual(self.variable.comment, "This is a comment.")
-    }
-
-    /// Test setters and getters work correctly.
-    func testGettersAndSetters() {
-        self.variable.type = "boolean"
-        XCTAssertEqual(self.variable.type, "boolean")
-        self.variable.name = "y"
-        XCTAssertEqual(self.variable.name, "y")
-        self.variable.defaultValue = "true"
-        XCTAssertEqual(self.variable.defaultValue, "true")
-        self.variable.range = (0, 1)
-        XCTAssertEqual(self.variable.range?.0, 0)
-        XCTAssertEqual(self.variable.range?.1, 1)
-        self.variable.comment = "This is another comment."
-        XCTAssertEqual(self.variable.comment, "This is another comment.")
-    }
-
-    /// Test ``VHDLVariable`` conforms to ``Codable`` correctly.
-    func testCodableConformance() {
+    /// Create the top-level asynchronous block that will represent the entire architecture body of a machine.
+    /// This block represents all of the logic of the machine.
+    /// - Parameter machine: The machine to generate the block from.
+    @usableFromInline
+    init?(machine: Machine) {
         guard
-            let data = try? JSONEncoder().encode(self.variable),
-            let decoded = try? JSONDecoder().decode(VHDLVariable.self, from: data)
+            machine.drivingClock >= 0,
+            machine.drivingClock < machine.clocks.count,
+            let code = SynchronousBlock(machine: machine)
         else {
-            XCTFail("Could not code variable.")
+            return nil
+        }
+        let clock = machine.clocks[machine.drivingClock].name
+        let process = ProcessBlock(sensitivityList: [clock], code: code)
+        guard
+            let userBody = machine.architectureBody,
+            let comment = Comment(rawValue: "-- User-Specific Code for Architecture Body")
+        else {
+            self = .process(block: process)
             return
         }
-        XCTAssertEqual(decoded, self.variable)
-    }
-
-    /// Test ``VHDLVariable`` conforms to ``Codable`` correctly when `range` is `nil`.
-    func testEncodeNilRange() {
-        self.variable.range = nil
-        guard
-            let data = try? JSONEncoder().encode(self.variable),
-            let decoded = try? JSONDecoder().decode(VHDLVariable.self, from: data)
-        else {
-            XCTFail("Could not code variable.")
-            return
-        }
-        XCTAssertEqual(decoded, self.variable)
+        self = .blocks(blocks: [
+            .statement(statement: .comment(value: comment)),
+            userBody,
+            .process(block: process)
+        ])
     }
 
 }

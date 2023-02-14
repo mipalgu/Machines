@@ -1,8 +1,8 @@
-// ParameterTests.swift
+// VHDLFileTests.swift
 // Machines
 // 
 // Created by Morgan McColl.
-// Copyright © 2022 Morgan McColl. All rights reserved.
+// Copyright © 2023 Morgan McColl. All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -58,46 +58,29 @@
 import VHDLParsing
 import XCTest
 
-/// Tests the ``Parameter`` type.
-final class ParameterTests: XCTestCase {
+/// Test class for `VHDLFile` extensions.
+final class VHDLFileTests: XCTestCase {
 
-    /// The parameter to test.
-    var parameter = Parameter(
-        type: .integer,
-        name: VariableName.x,
-        defaultValue: .literal(value: .integer(value: 255)),
-        comment: Comment.signalX
-    )
-
-    /// Initialise the parameter to test.
-    override func setUp() {
-        self.parameter = Parameter(
-            type: .integer,
-            name: VariableName.x,
-            defaultValue: .literal(value: .integer(value: 255)),
-            comment: Comment.signalX
+    /// Test representation initialiser.
+    func testRepresentationInit() {
+        guard let representation = MachineRepresentation(machine: Machine.testMachine()) else {
+            XCTFail("Invalid data!")
+            return
+        }
+        let result = VHDLFile(representation: representation)
+        XCTAssertEqual(
+            result.architectures,
+            [
+                Architecture(
+                    body: representation.architectureBody,
+                    entity: representation.entity.name,
+                    head: representation.architectureHead,
+                    name: representation.architectureName
+                )
+            ]
         )
-    }
-
-    /// Test the init sets the stored properties correctly.
-    func testInit() {
-        XCTAssertEqual(self.parameter.type, .integer)
-        XCTAssertEqual(self.parameter.name, VariableName.x)
-        XCTAssertEqual(self.parameter.defaultValue, .literal(value: .integer(value: 255)))
-        XCTAssertEqual(self.parameter.comment, Comment.signalX)
-        XCTAssertEqual(self.parameter.mode, .input)
-    }
-
-    /// Test Getters and Setters work correctly.
-    func testGettersAndSetters() {
-        self.parameter.type = .boolean
-        self.parameter.name = VariableName.y
-        self.parameter.defaultValue = .literal(value: .boolean(value: true))
-        self.parameter.comment = Comment.signalY
-        XCTAssertEqual(self.parameter.type, .boolean)
-        XCTAssertEqual(self.parameter.name, VariableName.y)
-        XCTAssertEqual(self.parameter.defaultValue, .literal(value: .boolean(value: true)))
-        XCTAssertEqual(self.parameter.comment, Comment.signalY)
+        XCTAssertEqual(result.entities, [representation.entity])
+        XCTAssertEqual(result.includes, representation.includes)
     }
 
 }

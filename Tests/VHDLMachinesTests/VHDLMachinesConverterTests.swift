@@ -6,31 +6,38 @@
 //
 
 import Foundation
+@testable import Machines
 @testable import VHDLMachines
 import XCTest
-@testable import Machines
 
+/// Test for converter.
 public class VHDLMachinesConverterTests: XCTestCase {
-    
-    private let packageRootPath = URL(fileURLWithPath: #file).pathComponents.prefix(while: { $0 != "Tests" }).joined(separator: "/").dropFirst()
- 
+
+    /// All tests.
     public static var allTests: [(String, (VHDLMachinesConverterTests) -> () throws -> Void)] {
-        return [
-            ("test_initialMachine", test_initialMachine),
+        [
+            // ("test_initialMachine", test_initialMachine),
 //            ("test_write2", test_write2)
         ]
     }
-    
-    public override func setUp() {
+
+    /// Package root directory.
+    private let packageRootPath = URL(fileURLWithPath: #file).pathComponents
+        .prefix { $0 != "Tests" }
+        .joined(separator: "/")
+        .dropFirst()
+
+    /// Setup
+    override public func setUp() {
         super.setUp()
     }
-    
-    func test_initialMachine() {
+
+    // func test_initialMachine() {
 //        print("Hello VHDL Tests!")
 //        let path = URL(fileURLWithPath: "\(packageRootPath)/machines/VHDLMachines.machine")
 //        let machine =  VHDLMachinesConverter().initialVHDLMachine(filePath: path)
 //        let isValid: ()? = try? machine.validate()
 //        XCTAssertNotNil(isValid)
-    }
-    
+    // }
+
 }

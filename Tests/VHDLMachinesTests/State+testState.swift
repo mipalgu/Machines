@@ -1,8 +1,8 @@
-// ExternalVariableTests.swift
+// State+testState.swift
 // Machines
 // 
 // Created by Morgan McColl.
-// Copyright © 2022 Morgan McColl. All rights reserved.
+// Copyright © 2023 Morgan McColl. All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -55,54 +55,31 @@
 // 
 
 @testable import VHDLMachines
-import XCTest
+import VHDLParsing
 
-/// Tests the ``ExternalVariable`` type.
-final class ExternalVariableTests: XCTestCase {
+/// Add default state test data.
+extension State {
 
-    /// The variable under test.
-    var variable = ExternalVariable(
-        type: "integer", name: "x", mode: .input, range: (0, 255), defaultValue: "0x15", comment: "external x"
-    )
+    // swiftlint:disable force_unwrapping
 
-    /// Initialise the variable under test.
-    override func setUp() {
-        self.variable = ExternalVariable(
-            type: "integer",
-            name: "x",
-            mode: .input,
-            range: (0, 255),
-            defaultValue: "0x15",
-            comment: "external x"
+    /// Test state.
+    static func defaultState(name: VariableName) -> State {
+        VHDLMachines.State(
+            name: name,
+            actions: [
+                VariableName.onEntry: SynchronousBlock(
+                    rawValue: "x <= '1';\nxx <= \"00\"; -- \(name) onEntry"
+                )!,
+                VariableName.onExit: SynchronousBlock(rawValue: "x <= '0'; -- \(name) OnExit")!,
+                VariableName.onResume: SynchronousBlock(rawValue: "x <= '0'; -- \(name) OnResume")!,
+                VariableName.onSuspend: SynchronousBlock(rawValue: "xx <= \"11\"; -- \(name) onSuspend")!,
+                VariableName.internal: SynchronousBlock(rawValue: "x <= '1'; -- \(name) Internal")!
+            ],
+            signals: [],
+            externalVariables: []
         )
     }
 
-    /// Test init sets stored properties correctly.
-    func testInit() {
-        XCTAssertEqual(self.variable.type, "integer")
-        XCTAssertEqual(self.variable.name, "x")
-        XCTAssertEqual(self.variable.mode, .input)
-        XCTAssertEqual(self.variable.range?.0, 0)
-        XCTAssertEqual(self.variable.range?.1, 255)
-        XCTAssertEqual(self.variable.defaultValue, "0x15")
-        XCTAssertEqual(self.variable.comment, "external x")
-    }
-
-    /// Test getters and setters.
-    func testGettersAndSetters() {
-        self.variable.type = "unsigned"
-        XCTAssertEqual(self.variable.type, "unsigned")
-        self.variable.name = "y"
-        XCTAssertEqual(self.variable.name, "y")
-        self.variable.mode = .output
-        XCTAssertEqual(self.variable.mode, .output)
-        self.variable.range = (1024, 65535)
-        XCTAssertEqual(self.variable.range?.0, 1024)
-        XCTAssertEqual(self.variable.range?.1, 65535)
-        self.variable.defaultValue = "0xABCD"
-        XCTAssertEqual(self.variable.defaultValue, "0xABCD")
-        self.variable.comment = "external y"
-        XCTAssertEqual(self.variable.comment, "external y")
-    }
+    // swiftlint:enable force_unwrapping
 
 }

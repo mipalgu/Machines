@@ -1,8 +1,8 @@
-// ParameterTests.swift
+// AsynchronousBlockTests.swift
 // Machines
 // 
 // Created by Morgan McColl.
-// Copyright © 2022 Morgan McColl. All rights reserved.
+// Copyright © 2023 Morgan McColl. All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -58,46 +58,48 @@
 import VHDLParsing
 import XCTest
 
-/// Tests the ``Parameter`` type.
-final class ParameterTests: XCTestCase {
+/// Test class for `AsynchronousBlock` extensions.
+final class AsynchronousBlockTests: XCTestCase {
 
-    /// The parameter to test.
-    var parameter = Parameter(
-        type: .integer,
-        name: VariableName.x,
-        defaultValue: .literal(value: .integer(value: 255)),
-        comment: Comment.signalX
-    )
-
-    /// Initialise the parameter to test.
-    override func setUp() {
-        self.parameter = Parameter(
-            type: .integer,
-            name: VariableName.x,
-            defaultValue: .literal(value: .integer(value: 255)),
-            comment: Comment.signalX
+    /// Test machine initialiser.
+    func testMachineInit() {
+        let machine = Machine.testMachine()
+        let result = AsynchronousBlock(machine: machine)
+        guard let code = SynchronousBlock(machine: machine) else {
+            XCTFail("invalid data.")
+            return
+        }
+        XCTAssertEqual(
+            result,
+            .process(block: ProcessBlock(sensitivityList: [.clk], code: code))
         )
     }
 
-    /// Test the init sets the stored properties correctly.
-    func testInit() {
-        XCTAssertEqual(self.parameter.type, .integer)
-        XCTAssertEqual(self.parameter.name, VariableName.x)
-        XCTAssertEqual(self.parameter.defaultValue, .literal(value: .integer(value: 255)))
-        XCTAssertEqual(self.parameter.comment, Comment.signalX)
-        XCTAssertEqual(self.parameter.mode, .input)
-    }
-
-    /// Test Getters and Setters work correctly.
-    func testGettersAndSetters() {
-        self.parameter.type = .boolean
-        self.parameter.name = VariableName.y
-        self.parameter.defaultValue = .literal(value: .boolean(value: true))
-        self.parameter.comment = Comment.signalY
-        XCTAssertEqual(self.parameter.type, .boolean)
-        XCTAssertEqual(self.parameter.name, VariableName.y)
-        XCTAssertEqual(self.parameter.defaultValue, .literal(value: .boolean(value: true)))
-        XCTAssertEqual(self.parameter.comment, Comment.signalY)
+    /// Test format with user code.
+    func testMachineInitWithUserCode() {
+        var machine = Machine.testMachine()
+        let xAssignment = AsynchronousBlock.statement(statement: .assignment(
+            name: .x, value: .literal(value: .bit(value: .high))
+        ))
+        machine.architectureBody = xAssignment
+        let result = AsynchronousBlock(machine: machine)
+        guard
+            let code = SynchronousBlock(machine: machine),
+            let comment = Comment(rawValue: "-- User-Specific Code for Architecture Body")
+        else {
+            XCTFail("invalid data.")
+            return
+        }
+        XCTAssertEqual(
+            result,
+            .blocks(blocks: [
+                .statement(statement: .comment(value: comment)),
+                xAssignment,
+                .process(block: ProcessBlock(sensitivityList: [.clk], code: code))
+            ])
+        )
+        machine.drivingClock = -1
+        XCTAssertNil(AsynchronousBlock(machine: machine))
     }
 
 }

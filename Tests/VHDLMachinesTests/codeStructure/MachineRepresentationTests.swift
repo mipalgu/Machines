@@ -1,8 +1,8 @@
-// ParameterTests.swift
+// MachineRepresentationTests.swift
 // Machines
 // 
 // Created by Morgan McColl.
-// Copyright © 2022 Morgan McColl. All rights reserved.
+// Copyright © 2023 Morgan McColl. All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -58,46 +58,28 @@
 import VHDLParsing
 import XCTest
 
-/// Tests the ``Parameter`` type.
-final class ParameterTests: XCTestCase {
+/// Test class for ``MachineRepresentation``.
+final class MachineRepresentationTests: XCTestCase {
 
-    /// The parameter to test.
-    var parameter = Parameter(
-        type: .integer,
-        name: VariableName.x,
-        defaultValue: .literal(value: .integer(value: 255)),
-        comment: Comment.signalX
-    )
-
-    /// Initialise the parameter to test.
-    override func setUp() {
-        self.parameter = Parameter(
-            type: .integer,
-            name: VariableName.x,
-            defaultValue: .literal(value: .integer(value: 255)),
-            comment: Comment.signalX
-        )
-    }
-
-    /// Test the init sets the stored properties correctly.
-    func testInit() {
-        XCTAssertEqual(self.parameter.type, .integer)
-        XCTAssertEqual(self.parameter.name, VariableName.x)
-        XCTAssertEqual(self.parameter.defaultValue, .literal(value: .integer(value: 255)))
-        XCTAssertEqual(self.parameter.comment, Comment.signalX)
-        XCTAssertEqual(self.parameter.mode, .input)
-    }
-
-    /// Test Getters and Setters work correctly.
-    func testGettersAndSetters() {
-        self.parameter.type = .boolean
-        self.parameter.name = VariableName.y
-        self.parameter.defaultValue = .literal(value: .boolean(value: true))
-        self.parameter.comment = Comment.signalY
-        XCTAssertEqual(self.parameter.type, .boolean)
-        XCTAssertEqual(self.parameter.name, VariableName.y)
-        XCTAssertEqual(self.parameter.defaultValue, .literal(value: .boolean(value: true)))
-        XCTAssertEqual(self.parameter.comment, Comment.signalY)
+    /// Test the machine initialiser creates the stored properties correctly.
+    func testMachineInit() {
+        let machine = Machine.testMachine()
+        let representation = MachineRepresentation(machine: machine)
+        guard
+            let entity = Entity(machine: machine),
+            let name = VariableName(rawValue: "Behavioral"),
+            let head = ArchitectureHead(machine: machine),
+            let body = AsynchronousBlock(machine: machine)
+        else {
+            XCTFail("Invalid data.")
+            return
+        }
+        XCTAssertEqual(representation?.entity, entity)
+        XCTAssertEqual(representation?.architectureName, name)
+        XCTAssertEqual(representation?.architectureHead, head)
+        XCTAssertEqual(representation?.architectureBody, body)
+        XCTAssertEqual(representation?.machine, machine)
+        XCTAssertEqual(representation?.includes, machine.includes)
     }
 
 }

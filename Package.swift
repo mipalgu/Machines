@@ -1,4 +1,4 @@
-// swift-tools-version:5.2
+// swift-tools-version:5.7
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -12,9 +12,11 @@ let package = Package(
     dependencies: [
         // Dependencies declare other packages that this package depends on.
         // .package(url: /* package url */, from: "1.0.0"),
-        .package(name: "swift_helpers", url: "https://github.com/mipalgu/swift_helpers.git", from: "2.0.0"),
-        .package(name: "MetaLanguage", url: "ssh://git@github.com/Morgan2010/MetaLanguage.git", from: "0.1.1"),
-        .package(url: "git@github.com:mipalgu/GUUnits", from: "2.0.1")
+        .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.1.0"),
+        .package(url: "git@github.com:mipalgu/VHDLParsing", from: "0.3.1"),
+        .package(url: "git@github.com:mipalgu/GUUnits", from: "2.1.0"),
+        .package(url: "ssh://git@github.com/Morgan2010/MetaLanguage.git", from: "0.1.1"),
+        .package(url: "git@github.com:mipalgu/swift_helpers", from: "2.0.0")
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -29,7 +31,7 @@ let package = Package(
         ),
         .target(
             name: "VHDLMachines",
-            dependencies: [.product(name: "swift_helpers", package: "swift_helpers"), .product(name: "IO", package: "swift_helpers"), .product(name: "GUUnits", package: "GUUnits")]
+            dependencies: [.product(name: "swift_helpers", package: "swift_helpers"), .product(name: "IO", package: "swift_helpers"), .product(name: "GUUnits", package: "GUUnits"), .product(name: "VHDLParsing", package: "VHDLParsing"), .product(name: "StringHelpers", package: "VHDLParsing")]
         ),
         .target(
             name: "CXXBase",
@@ -61,7 +63,7 @@ let package = Package(
         ),
         .testTarget(
             name: "VHDLMachinesTests",
-            dependencies: ["VHDLMachines", "Machines", .product(name: "swift_helpers", package: "swift_helpers"), .product(name: "IO", package: "swift_helpers"), .product(name: "Functional", package: "swift_helpers"), .product(name: "GUUnits", package: "GUUnits")]
+            dependencies: ["VHDLMachines", "Machines", .product(name: "swift_helpers", package: "swift_helpers"), .product(name: "IO", package: "swift_helpers"), .product(name: "Functional", package: "swift_helpers"), .product(name: "GUUnits", package: "GUUnits"), "VHDLParsing"]
         ),
         .testTarget(name: "MachinesTests",
             dependencies: ["Machines", .product(name: "swift_helpers", package: "swift_helpers"), .product(name: "IO", package: "swift_helpers"), .product(name: "Functional", package: "swift_helpers")]

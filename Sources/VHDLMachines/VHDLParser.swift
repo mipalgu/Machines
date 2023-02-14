@@ -15,6 +15,7 @@ import IO
 public struct VHDLParser {
 
     /// Create a new parser.
+    @inlinable
     public init() {}
 
     /// Parse a FileWrapper and return the machine within. This structure of the `FileWrapper` must be
@@ -22,6 +23,7 @@ public struct VHDLParser {
     /// - Parameter wrapper: The `FileWrapper` to parse.
     /// - Returns: The machine within the `FileWrapper` or `nil` if the `FileWrapper` is not consistent with
     /// the structure generated using ``VHDLGenerator``.
+    @inlinable
     public func parse(wrapper: FileWrapper) -> Machine? {
         let decoder = JSONDecoder()
         guard

@@ -55,42 +55,55 @@
 // 
 
 @testable import VHDLMachines
+import VHDLParsing
 import XCTest
 
 /// Tests the ``Arrangement`` type.
 final class ArrangementTests: XCTestCase {
 
+    // swiftlint:disable force_unwrapping
+
     /// The machines in the arrangement.
     let machines = [
-        "M1": URL(fileURLWithPath: "/path/to/M1"),
-        "M2": URL(fileURLWithPath: "/path/to/M2")
+        VariableName(rawValue: "M1")!: URL(fileURLWithPath: "/path/to/M1"),
+        VariableName(rawValue: "M2")!: URL(fileURLWithPath: "/path/to/M2")
     ]
 
     /// The clocks in the arrangement.
     let clocks = [
-        Clock(name: "clk", frequency: 100, unit: .MHz)
+        Clock(name: VariableName.clk, frequency: 100, unit: .MHz)
     ]
 
     /// The external signals in the arrangement.
     let externalSignals = [
-        ExternalSignal(type: "std_logic", name: "x", mode: .input, defaultValue: "'1'", comment: "Signal x."),
-        ExternalSignal(type: "std_logic", name: "y", mode: .output, defaultValue: "'0'", comment: "Signal y.")
+        PortSignal(
+            type: .stdLogic,
+            name: VariableName.x,
+            mode: .input,
+            defaultValue: .literal(value: .logic(value: .high)),
+            comment: Comment.signalX
+        ),
+        PortSignal(
+            type: .stdLogic,
+            name: VariableName.y,
+            mode: .output,
+            defaultValue: .literal(value: .logic(value: .low)),
+            comment: Comment.signalY
+        )
     ]
 
     /// The arrangement signals.
     let signals = [
-        LocalSignal(type: "std_logic", name: "z", defaultValue: "'0'", comment: "Signal z.")
-    ]
-
-    /// The external variables in the arrangement.
-    let variables = [
-        VHDLVariable(
-            type: "integer", name: "a", defaultValue: "0xAB", range: (0, 255), comment: "Variable a."
+        LocalSignal(
+            type: .stdLogic,
+            name: VariableName.z,
+            defaultValue: .literal(value: .logic(value: .low)),
+            comment: Comment.signalZ
         )
     ]
 
     /// The parent machines in the arrangement.
-    let parents = ["M1"]
+    let parents = [VariableName(rawValue: "M1")!]
 
     /// The path to the arrangement.
     let path = URL(fileURLWithPath: "/path/to/arrangement")
@@ -100,7 +113,6 @@ final class ArrangementTests: XCTestCase {
         machines: machines,
         externalSignals: externalSignals,
         signals: signals,
-        variables: variables,
         clocks: clocks,
         parents: parents,
         path: path
@@ -112,7 +124,6 @@ final class ArrangementTests: XCTestCase {
             machines: machines,
             externalSignals: externalSignals,
             signals: signals,
-            variables: variables,
             clocks: clocks,
             parents: parents,
             path: path
@@ -124,7 +135,6 @@ final class ArrangementTests: XCTestCase {
         XCTAssertEqual(self.arrangement.machines, self.machines)
         XCTAssertEqual(self.arrangement.externalSignals, self.externalSignals)
         XCTAssertEqual(self.arrangement.signals, self.signals)
-        XCTAssertEqual(self.arrangement.variables, self.variables)
         XCTAssertEqual(self.arrangement.clocks, self.clocks)
         XCTAssertEqual(self.arrangement.parents, self.parents)
         XCTAssertEqual(self.arrangement.path, self.path)
@@ -133,42 +143,48 @@ final class ArrangementTests: XCTestCase {
     /// Tests getters and setters update properties correctly.
     func testGettersAndSetters() {
         let newMachines = [
-            "M3": URL(fileURLWithPath: "/path/to/M3"),
-            "M4": URL(fileURLWithPath: "/path/to/M4")
+            VariableName(rawValue: "M3")!: URL(fileURLWithPath: "/path/to/M3"),
+            VariableName(rawValue: "M4")!: URL(fileURLWithPath: "/path/to/M4")
         ]
         let newExternalSignals = [
-            ExternalSignal(
-                type: "std_logic", name: "z", mode: .input, defaultValue: "'1'", comment: "Signal z."
+            PortSignal(
+                type: .stdLogic,
+                name: VariableName.z,
+                mode: .input,
+                defaultValue: .literal(value: .logic(value: .high)),
+                comment: Comment.signalZ
             ),
-            ExternalSignal(
-                type: "std_logic", name: "w", mode: .output, defaultValue: "'0'", comment: "Signal w."
+            PortSignal(
+                type: .stdLogic,
+                name: VariableName.z,
+                mode: .output,
+                defaultValue: .literal(value: .logic(value: .low)),
+                comment: Comment.externalZ
             )
         ]
 
         let newSignals = [
-            LocalSignal(type: "std_logic", name: "x2", defaultValue: "'1'", comment: "Signal x2.")
-        ]
-        let newVariables = [
-            VHDLVariable(
-                type: "integer", name: "b", defaultValue: "0xAB", range: (0, 255), comment: "Variable b."
+            LocalSignal(
+                type: .stdLogic,
+                name: VariableName.y,
+                defaultValue: .literal(value: .logic(value: .high)),
+                comment: Comment.signalY
             )
         ]
         let newClocks = [
-            Clock(name: "clk2", frequency: 100, unit: .MHz)
+            Clock(name: VariableName.clk2, frequency: 100, unit: .MHz)
         ]
-        let newParents = ["M2"]
+        let newParents = [VariableName(rawValue: "M2")!]
         let newPath = URL(fileURLWithPath: "/path/to/new/arrangement")
         self.arrangement.machines = newMachines
         self.arrangement.externalSignals = newExternalSignals
         self.arrangement.signals = newSignals
-        self.arrangement.variables = newVariables
         self.arrangement.clocks = newClocks
         self.arrangement.parents = newParents
         self.arrangement.path = newPath
         XCTAssertEqual(self.arrangement.machines, newMachines)
         XCTAssertEqual(self.arrangement.externalSignals, newExternalSignals)
         XCTAssertEqual(self.arrangement.signals, newSignals)
-        XCTAssertEqual(self.arrangement.variables, newVariables)
         XCTAssertEqual(self.arrangement.clocks, newClocks)
         XCTAssertEqual(self.arrangement.parents, newParents)
         XCTAssertEqual(self.arrangement.path, newPath)
@@ -179,17 +195,21 @@ final class ArrangementTests: XCTestCase {
         let url = URL(fileURLWithPath: "Arrangement.arrangement", isDirectory: true)
         let arrangement = Arrangement.initial(url: url)
         let machineURL = URL(fileURLWithPath: "./Machine.machine", isDirectory: true)
-        let machine = Machine.initial(path: machineURL)
+        guard let machine = Machine.initial(path: machineURL) else {
+            XCTFail("Failed to create machine!")
+            return
+        }
         let expected = Arrangement(
-            machines: ["Machine": machineURL],
+            machines: [VariableName(rawValue: "Machine")!: machineURL],
             externalSignals: [],
             signals: [],
-            variables: [],
             clocks: machine.clocks,
-            parents: ["Machine"],
+            parents: [VariableName(rawValue: "Machine")!],
             path: url
         )
         XCTAssertEqual(arrangement, expected)
     }
+
+    // swiftlint:enable force_unwrapping
 
 }

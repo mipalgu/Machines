@@ -1,8 +1,8 @@
-// ParameterTests.swift
+// VariableNameTests.swift
 // Machines
 // 
 // Created by Morgan McColl.
-// Copyright © 2022 Morgan McColl. All rights reserved.
+// Copyright © 2023 Morgan McColl. All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -58,46 +58,19 @@
 import VHDLParsing
 import XCTest
 
-/// Tests the ``Parameter`` type.
-final class ParameterTests: XCTestCase {
+/// Test class for ``VariableName``.
+final class VariableNameTests: XCTestCase {
 
-    /// The parameter to test.
-    var parameter = Parameter(
-        type: .integer,
-        name: VariableName.x,
-        defaultValue: .literal(value: .integer(value: 255)),
-        comment: Comment.signalX
-    )
-
-    /// Initialise the parameter to test.
-    override func setUp() {
-        self.parameter = Parameter(
-            type: .integer,
-            name: VariableName.x,
-            defaultValue: .literal(value: .integer(value: 255)),
-            comment: Comment.signalX
-        )
-    }
-
-    /// Test the init sets the stored properties correctly.
-    func testInit() {
-        XCTAssertEqual(self.parameter.type, .integer)
-        XCTAssertEqual(self.parameter.name, VariableName.x)
-        XCTAssertEqual(self.parameter.defaultValue, .literal(value: .integer(value: 255)))
-        XCTAssertEqual(self.parameter.comment, Comment.signalX)
-        XCTAssertEqual(self.parameter.mode, .input)
-    }
-
-    /// Test Getters and Setters work correctly.
-    func testGettersAndSetters() {
-        self.parameter.type = .boolean
-        self.parameter.name = VariableName.y
-        self.parameter.defaultValue = .literal(value: .boolean(value: true))
-        self.parameter.comment = Comment.signalY
-        XCTAssertEqual(self.parameter.type, .boolean)
-        XCTAssertEqual(self.parameter.name, VariableName.y)
-        XCTAssertEqual(self.parameter.defaultValue, .literal(value: .boolean(value: true)))
-        XCTAssertEqual(self.parameter.comment, Comment.signalY)
+    /// Test name functions generate correct names.
+    func testNameFunctions() {
+        let state = State(name: .initial, actions: [:], signals: [], externalVariables: [])
+        XCTAssertEqual(VariableName.name(for: state).rawValue, "STATE_Initial")
+        let external = PortSignal(type: .stdLogic, name: .x, mode: .input)
+        XCTAssertEqual(VariableName.name(for: external).rawValue, "EXTERNAL_x")
+        let parameter = Parameter(type: .stdLogic, name: .x)
+        XCTAssertEqual(VariableName.name(for: parameter).rawValue, "PARAMETER_x")
+        let output = ReturnableVariable(type: .stdLogic, name: .x)
+        XCTAssertEqual(VariableName.name(for: output).rawValue, "OUTPUT_x")
     }
 
 }

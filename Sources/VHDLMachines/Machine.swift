@@ -6,24 +6,25 @@
 //
 
 import Foundation
+import VHDLParsing
 
 /// The VHDL implementation of an LLFSM.
 public struct Machine: Codable, Equatable, Hashable {
 
+    /// The actions in the machine.
+    public var actions: [VariableName]
+
     /// The name of the machine.
-    public var name: MachineName
+    public var name: VariableName
 
     /// The location of the machine in the file system.
     public var path: URL
 
     /// The includes for the machine.
-    public var includes: [String]
+    public var includes: [Include]
 
     /// The external signals for the machine.
-    public var externalSignals: [ExternalSignal]
-
-    /// The generics for the machine.
-    public var generics: [VHDLVariable]
+    public var externalSignals: [PortSignal]
 
     /// The clocks for the machine.
     public var clocks: [Clock]
@@ -32,10 +33,7 @@ public struct Machine: Codable, Equatable, Hashable {
     public var drivingClock: Int
 
     /// The machines this machine depends on.
-    public var dependentMachines: [MachineName: URL]
-
-    /// The machine variables for the machine.
-    public var machineVariables: [VHDLVariable]
+    public var dependentMachines: [VariableName: URL]
 
     /// The machine signals for the machine.
     public var machineSignals: [LocalSignal]
@@ -58,11 +56,11 @@ public struct Machine: Codable, Equatable, Hashable {
     /// The index of the suspended state for the machine.
     public var suspendedState: Int?
 
-    /// Extra asynchronous VHDL code to be added to the architecture.
-    public var architectureHead: String?
+    /// Extra VHDL code to be added to the architecture head.
+    public var architectureHead: [Statement]?
 
-    /// Extra synchronous VHDL code to be added to the architecture.
-    public var architectureBody: String?
+    /// Extra VHDL code to be added to the architecture body.
+    public var architectureBody: AsynchronousBlock?
 
     /// Whether the machine is parameterised.
     private var _isParameterised: Bool
@@ -72,13 +70,18 @@ public struct Machine: Codable, Equatable, Hashable {
         _isParameterised && suspendedState != nil
     }
 
+    /// Whether the machine can be suspended.
+    @inlinable public var isSuspensible: Bool {
+        suspendedState != nil
+    }
+
     /// Initialise a machine
     /// - Parameters:
+    ///   - actions: The actions in the machine.
     ///   - name: The name of the machine.
     ///   - path: The location of the machine in the file system.
     ///   - includes: The includes for the machine.
-    ///   - externalSignals: The external signals for the machine.
-    ///   - generics: The generics for the machine.
+    ///   - PortSignals: The external signals for the machine.
     ///   - clocks: The clocks for the machine.
     ///   - drivingClock: The index of the driving clock.
     ///   - dependentMachines: The machines this machine depends on.
@@ -94,15 +97,14 @@ public struct Machine: Codable, Equatable, Hashable {
     ///   - architectureHead: The extra asynchronous VHDL code to be added to the architecture.
     ///   - architectureBody: The extra synchronous VHDL code to be added to the architecture.
     public init(
-        name: MachineName,
+        actions: [VariableName],
+        name: VariableName,
         path: URL,
-        includes: [String],
-        externalSignals: [ExternalSignal],
-        generics: [VHDLVariable],
+        includes: [Include],
+        externalSignals: [PortSignal],
         clocks: [Clock],
         drivingClock: Int,
-        dependentMachines: [MachineName: URL],
-        machineVariables: [VHDLVariable],
+        dependentMachines: [VariableName: URL],
         machineSignals: [LocalSignal],
         isParameterised: Bool,
         parameterSignals: [Parameter],
@@ -111,18 +113,17 @@ public struct Machine: Codable, Equatable, Hashable {
         transitions: [Transition],
         initialState: Int,
         suspendedState: Int?,
-        architectureHead: String? = nil,
-        architectureBody: String? = nil
+        architectureHead: [Statement]? = nil,
+        architectureBody: AsynchronousBlock? = nil
     ) {
+        self.actions = actions
         self.name = name
         self.path = path
         self.includes = includes
         self.externalSignals = externalSignals
-        self.generics = generics
         self.clocks = clocks
         self.drivingClock = drivingClock
         self.dependentMachines = dependentMachines
-        self.machineVariables = machineVariables
         self.machineSignals = machineSignals
         self._isParameterised = isParameterised
         self.parameterSignals = parameterSignals
@@ -140,45 +141,49 @@ public struct Machine: Codable, Equatable, Hashable {
     /// machine is not parameterised, but does include the suspension semantics.
     /// - Parameter path: The path the new machine will be located at.
     /// - Returns: The new machine.
-    public static func initial(path: URL) -> Machine {
-        let name = path.lastPathComponent.components(separatedBy: ".machine")[0]
+    @inlinable
+    public static func initial(path: URL) -> Machine? {
+        guard
+            let nameComponent = path.lastPathComponent.components(separatedBy: ".machine").first,
+            let name = VariableName(rawValue: nameComponent)
+        else {
+            return nil
+        }
         let defaultActions = [
-            "OnEntry": "",
-            "OnExit": "",
-            "Internal": "",
-            "OnResume": "",
-            "OnSuspend": ""
+            VariableName.onEntry,
+            VariableName.onExit,
+            VariableName.internal,
+            VariableName.onResume,
+            VariableName.onSuspend
         ]
-        let actionOrder = [["OnResume", "OnSuspend"], ["OnEntry"], ["OnExit", "Internal"]]
         return Machine(
+            actions: defaultActions,
             name: name,
             path: path,
-            includes: ["library IEEE;", "use IEEE.std_logic_1164.All;"],
+            includes: [
+                .library(value: "IEEE"),
+                .include(value: "IEEE.std_logic_1164.All"),
+                .include(value: "IEEE.math_real.All")
+            ],
             externalSignals: [],
-            generics: [],
-            clocks: [Clock(name: "clk", frequency: 50, unit: .MHz)],
+            clocks: [Clock(name: VariableName.clk, frequency: 50, unit: .MHz)],
             drivingClock: 0,
             dependentMachines: [:],
-            machineVariables: [],
             machineSignals: [],
             isParameterised: false,
             parameterSignals: [],
             returnableSignals: [],
             states: [
                 State(
-                    name: "Initial",
-                    actions: defaultActions,
-                    actionOrder: actionOrder,
+                    name: VariableName.initial,
+                    actions: [:],
                     signals: [],
-                    variables: [],
                     externalVariables: []
                 ),
                 State(
-                    name: "Suspended",
-                    actions: defaultActions,
-                    actionOrder: actionOrder,
+                    name: VariableName.suspendedState,
+                    actions: [:],
                     signals: [],
-                    variables: [],
                     externalVariables: []
                 )
             ],

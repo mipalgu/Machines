@@ -55,35 +55,32 @@
 // 
 
 @testable import VHDLMachines
+import VHDLParsing
 import XCTest
 
 /// Tests the ``State`` type.
 final class StateTests: XCTestCase {
 
+    // swiftlint:disable force_unwrapping
+
     /// The state actions.
-    var actions: [ActionName: String] {
-        ["onEntry": "x := x + 1;", "onExit": "x := 0;"]
+    var actions: [ActionName: SynchronousBlock] {
+        [
+            VariableName.onEntry: SynchronousBlock(rawValue: "x <= x + 1;")!,
+            VariableName.onExit: SynchronousBlock(rawValue: "x <= 0;")!
+        ]
     }
 
-    /// The order in which the actions should be executed.
-    var actionOrder: [[ActionName]] {
-        [["onEntry", "onExit"]]
-    }
+    // swiftlint:enable force_unwrapping
 
     /// The signals.
     var signals: [LocalSignal] {
-        [LocalSignal(type: "std_logic", name: "y", defaultValue: "'1'", comment: "The signal y.")]
-    }
-
-    /// The variables.
-    var variables: [VHDLVariable] {
         [
-            VHDLVariable(
-                type: "integer",
-                name: "x",
-                defaultValue: "0",
-                range: (0, 255),
-                comment: "The variable x."
+            LocalSignal(
+                type: .stdLogic,
+                name: VariableName.y,
+                defaultValue: .literal(value: .logic(value: .high)),
+                comment: Comment.signalY
             )
         ]
     }
@@ -95,73 +92,60 @@ final class StateTests: XCTestCase {
 
     /// The state to test.
     lazy var state = State(
-        name: "S0",
+        name: VariableName.s0,
         actions: actions,
-        actionOrder: actionOrder,
         signals: signals,
-        variables: variables,
         externalVariables: externalVariables
     )
 
     /// Initialises the state to test.
     override func setUp() {
         self.state = State(
-            name: "S0",
+            name: VariableName.s0,
             actions: actions,
-            actionOrder: actionOrder,
             signals: signals,
-            variables: variables,
             externalVariables: externalVariables
         )
     }
 
     /// Test init sets the properties correctly.
     func testInit() {
-        XCTAssertEqual(self.state.name, "S0")
+        XCTAssertEqual(self.state.name, VariableName.s0)
         XCTAssertEqual(self.state.actions, self.actions)
-        XCTAssertEqual(self.state.actionOrder, self.actionOrder)
         XCTAssertEqual(self.state.signals, self.signals)
-        XCTAssertEqual(self.state.variables, self.variables)
         XCTAssertEqual(self.state.externalVariables, self.externalVariables)
     }
 
     /// Test getters and setters work correctly.
     func testGettersAndSetters() {
-        self.state.name = "S1"
-        XCTAssertEqual(self.state.name, "S1")
-        self.state.actions = ["internal": "x := 0;"]
-        XCTAssertEqual(self.state.actions, ["internal": "x := 0;"])
-        self.state.actionOrder = [["internal"]]
-        XCTAssertEqual(self.state.actionOrder, [["internal"]])
+        self.state.name = VariableName.s1
+        XCTAssertEqual(self.state.name, VariableName.s1)
+        guard let newAssignment = SynchronousBlock(rawValue: "x <= 0;") else {
+            XCTFail("Failed to create new assignment!")
+            return
+        }
+        self.state.actions = [VariableName.internal: newAssignment]
+        XCTAssertEqual(self.state.actions, [VariableName.internal: newAssignment])
         self.state.signals = [
             LocalSignal(
-                type: "std_logic_vector",
-                name: "xs",
-                defaultValue: "(others => '0')",
-                comment: "The signal xs."
+                type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),
+                name: VariableName.xs,
+                defaultValue: .literal(value: .vector(
+                    value: .hexademical(value: HexVector(values: [.five]))
+                )),
+                comment: Comment.signalXs
             )
         ]
         XCTAssertEqual(
             self.state.signals,
             [
                 LocalSignal(
-                    type: "std_logic_vector",
-                    name: "xs",
-                    defaultValue: "(others => '0')",
-                    comment: "The signal xs."
-                )
-            ]
-        )
-        self.state.variables = [
-            VHDLVariable(
-                type: "integer", name: "z", defaultValue: "1", range: (5, 10), comment: "The variable z."
-            )
-        ]
-        XCTAssertEqual(
-            self.state.variables,
-            [
-                VHDLVariable(
-                    type: "integer", name: "z", defaultValue: "1", range: (5, 10), comment: "The variable z."
+                    type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),
+                    name: VariableName.xs,
+                    defaultValue: .literal(value: .vector(value: .hexademical(
+                        value: HexVector(values: [.five])
+                    ))),
+                    comment: Comment.signalXs
                 )
             ]
         )

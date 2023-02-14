@@ -73,6 +73,13 @@ final class VHDLGeneratorTests: XCTestCase {
     /// IO helper.
     let helper = FileHelpers()
 
+    /// Remove ping machine after every test.
+    override func tearDown() {
+        if helper.directoryExists(factory.pingMachinePath.path) {
+            _ = helper.deleteItem(atPath: factory.pingMachinePath)
+        }
+    }
+
     /// Test Generate creates correct file structure.
     func testGenerate() {
         guard let wrapper = generator.generate(machine: factory.pingMachine) else {
@@ -107,6 +114,8 @@ final class VHDLGeneratorTests: XCTestCase {
             XCTFail("Failed to create wrapper!")
             return
         }
+        XCTAssertTrue(wrapper.isDirectory)
+        XCTAssertEqual(wrapper.preferredFilename, "PingMachine.machine")
         if helper.directoryExists(machine.path.path) {
             _ = helper.deleteItem(atPath: machine.path)
         }

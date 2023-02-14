@@ -6,24 +6,22 @@
 //
 
 import Foundation
+import VHDLParsing
 
 /// A variable that can be returned from a parameterised machine.
-public struct ReturnableVariable: ExternalType, Codable, Equatable, Hashable, Sendable {
-
-    /// The default value is nil for a returnable variable.
-    public var defaultValue: String?
+public struct ReturnableVariable: ExternalType, Codable, Equatable, Hashable {
 
     /// The mode is an output for a returnable variable.
     public var mode: Mode = .output
 
     /// The type of the variable.
-    public var type: ParameterType
+    public var type: SignalType
 
     /// The name of the variable.
-    public var name: String
+    public var name: VariableName
 
     /// The comment for the variable.
-    public var comment: String?
+    public var comment: Comment?
 
     /// Initialises a returnable variable with the given type, name and comment.
     /// - Parameters:
@@ -31,7 +29,7 @@ public struct ReturnableVariable: ExternalType, Codable, Equatable, Hashable, Se
     ///   - name: The name of the variable.
     ///   - comment: The comment for the variable.
     @inlinable
-    public init(type: ParameterType, name: String, comment: String? = nil) {
+    public init(type: SignalType, name: VariableName, comment: Comment? = nil) {
         self.type = type
         self.name = name
         self.comment = comment

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import VHDLParsing
 
 /// An arrangement represents a collection of machines that are executing together. An arrangment has a set of
 /// parent machines which act as entry points into the program. This structure does not infer any execution
@@ -19,23 +20,20 @@ import Foundation
 public struct Arrangement: Equatable, Hashable, Codable {
 
     /// All machines in the arrangement.
-    public var machines: [MachineName: URL]
+    public var machines: [VariableName: URL]
 
     /// The external signals in the arrangement that map to physical pins.
-    public var externalSignals: [ExternalSignal]
+    public var externalSignals: [PortSignal]
 
     /// The signals local to every machine in the arrangement, but do not map to external devices.
     public var signals: [LocalSignal]
-
-    /// The external variables in the arrangement available to every machine.
-    public var variables: [VHDLVariable]
 
     /// The clocks in the arrangement available to every machine.
     public var clocks: [Clock]
 
     /// The parent machines in the arrangement. These machines act as entry points into the main program
     /// of this arrangement.
-    public var parents: [MachineName]
+    public var parents: [VariableName]
 
     /// The path to the arrangement. This is the path to the file containing the arrangement definition. This
     /// path will be used to persist the arrangement.
@@ -49,19 +47,18 @@ public struct Arrangement: Equatable, Hashable, Codable {
     ///   - clocks: The clocks in the arrangement.
     ///   - parents: The parent machines in the arrangement.
     ///   - path: The file path to the arrangement.
+    @inlinable
     public init(
-        machines: [MachineName: URL],
-        externalSignals: [ExternalSignal],
+        machines: [VariableName: URL],
+        externalSignals: [PortSignal],
         signals: [LocalSignal],
-        variables: [VHDLVariable],
         clocks: [Clock],
-        parents: [MachineName],
+        parents: [VariableName],
         path: URL
     ) {
         self.machines = machines
         self.externalSignals = externalSignals
         self.signals = signals
-        self.variables = variables
         self.clocks = clocks
         self.parents = parents
         self.path = path
@@ -72,19 +69,22 @@ public struct Arrangement: Equatable, Hashable, Codable {
     /// - Parameter url: The URL to the arrangement folder.
     /// - Returns: The initial arrangement.
     @inlinable
-    public static func initial(url: URL) -> Arrangement {
+    public static func initial(url: URL) -> Arrangement? {
         let machineURL = url.deletingLastPathComponent().appendingPathComponent(
             "Machine.machine", isDirectory: true
         )
-        let newMachine = Machine.initial(path: machineURL)
+        guard
+            let newMachine = Machine.initial(path: machineURL), let name = VariableName(rawValue: "Machine")
+        else {
+            return nil
+        }
         let clock = newMachine.clocks
         return Arrangement(
-            machines: ["Machine": machineURL],
+            machines: [name: machineURL],
             externalSignals: [],
             signals: [],
-            variables: [],
             clocks: clock,
-            parents: ["Machine"],
+            parents: [name],
             path: url
         )
     }

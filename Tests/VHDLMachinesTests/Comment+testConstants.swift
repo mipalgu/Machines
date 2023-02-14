@@ -1,8 +1,8 @@
-// ExternalSignalTests.swift
+// Comment+testConstants.swift
 // Machines
 // 
 // Created by Morgan McColl.
-// Copyright © 2022 Morgan McColl. All rights reserved.
+// Copyright © 2023 Morgan McColl. All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -54,45 +54,37 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-@testable import VHDLMachines
-import XCTest
+import VHDLParsing
 
-/// Tests for the ``ExternalSignal`` type.
-final class ExternalSignalTests: XCTestCase {
+// swiftlint:disable force_unwrapping
 
-    /// The signal under test.
-    var signal = ExternalSignal(
-        type: "std_logic", name: "x", mode: .output, defaultValue: "'1'", comment: "signal x"
-    )
+/// Test comments.
+extension Comment {
 
-    /// Initialises the signal under test.
-    override func setUp() {
-        self.signal = ExternalSignal(
-            type: "std_logic", name: "x", mode: .output, defaultValue: "'1'", comment: "signal x"
-        )
-    }
+    static var comment: Comment { Comment(rawValue: "-- A comment")! }
 
-    /// Test init sets properties correctly.
-    func testInit() {
-        XCTAssertEqual(self.signal.type, "std_logic")
-        XCTAssertEqual(self.signal.name, "x")
-        XCTAssertEqual(self.signal.mode, .output)
-        XCTAssertEqual(self.signal.defaultValue, "'1'")
-        XCTAssertEqual(self.signal.comment, "signal x")
-    }
+    static var externalX: Comment { Comment(rawValue: "-- external x")! }
 
-    /// Test getters and setters work correctly.
-    func testGettersAndSetters() {
-        self.signal.type = "std_logic_vector"
-        self.signal.name = "y"
-        self.signal.mode = .input
-        self.signal.defaultValue = "(others => '1')"
-        self.signal.comment = "signal y"
-        XCTAssertEqual(self.signal.type, "std_logic_vector")
-        XCTAssertEqual(self.signal.name, "y")
-        XCTAssertEqual(self.signal.mode, .input)
-        XCTAssertEqual(self.signal.defaultValue, "(others => '1')")
-        XCTAssertEqual(self.signal.comment, "signal y")
-    }
+    static var externalY: Comment { Comment(rawValue: "-- external y")! }
+
+    static var externalZ: Comment { Comment(rawValue: "-- external z")! }
+
+    static var genericG: Comment { Comment(rawValue: "-- Generic g")! }
+
+    static var parameterP: Comment { Comment(rawValue: "-- Parameter p")! }
+
+    static var returnableR: Comment { Comment(rawValue: "-- Returnable r")! }
+
+    static var signalS: Comment { Comment(rawValue: "-- Signal s")! }
+
+    static var signalX: Comment { Comment(rawValue: "-- signal x")! }
+
+    static var signalXs: Comment { Comment(rawValue: "-- signal xs")! }
+
+    static var signalY: Comment { Comment(rawValue: "-- signal y")! }
+
+    static var signalZ: Comment { Comment(rawValue: "-- signal z")! }
 
 }
+
+// swiftlint:enable force_unwrapping

@@ -1,8 +1,8 @@
-// ParameterTests.swift
+// MachineRepresentation.swift
 // Machines
 // 
 // Created by Morgan McColl.
-// Copyright © 2022 Morgan McColl. All rights reserved.
+// Copyright © 2023 Morgan McColl. All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -54,50 +54,52 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-@testable import VHDLMachines
 import VHDLParsing
-import XCTest
 
-/// Tests the ``Parameter`` type.
-final class ParameterTests: XCTestCase {
+/// A struct defining the simplest type of `VHDL` representation. This structure is similar to the `VHDL`
+/// representation from my honours paper *High-level Executable Models of Reactive Real-Time Systems with
+/// Logic-Labelled Finite-State Machines and FPGAs* published at ReConfig2018. This format does not contain
+/// any inherent fault tolerance, but does provide mechanisms for after statements, suspension and
+/// parameterisation. Snapshot semantics are present for both external variables and parameters.
+public struct MachineRepresentation: MachineVHDLRepresentable {
 
-    /// The parameter to test.
-    var parameter = Parameter(
-        type: .integer,
-        name: VariableName.x,
-        defaultValue: .literal(value: .integer(value: 255)),
-        comment: Comment.signalX
-    )
+    /// The body of the architecture.
+    public let architectureBody: AsynchronousBlock
 
-    /// Initialise the parameter to test.
-    override func setUp() {
-        self.parameter = Parameter(
-            type: .integer,
-            name: VariableName.x,
-            defaultValue: .literal(value: .integer(value: 255)),
-            comment: Comment.signalX
-        )
+    /// The head of the architecture.
+    public let architectureHead: ArchitectureHead
+
+    /// The name of the architecture.
+    public let architectureName: VariableName
+
+    /// The entity of the architecture.
+    public let entity: Entity
+
+    /// The machine this representation is for.
+    public let machine: Machine
+
+    /// The includes for this representation
+    @inlinable public var includes: [Include] {
+        machine.includes
     }
 
-    /// Test the init sets the stored properties correctly.
-    func testInit() {
-        XCTAssertEqual(self.parameter.type, .integer)
-        XCTAssertEqual(self.parameter.name, VariableName.x)
-        XCTAssertEqual(self.parameter.defaultValue, .literal(value: .integer(value: 255)))
-        XCTAssertEqual(self.parameter.comment, Comment.signalX)
-        XCTAssertEqual(self.parameter.mode, .input)
-    }
-
-    /// Test Getters and Setters work correctly.
-    func testGettersAndSetters() {
-        self.parameter.type = .boolean
-        self.parameter.name = VariableName.y
-        self.parameter.defaultValue = .literal(value: .boolean(value: true))
-        self.parameter.comment = Comment.signalY
-        XCTAssertEqual(self.parameter.type, .boolean)
-        XCTAssertEqual(self.parameter.name, VariableName.y)
-        XCTAssertEqual(self.parameter.defaultValue, .literal(value: .boolean(value: true)))
-        XCTAssertEqual(self.parameter.comment, Comment.signalY)
+    /// Create the machine representation for the given machine.
+    /// - Parameter machine: The machine to convert into a `VHDL` file.
+    @inlinable
+    public init?(machine: Machine) {
+        guard
+            let entity = Entity(machine: machine),
+            let architectureName = VariableName(rawValue: "Behavioral"),
+            let head = ArchitectureHead(machine: machine),
+            let body = AsynchronousBlock(machine: machine)
+        else {
+            return nil
+        }
+        self.machine = machine
+        self.entity = entity
+        self.architectureName = architectureName
+        self.architectureHead = head
+        self.architectureBody = body
     }
 
 }

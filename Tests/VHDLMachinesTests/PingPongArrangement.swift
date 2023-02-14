@@ -55,7 +55,8 @@
 // 
 
 import Foundation
-import VHDLMachines
+@testable import VHDLMachines
+import VHDLParsing
 
 /// A factory for creating a PingPong arrangement.
 struct PingPongArrangement {
@@ -102,33 +103,29 @@ struct PingPongArrangement {
         URL(fileURLWithPath: machinesFolder + "/PongMachine.machine/machine.json", isDirectory: false)
     }
 
+    // swiftlint:disable force_unwrapping
+
     /// The ping states actions.
-    let pingActions: [ActionName: String] = [
-        "onEntry": "",
-        "onExit": "ping <= '1'",
-        "internal": ""
+    let pingActions: [ActionName: SynchronousBlock] = [
+        VariableName.onExit: SynchronousBlock(rawValue: "ping <= '1';")!
     ]
 
     /// The pong states actions.
-    let pongActions: [ActionName: String] = [
-        "onEntry": "",
-        "onExit": "pong <= '1'",
-        "internal": ""
+    let pongActions: [ActionName: SynchronousBlock] = [
+        VariableName.onExit: SynchronousBlock(rawValue: "pong <= '1';")!
     ]
 
     /// The action order.
     let actionOrder: [[ActionName]] = [
-        ["onEntry"], ["internal", "onExit"]
+        [VariableName.onEntry], [VariableName.internal, VariableName.onExit]
     ]
 
     /// The Ping state.
     var pingState: State {
         State(
-            name: "Ping",
+            name: VariableName(rawValue: "Ping")!,
             actions: pingActions,
-            actionOrder: actionOrder,
             signals: [],
-            variables: [],
             externalVariables: ["ping", "pong"]
         )
     }
@@ -136,57 +133,74 @@ struct PingPongArrangement {
     /// The Pong state.
     var pongState: State {
         State(
-            name: "Pong",
+            name: VariableName(rawValue: "Pong")!,
             actions: pongActions,
-            actionOrder: actionOrder,
             signals: [],
-            variables: [],
             externalVariables: ["ping", "pong"]
         )
     }
 
     /// The ping Signals.
     let pingSignals = [
-        ExternalSignal(type: "std_logic", name: "ping", mode: .output),
-        ExternalSignal(type: "std_logic", name: "pong", mode: .input)
+        PortSignal(type: .stdLogic, name: VariableName(rawValue: "ping")!, mode: .output),
+        PortSignal(type: .stdLogic, name: VariableName(rawValue: "pong")!, mode: .input)
     ]
 
     /// The pong Signals.
     let pongSignals = [
-        ExternalSignal(type: "std_logic", name: "ping", mode: .input),
-        ExternalSignal(type: "std_logic", name: "pong", mode: .output)
+        PortSignal(type: .stdLogic, name: VariableName(rawValue: "ping")!, mode: .input),
+        PortSignal(type: .stdLogic, name: VariableName(rawValue: "pong")!, mode: .output)
     ]
 
     /// The clocks.
-    let clocks = [Clock(name: "clk", frequency: 50, unit: .MHz)]
+    let clocks = [Clock(name: VariableName.clk, frequency: 50, unit: .MHz)]
 
     /// The ping states transition.
-    let pingTransition = Transition(condition: "true", source: 0, target: 1)
+    let pingTransition = Transition(
+        condition: .conditional(condition: .literal(value: true)), source: 0, target: 1
+    )
 
     /// The ping wait states transition.
-    let pingWaitTransition = Transition(condition: "pong = '1'", source: 1, target: 0)
+    let pingWaitTransition = Transition(
+        condition: .conditional(condition: .comparison(value: .equality(
+            lhs: .variable(name: VariableName(rawValue: "pong")!), rhs: .literal(value: .bit(value: .high))
+        ))),
+        source: 1,
+        target: 0
+    )
 
     /// The pong states transition.
-    let pongTransition = Transition(condition: "true", source: 1, target: 0)
+    let pongTransition = Transition(
+        condition: .conditional(condition: .literal(value: true)), source: 1, target: 0
+    )
 
     /// The pong wait states transition.
-    let pongWaitTransition = Transition(condition: "ping = '1'", source: 0, target: 1)
+    let pongWaitTransition = Transition(
+        condition: .conditional(condition: .comparison(value: .equality(
+            lhs: .variable(name: VariableName(rawValue: "ping")!), rhs: .literal(value: .bit(value: .high))
+        ))),
+        source: 0,
+        target: 1
+    )
 
     /// The includes.
-    let includes = ["use IEEE.STD_LOGIC_1164.ALL;", "use IEEE.NUMERIC_STD.ALL;"]
+    let includes: [Include] = [
+        .library(value: "IEEE"),
+        .include(value: "IEEE.STD_LOGIC_1164.ALL"),
+        .include(value: "IEEE.NUMERIC_STD.ALL")
+    ]
 
     /// The ping machine.
     var pingMachine: Machine {
         Machine(
-            name: "PingMachine",
+            actions: [.onEntry, .onExit, .internal],
+            name: VariableName(rawValue: "PingMachine")!,
             path: pingMachinePath,
             includes: includes,
             externalSignals: pingSignals,
-            generics: [],
             clocks: clocks,
             drivingClock: 0,
             dependentMachines: [:],
-            machineVariables: [],
             machineSignals: [],
             isParameterised: false,
             parameterSignals: [],
@@ -201,15 +215,14 @@ struct PingPongArrangement {
     /// The pong machine.
     var pongMachine: Machine {
         Machine(
-            name: "PongMachine",
+            actions: [.onEntry, .onExit, .internal],
+            name: VariableName(rawValue: "PongMachine")!,
             path: pongMachinePath,
             includes: includes,
             externalSignals: pongSignals,
-            generics: [],
             clocks: clocks,
             drivingClock: 0,
             dependentMachines: [:],
-            machineVariables: [],
             machineSignals: [],
             isParameterised: false,
             parameterSignals: [],
@@ -224,68 +237,61 @@ struct PingPongArrangement {
     /// The arrangement.
     var arrangement: Arrangement {
         Arrangement(
-            machines: ["PingMachine": pingPath, "PongMachine": pongPath],
+            machines: [
+                VariableName(rawValue: "PingMachine")!: pingPath,
+                VariableName(rawValue: "PongMachine")!: pongPath
+            ],
             externalSignals: [],
             signals: [],
-            variables: [],
             clocks: clocks,
-            parents: ["PingMachine", "PongMachine"],
+            parents: [VariableName(rawValue: "PingMachine")!, VariableName(rawValue: "PongMachine")!],
             path: arrangementPath
         )
     }
 
     /// The VHDL code for the Ping machine.
     let pingCode = """
+    library IEEE;
     use IEEE.STD_LOGIC_1164.ALL;
     use IEEE.NUMERIC_STD.ALL;
 
     entity PingMachine is
-        port (
+        port(
             clk: in std_logic;
             EXTERNAL_ping: out std_logic;
             EXTERNAL_pong: in std_logic
         );
     end PingMachine;
 
-
     architecture Behavioral of PingMachine is
         -- Internal State Representation Bits
-        constant ReadSnapshot: std_logic_vector(2 downto 0) := "000";
-        constant OnEntry: std_logic_vector(2 downto 0) := "001";
+        constant CheckTransition: std_logic_vector(2 downto 0) := "000";
+        constant Internal: std_logic_vector(2 downto 0) := "001";
         constant NoOnEntry: std_logic_vector(2 downto 0) := "010";
-        constant CheckTransition: std_logic_vector(2 downto 0) := "011";
+        constant OnEntry: std_logic_vector(2 downto 0) := "011";
         constant OnExit: std_logic_vector(2 downto 0) := "100";
-        constant Internal: std_logic_vector(2 downto 0) := "101";
+        constant ReadSnapshot: std_logic_vector(2 downto 0) := "101";
         constant WriteSnapshot: std_logic_vector(2 downto 0) := "110";
         signal internalState: std_logic_vector(2 downto 0) := ReadSnapshot;
         -- State Representation Bits
-        constant STATE_Ping: std_logic_vector(1 downto 0) := "00";
-        constant STATE_Check: std_logic_vector(1 downto 0) := "01";
-        signal currentState: std_logic_vector(1 downto 0) := STATE_Ping;
-        signal targetState: std_logic_vector(1 downto 0) := STATE_Ping;
-        signal previousRinglet: std_logic_vector(1 downto 0) := "ZZ";
+        constant STATE_Ping: std_logic_vector(0 downto 0) := "0";
+        constant STATE_Check: std_logic_vector(0 downto 0) := "1";
+        signal currentState: std_logic_vector(0 downto 0) := STATE_Ping;
+        signal targetState: std_logic_vector(0 downto 0) := STATE_Ping;
+        signal previousRinglet: std_logic_vector(0 downto 0) := "Z";
         -- Snapshot of External Signals and Variables
         signal ping: std_logic;
         signal pong: std_logic;
-        -- Machine Signals and Variables
     begin
         process(clk)
         begin
             if (rising_edge(clk)) then
                 case internalState is
-                    when ReadSnapshot =>
-                        pong <= EXTERNAL_pong;
-                    if (previousRinglet /= currentState) then
-                            internalState <= onEntry;
-                        else
-                            internalState <= NoOnEntry;
-                        end if;
-                    when OnEntry =>
-                        internalState <= CheckTransition;
-                    when NoOnEntry =>
-                        internalState <= CheckTransition;
                     when CheckTransition =>
                         case currentState is
+                            when STATE_Ping =>
+                                targetState <= STATE_Check;
+                                internalState <= OnExit;
                             when STATE_Check =>
                                 if (pong = '1') then
                                     targetState <= STATE_Ping;
@@ -293,16 +299,32 @@ struct PingPongArrangement {
                                 else
                                     internalState <= Internal;
                                 end if;
-                            when STATE_Ping =>
-                                targetState <= STATE_Check;
-                                internalState <= OnExit;
                             when others =>
                                 internalState <= Internal;
                         end case;
-                    when OnExit =>
-                        internalState <= WriteSnapshot;
                     when Internal =>
                         internalState <= WriteSnapshot;
+                    when NoOnEntry =>
+                        internalState <= CheckTransition;
+                    when OnEntry =>
+                        internalState <= CheckTransition;
+                    when OnExit =>
+                        case currentState is
+                            when STATE_Ping =>
+                                ping <= '1';
+                            when STATE_Check =>
+                                ping <= '0';
+                            when others =>
+                                null;
+                        end case;
+                        internalState <= WriteSnapshot;
+                    when ReadSnapshot =>
+                        pong <= EXTERNAL_pong;
+                        if (previousRinglet /= currentState) then
+                            internalState <= OnEntry;
+                        else
+                            internalState <= NoOnEntry;
+                        end if;
                     when WriteSnapshot =>
                         EXTERNAL_ping <= ping;
                         internalState <= ReadSnapshot;
@@ -314,6 +336,7 @@ struct PingPongArrangement {
             end if;
         end process;
     end Behavioral;
+
     """
 
     /// Create a check state.
@@ -323,14 +346,14 @@ struct PingPongArrangement {
     /// - Returns: The check state.
     func checkState(externalVariables: [String], reset: String) -> State {
         State(
-            name: "Check",
+            name: VariableName(rawValue: "Check")!,
             actions: emptyActions(reset: reset),
-            actionOrder: actionOrder,
             signals: [],
-            variables: [],
             externalVariables: externalVariables
         )
     }
+
+    // swiftlint:enable force_unwrapping
 
     /// Write a value to a path in JSON format.
     /// - Parameters:
@@ -345,11 +368,10 @@ struct PingPongArrangement {
     /// Actions with a reset in the onExit.
     /// - Parameter reset: The reset.
     /// - Returns: The actions.
-    func emptyActions(reset: String) -> [ActionName: String] {
+    func emptyActions(reset: String) -> [ActionName: SynchronousBlock] {
         [
-            "onEntry": "",
-            "onExit": "\(reset) <= '0';",
-            "internal": ""
+            // swiftlint:disable:next force_unwrapping
+            VariableName.onExit: SynchronousBlock(rawValue: "\(reset) <= '0';")!
         ]
     }
 

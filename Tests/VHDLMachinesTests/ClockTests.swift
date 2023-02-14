@@ -55,17 +55,18 @@
 // 
 
 @testable import VHDLMachines
+import VHDLParsing
 import XCTest
 
 /// Test class for ``Clock``.
 final class ClockTests: XCTestCase {
 
     /// The clock under test.
-    var clock = Clock(name: "clk", frequency: 100, unit: .Hz)
+    var clock = Clock(name: VariableName.clk, frequency: 100, unit: .Hz)
 
     /// Initialise the clock before every test.
     override func setUp() {
-        self.clock = Clock(name: "clk", frequency: 100, unit: .Hz)
+        self.clock = Clock(name: VariableName.clk, frequency: 100, unit: .Hz)
     }
 
     /// Test frequency unit raw values.
@@ -79,15 +80,15 @@ final class ClockTests: XCTestCase {
 
     /// Test init sets stored properties correctly.
     func testInit() {
-        XCTAssertEqual(self.clock.name, "clk")
+        XCTAssertEqual(self.clock.name, VariableName.clk)
         XCTAssertEqual(self.clock.frequency, 100)
         XCTAssertEqual(self.clock.unit, .Hz)
     }
 
     /// Test getters and setters work correctly.
     func testGettersAndSetters() {
-        self.clock.name = "clk2"
-        XCTAssertEqual(self.clock.name, "clk2")
+        self.clock.name = VariableName.clk2
+        XCTAssertEqual(self.clock.name, VariableName.clk2)
         self.clock.frequency = 200
         XCTAssertEqual(self.clock.frequency, 200)
         self.clock.unit = .kHz
@@ -100,11 +101,11 @@ final class ClockTests: XCTestCase {
         self.clock.unit = .kHz
         XCTAssertEqual(self.clock.period.microseconds_t, 10)
         self.clock.unit = .MHz
-        XCTAssertEqual(self.clock.period.microseconds_d, 0.01)
+        XCTAssertEqual(self.clock.period.nanoseconds_t, 10)
         self.clock.unit = .GHz
-        XCTAssertEqual(self.clock.period.microseconds_d, 0.00001)
+        XCTAssertEqual(self.clock.period.picoseconds_t, 10)
         self.clock.unit = .THz
-        XCTAssertEqual(self.clock.period.microseconds_d, 0.00000001)
+        XCTAssertEqual(self.clock.period.picoseconds_d, 0.01)
     }
 
 }

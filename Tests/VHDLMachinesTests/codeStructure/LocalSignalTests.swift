@@ -1,4 +1,4 @@
-// ParameterTests.swift
+// MachineSignalTests.swift
 // Machines
 // 
 // Created by Morgan McColl.
@@ -58,46 +58,70 @@
 import VHDLParsing
 import XCTest
 
-/// Tests the ``Parameter`` type.
-final class ParameterTests: XCTestCase {
+/// Tests the `LocalSignal` extensions.
+final class LocalSignalTests: XCTestCase {
 
-    /// The parameter to test.
-    var parameter = Parameter(
-        type: .integer,
-        name: VariableName.x,
-        defaultValue: .literal(value: .integer(value: 255)),
-        comment: Comment.signalX
-    )
-
-    /// Initialise the parameter to test.
-    override func setUp() {
-        self.parameter = Parameter(
-            type: .integer,
-            name: VariableName.x,
-            defaultValue: .literal(value: .integer(value: 255)),
-            comment: Comment.signalX
+    /// Test the state trackers are generated correctly for a machine.
+    func testStateTrackers() {
+        let machine = Machine.testMachine()
+        let trackers = LocalSignal.stateTrackers(machine: machine)
+        let states = machine.states
+        guard
+            states.count == 3,
+            let index = machine.suspendedState,
+            index >= 0,
+            index < 3,
+            machine.initialState >= 0,
+            machine.initialState < 3
+        else {
+            XCTFail("Failed to create trackers.")
+            return
+        }
+        let initialState = states[machine.initialState]
+        let suspendedState = states[index]
+        let type = SignalType.ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0)))
+        XCTAssertEqual(
+            trackers,
+            [
+                LocalSignal(
+                    type: type,
+                    name: .currentState,
+                    defaultValue: .variable(name: VariableName.name(for: suspendedState)),
+                    comment: nil
+                ),
+                LocalSignal(
+                    type: type,
+                    name: .targetState,
+                    defaultValue: .variable(name: VariableName.name(for: suspendedState)),
+                    comment: nil
+                ),
+                LocalSignal(
+                    type: type,
+                    name: .previousRinglet,
+                    defaultValue: .literal(value: .vector(
+                        value: .logics(value: LogicVector(values: [.highImpedance, .highImpedance]))
+                    )),
+                    comment: nil
+                ),
+                LocalSignal(
+                    type: type,
+                    name: .suspendedFrom,
+                    defaultValue: .variable(name: VariableName.name(for: initialState)),
+                    comment: nil
+                )
+            ]
         )
     }
 
-    /// Test the init sets the stored properties correctly.
-    func testInit() {
-        XCTAssertEqual(self.parameter.type, .integer)
-        XCTAssertEqual(self.parameter.name, VariableName.x)
-        XCTAssertEqual(self.parameter.defaultValue, .literal(value: .integer(value: 255)))
-        XCTAssertEqual(self.parameter.comment, Comment.signalX)
-        XCTAssertEqual(self.parameter.mode, .input)
-    }
-
-    /// Test Getters and Setters work correctly.
-    func testGettersAndSetters() {
-        self.parameter.type = .boolean
-        self.parameter.name = VariableName.y
-        self.parameter.defaultValue = .literal(value: .boolean(value: true))
-        self.parameter.comment = Comment.signalY
-        XCTAssertEqual(self.parameter.type, .boolean)
-        XCTAssertEqual(self.parameter.name, VariableName.y)
-        XCTAssertEqual(self.parameter.defaultValue, .literal(value: .boolean(value: true)))
-        XCTAssertEqual(self.parameter.comment, Comment.signalY)
+    /// Test snapshot is created correctly.
+    func testPortInit() {
+        let external = PortSignal(type: .stdLogic, name: .x, mode: .input)
+        let parameter = Parameter(type: .stdLogic, name: .x)
+        let output = ReturnableVariable(type: .stdLogic, name: .x)
+        let expected = LocalSignal(type: .stdLogic, name: .x, defaultValue: nil, comment: nil)
+        XCTAssertEqual(LocalSignal(snapshot: external), expected)
+        XCTAssertEqual(LocalSignal(snapshot: parameter), expected)
+        XCTAssertEqual(LocalSignal(snapshot: output), expected)
     }
 
 }

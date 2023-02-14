@@ -1,4 +1,4 @@
-// ParameterTests.swift
+// PortSignalTests.swift
 // Machines
 // 
 // Created by Morgan McColl.
@@ -58,46 +58,37 @@
 import VHDLParsing
 import XCTest
 
-/// Tests the ``Parameter`` type.
-final class ParameterTests: XCTestCase {
+/// Tests for the ``PortSignal`` type.
+final class PortSignalTests: XCTestCase {
 
-    /// The parameter to test.
-    var parameter = Parameter(
-        type: .integer,
-        name: VariableName.x,
-        defaultValue: .literal(value: .integer(value: 255)),
-        comment: Comment.signalX
+    /// The signal under test.
+    let signal = PortSignal(
+        type: .stdLogic,
+        name: .x,
+        mode: .input,
+        defaultValue: .literal(value: .bit(value: .low)),
+        comment: Comment(rawValue: "signal x.")
     )
 
-    /// Initialise the parameter to test.
-    override func setUp() {
-        self.parameter = Parameter(
-            type: .integer,
-            name: VariableName.x,
-            defaultValue: .literal(value: .integer(value: 255)),
-            comment: Comment.signalX
+    /// Test the computed properties function correctly.
+    func testComputedProperties() {
+        XCTAssertEqual(signal.externalName, VariableName(rawValue: "EXTERNAL_x"))
+        XCTAssertEqual(
+            signal.snapshot, LocalSignal(type: .stdLogic, name: .x, defaultValue: nil, comment: nil)
         )
+        XCTAssertEqual(signal.read, .assignment(name: .x, value: .variable(name: signal.externalName)))
+        XCTAssertEqual(signal.write, .assignment(name: signal.externalName, value: .variable(name: .x)))
     }
 
-    /// Test the init sets the stored properties correctly.
-    func testInit() {
-        XCTAssertEqual(self.parameter.type, .integer)
-        XCTAssertEqual(self.parameter.name, VariableName.x)
-        XCTAssertEqual(self.parameter.defaultValue, .literal(value: .integer(value: 255)))
-        XCTAssertEqual(self.parameter.comment, Comment.signalX)
-        XCTAssertEqual(self.parameter.mode, .input)
-    }
-
-    /// Test Getters and Setters work correctly.
-    func testGettersAndSetters() {
-        self.parameter.type = .boolean
-        self.parameter.name = VariableName.y
-        self.parameter.defaultValue = .literal(value: .boolean(value: true))
-        self.parameter.comment = Comment.signalY
-        XCTAssertEqual(self.parameter.type, .boolean)
-        XCTAssertEqual(self.parameter.name, VariableName.y)
-        XCTAssertEqual(self.parameter.defaultValue, .literal(value: .boolean(value: true)))
-        XCTAssertEqual(self.parameter.comment, Comment.signalY)
+    /// Test the ``PortSignal.init(clock:)`` function.
+    func testClockInit() {
+        let clock = Clock(name: .clk, frequency: 50, unit: .MHz)
+        let signal = PortSignal(clock: clock)
+        XCTAssertEqual(signal.name, .clk)
+        XCTAssertEqual(signal.mode, .input)
+        XCTAssertEqual(signal.type, .stdLogic)
+        XCTAssertNil(signal.defaultValue)
+        XCTAssertNil(signal.comment)
     }
 
 }

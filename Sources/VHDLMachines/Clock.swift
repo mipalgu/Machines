@@ -7,6 +7,7 @@
 
 import Foundation
 import GUUnits
+import VHDLParsing
 
 /// A clock represents an oscillating signal with a constant frequency/period.
 public struct Clock: Codable, Equatable, Hashable, Sendable {
@@ -36,7 +37,7 @@ public struct Clock: Codable, Equatable, Hashable, Sendable {
     }
 
     /// The name of the clock.
-    public var name: String
+    public var name: VariableName
 
     /// The frequency of the clock represented with the frequency `unit`.
     public var frequency: UInt
@@ -53,11 +54,11 @@ public struct Clock: Codable, Equatable, Hashable, Sendable {
         case .kHz:
             return Time.microseconds(1000.0 / freq)
         case .MHz:
-            return Time.microseconds(1.0 / freq)
+            return Time.nanoseconds(1000.0 / freq)
         case .GHz:
-            return Time.microseconds(0.001 / freq)
+            return Time.picoseconds(1000.0 / freq)
         case .THz:
-            return Time.microseconds(0.000001 / freq)
+            return Time.picoseconds(1.0 / freq)
         }
     }
 
@@ -67,7 +68,7 @@ public struct Clock: Codable, Equatable, Hashable, Sendable {
     ///   - frequency: The frequency of the clock represented with the frequency `unit`.
     ///   - unit: The unit of frequency.
     @inlinable
-    public init(name: String, frequency: UInt, unit: FrequencyUnit) {
+    public init(name: VariableName, frequency: UInt, unit: FrequencyUnit) {
         self.name = name
         self.frequency = frequency
         self.unit = unit

@@ -61,26 +61,30 @@ import XCTest
 final class TransitionTests: XCTestCase {
 
     /// The transition to test.
-    var transition = Transition(condition: "true", source: 0, target: 1)
+    var transition = Transition(
+        condition: .conditional(condition: .literal(value: true)), source: 0, target: 1
+    )
 
     /// Initialises a ``Transition`` before every test.
     override func setUp() {
-        self.transition = Transition(condition: "true", source: 0, target: 1)
+        self.transition = Transition(
+            condition: .conditional(condition: .literal(value: true)), source: 0, target: 1
+        )
     }
 
     /// Test initialiser sets stored properties correctly.
     func testInit() {
-        XCTAssertEqual(self.transition.condition, "true")
+        XCTAssertEqual(self.transition.condition, .conditional(condition: .literal(value: true)))
         XCTAssertEqual(self.transition.source, 0)
         XCTAssertEqual(self.transition.target, 1)
     }
 
     /// Test getters and setters work correctly.
     func testGettersAndSetters() {
-        self.transition.condition = "false"
+        self.transition.condition = .conditional(condition: .literal(value: false))
         self.transition.source = 1
         self.transition.target = 0
-        XCTAssertEqual(self.transition.condition, "false")
+        XCTAssertEqual(self.transition.condition, .conditional(condition: .literal(value: false)))
         XCTAssertEqual(self.transition.source, 1)
         XCTAssertEqual(self.transition.target, 0)
     }

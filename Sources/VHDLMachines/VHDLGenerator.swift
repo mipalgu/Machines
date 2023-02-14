@@ -14,11 +14,13 @@ import IO
 public struct VHDLGenerator {
 
     /// Create a new generator.
+    @inlinable
     public init() {}
 
     /// Generate a `FileWrapper` from a ``Machine``.
     /// - Parameter machine: The machine to generate a `FileWrapper` from.
     /// - Returns: The `FileWrapper` that represents the machine or nil if the machine could not be encoded.
+    @inlinable
     public func generate(machine: Machine) -> FileWrapper? {
         let encoder = JSONEncoder()
         guard let data = try? encoder.encode(machine) else {
