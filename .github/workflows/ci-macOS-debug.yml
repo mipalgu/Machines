@@ -1,4 +1,4 @@
-name: MacOS Monterey Swift CI
+name: MacOS Monterey Swift Debug CI
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
 
-  exec-mac-ci:
+  exec-mac-ci-debug:
     runs-on: macos-12
 
     steps:
@@ -33,11 +33,5 @@ jobs:
       - name: Debug Build
         run: swift build -c debug
 
-      - name: Release build
-        run: swift build -c release
-
       - name: Debug Test
         run: swift test
-
-      - name: Release Test
-        run: swift test -c release

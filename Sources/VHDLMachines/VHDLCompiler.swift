@@ -29,15 +29,18 @@ public struct VHDLCompiler {
             return false
         }
         let fileName = "\(machine.name).vhd"
-        if !helper.directoryExists(machine.path.path) {
-            let manager = FileManager()
-            guard (try? manager.createDirectory(
-                at: machine.path, withIntermediateDirectories: true
-            )) != nil else {
+        guard let data = format.data(using: .utf8) else {
+            return false
+        }
+        let fileWrapper = FileWrapper(regularFileWithContents: data)
+        fileWrapper.preferredFilename = fileName
+        let folderWrapper = FileWrapper(directoryWithFileWrappers: [fileName: fileWrapper])
+        if helper.directoryExists(machine.path.path) {
+            guard helper.deleteItem(atPath: machine.path) else {
                 return false
             }
         }
-        return helper.createFile(fileName, inDirectory: machine.path, withContents: format + "\n") != nil
+        return (try? folderWrapper.write(to: machine.path, options: .atomic, originalContentsURL: nil)) != nil
     }
 
     /// Generate the VHDL source code for a machine.

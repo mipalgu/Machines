@@ -59,10 +59,10 @@
 /* This takes an object of class Machine and packages it
  */
 
-import IO
 import Foundation
-import swift_helpers
+import IO
 import MetaLanguage
+import swift_helpers
 import SwiftParsing
 
 public final class MachineAssembler: Assembler, ErrorContainer {
@@ -76,7 +76,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
     private let packageInitializer: PackageInitializer
 
     public var lastError: String? {
-        return self.errors.last
+        self.errors.last
     }
 
     private var takenVars: Set<String> = []
@@ -98,7 +98,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         self.varHelpers = varHelpers
         self.varParser = varParser
     }
-    
+
     public func packageDir(forMachine machine: Machine, builtInDirectory buildDir: URL) -> URL {
         buildDir.appendingPathComponent(machine.name + "Machine", isDirectory: true)
     }
@@ -107,28 +107,35 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         packageDir(forMachine: machine, builtInDirectory: buildDir).path
     }
 
-    public func assemble(_ machine: Machine, atDirectory machineDir: URL, inDirectory directory: URL) -> (URL, FileWrapper)? {
+    public func assemble(
+        _ machine: Machine, atDirectory machineDir: URL, inDirectory directory: URL
+    ) -> (URL, FileWrapper)? {
         if
-            let data = try? Data(contentsOf: directory.appendingPathComponent("machine.json", isDirectory: false)),
+            let data = try? Data(
+                contentsOf: directory.appendingPathComponent("machine.json", isDirectory: false)
+            ),
             let previousMachine = try? JSONDecoder().decode(MachineToken<Machine>.self, from: data),
             previousMachine == MachineToken(data: machine),
             let tests = self.makeTests(forMachine: machine),
             let buildDir = try? FileWrapper(url: directory, options: .immediate)
         {
-            buildDir.addFileWrapper(tests)
+            _ = buildDir.addFileWrapper(tests)
             return (packageDir(forMachine: machine, builtInDirectory: directory), buildDir)
         }
         guard let wrapper = self.assemble(machine, atDirectory: machineDir) else {
             return nil
         }
-        return writeAssembledWrapper(wrapper, forMachine: machine, to: directory) ? (packageDir(forMachine: machine, builtInDirectory: directory), wrapper) : nil
+        return writeAssembledWrapper(wrapper, forMachine: machine, to: directory) ?
+            (packageDir(forMachine: machine, builtInDirectory: directory), wrapper) : nil
     }
-    
+
     public func assemble(_ machine: Machine, atDirectory machineDir: URL) -> FileWrapper? {
         self.assemble(machine, atDirectory: machineDir, isSubMachine: false)
     }
-    
-    public func writeAssembledWrapper(_ wrapper: FileWrapper, forMachine machine: Machine, to directory: URL) -> Bool {
+
+    public func writeAssembledWrapper(
+        _ wrapper: FileWrapper, forMachine machine: Machine, to directory: URL
+    ) -> Bool {
         do {
             try wrapper.write(to: directory, options: .atomic, originalContentsURL: nil)
         } catch let e {
@@ -136,7 +143,9 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             return false
         }
         let errorMsg = "Unable to assemble machine \(machine.name) in \(directory.path)"
-        guard true == self.createAndTagGitRepo(inDirectory: directory.appendingPathComponent(machine.name + "Machine", isDirectory: true)) else {
+        guard self.createAndTagGitRepo(
+            inDirectory: directory.appendingPathComponent(machine.name + "Machine", isDirectory: true)
+        ) else {
             self.errors.append(errorMsg)
             return false
         }
@@ -146,9 +155,12 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         return true
     }
 
-    private func assemble(_ machine: Machine, atDirectory machineDir: URL, isSubMachine: Bool) -> FileWrapper? {
+    private func assemble(
+        _ machine: Machine, atDirectory machineDir: URL, isSubMachine: Bool
+    ) -> FileWrapper? {
         let errorMsg = "Unable to assemble machine \(machine.name)"
         let buildDir = FileWrapper(directoryWithFileWrappers: [:])
+        buildDir.preferredFilename = ".build"
         guard
             let bridgingPath = self.makeBridgingHeader(forMachine: machine),
             let modulePath = self.makeBridgingModuleMap(forMachine: machine)
@@ -158,8 +170,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         let bridgingPackageDir = FileWrapper(directoryWithFileWrappers: [:])
         bridgingPackageDir.preferredFilename = machine.name + "MachineBridging"
-        bridgingPackageDir.addFileWrapper(bridgingPath)
-        bridgingPackageDir.addFileWrapper(modulePath)
+        _ = bridgingPackageDir.addFileWrapper(bridgingPath)
+        _ = bridgingPackageDir.addFileWrapper(modulePath)
         guard
             let factoryPath = self.makeFactory(forMachine: machine, atDirectory: machineDir),
             let fsmPath = self.makeFiniteStateMachine(fromMachine: machine)
@@ -169,9 +181,9 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         }
         let srcDir = FileWrapper(directoryWithFileWrappers: [:])
         srcDir.preferredFilename = machine.name + "Machine"
-        srcDir.addFileWrapper(factoryPath)
-        srcDir.addFileWrapper(fsmPath)
-        if nil != machine.parameters {
+        _ = srcDir.addFileWrapper(factoryPath)
+        _ = srcDir.addFileWrapper(fsmPath)
+        if machine.parameters != nil {
             guard
                 let parametersPath = self.makeParameters(forMachine: machine),
                 let resultsPath = self.makeResultsContainer(forMachine: machine)
@@ -179,8 +191,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                 self.errors.append(errorMsg)
                 return nil
             }
-            srcDir.addFileWrapper(parametersPath)
-            srcDir.addFileWrapper(resultsPath)
+            _ = srcDir.addFileWrapper(parametersPath)
+            _ = srcDir.addFileWrapper(resultsPath)
         }
         guard
             let fsmVarsPath = self.makeFsmVars(forMachine: machine),
@@ -190,20 +202,24 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             self.errors.append(errorMsg)
             return nil
         }
-        srcDir.addFileWrapper(fsmVarsPath)
-        srcDir.addFileWrapper(transitionTypePath)
+        _ = srcDir.addFileWrapper(fsmVarsPath)
+        _ = srcDir.addFileWrapper(transitionTypePath)
         statePaths.forEach {
-            srcDir.addFileWrapper($0)
+            _ = srcDir.addFileWrapper($0)
         }
         guard
-            let emptyStateTypePath = self.makeEmptyStateType(forMachine: machine.name, withActions: machine.model?.actions ?? ["onEntry", "onExit", "main"]),
-            let callbackStateTypePath = self.makeCallbackStateType(forMachine: machine.name, withActions: machine.model?.actions ?? ["onEntry", "onExit", "main"])
+            let emptyStateTypePath = self.makeEmptyStateType(
+                forMachine: machine.name, withActions: machine.model?.actions ?? ["onEntry", "onExit", "main"]
+            ),
+            let callbackStateTypePath = self.makeCallbackStateType(
+                forMachine: machine.name, withActions: machine.model?.actions ?? ["onEntry", "onExit", "main"]
+            )
         else {
             self.errors.append(errorMsg)
             return nil
         }
-        srcDir.addFileWrapper(emptyStateTypePath)
-        srcDir.addFileWrapper(callbackStateTypePath)
+        _ = srcDir.addFileWrapper(emptyStateTypePath)
+        _ = srcDir.addFileWrapper(callbackStateTypePath)
         if let model = machine.model {
             guard
                 let ringletPath = self.makeRinglet(forRinglet: model.ringlet, inMachine: machine),
@@ -212,8 +228,8 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                 self.errors.append(errorMsg)
                 return nil
             }
-            srcDir.addFileWrapper(ringletPath)
-            srcDir.addFileWrapper(stateTypePath)
+            _ = srcDir.addFileWrapper(ringletPath)
+            _ = srcDir.addFileWrapper(stateTypePath)
         } else {
             guard
                 let ringletPath = self.makeMiPalRinglet(withMachineName: machine.name),
@@ -222,15 +238,17 @@ public final class MachineAssembler: Assembler, ErrorContainer {
                 self.errors.append(errorMsg)
                 return nil
             }
-            srcDir.addFileWrapper(ringletPath)
-            srcDir.addFileWrapper(stateTypePath)
+            _ = srcDir.addFileWrapper(ringletPath)
+            _ = srcDir.addFileWrapper(stateTypePath)
         }
         let sourcesDir = FileWrapper(directoryWithFileWrappers: [:])
-        sourcesDir.addFileWrapper(bridgingPackageDir)
-        sourcesDir.addFileWrapper(srcDir)
+        _ = sourcesDir.addFileWrapper(bridgingPackageDir)
+        _ = sourcesDir.addFileWrapper(srcDir)
         sourcesDir.preferredFilename = "Sources"
         guard
-            let package = self.makePackage(forMachine: machine, atDirectory: machineDir, withAddedDependencies: []),
+            let package = self.makePackage(
+                forMachine: machine, atDirectory: machineDir, withAddedDependencies: []
+            ),
             let gitignore = self.makePackageGitIgnore(),
             let tests = self.makeTests(forMachine: machine)
         else {
@@ -238,15 +256,15 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             return nil
         }
         let packageDir = FileWrapper(directoryWithFileWrappers: [:])
-        packageDir.addFileWrapper(package)
-        packageDir.addFileWrapper(gitignore)
-        packageDir.addFileWrapper(sourcesDir)
-        packageDir.addFileWrapper(tests)
+        _ = packageDir.addFileWrapper(package)
+        _ = packageDir.addFileWrapper(gitignore)
+        _ = packageDir.addFileWrapper(sourcesDir)
+        _ = packageDir.addFileWrapper(tests)
         packageDir.preferredFilename = machine.name + "Machine"
-        buildDir.addFileWrapper(packageDir)
+        _ = buildDir.addFileWrapper(packageDir)
         return buildDir
     }
-    
+
     private func encode(inFile name: String, contents: String) -> FileWrapper? {
         guard let data = contents.data(using: .utf8) else {
             self.errors.append("Unable to encode data for file \(name)")
@@ -256,7 +274,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         wrapper.preferredFilename = name
         return wrapper
     }
-    
+
     private func makeTests(forMachine machine: Machine) -> FileWrapper? {
         let generator = SwiftTestMachineGenerator()
         let stateNames = machine.states.map(\.name)
@@ -265,7 +283,7 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             let testWrapper = generator.generateWrapper(tests: testData, for: machine.name, with: stateNames)
         {
             let newWrapper = FileWrapper(directoryWithFileWrappers: [:])
-            newWrapper.addFileWrapper(testWrapper)
+            _ = newWrapper.addFileWrapper(testWrapper)
             newWrapper.preferredFilename = "Tests"
             return newWrapper
         }
@@ -282,14 +300,14 @@ public final class MachineAssembler: Assembler, ErrorContainer {
             return nil
         }
         let moduleDirectory = FileWrapper(directoryWithFileWrappers: [:])
-        moduleDirectory.addFileWrapper(file)
+        _ = moduleDirectory.addFileWrapper(file)
         moduleDirectory.preferredFilename = machine.name + "MachineTests"
         let testsDirectory = FileWrapper(directoryWithFileWrappers: [:])
-        testsDirectory.addFileWrapper(moduleDirectory)
+        _ = testsDirectory.addFileWrapper(moduleDirectory)
         testsDirectory.preferredFilename = "Tests"
         return testsDirectory
     }
-    
+
     private func makePackageGitIgnore() -> FileWrapper? {
         let str = """
             .DS_Store
@@ -315,17 +333,31 @@ public final class MachineAssembler: Assembler, ErrorContainer {
         return encode(inFile: "module.modulemap", contents: str)
     }
 
-    private func makePackage(forMachine machine: Machine, atDirectory machineDir: URL, withAddedDependencies addedDependencies: [(URL)]) -> FileWrapper? {
+    private func makePackage(
+        forMachine machine: Machine,
+        atDirectory machineDir: URL,
+        withAddedDependencies addedDependencies: [(URL)]
+    ) -> FileWrapper? {
         let mandatoryPackages: [String] = []
         let mandatoryProducts: [String] = []
         guard
             let constructedDependencies: [String] = machine.packageDependencies.failMap({
-                guard let url = URL(string: $0.url.replacingMachineVariables(forMachine: machine, atDirectory: machineDir)) else {
-                    self.errors.append("Malformed url in package dependency in machine \(machine.name): \($0.url)")
+                guard let url = URL(string: $0.url.replacingMachineVariables(
+                    forMachine: machine, atDirectory: machineDir
+                )) else {
+                    self.errors.append(
+                        "Malformed url in package dependency in machine \(machine.name): \($0.url)"
+                    )
                     return nil
                 }
                 let qualifiers = $0.qualifiers.combine("") { $0 + ", " + $1 }
-                return ".package(url: \"\(String(url.absoluteURL.standardized.absoluteString.reversed().drop(while: { $0 == "/" }).reversed()))\", \(qualifiers))"
+                let urlString = String(
+                    url.absoluteURL.standardized.absoluteString
+                        .reversed()
+                        .drop(while: { $0 == "/" })
+                        .reversed()
+                )
+                return ".package(url: \"\(urlString)\", \(qualifiers))"
             })
         else {
             return nil
