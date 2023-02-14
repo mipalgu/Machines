@@ -144,14 +144,14 @@ class VHDLMachinesCompilerTests: XCTestCase {
         if !helper.directoryExists(factory.machinesFolder) {
             _ = helper.createDirectory(atPath: factory.machinePath)
         }
-        if !helper.directoryExists(factory.pingMachinePath.path) {
-            _ = helper.createDirectory(atPath: factory.pingMachinePath)
-        }
         if !helper.directoryExists(testMachinePath.path) {
             guard let wrapper = testMachineFileWrapper else {
                 return
             }
-            _ = try? wrapper.write(to: factory.machinePath, originalContentsURL: nil)
+            _ = try? wrapper.write(
+                to: factory.machinePath.appendingPathComponent("TestMachine.machine", isDirectory: true),
+                originalContentsURL: nil
+            )
         }
     }
 
@@ -221,6 +221,10 @@ class VHDLMachinesCompilerTests: XCTestCase {
     func testCompileWorksInEmptySubdir() {
         var machine = factory.pingMachine
         let subdir = factory.machinePath.appendingPathComponent("subdir", isDirectory: true)
+        if !helper.directoryExists(subdir.path) {
+            _ = helper.createDirectory(atPath: subdir)
+        }
+        defer { _ = helper.deleteItem(atPath: subdir) }
         let newPath = subdir.appendingPathComponent(
             "PingMachine.machine", isDirectory: true
         )
