@@ -65,9 +65,17 @@ public struct Machine: Codable, Equatable, Hashable {
     /// Whether the machine is parameterised.
     private var _isParameterised: Bool
 
-    /// Whether the machine is parameterised.
+    /// Whether the machine is parameterised. Setting this value to `true` will not necessarily make the
+    /// machine parameterised. The machine must also have a suspended state for this to be `true`.
     public var isParameterised: Bool {
-        _isParameterised && suspendedState != nil
+        get {
+            _isParameterised && suspendedState != nil
+        }
+        set {
+            if suspendedState != nil {
+                _isParameterised = newValue
+            }
+        }
     }
 
     /// Whether the machine can be suspended.
