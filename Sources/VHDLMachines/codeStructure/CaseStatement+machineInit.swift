@@ -62,7 +62,7 @@ extension CaseStatement {
     /// Create the case statement for the actions in a machine.
     /// - Parameter machine: The machine to create the case statement from.
     init?(machine: Machine) {
-        let actions = (
+        var actions = (
             machine.actions + [
                 VariableName.noOnEntry,
                 VariableName.readSnapshot,
@@ -70,6 +70,9 @@ extension CaseStatement {
                 VariableName.checkTransition
             ]
         ).sorted()
+        if !machine.isSuspensible {
+            actions = actions.filter { $0 != VariableName.onResume && $0 != VariableName.onSuspend }
+        }
         let cases = actions.compactMap { WhenCase(machine: machine, action: $0) }
         guard cases.count == actions.count else {
             return nil
