@@ -62,7 +62,7 @@ import XCTest
 final class WhenCaseTests: XCTestCase {
 
     /// A test machine.
-    let machine = Machine.testMachine()
+    var machine = Machine.testMachine()
 
     // swiftlint:disable line_length
 
@@ -277,6 +277,11 @@ final class WhenCaseTests: XCTestCase {
 
     // swiftlint:enable line_length
 
+    /// Create test data before every test.
+    override func setUp() {
+        machine = Machine.testMachine()
+    }
+
     /// Test the checkTransition generation.
     func testCheckTransitionCode() {
         let checkTransition = WhenCase(machine: machine, action: .checkTransition)
@@ -307,10 +312,24 @@ final class WhenCaseTests: XCTestCase {
         XCTAssertEqual(onResume?.rawValue, onResumeCode)
     }
 
+    /// Test onResume for suspensible machine.
+    func testOnResumeSuspensible() {
+        machine.suspendedState = nil
+        let onResume = WhenCase(machine: machine, action: .onResume)
+        XCTAssertNil(onResume)
+    }
+
     /// Test onSuspend generation.
     func testOnSuspendCode() {
         let onSuspend = WhenCase(machine: machine, action: .onSuspend)
         XCTAssertEqual(onSuspend?.rawValue, onSuspendCode)
+    }
+
+    /// Test onSuspend for suspensible machine.
+    func testOnSuspendedSuspensible() {
+        machine.suspendedState = nil
+        let onSuspend = WhenCase(machine: machine, action: .onSuspend)
+        XCTAssertNil(onSuspend)
     }
 
     /// Test internal code generation.
