@@ -312,8 +312,8 @@ final class WhenCaseTests: XCTestCase {
         XCTAssertEqual(onResume?.rawValue, onResumeCode)
     }
 
-    /// Test onResume for suspensible machine.
-    func testOnResumeSuspensible() {
+    /// Test onResume for non-suspensible machine.
+    func testOnResumeNotSuspensible() {
         machine.suspendedState = nil
         let onResume = WhenCase(machine: machine, action: .onResume)
         XCTAssertNil(onResume)
@@ -325,8 +325,8 @@ final class WhenCaseTests: XCTestCase {
         XCTAssertEqual(onSuspend?.rawValue, onSuspendCode)
     }
 
-    /// Test onSuspend for suspensible machine.
-    func testOnSuspendedSuspensible() {
+    /// Test onSuspend for non-suspensible machine.
+    func testOnSuspendedNotSuspensible() {
         machine.suspendedState = nil
         let onSuspend = WhenCase(machine: machine, action: .onSuspend)
         XCTAssertNil(onSuspend)
