@@ -58,6 +58,8 @@
 import VHDLParsing
 import XCTest
 
+// swiftlint:disable type_body_length
+
 /// Test the `WhenCase` extensions.
 final class WhenCaseTests: XCTestCase {
 
@@ -346,14 +348,10 @@ final class WhenCaseTests: XCTestCase {
 
     /// Test read snapshot for a machine that is not suspensible.
     func testReadSnapshotNotSuspensible() {
-        var machine = machine
         machine.suspendedState = nil
-        guard let readSnapshot = WhenCase(machine: machine, action: .readSnapshot) else {
-            XCTFail("Failed to create code block.")
-            return
-        }
+        let readSnapshot = WhenCase(machine: machine, action: .readSnapshot)
         XCTAssertEqual(
-            readSnapshot.rawValue,
+            readSnapshot?.rawValue,
             """
             when ReadSnapshot =>
                 x <= EXTERNAL_x;
@@ -368,10 +366,98 @@ final class WhenCaseTests: XCTestCase {
         XCTAssertNil(WhenCase(machine: machine, action: .readSnapshot))
     }
 
+    // swiftlint:disable function_body_length
+    // swiftlint:disable line_length
+
+    /// Test read snapshot for a machine that is not parameterised.
+    func testReadSnapshotNotParameterised() {
+        machine.isParameterised = false
+        let readSnapshot = WhenCase(machine: machine, action: .readSnapshot)
+        XCTAssertEqual(
+            readSnapshot?.rawValue,
+            """
+            when ReadSnapshot =>
+                x <= EXTERNAL_x;
+                if ((command = COMMAND_RESTART) and (currentState /= STATE_Initial)) then
+                    currentState <= STATE_Initial;
+                    suspended <= '0';
+                    suspendedFrom <= STATE_Initial;
+                    targetState <= STATE_Initial;
+                    if (previousRinglet = STATE_Suspended) then
+                        internalState <= OnResume;
+                    elsif (previousRinglet = STATE_Initial) then
+                        internalState <= NoOnEntry;
+                    else
+                        internalState <= OnEntry;
+                    end if;
+                elsif ((command = COMMAND_RESUME) and ((currentState = STATE_Suspended) and (suspendedFrom /= STATE_Suspended))) then
+                    suspended <= '0';
+                    currentState <= suspendedFrom;
+                    targetState <= suspendedFrom;
+                    if (previousRinglet = suspendedFrom) then
+                        internalState <= NoOnEntry;
+                    else
+                        internalState <= OnResume;
+                    end if;
+                elsif ((command = COMMAND_SUSPEND) and (currentState /= STATE_Suspended)) then
+                    suspendedFrom <= currentState;
+                    suspended <= '1';
+                    currentState <= STATE_Suspended;
+                    targetState <= STATE_Suspended;
+                    if (previousRinglet = STATE_Suspended) then
+                        internalState <= NoOnEntry;
+                    else
+                        internalState <= OnSuspend;
+                    end if;
+                elsif (currentState = STATE_Suspended) then
+                    suspended <= '1';
+                    if (previousRinglet /= STATE_Suspended) then
+                        internalState <= OnSuspend;
+                    else
+                        internalState <= NoOnEntry;
+                    end if;
+                elsif (previousRinglet = STATE_Suspended) then
+                    internalState <= OnResume;
+                    suspended <= '0';
+                    suspendedFrom <= currentState;
+                else
+                    suspended <= '0';
+                    suspendedFrom <= currentState;
+                    if (previousRinglet /= currentState) then
+                        internalState <= OnEntry;
+                    else
+                        internalState <= NoOnEntry;
+                    end if;
+                end if;
+            """
+        )
+    }
+
+    // swiftlint:enable function_body_length
+    // swiftlint:enable line_length
+
     /// Test write snapshot generation is correct.
     func testWriteSnapshotCode() {
         let writeSnapshot = WhenCase(machine: machine, action: .writeSnapshot)
         XCTAssertEqual(writeSnapshot?.rawValue, writeSnapshotCode)
     }
 
+    /// Test write snapshot when machine isn't parameterised.
+    func testWriteSnapshotNotParameterised() {
+        machine.isParameterised = false
+        let writeSnapshot = WhenCase(machine: machine, action: .writeSnapshot)
+        XCTAssertEqual(
+            writeSnapshot?.rawValue,
+            """
+            when WriteSnapshot =>
+                EXTERNAL_xx <= xx;
+                internalState <= ReadSnapshot;
+                previousRinglet <= currentState;
+                currentState <= targetState;
+            """
+        )
+    }
+
 }
+
+// swiftlint:enable type_body_length
