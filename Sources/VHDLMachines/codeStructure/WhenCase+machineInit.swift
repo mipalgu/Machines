@@ -209,7 +209,10 @@ extension WhenCase {
 
     /// Create the onResume action for a machine.
     /// - Parameter machine: The machine to create the onResume action for.
-    private init(onResumeMachine machine: Machine) {
+    private init?(onResumeMachine machine: Machine) {
+        guard machine.isSuspensible else {
+            return nil
+        }
         let stateCases = machine.states.compactMap { state -> WhenCase? in
             let condition = WhenCondition.expression(expression: .variable(name: .name(for: state)))
             var code: [SynchronousBlock] = []

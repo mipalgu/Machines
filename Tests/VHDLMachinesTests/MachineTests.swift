@@ -58,6 +58,8 @@
 import VHDLParsing
 import XCTest
 
+// swiftlint:disable type_body_length
+
 /// Tests the ``Machine`` type.
 final class MachineTests: XCTestCase {
 
@@ -415,7 +417,30 @@ final class MachineTests: XCTestCase {
         XCTAssertEqual(machine, expected)
     }
 
+    /// Test `isParameterised` setter.
+    func testIsParameterisedSetter() {
+        XCTAssertTrue(machine.isParameterised)
+        XCTAssertEqual(machine.suspendedState, 1)
+        machine.isParameterised = false
+        XCTAssertFalse(machine.isParameterised)
+        XCTAssertEqual(machine.suspendedState, 1)
+        machine.suspendedState = nil
+        XCTAssertNil(machine.suspendedState)
+        XCTAssertFalse(machine.isParameterised)
+        machine.isParameterised = true
+        XCTAssertFalse(machine.isParameterised)
+        XCTAssertNil(machine.suspendedState)
+        machine.suspendedState = 1
+        XCTAssertEqual(machine.suspendedState, 1)
+        XCTAssertFalse(machine.isParameterised)
+        machine.isParameterised = true
+        XCTAssertTrue(machine.isParameterised)
+        XCTAssertEqual(machine.suspendedState, 1)
+    }
+
     // swiftlint:enable force_unwrapping
     // swiftlint:enable function_body_length
 
 }
+
+// swiftlint:enable type_body_length

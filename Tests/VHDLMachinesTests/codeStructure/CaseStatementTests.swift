@@ -61,9 +61,98 @@ import XCTest
 /// Test class for `CaseStatement` extensions.
 final class CaseStatementTests: XCTestCase {
 
+    /// Some test data.
+    var machine = Machine.testMachine()
+
+    /// Initialise the test data before every test.
+    override func setUp() {
+        self.machine = Machine.testMachine()
+    }
+
     /// Test machine initialiser.
     func testMachineInit() {
-        let machine = Machine.testMachine()
+        let statement = CaseStatement(machine: machine)
+        guard
+            let checkTransition = WhenCase(machine: machine, action: .checkTransition),
+            let `internal` = WhenCase(machine: machine, action: .internal),
+            let noOnEntry = WhenCase(machine: machine, action: .noOnEntry),
+            let onEntry = WhenCase(machine: machine, action: .onEntry),
+            let onExit = WhenCase(machine: machine, action: .onExit),
+            let onResume = WhenCase(machine: machine, action: .onResume),
+            let onSuspend = WhenCase(machine: machine, action: .onSuspend),
+            let readSnapshot = WhenCase(machine: machine, action: .readSnapshot),
+            let writeSnapshot = WhenCase(machine: machine, action: .writeSnapshot)
+        else {
+            XCTFail("Could not create when cases.")
+            return
+        }
+        XCTAssertEqual(
+            statement,
+            CaseStatement(
+                condition: .variable(name: .internalState),
+                cases: [
+                    checkTransition,
+                    `internal`,
+                    noOnEntry,
+                    onEntry,
+                    onExit,
+                    onResume,
+                    onSuspend,
+                    readSnapshot,
+                    writeSnapshot,
+                    .othersNull
+                ]
+            )
+        )
+    }
+
+    /// Test machine initialiser for a machine with invalid actions.
+    func testMachineInitWithInvalidActions() {
+        guard let name = VariableName(rawValue: "InvalidAction") else {
+            XCTFail("Invalid action name.")
+            return
+        }
+        machine.actions.append(name)
+        XCTAssertNil(CaseStatement(machine: machine))
+    }
+
+    /// Test machine initialiser for a non-suspensible machine.
+    func testMachineInitNotSuspensible() {
+        machine.suspendedState = nil
+        let statement = CaseStatement(machine: machine)
+        guard
+            let checkTransition = WhenCase(machine: machine, action: .checkTransition),
+            let `internal` = WhenCase(machine: machine, action: .internal),
+            let noOnEntry = WhenCase(machine: machine, action: .noOnEntry),
+            let onEntry = WhenCase(machine: machine, action: .onEntry),
+            let onExit = WhenCase(machine: machine, action: .onExit),
+            let readSnapshot = WhenCase(machine: machine, action: .readSnapshot),
+            let writeSnapshot = WhenCase(machine: machine, action: .writeSnapshot)
+        else {
+            XCTFail("Could not create when cases.")
+            return
+        }
+        XCTAssertEqual(
+            statement,
+            CaseStatement(
+                condition: .variable(name: .internalState),
+                cases: [
+                    checkTransition,
+                    `internal`,
+                    noOnEntry,
+                    onEntry,
+                    onExit,
+                    readSnapshot,
+                    writeSnapshot,
+                    .othersNull
+                ]
+            )
+        )
+    }
+
+    /// Test machine initialiser when machine isn't parameterised.
+    func testMachineInitNotParameterised() {
+        machine.isParameterised = false
         let statement = CaseStatement(machine: machine)
         guard
             let checkTransition = WhenCase(machine: machine, action: .checkTransition),
