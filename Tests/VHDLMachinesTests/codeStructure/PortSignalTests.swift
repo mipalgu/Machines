@@ -76,8 +76,18 @@ final class PortSignalTests: XCTestCase {
         XCTAssertEqual(
             signal.snapshot, LocalSignal(type: .stdLogic, name: .x, defaultValue: nil, comment: nil)
         )
-        XCTAssertEqual(signal.read, .assignment(name: .x, value: .variable(name: signal.externalName)))
-        XCTAssertEqual(signal.write, .assignment(name: signal.externalName, value: .variable(name: .x)))
+        XCTAssertEqual(
+            signal.read,
+            .assignment(
+                name: .variable(name: .x), value: .reference(variable: .variable(name: signal.externalName))
+            )
+        )
+        XCTAssertEqual(
+            signal.write,
+            .assignment(
+                name: .variable(name: signal.externalName), value: .reference(variable: .variable(name: .x))
+            )
+        )
     }
 
     /// Test the ``PortSignal.init(clock:)`` function.

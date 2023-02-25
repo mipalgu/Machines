@@ -163,7 +163,8 @@ struct PingPongArrangement {
     /// The ping wait states transition.
     let pingWaitTransition = Transition(
         condition: .conditional(condition: .comparison(value: .equality(
-            lhs: .variable(name: VariableName(rawValue: "pong")!), rhs: .literal(value: .bit(value: .high))
+            lhs: .reference(variable: .variable(name: VariableName(rawValue: "pong")!)),
+            rhs: .literal(value: .bit(value: .high))
         ))),
         source: 1,
         target: 0
@@ -177,7 +178,8 @@ struct PingPongArrangement {
     /// The pong wait states transition.
     let pongWaitTransition = Transition(
         condition: .conditional(condition: .comparison(value: .equality(
-            lhs: .variable(name: VariableName(rawValue: "ping")!), rhs: .literal(value: .bit(value: .high))
+            lhs: .reference(variable: .variable(name: VariableName(rawValue: "ping")!)),
+            rhs: .literal(value: .bit(value: .high))
         ))),
         source: 0,
         target: 1

@@ -69,63 +69,90 @@ final class ConstantSignalTests: XCTestCase {
         let constants = [
             ConstantSignal(
                 name: VariableName.checkTransition,
-                type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),
+                type: .ranged(type: .stdLogicVector(size: .downto(
+                    upper: .literal(value: .integer(value: 3)),
+                    lower: .literal(value: .integer(value: 0))
+                ))),
                 value: .literal(value: .vector(value: .logics(
                     value: LogicVector(values: [.low, .low, .low, .low])
                 )))
             ),
             ConstantSignal(
                 name: VariableName.internal,
-                type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),
+                type: .ranged(type: .stdLogicVector(size: .downto(
+                    upper: .literal(value: .integer(value: 3)),
+                    lower: .literal(value: .integer(value: 0))
+                ))),
                 value: .literal(value: .vector(value: .logics(
                     value: LogicVector(values: [.low, .low, .low, .high])
                 )))
             ),
             ConstantSignal(
                 name: VariableName.noOnEntry,
-                type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),
+                type: .ranged(type: .stdLogicVector(size: .downto(
+                    upper: .literal(value: .integer(value: 3)),
+                    lower: .literal(value: .integer(value: 0))
+                ))),
                 value: .literal(value: .vector(value: .logics(
                     value: LogicVector(values: [.low, .low, .high, .low])
                 )))
             ),
             ConstantSignal(
                 name: VariableName.onEntry,
-                type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),
+                type: .ranged(type: .stdLogicVector(size: .downto(
+                    upper: .literal(value: .integer(value: 3)),
+                    lower: .literal(value: .integer(value: 0))
+                ))),
                 value: .literal(value: .vector(value: .logics(
                     value: LogicVector(values: [.low, .low, .high, .high])
                 )))
             ),
             ConstantSignal(
                 name: VariableName.onExit,
-                type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),
+                type: .ranged(type: .stdLogicVector(size: .downto(
+                    upper: .literal(value: .integer(value: 3)),
+                    lower: .literal(value: .integer(value: 0))
+                ))),
                 value: .literal(value: .vector(value: .logics(
                     value: LogicVector(values: [.low, .high, .low, .low])
                 )))
             ),
             ConstantSignal(
                 name: VariableName.onResume,
-                type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),
+                type: .ranged(type: .stdLogicVector(size: .downto(
+                    upper: .literal(value: .integer(value: 3)),
+                    lower: .literal(value: .integer(value: 0))
+                ))),
                 value: .literal(value: .vector(value: .logics(
                     value: LogicVector(values: [.low, .high, .low, .high])
                 )))
             ),
             ConstantSignal(
                 name: VariableName.onSuspend,
-                type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),
+                type: .ranged(type: .stdLogicVector(size: .downto(
+                    upper: .literal(value: .integer(value: 3)),
+                    lower: .literal(value: .integer(value: 0))
+                ))),
                 value: .literal(value: .vector(value: .logics(
                     value: LogicVector(values: [.low, .high, .high, .low])
                 )))
             ),
             ConstantSignal(
                 name: VariableName.readSnapshot,
-                type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),
+                type: .ranged(type: .stdLogicVector(size: .downto(
+                    upper: .literal(value: .integer(value: 3)),
+                    lower: .literal(value: .integer(value: 0))
+                ))),
                 value: .literal(value: .vector(value: .logics(
                     value: LogicVector(values: [.low, .high, .high, .high])
                 )))
             ),
             ConstantSignal(
                 name: VariableName.writeSnapshot,
-                type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),
+                type: .ranged(type: .stdLogicVector(size: .downto(
+                    upper: .literal(value: .integer(value: 3)),
+                    lower: .literal(value: .integer(value: 0))
+                ))),
                 value: .literal(value: .vector(value: .logics(
                     value: LogicVector(values: [.high, .low, .low, .low])
                 )))
@@ -171,7 +198,10 @@ final class ConstantSignalTests: XCTestCase {
             result,
             ConstantSignal(
                 name: .name(for: state),
-                type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
+                type: .ranged(type: .stdLogicVector(size: .downto(
+                    upper: .literal(value: .integer(value: 1)),
+                    lower: .literal(value: .integer(value: 0))
+                ))),
                 value: .literal(value: .vector(value: .bits(value: BitVector(values: [.low, .high]))))
             )
         )

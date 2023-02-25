@@ -62,13 +62,13 @@ import XCTest
 final class TransitionConditionTests: XCTestCase {
 
     /// A variable `x`.
-    let x = Expression.variable(name: .x)
+    let x = Expression.reference(variable: .variable(name: .x))
 
     /// A variable `y`
-    let y = Expression.variable(name: .y)
+    let y = Expression.reference(variable: .variable(name: .y))
 
     /// A variable `z`
-    let z = Expression.variable(name: .z)
+    let z = Expression.reference(variable: .variable(name: .z))
 
     /// Test that raw values are correct.
     func testRawValue() {
