@@ -95,7 +95,7 @@ extension ArchitectureHead {
         else {
             return nil
         }
-        let actionStatements = actions.map { Definition.constant(value: $0) }
+        let actionStatements = actions.map { HeadStatement.definition(value: .constant(value: $0)) }
         let internalState = LocalSignal(
             type: .ranged(type: .stdLogicVector(size: .downto(
                 upper: .literal(value: .integer(value: internalStateBits - 1)),
@@ -109,20 +109,22 @@ extension ArchitectureHead {
         .compactMap {
             ConstantSignal(state: $0.1, bitsRequired: stateBitsRequired, index: $0.0)
         }
-        .map { Definition.constant(value: $0) }
+        .map { HeadStatement.definition(value: .constant(value: $0)) }
         guard stateRepresentation.count == machine.states.count else {
             return nil
         }
         let stateTrackerStatements = stateTrackers.map { Definition.signal(value: $0) }
-        var statements: [Definition] = [.comment(value: internalStateComment)] + actionStatements + [
-            .signal(value: internalState),
+        var statements: [HeadStatement] = [.comment(value: internalStateComment)] + actionStatements + [
+            .definition(value: .signal(value: internalState)),
             .comment(value: stateRepresentationComment)
-        ] + stateRepresentation + stateTrackerStatements
+        ] + stateRepresentation + stateTrackerStatements.map { HeadStatement.definition(value: $0) }
         if machine.isSuspensible {
             guard let commandsComment = Comment(rawValue: "-- Suspension Commands") else {
                 return nil
             }
-            let commandStatements = ConstantSignal.commands.map { Definition.constant(value: $0) }
+            let commandStatements = ConstantSignal.commands.map {
+                HeadStatement.definition(value: .constant(value: $0))
+            }
             statements += [.comment(value: commandsComment)] + commandStatements
         }
         if machine.transitions.contains(where: { $0.condition.hasAfter }) {
@@ -134,9 +136,13 @@ extension ArchitectureHead {
             else {
                 return nil
             }
-            let ringletConstants = ConstantSignal.ringletConstants.map { Definition.constant(value: $0) }
+            let ringletConstants = ConstantSignal.ringletConstants.map {
+                HeadStatement.definition(value: .constant(value: $0))
+            }
             statements += [
-                .comment(value: afterComment), .signal(value: .ringletCounter), .constant(value: period)
+                .comment(value: afterComment),
+                .definition(value: .signal(value: .ringletCounter)),
+                .definition(value: .constant(value: period))
             ] + ringletConstants
         }
         if !machine.externalSignals.isEmpty {
@@ -146,7 +152,7 @@ extension ArchitectureHead {
                 return nil
             }
             statements += [.comment(value: externalSnapshotComment)] + machine.externalSignals.map {
-                Definition.signal(value: LocalSignal(snapshot: $0))
+                .definition(value: .signal(value: LocalSignal(snapshot: $0)))
             }
         }
         if machine.isParameterised {
@@ -157,7 +163,7 @@ extension ArchitectureHead {
                     return nil
                 }
                 statements += [.comment(value: parameterSnapshotComment)] + machine.parameterSignals.map {
-                    Definition.signal(value: LocalSignal(snapshot: $0))
+                    .definition(value: .signal(value: LocalSignal(snapshot: $0)))
                 }
             }
             if !machine.returnableSignals.isEmpty {
@@ -167,7 +173,7 @@ extension ArchitectureHead {
                     return nil
                 }
                 statements += [.comment(value: outputSnapshotComment)] + machine.returnableSignals.map {
-                    Definition.signal(value: LocalSignal(snapshot: $0))
+                    .definition(value: .signal(value: LocalSignal(snapshot: $0)))
                 }
             }
         }
@@ -175,7 +181,9 @@ extension ArchitectureHead {
             guard let machineSignalComment = Comment(rawValue: "-- Machine Signals") else {
                 return nil
             }
-            let machineSignals = machine.machineSignals.map { Definition.signal(value: $0) }
+            let machineSignals = machine.machineSignals.map {
+                HeadStatement.definition(value: .signal(value: $0))
+            }
             statements += [.comment(value: machineSignalComment)] + machineSignals
         }
         if let head = machine.architectureHead {

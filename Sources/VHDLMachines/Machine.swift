@@ -57,7 +57,7 @@ public struct Machine: Codable, Equatable, Hashable {
     public var suspendedState: Int?
 
     /// Extra VHDL code to be added to the architecture head.
-    public var architectureHead: [Statement]?
+    public var architectureHead: [HeadStatement]?
 
     /// Extra VHDL code to be added to the architecture body.
     public var architectureBody: AsynchronousBlock?
@@ -121,7 +121,7 @@ public struct Machine: Codable, Equatable, Hashable {
         transitions: [Transition],
         initialState: Int,
         suspendedState: Int?,
-        architectureHead: [Statement]? = nil,
+        architectureHead: [HeadStatement]? = nil,
         architectureBody: AsynchronousBlock? = nil
     ) {
         self.actions = actions
