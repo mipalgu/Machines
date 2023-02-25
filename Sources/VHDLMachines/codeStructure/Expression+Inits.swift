@@ -103,7 +103,7 @@ extension Expression {
         case .precedence(let condition):
             self = .precedence(value: Expression(condition: condition))
         case .variable(let name):
-            self = .variable(name: name)
+            self = .reference(variable: .variable(name: name))
         }
     }
 
@@ -119,11 +119,13 @@ extension Expression {
             calculation = castedAmount
         } else {
             calculation = .binary(
-                operation: .multiplication(lhs: castedAmount, rhs: .variable(name: period.rawValue))
+                operation: .multiplication(
+                    lhs: castedAmount, rhs: .reference(variable: .variable(name: period.rawValue))
+                )
             )
         }
         self = .precedence(value: .conditional(condition: .comparison(value: .greaterThanOrEqual(
-            lhs: .variable(name: .ringletCounter),
+            lhs: .reference(variable: .variable(name: .ringletCounter)),
             rhs: .cast(operation: .integer(
                 expression: .functionCall(call: .mathReal(function: .ceil(expression: calculation)))
             ))

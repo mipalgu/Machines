@@ -23,12 +23,16 @@ extension PortSignal {
 
     /// The code that updates the snapshot from the external variable.
     var read: Statement {
-        Statement.assignment(name: snapshot.name, value: .variable(name: externalName))
+        Statement.assignment(
+            name: .variable(name: snapshot.name), value: .reference(variable: .variable(name: externalName))
+        )
     }
 
     /// The code that updates the external variable from the snapshot.
     var write: Statement {
-        Statement.assignment(name: externalName, value: .variable(name: snapshot.name))
+        Statement.assignment(
+            name: .variable(name: externalName), value: .reference(variable: .variable(name: snapshot.name))
+        )
     }
 
     /// Create a `PortSignal` from a `Clock`.

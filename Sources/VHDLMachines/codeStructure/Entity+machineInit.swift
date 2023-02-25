@@ -95,7 +95,10 @@ extension Entity {
             signals += [
                 PortSignal(type: .stdLogic, name: .suspended, mode: .output),
                 PortSignal(
-                    type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
+                    type: .ranged(type: .stdLogicVector(size: .downto(
+                        upper: .literal(value: .integer(value: 1)),
+                        lower: .literal(value: .integer(value: 0))
+                    ))),
                     name: .command,
                     mode: .input
                 )
