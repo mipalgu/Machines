@@ -13,7 +13,7 @@ let package = Package(
         // Dependencies declare other packages that this package depends on.
         // .package(url: /* package url */, from: "1.0.0"),
         .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.1.0"),
-        .package(url: "git@github.com:mipalgu/VHDLParsing", from: "1.0.0"),
+        .package(url: "git@github.com:mipalgu/VHDLParsing", from: "1.0.1"),
         .package(url: "git@github.com:mipalgu/GUUnits", from: "2.1.0"),
         .package(url: "ssh://git@github.com/Morgan2010/MetaLanguage.git", from: "0.1.1"),
         .package(url: "git@github.com:mipalgu/swift_helpers", from: "2.0.0")
