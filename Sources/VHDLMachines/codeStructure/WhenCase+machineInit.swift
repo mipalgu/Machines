@@ -125,6 +125,7 @@ extension WhenCase {
     /// Create the when case for the checkTransition action.
     /// - Parameter machine: The machine to create the action code for.
     private init(checkTransitionMachine machine: Machine) {
+        // swiftlint:disable:next closure_body_length
         let stateCases = machine.states.enumerated().compactMap { index, state -> WhenCase? in
             let transitions = machine.transitions.filter { $0.source == index }
             if
