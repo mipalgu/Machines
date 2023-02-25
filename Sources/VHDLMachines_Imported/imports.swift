@@ -1,4 +1,4 @@
-// AsynchronousBlock+machineInit.swift
+// imports.swift
 // Machines
 // 
 // Created by Morgan McColl.
@@ -54,37 +54,4 @@
 // Fifth Floor, Boston, MA  02110-1301, USA.
 // 
 
-import VHDLParsing
-
-/// Add init for top-level architecture body asynchronous block.
-extension AsynchronousBlock {
-
-    /// Create the top-level asynchronous block that will represent the entire architecture body of a machine.
-    /// This block represents all of the logic of the machine.
-    /// - Parameter machine: The machine to generate the block from.
-    @usableFromInline
-    init?(machine: Machine) {
-        guard
-            machine.drivingClock >= 0,
-            machine.drivingClock < machine.clocks.count,
-            let code = SynchronousBlock(machine: machine)
-        else {
-            return nil
-        }
-        let clock = machine.clocks[machine.drivingClock].name
-        let process = ProcessBlock(sensitivityList: [clock], code: code)
-        guard
-            let userBody = machine.architectureBody,
-            let comment = Comment(rawValue: "-- User-Specific Code for Architecture Body")
-        else {
-            self = .process(block: process)
-            return
-        }
-        self = .blocks(blocks: [
-            .statement(statement: .comment(value: comment)),
-            userBody,
-            .process(block: process)
-        ])
-    }
-
-}
+@_exported import VHDLMachines
