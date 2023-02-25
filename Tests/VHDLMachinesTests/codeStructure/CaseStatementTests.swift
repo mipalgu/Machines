@@ -89,7 +89,7 @@ final class CaseStatementTests: XCTestCase {
         XCTAssertEqual(
             statement,
             CaseStatement(
-                condition: .variable(name: .internalState),
+                condition: .reference(variable: .variable(name: .internalState)),
                 cases: [
                     checkTransition,
                     `internal`,
@@ -135,7 +135,7 @@ final class CaseStatementTests: XCTestCase {
         XCTAssertEqual(
             statement,
             CaseStatement(
-                condition: .variable(name: .internalState),
+                condition: .reference(variable: .variable(name: .internalState)),
                 cases: [
                     checkTransition,
                     `internal`,
@@ -171,7 +171,7 @@ final class CaseStatementTests: XCTestCase {
         XCTAssertEqual(
             statement,
             CaseStatement(
-                condition: .variable(name: .internalState),
+                condition: .reference(variable: .variable(name: .internalState)),
                 cases: [
                     checkTransition,
                     `internal`,

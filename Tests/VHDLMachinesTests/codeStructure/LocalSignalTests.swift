@@ -61,6 +61,8 @@ import XCTest
 /// Tests the `LocalSignal` extensions.
 final class LocalSignalTests: XCTestCase {
 
+    // swiftlint:disable function_body_length
+
     /// Test the state trackers are generated correctly for a machine.
     func testStateTrackers() {
         let machine = Machine.testMachine()
@@ -79,20 +81,27 @@ final class LocalSignalTests: XCTestCase {
         }
         let initialState = states[machine.initialState]
         let suspendedState = states[index]
-        let type = SignalType.ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0)))
+        let type = SignalType.ranged(type: .stdLogicVector(size: .downto(
+            upper: .literal(value: .integer(value: 1)),
+            lower: .literal(value: .integer(value: 0))
+        )))
         XCTAssertEqual(
             trackers,
             [
                 LocalSignal(
                     type: type,
                     name: .currentState,
-                    defaultValue: .variable(name: VariableName.name(for: suspendedState)),
+                    defaultValue: .reference(
+                        variable: .variable(name: VariableName.name(for: suspendedState))
+                    ),
                     comment: nil
                 ),
                 LocalSignal(
                     type: type,
                     name: .targetState,
-                    defaultValue: .variable(name: VariableName.name(for: suspendedState)),
+                    defaultValue: .reference(
+                        variable: .variable(name: VariableName.name(for: suspendedState))
+                    ),
                     comment: nil
                 ),
                 LocalSignal(
@@ -106,12 +115,14 @@ final class LocalSignalTests: XCTestCase {
                 LocalSignal(
                     type: type,
                     name: .suspendedFrom,
-                    defaultValue: .variable(name: VariableName.name(for: initialState)),
+                    defaultValue: .reference(variable: .variable(name: VariableName.name(for: initialState))),
                     comment: nil
                 )
             ]
         )
     }
+
+    // swiftlint:enable function_body_length
 
     /// Test snapshot is created correctly.
     func testPortInit() {

@@ -72,7 +72,9 @@ extension SynchronousBlock {
         }
         let clock = machine.clocks[machine.drivingClock].name
         let code = IfBlock.ifStatement(
-            condition: .conditional(condition: .edge(value: .rising(expression: .variable(name: clock)))),
+            condition: .conditional(
+                condition: .edge(value: .rising(expression: .reference(variable: .variable(name: clock))))
+            ),
             ifBlock: .caseStatement(block: caseStatement)
         )
         self = .ifStatement(block: code)

@@ -67,25 +67,33 @@ extension ConstantSignal {
     static let commands = [
         ConstantSignal(
             name: .nullCommand,
-            type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
+            type: .ranged(type: .stdLogicVector(size: .downto(
+                upper: .literal(value: .integer(value: 1)), lower: .literal(value: .integer(value: 0))
+            ))),
             value: .literal(value: .vector(value: .bits(value: BitVector(values: [.low, .low])))),
             comment: nil
         )!,
         ConstantSignal(
             name: .restartCommand,
-            type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
+            type: .ranged(type: .stdLogicVector(size: .downto(
+                upper: .literal(value: .integer(value: 1)), lower: .literal(value: .integer(value: 0))
+            ))),
             value: .literal(value: .vector(value: .bits(value: BitVector(values: [.low, .high])))),
             comment: nil
         )!,
         ConstantSignal(
             name: .suspendCommand,
-            type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
+            type: .ranged(type: .stdLogicVector(size: .downto(
+                upper: .literal(value: .integer(value: 1)), lower: .literal(value: .integer(value: 0))
+            ))),
             value: .literal(value: .vector(value: .bits(value: BitVector(values: [.high, .low])))),
             comment: nil
         )!,
         ConstantSignal(
             name: .resumeCommand,
-            type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
+            type: .ranged(type: .stdLogicVector(size: .downto(
+                upper: .literal(value: .integer(value: 1)), lower: .literal(value: .integer(value: 0))
+            ))),
             value: .literal(value: .vector(value: .bits(value: BitVector(values: [.high, .high])))),
             comment: nil
         )!
@@ -97,28 +105,32 @@ extension ConstantSignal {
             name: .ringletLength,
             type: .real,
             value: .binary(operation: .multiplication(
-                lhs: .literal(value: .decimal(value: 5.0)), rhs: .variable(name: .clockPeriod)
+                lhs: .literal(value: .decimal(value: 5.0)),
+                rhs: .reference(variable: .variable(name: .clockPeriod))
             ))
         )!,
         ConstantSignal(
             name: .ringletPerPs,
             type: .real,
             value: .binary(operation: .division(
-                lhs: .literal(value: .decimal(value: 1.0)), rhs: .variable(name: .ringletLength)
+                lhs: .literal(value: .decimal(value: 1.0)),
+                rhs: .reference(variable: .variable(name: .ringletLength))
             ))
         )!,
         ConstantSignal(
             name: .ringletPerNs,
             type: .real,
             value: .binary(operation: .multiplication(
-                lhs: .literal(value: .decimal(value: 1000.0)), rhs: .variable(name: .ringletPerPs)
+                lhs: .literal(value: .decimal(value: 1000.0)),
+                rhs: .reference(variable: .variable(name: .ringletPerPs))
             ))
         )!,
         ConstantSignal(
             name: .ringletPerUs,
             type: .real,
             value: .binary(operation: .multiplication(
-                lhs: .literal(value: .decimal(value: 1_000_000.0)), rhs: .variable(name: .ringletPerPs)
+                lhs: .literal(value: .decimal(value: 1_000_000.0)),
+                rhs: .reference(variable: .variable(name: .ringletPerPs))
             ))
         )!,
         ConstantSignal(
@@ -126,7 +138,7 @@ extension ConstantSignal {
             type: .real,
             value: .binary(operation: .multiplication(
                 lhs: .literal(value: .decimal(value: 1_000_000_000.0)),
-                rhs: .variable(name: .ringletPerPs)
+                rhs: .reference(variable: .variable(name: .ringletPerPs))
             ))
         )!,
         ConstantSignal(
@@ -134,7 +146,7 @@ extension ConstantSignal {
             type: .real,
             value: .binary(operation: .multiplication(
                 lhs: .literal(value: .decimal(value: 1_000_000_000_000.0)),
-                rhs: .variable(name: .ringletPerPs)
+                rhs: .reference(variable: .variable(name: .ringletPerPs))
             ))
         )!
     ]
@@ -153,7 +165,10 @@ extension ConstantSignal {
         }
         let bits = BitLiteral.bitVersion(of: index, bitsRequired: bitsRequired)
         let type = SignalType.ranged(type: .stdLogicVector(
-            size: .downto(upper: bitsRequired - 1, lower: 0)
+            size: .downto(
+                upper: .literal(value: .integer(value: bitsRequired - 1)),
+                lower: .literal(value: .integer(value: 0))
+            )
         ))
         self.init(
             name: VariableName.name(for: state),
@@ -184,7 +199,10 @@ extension ConstantSignal {
         let bitRepresentations = actionNames.indices.map {
             BitLiteral.bitVersion(of: $0, bitsRequired: bitsRequired)
         }
-        let type = SignalType.ranged(type: .stdLogicVector(size: .downto(upper: bitsRequired - 1, lower: 0)))
+        let type = SignalType.ranged(type: .stdLogicVector(size: .downto(
+            upper: .literal(value: .integer(value: bitsRequired - 1)),
+            lower: .literal(value: .integer(value: 0))
+        )))
         let signals: [ConstantSignal] = actionNames.indices.compactMap {
             ConstantSignal(
                 name: actionNames[$0],

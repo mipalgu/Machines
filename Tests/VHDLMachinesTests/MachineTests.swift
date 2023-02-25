@@ -192,13 +192,19 @@ final class MachineTests: XCTestCase {
     }
 
     /// The architecture head for the machine.
-    var architectureHead: [Statement] {
-        [.definition(signal: LocalSignal(type: .stdLogic, name: .s, defaultValue: nil, comment: nil))]
+    var architectureHead: [HeadStatement] {
+        [
+            .definition(
+                value: .signal(value: LocalSignal(type: .stdLogic, name: .s, defaultValue: nil, comment: nil))
+            )
+        ]
     }
 
     /// The architecture body for the machine.
     var architectureBody: AsynchronousBlock {
-        .statement(statement: .assignment(name: .s, value: .literal(value: .bit(value: .high))))
+        .statement(statement: .assignment(
+            name: .variable(name: .s), value: .literal(value: .bit(value: .high))
+        ))
     }
 
     /// The default actions in a state.
@@ -334,12 +340,12 @@ final class MachineTests: XCTestCase {
         let newInitialState = 1
         let newSuspendedState = 0
         let newArchitectureHead = [
-            Statement.definition(
-                signal: LocalSignal(type: .stdLogic, name: .g, defaultValue: nil, comment: nil)
-            )
+            HeadStatement.definition(value: .signal(
+                value: LocalSignal(type: .stdLogic, name: .g, defaultValue: nil, comment: nil)
+            ))
         ]
         let newArchitectureBody = AsynchronousBlock.statement(statement: .assignment(
-            name: .g, value: .literal(value: .bit(value: .low))
+            name: .variable(name: .g), value: .literal(value: .bit(value: .low))
         ))
         machine.name = newMachineName
         machine.path = newPath

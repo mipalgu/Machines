@@ -79,7 +79,7 @@ final class AsynchronousBlockTests: XCTestCase {
     func testMachineInitWithUserCode() {
         var machine = Machine.testMachine()
         let xAssignment = AsynchronousBlock.statement(statement: .assignment(
-            name: .x, value: .literal(value: .bit(value: .high))
+            name: .variable(name: .x), value: .literal(value: .bit(value: .high))
         ))
         machine.architectureBody = xAssignment
         let result = AsynchronousBlock(machine: machine)

@@ -212,7 +212,8 @@ public struct AfterStatement: RawRepresentable, Equatable, Hashable, Codable, Se
             case .conditional(condition: let conditional) = precedence,
             case .comparison(let expression) = conditional,
             case .greaterThanOrEqual(let lhs, let rhs) = expression,
-            case .variable(let name) = lhs,
+            case .reference(let ref) = lhs,
+            case .variable(let name) = ref,
             name == .ringletCounter,
             case .cast(let castOperation) = rhs,
             case .integer(let castExpression) = castOperation,
@@ -233,7 +234,8 @@ public struct AfterStatement: RawRepresentable, Equatable, Hashable, Codable, Se
             case .multiplication(let lhs, let rhs) = binaryOperation,
             case .cast(let realCast) = lhs,
             case .real(let realExpression) = realCast,
-            case .variable(let name) = rhs,
+            case .reference(let ref) = rhs,
+            case .variable(let name) = ref,
             let period = Period(rawValue: name)
         else {
             return nil

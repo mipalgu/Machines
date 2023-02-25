@@ -72,7 +72,9 @@ final class SynchronousBlockTests: XCTestCase {
         XCTAssertEqual(
             result,
             .ifStatement(block: .ifStatement(
-                condition: .conditional(condition: .edge(value: .rising(expression: .variable(name: .clk)))),
+                condition: .conditional(condition: .edge(
+                    value: .rising(expression: .reference(variable: .variable(name: .clk)))
+                )),
                 ifBlock: .caseStatement(block: statement)
             ))
         )

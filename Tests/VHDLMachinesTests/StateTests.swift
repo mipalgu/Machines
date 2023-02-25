@@ -128,7 +128,10 @@ final class StateTests: XCTestCase {
         XCTAssertEqual(self.state.actions, [VariableName.internal: newAssignment])
         self.state.signals = [
             LocalSignal(
-                type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),
+                type: .ranged(type: .stdLogicVector(size: .downto(
+                    upper: .literal(value: .integer(value: 3)),
+                    lower: .literal(value: .integer(value: 0))
+                ))),
                 name: VariableName.xs,
                 defaultValue: .literal(value: .vector(
                     value: .hexademical(value: HexVector(values: [.five]))
@@ -140,7 +143,10 @@ final class StateTests: XCTestCase {
             self.state.signals,
             [
                 LocalSignal(
-                    type: .ranged(type: .stdLogicVector(size: .downto(upper: 3, lower: 0))),
+                    type: .ranged(type: .stdLogicVector(size: .downto(
+                        upper: .literal(value: .integer(value: 3)),
+                        lower: .literal(value: .integer(value: 0))
+                    ))),
                     name: VariableName.xs,
                     defaultValue: .literal(value: .vector(value: .hexademical(
                         value: HexVector(values: [.five])

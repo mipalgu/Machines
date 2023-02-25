@@ -84,7 +84,10 @@ extension Machine {
                     comment: Comment(rawValue: "-- A std_logic variable.")!
                 ),
                 PortSignal(
-                    type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
+                    type: .ranged(type: .stdLogicVector(size: .downto(
+                        upper: .literal(value: .integer(value: 1)),
+                        lower: .literal(value: .integer(value: 0))
+                    ))),
                     name: VariableName(rawValue: "xx")!,
                     mode: .output,
                     defaultValue: .literal(value: .vector(value: .bits(
@@ -107,7 +110,10 @@ extension Machine {
                     comment: nil
                 ),
                 LocalSignal(
-                    type: .ranged(type: .stdLogicVector(size: .downto(upper: 2, lower: 0))),
+                    type: .ranged(type: .stdLogicVector(size: .downto(
+                        upper: .literal(value: .integer(value: 2)),
+                        lower: .literal(value: .integer(value: 0))
+                    ))),
                     name: VariableName(rawValue: "machineSignal2")!,
                     defaultValue: .literal(value: .vector(value: .bits(
                         value: BitVector(values: [.high, .high, .high])
@@ -124,7 +130,10 @@ extension Machine {
                     comment: Comment(rawValue: "-- Parameter parX")!
                 ),
                 Parameter(
-                    type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
+                    type: .ranged(type: .stdLogicVector(size: .downto(
+                        upper: .literal(value: .integer(value: 1)),
+                        lower: .literal(value: .integer(value: 0))
+                    ))),
                     name: VariableName(rawValue: "parXs")!,
                     defaultValue: .literal(value: .vector(value: .bits(
                         value: BitVector(values: [.low, .high])
@@ -139,7 +148,10 @@ extension Machine {
                     comment: Comment(rawValue: "-- Returnable retX")!
                 ),
                 ReturnableVariable(
-                    type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
+                    type: .ranged(type: .stdLogicVector(size: .downto(
+                        upper: .literal(value: .integer(value: 1)),
+                        lower: .literal(value: .integer(value: 0))
+                    ))),
                     name: VariableName(rawValue: "retXs")!,
                     comment: Comment(rawValue: "-- Returnable retXs")!
                 )
@@ -180,7 +192,7 @@ extension Machine {
                     // "xx = \"11\""
                     condition: .conditional(condition: .comparison(
                         value: .equality(
-                            lhs: .variable(name: .xx),
+                            lhs: .reference(variable: .variable(name: .xx)),
                             rhs: .literal(value: .vector(
                                 value: .bits(value: BitVector(values: [.high, .high]))
                             ))
@@ -192,7 +204,10 @@ extension Machine {
                 VHDLMachines.Transition(
                     // // "x = '1'"
                     condition: .conditional(condition: .comparison(
-                        value: .equality(lhs: .variable(name: .x), rhs: .literal(value: .bit(value: .high)))
+                        value: .equality(
+                            lhs: .reference(variable: .variable(name: .x)),
+                            rhs: .literal(value: .bit(value: .high))
+                        )
                     )),
                     source: 1,
                     target: 2

@@ -84,7 +84,10 @@ final class EntityTests: XCTestCase {
                 signal,
                 PortSignal(type: .stdLogic, name: .suspended, mode: .output),
                 PortSignal(
-                    type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
+                    type: .ranged(type: .stdLogicVector(size: .downto(
+                        upper: .literal(value: .integer(value: 1)),
+                        lower: .literal(value: .integer(value: 0))
+                    ))),
                     name: .command,
                     mode: .input
                 )
@@ -116,7 +119,10 @@ final class EntityTests: XCTestCase {
                     comment: Comment(rawValue: "-- A std_logic variable.")!
                 ),
                 PortSignal(
-                    type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
+                    type: .ranged(type: .stdLogicVector(size: .downto(
+                    upper: .literal(value: .integer(value: 1)),
+                    lower: .literal(value: .integer(value: 0))
+                ))),
                     name: VariableName(rawValue: "EXTERNAL_xx")!,
                     mode: .output,
                     defaultValue: .literal(value: .vector(
@@ -132,7 +138,10 @@ final class EntityTests: XCTestCase {
                     comment: Comment(rawValue: "-- Parameter parX")!
                 ),
                 PortSignal(
-                    type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
+                    type: .ranged(type: .stdLogicVector(size: .downto(
+                    upper: .literal(value: .integer(value: 1)),
+                    lower: .literal(value: .integer(value: 0))
+                ))),
                     name: VariableName(rawValue: "PARAMETER_parXs")!,
                     mode: .input,
                     defaultValue: .literal(value: .vector(
@@ -148,7 +157,10 @@ final class EntityTests: XCTestCase {
                     comment: Comment(rawValue: "-- Returnable retX")!
                 ),
                 PortSignal(
-                    type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
+                    type: .ranged(type: .stdLogicVector(size: .downto(
+                    upper: .literal(value: .integer(value: 1)),
+                    lower: .literal(value: .integer(value: 0))
+                ))),
                     name: VariableName(rawValue: "OUTPUT_retXs")!,
                     mode: .output,
                     defaultValue: nil,
@@ -162,7 +174,10 @@ final class EntityTests: XCTestCase {
                     comment: nil
                 ),
                 PortSignal(
-                    type: .ranged(type: .stdLogicVector(size: .downto(upper: 1, lower: 0))),
+                    type: .ranged(type: .stdLogicVector(size: .downto(
+                    upper: .literal(value: .integer(value: 1)),
+                    lower: .literal(value: .integer(value: 0))
+                ))),
                     name: .command,
                     mode: .input,
                     defaultValue: nil,

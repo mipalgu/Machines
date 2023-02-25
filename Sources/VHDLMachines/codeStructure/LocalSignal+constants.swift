@@ -64,15 +64,23 @@ extension LocalSignal {
         else {
             return nil
         }
-        let range = VectorSize.downto(upper: bitsRequired - 1, lower: 0)
+        let range = VectorSize.downto(
+            upper: .literal(value: .integer(value: bitsRequired - 1)),
+            lower: .literal(value: .integer(value: 0))
+        )
         let stateType = SignalType.ranged(type: .stdLogicVector(size: range))
-        let initialState = Expression.variable(name: VariableName.name(for: states[machine.initialState]))
+        let initialState = Expression.reference(
+            variable: .variable(name: VariableName.name(for: states[machine.initialState]))
+        )
+        guard let size = range.size else {
+            return nil
+        }
         let previousRinglet = LocalSignal(
             type: stateType,
             name: .previousRinglet,
             defaultValue: .literal(
                 value: .vector(value: .logics(value: LogicVector(
-                    values: [LogicLiteral](repeating: .highImpedance, count: range.size)
+                    values: [LogicLiteral](repeating: .highImpedance, count: size)
                 )))
             ),
             comment: nil
@@ -101,7 +109,9 @@ extension LocalSignal {
                 previousRinglet
             ]
         }
-        let suspendedState = Expression.variable(name: VariableName.name(for: states[suspendedStateIndex]))
+        let suspendedState = Expression.reference(
+            variable: .variable(name: VariableName.name(for: states[suspendedStateIndex]))
+        )
         let defaultState = machine.isParameterised ? suspendedState : initialState
         return [
             LocalSignal(

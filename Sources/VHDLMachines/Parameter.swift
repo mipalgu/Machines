@@ -10,7 +10,7 @@ import VHDLParsing
 
 /// A parameter is a type of external variable that is used to parameterise a machine. It
 /// is a variable that is defined within an entity block in the VHDl representation.
-public struct Parameter: ExternalType, Codable, Equatable, Hashable, Variable {
+public struct Parameter: ExternalType, Codable, Equatable, Hashable {
 
     /// The mode of the parameter.
     @inlinable public var mode: Mode {
